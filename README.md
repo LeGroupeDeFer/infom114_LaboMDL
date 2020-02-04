@@ -2,6 +2,10 @@
 
 ### Features:
 
++ Utilisateurs: Profs, etudiants, AGEs, Cercles, 
+
++ Cana
+
 + Categories des contenu
 
 + Types de contenu:
@@ -25,3 +29,11 @@
 + MariaDB
 
 + Git
+
+Description (1 page max)
+Objectif
+Probleme a resoudre 
+Comment resoudre le probleme
+Fonctionnalites
+
+Prochain cours: Mercredi prochain (9h)
