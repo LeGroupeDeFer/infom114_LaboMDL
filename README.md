@@ -30,10 +30,15 @@
 
 + Git
 
-Description (1 page max)
+
+## A envoyer: Description  (1 page max)
+
 Objectif
+
 Probleme a resoudre 
+
 Comment resoudre le probleme
+
 Fonctionnalites
 
 Prochain cours: Mercredi prochain (9h)
