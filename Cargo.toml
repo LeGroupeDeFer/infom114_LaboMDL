@@ -1,0 +1,20 @@
+[package]
+name = "hello-rocket"
+version = "0.1.0"
+authors = ["Guillaume Latour <g0latour@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rocket = "0.4.2"
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
+dotenv = "0.15.0"
+diesel = "1.4.3"
+
+[dependencies.rocket_contrib]
+version = "0.4.2"
+default-features = false
+features = ["json", "handlebars_templates", "diesel_mysql_pool"]
