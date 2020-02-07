@@ -1,5 +1,17 @@
 # infom114_LaboMDL
 
+## Quickstart
+
+1. install rust(cargo)
+
+2. go nighty
+
+3. setup mariadb on your machine (look at logins in .env & rocket.toml)
+
+4. `cargo build` && `cargo run`
+
+5. go on localhost:8000 
+
 ### Features:
 
 + Utilisateurs: Profs, etudiants, AGEs, Cercles, 
