@@ -3,14 +3,12 @@
 ## Quickstart
 
 1. install rust(cargo)
-
 2. go nighty
-
 3. setup mariadb on your machine (look at logins in .env & rocket.toml)
-
-4. `cargo build` && `cargo run`
-
-5. go on localhost:8000 
+4. Install `diesel-cli`
+5. `diesel migration run`
+6. `cargo build` && `cargo run`
+7. go on localhost:8000 
 
 ### Features:
 
