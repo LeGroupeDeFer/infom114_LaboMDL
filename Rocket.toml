@@ -1,8 +1,8 @@
 [global.databases]
-mariadb_test = {url="mysql://testuser:testpassword@localhost/test_rocket"}
+mariadb_test = {url="mysql://testuser:testpassword@db/test_rocket"}
 
 [development]
-address = "localhost"
+address = "0.0.0.0"
 port = 8000
 # workers = [number of cpus * 2]
 keep_alive = 5

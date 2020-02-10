@@ -1,0 +1,25 @@
+version: "3.7"
+
+services:
+  server:
+    build: .
+    ports: 
+      - 8000:8000
+    volumes:
+      - .:/usr/src/app
+    links:
+      - db
+    command: 
+      bash -c "bash ./wait-for-it.sh db:3306 -t 100 -q -- diesel setup && cargo run"
+
+  db:
+    image: mariadb:latest
+    restart: always
+    volumes:
+      - /var/lib/mysql
+    environment:
+      MYSQL_USER: testuser
+      MYSQL_PASSWORD: testpassword
+      MYSQL_ROOT_PASSWORD: hypersecretpassword
+      MYSQL_DATABASE: test_rocket
+

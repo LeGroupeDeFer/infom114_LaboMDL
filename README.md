@@ -10,7 +10,19 @@
 
 4. `cargo build` && `cargo run`
 
-5. go on localhost:8000 
+5. go on http://localhost:8000 
+
+
+## Dockerization
+
+1. Install docker and docker-compose
+
+2. docker-compose up
+
+3. go on http://localhost:8000
+
+
+## Other notes
 
 ### Features:
 
