@@ -10,7 +10,7 @@ services:
     links:
       - db
     command: 
-      bash -c "bash ./wait-for-it.sh db:3306 -t 100 -q -- diesel setup && cargo run"
+      bash -c "bash ./wait-for-it.sh db:3306 -t 100 -q -- diesel migration run && cargo run"
 
   db:
     image: mariadb:latest
