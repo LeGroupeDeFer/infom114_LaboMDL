@@ -13,50 +13,20 @@
 ## Dockerization
 
 1. Install docker and docker-compose
-
 2. docker-compose up [--build]
+3. go on <http://localhost:8000/hello/yourname>
 
-3. go on http://localhost:8000/hello/yourname
+## Features
 
-### Features:
+- Utilisateurs: Profs, etudiants, AGEs, Cercles,
+- Cana
+- Categories des contenu
+- Types de contenu:
+  - Informatif (Event)
+  - Decisionnel (Poll)
+  - Questions (Comme StackOverflow? :D)
+  - Boite a idee
 
-+ Utilisateurs: Profs, etudiants, AGEs, Cercles, 
+## DB
 
-+ Cana
-
-+ Categories des contenu
-
-+ Types de contenu:
-
-  + Informatif (Event)
-
-  + Decisionnel (Poll)
-
-  + Questions (Comme StackOverflow? :D)
-  
-  + Boite a idee 
-  
-### Technologies:
-
-+ Bootstrap
-
-+ Rust - Rocket
-
-+ Docker
-
-+ MariaDB
-
-+ Git
-
-
-## A envoyer: Description  (1 page max)
-
-Objectif
-
-Probleme a resoudre 
-
-Comment resoudre le probleme
-
-Fonctionnalites
-
-Prochain cours: Mercredi prochain (9h)
+![schema](out/uml/database_schema/db_mdl.png)

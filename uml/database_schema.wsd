@@ -1,0 +1,106 @@
+@startuml db_mdl
+
+hide circle
+hide empty members
+
+' entity Entity {
+'    * identifying_attribute
+'    --
+'    * mandatory_attribute
+'    optional_attribute
+' }
+
+' ' zero or one
+' A |o--o| B
+
+' ' exactly one
+' C ||--|| D
+
+' ' zero or many
+' E }o--o{ F
+
+' ' one or many
+' G }|--|{ H
+
+entity User {
+  * email varchar(255)
+  --
+  * username varchar(255)
+  * password varchar(255)
+  * firstname varchar(255)
+  * lastname varchar(255)
+  birthdate datetime
+}
+
+entity Address {
+  * street
+  * number
+  * locality
+  * country
+  --
+}
+
+
+
+entity Tag {
+  * name
+  --
+}
+
+entity Post {
+  * name
+  --
+  * content
+}
+
+entity Role {
+  * name
+  --
+}
+
+entity Capability {
+  * name
+  --
+}
+
+entity Risk {
+  * name
+  --
+  * description
+}
+
+entity VotingPost {
+  duedate
+  final_answer
+}
+
+entity VotingAnswer {
+  * answer
+  --
+}
+
+entity Faculty  {
+  * name
+  --
+  phone_number
+  email
+}
+
+Address ||--o| User
+Tag }|-|{ Post
+
+Faculty }|--o| User
+Faculty |o-|{ Address
+
+Risk }|--|| Capability
+Capability }|-|{ Role
+Role }|-|{ User
+
+User }|-|{ Tag : Subscription
+User }|-|{ Post : Written
+
+Post <|-- VotingPost
+VotingAnswer }|- VotingPost
+User }|- VotingPost
+
+@enduml
