@@ -3,8 +3,9 @@ type: docker
 name: default
 
 steps:
-- name: backend
-  image: rustlang/rust:nightly
+- name: greeting
+  image: alpine
   commands:
-  - cargo build --verbose --all
-  - cargo test --verbose --all
+  - echo HELLO
+  - echo world
+
