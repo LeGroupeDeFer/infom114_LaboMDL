@@ -1,0 +1,10 @@
+kind: pipeline
+type: docker
+name: default
+
+steps:
+- name: backend
+  image: rustlang/rust:nightly
+  commands:
+  - cargo build --verbose --all
+  - cargo test --verbose --all
