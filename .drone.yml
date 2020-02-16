@@ -6,8 +6,10 @@ steps:
 - name: backend
   image: rustlang/rust:nightly
   volumes:
-    - name: cargo-cache
+    - name: cargo-compilation-cache
       path: /drone/src/target
+    - name: cargo-registry-cache
+      path: /usr/local/cargo/registry
   commands:
   - cargo build --verbose --release --all-targets --all-features
   - cargo test --verbose --release --all-targets --all-features
@@ -29,6 +31,9 @@ steps:
     event: tag
 
 volumes:
-  - name: cargo-cache
+  - name: cargo-registry-cache
     host:
-      path: /tmp/cargo-cache
+      path: /tmp/cargo/registry-cache
+  - name: cargo-compilation-cache
+    host:
+      path: /tmp/cargo/compilation-cache
