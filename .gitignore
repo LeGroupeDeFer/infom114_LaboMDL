@@ -1,6 +1,8 @@
 /target
 **/*.rs.bk
 
+/static/js/
+
 .history
 .vscode
 .drone.status
