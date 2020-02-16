@@ -1,7 +1,6 @@
 # infom114_LaboMDL
 
 [![Build Status](https://drone.findot.me/api/badges/LeGroupeDeFer/infom114_LaboMDL/status.svg)](https://drone.findot.me/LeGroupeDeFer/infom114_LaboMDL)
-test
 
 ## Quickstart
 
