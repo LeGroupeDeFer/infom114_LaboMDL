@@ -1,0 +1,288 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "API Title",
+        "version": "0.0.0"
+    },
+    "servers": [{
+        "url": "https://api.server.test/"
+    }],
+    "tags": [{
+        "name": "auth",
+        "description": "Everything that is related to authentication"
+    }],
+    "paths": {
+        "/register": {
+            "get": {
+                "tags": [
+                    "auth"
+                ],
+                "description": "Fetch the form to create a new user on the platform",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {}
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "description": "Send user information and login credentials for a new account on the application",
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "firstname",
+                                    "lastname",
+                                    "password",
+                                    "username"
+                                ],
+                                "properties": {
+                                    "username": {
+                                        "type": "string",
+                                        "description": "The nickname of the user"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "description": "The password that the user will use to log on the platform"
+                                    },
+                                    "firstname": {
+                                        "type": "string",
+                                        "description": "The first name of the user"
+                                    },
+                                    "lastname": {
+                                        "type": "string",
+                                        "description": "The last name of the user"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "description": "The email address for the user to be contacted"
+                                    },
+                                    "street": {
+                                        "type": "string",
+                                        "description": "The street name of the address of the user"
+                                    },
+                                    "number": {
+                                        "type": "integer",
+                                        "description": "The house number of the address of the user",
+                                        "format": "int32"
+                                    },
+                                    "city": {
+                                        "type": "string",
+                                        "description": "The city where the user lives in"
+                                    },
+                                    "zipcode": {
+                                        "type": "integer",
+                                        "description": "The zip code of the address of the user",
+                                        "format": "int32"
+                                    },
+                                    "country": {
+                                        "type": "string",
+                                        "description": "The country where the user lives in"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "description": "The phone number of the user"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {}
+                    }
+                }
+            }
+        },
+        "/login": {
+            "get": {
+                "tags": [
+                    "auth"
+                ],
+                "description": "Fetch the login page",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {}
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "description": "Send login credentials for authentication",
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "required": [
+                                    "password",
+                                    "username"
+                                ],
+                                "properties": {
+                                    "username": {
+                                        "type": "string",
+                                        "description": "The username credential"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "description": "The password credential"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {}
+                    }
+                }
+            }
+        },
+        "/recovery": {
+            "get": {
+                "tags": [
+                    "auth"
+                ],
+                "description": "Fetch the form to send a mail with a link to reset a user password when it's forgotten",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {}
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "description": "Send email to get a link to be able to reset the password",
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "description": "The user email. Note that the email must correspond to a valid user"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {}
+                    }
+                }
+            }
+        },
+        "/password_reset/{hash}": {
+            "get": {
+                "tags": [
+                    "auth"
+                ],
+                "description": "Fetch the form to reset a user password",
+                "parameters": [{
+                    "name": "hash",
+                    "in": "path",
+                    "description": "The time limited hash generated for a password reset of a user",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {}
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "description": "Send the form to reset a user password",
+                "parameters": [{
+                    "name": "hash",
+                    "in": "path",
+                    "description": "The time limited hash generated for a password reset of a user",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                }],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "required": [
+                                    "password"
+                                ],
+                                "properties": {
+                                    "password": {
+                                        "type": "string",
+                                        "description": "The new password for the user"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {}
+                    }
+                }
+            }
+        },
+        "/logout": {
+            "get": {
+                "security": [{
+                    "UserAuth": []
+                }],
+                "tags": [
+                    "auth"
+                ],
+                "description": "Logout the connected user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {}
+                    }
+                }
+            }
+        }
+    },
+
+    "components": {
+        "securitySchemes": {
+            "UserAuth": {
+                "type": "apiKey",
+                "in": "cookie",
+                "name": "user_id"
+            }
+        }
+    }
+}
