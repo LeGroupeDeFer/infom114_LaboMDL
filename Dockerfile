@@ -1,13 +1,10 @@
 FROM rustlang/rust:nightly
 
-RUN cargo install diesel_cli --no-default-features --features mysql
-
 ADD . /usr/src/app
-
-WORKDIR /usr/src/app
+ADD entrypoint.sh /
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 8000
+VOLUME ["/usr/src/app"]
 
-RUN cargo build
-
-VOLUME ["/usr/local/cargo"]
+ENTRYPOINT /entrypoint.sh
