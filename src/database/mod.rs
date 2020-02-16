@@ -9,3 +9,6 @@ pub fn connection() -> MysqlConnection {
     MysqlConnection::establish(&database_url)
         .expect(&format!("Error connecting to {}", database_url))
 }
+
+#[database("mariadb_test")]
+pub struct MyDbConn(diesel::MysqlConnection);

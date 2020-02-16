@@ -1,7 +1,8 @@
-use super::super::schema;
-use super::database;
-use crate::diesel::prelude::*;
-use crate::diesel::ExpressionMethods;
+use crate::database;
+use crate::schema;
+
+use diesel::prelude::*;
+use diesel::ExpressionMethods;
 
 #[derive(Queryable, Serialize, Deserialize, Debug)]
 pub struct User {
