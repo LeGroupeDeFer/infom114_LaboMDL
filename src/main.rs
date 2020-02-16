@@ -15,11 +15,10 @@ pub mod schema;
 
 use diesel::prelude::*;
 use rocket::http::{Cookie, Cookies};
-use rocket::outcome::IntoOutcome;
 use rocket::request::{self, Form, FromRequest, Request};
-use rocket::response::{Flash, Redirect};
+use rocket::response::{Flash, NamedFile, Redirect};
+use std::path::{Path, PathBuf};
 
-// #[macro_use]
 static DATABASE_URL: &'static str = "mysql://testuser:testpassword@localhost/test_rocket";
 use rocket_contrib::templates::Template;
 
@@ -192,16 +191,17 @@ fn hello(name: String) -> Template {
 }
 
 /// Serve static files
-// #[get("/<file..>")]
-// fn files(file: PathBuf) -> Option<NamedFile> {
-//     NamedFile::open(Path::new("static/").join(file)).ok()
-// }
+#[get("/<file..>", rank = 2)]
+fn files(file: PathBuf) -> Option<NamedFile> {
+    NamedFile::open(Path::new("static/").join(file)).ok()
+}
 
 fn main() {
     rocket::ignite()
         .mount(
             "/",
             routes![
+                files,
                 index,
                 optional,
                 hello,
