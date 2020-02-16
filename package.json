@@ -1,0 +1,38 @@
+{
+    "name": "infom114_labomdl",
+    "version": "0.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "test",
+        "build": "webpack --mode production",
+        "watch": "webpack --watch --mode development"
+    },
+    "keywords": [
+        "UNamur",
+        "MDL",
+        "Participation"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/LeGroupeDeFer/infom114_LaboMDL.git"
+    },
+    "author": "F. Indot, S. Corbugy, G. Latour, A. Lefebvre, T. Septon, D. Thi Huou",
+    "license": "GPL-3.0",
+    "bugs": {
+        "url": "https://github.com/LeGroupeDeFer/infom114_LaboMDL/issues"
+    },
+    "homepage": "https://github.com/LeGroupeDeFer/infom114_LaboMDL#readme",
+    "dependencies": {
+        "react": "^16.12.0",
+        "react-dom": "^16.12.0"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.8.4",
+        "@babel/preset-env": "^7.8.4",
+        "@babel/preset-react": "^7.8.3",
+        "babel-loader": "^8.0.6",
+        "webpack": "^4.41.6",
+        "webpack-cli": "^3.3.11"
+    }
+}

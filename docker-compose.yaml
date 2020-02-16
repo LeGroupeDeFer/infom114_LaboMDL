@@ -7,19 +7,23 @@ services:
       - 8000:8000
     volumes:
       - .:/usr/src/app
+      - registry-cache:/usr/local/cargo/registry
+    depends_on:
+      - db
     links:
       - db
-    command: 
-      bash -c "bash ./wait-for-it.sh db:3306 -t 100 -q -- diesel migration run && cargo run"
 
   db:
     image: mariadb:latest
     restart: always
     volumes:
-      - /var/lib/mysql
+      - database:/var/lib/mysql
     environment:
       MYSQL_USER: testuser
       MYSQL_PASSWORD: testpassword
       MYSQL_ROOT_PASSWORD: hypersecretpassword
       MYSQL_DATABASE: test_rocket
 
+volumes:
+  registry-cache:
+  database:
