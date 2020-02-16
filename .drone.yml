@@ -9,7 +9,6 @@ steps:
     - name: cargo-cache
       path: /drone/src/target
   commands:
-  - echo $PWD
   - cargo build --verbose --release --all-targets --all-features
   - cargo test --verbose --release --all-targets --all-features
 - name: pre-release
