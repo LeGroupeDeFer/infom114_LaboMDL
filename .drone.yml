@@ -5,6 +5,9 @@ name: default
 steps:
 - name: backend
   image: rustlang/rust:nightly
+  volumes:
+    - name: cargo-cache
+      path: /drone/src/target
   commands:
   - echo $PWD
   - cargo build --verbose --release --all-targets --all-features
@@ -28,4 +31,5 @@ steps:
 
 volumes:
   - name: cargo-cache
-    host: /tmp/cargo-cache
+    host:
+      path: /tmp/cargo-cache
