@@ -6,5 +6,21 @@ steps:
 - name: backend
   image: rustlang/rust:nightly
   commands:
-  - cargo build --verbose --all
-  - cargo test --verbose --all
+  - cargo build --verbose --release --all-targets --all-features
+  - cargo test --verbose --release --all-targets --all-features
+- name: pre-release
+  image: plugins/github-release
+  settings:
+    api_key:
+      from_secret: github_token
+    checksum:
+      - sha512
+    files:
+      - target/release/hello-rocket
+    prerelease: true
+    note: CHANGELOG.md
+    title: RELEASE.md
+  when:
+    status:
+      - success
+    event: tag
