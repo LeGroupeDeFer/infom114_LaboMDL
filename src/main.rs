@@ -62,8 +62,6 @@ fn get_cookies(cookies: Cookies) -> String {
 
 #[get("/")]
 fn index(conn: MyDbConn) -> String {
-    // use schema::users::dsl::*;
-
     let results = schema::users::dsl::users
         // .filter(true)
         .limit(5)
