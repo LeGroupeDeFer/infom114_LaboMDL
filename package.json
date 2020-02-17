@@ -4,7 +4,7 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "test": "test",
+        "test": "jest --passWithNoTests",
         "build": "webpack --mode production",
         "watch": "webpack --watch --mode development"
     },
@@ -32,7 +32,12 @@
         "@babel/preset-env": "^7.8.4",
         "@babel/preset-react": "^7.8.3",
         "babel-loader": "^8.0.6",
+        "jest": "^25.1.0",
         "webpack": "^4.41.6",
         "webpack-cli": "^3.3.11"
+    },
+    "jest": {
+        "verbose": true,
+        "collectCoverage": true
     }
 }
