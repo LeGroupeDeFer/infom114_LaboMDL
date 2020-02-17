@@ -25,6 +25,7 @@ steps:
   - npm i
   - npm run-script build
   - npm run-script test
+  - apk add --no-cache --update git
   - ./node_modules/.bin/codecov -t $CODECOV_TOKEN -F frontend
 - name: pre-release
   image: plugins/github-release
