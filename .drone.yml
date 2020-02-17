@@ -16,7 +16,8 @@ steps:
   commands:
   - cargo build --verbose --release --all-targets --all-features
   - cargo test --verbose --release --all-targets --all-features
-  - cargo install cargo-tarpaulin && cargo tarpaulin --out Xml
+  - cargo install --root /usr/local/cargo/registry cargo-tarpaulin
+  - PATH=/usr/local/cargo/registry/bin cargo-tarpaulin cargo-tarpaulin --out Xml
   - bash <(curl -s https://codecov.io/bash) -f /target/tarpaulin/coverage.json -f ./cobertura.xml -F backend
 - name: frontend
   image: node:alpine3.10
