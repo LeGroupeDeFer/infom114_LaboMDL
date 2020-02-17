@@ -1,6 +1,7 @@
 # infom114_LaboMDL
 
 [![Build Status](https://drone.findot.me/api/badges/LeGroupeDeFer/infom114_LaboMDL/status.svg)](https://drone.findot.me/LeGroupeDeFer/infom114_LaboMDL)
+![Codecov coverage](https://img.shields.io/codecov/c/github/LeGroupeDeFer/infom114_LaboMDL)
 [![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/LeGroupeDeFer/infom114_LaboMDL/blob/master/LICENSE)
 ![GitHub tag](https://img.shields.io/github/v/tag/LeGroupeDeFer/infom114_LaboMDL)
 
