@@ -18,8 +18,11 @@ steps:
   environment:
     CODECOV_TOKEN:
       from_secret: codecov_token
+  volumes:
+    - name: cargo-compilation-cache
+      path: /drone/src/target
   commands:
-    - kcov
+    - kcov target/cov target/release/hello_rocket-*
     - bash <(curl -s https://codecov.io/bash) -F backend
 - name: frontend
   image: node:alpine3.10
