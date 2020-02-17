@@ -26,7 +26,7 @@ steps:
   - npm run-script build
   - npm run-script test
   - apk add --update --no-cache bash curl
-  - bash <(curl -s https://codecov.io/bash) -s coverage -F frontend
+  - wget https://codecov.io/bash -O codecov.sh && chmod +x codecov.sh && bash codecov.sh -s coverage -F frontend
 - name: pre-release
   image: plugins/github-release
   settings:
