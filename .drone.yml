@@ -5,6 +5,9 @@ name: default
 steps:
 - name: backend
   image: rustlang/rust:nightly
+  environment:
+    CODECOV_TOKEN:
+      from_secret: codecov_token
   volumes:
     - name: cargo-compilation-cache
       path: /drone/src/target
@@ -13,6 +16,17 @@ steps:
   commands:
   - cargo build --verbose --release --all-targets --all-features
   - cargo test --verbose --release --all-targets --all-features
+  - cargo install cargo-tarpaulin && cargo tarpaulin --out Xml
+  - bash <(curl -s https://codecov.io/bash) -f /target/tarpaulin/coverage.json -f ./cobertura.xml -F backend
+- name: frontend
+  image: node:alpine3.10
+  environment:
+    CODECOV_TOKEN:
+      from_secret: codecov_token
+  commands:
+  - npm run-script build
+  - npm run-script test
+  - bash <(curl -s https://codecov.io/bash) -s coverage -F frontend
 - name: pre-release
   image: plugins/github-release
   settings:
