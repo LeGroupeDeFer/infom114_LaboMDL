@@ -15,6 +15,9 @@ steps:
   - cargo test --verbose --release --all-targets --all-features
 - name: frontend
   image: node:alpine3.10
+  volumes:
+    - name: node-cache
+      path: /drone/src/node_modules
   environment:
     CODECOV_TOKEN:
       from_secret: codecov_token
@@ -22,7 +25,7 @@ steps:
   - npm i
   - npm run-script build
   - npm run-script test
-  - curl https://codecov.io/bash -o codecov.sh && chmod +x codecov.sh && ./codecov.sh -s coverage -F frontend
+  - wget https://codecov.io/bash -O codecov.sh && chmod +x codecov.sh && ./codecov.sh -s coverage -F frontend
 - name: pre-release
   image: plugins/github-release
   settings:
@@ -47,3 +50,6 @@ volumes:
   - name: cargo-compilation-cache
     host:
       path: /tmp/cargo/compilation-cache
+  - name: node-cache
+    host:
+      path: /tmp/node-cache
