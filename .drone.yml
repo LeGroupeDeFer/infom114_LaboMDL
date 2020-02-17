@@ -22,7 +22,7 @@ steps:
   - npm i
   - npm run-script build
   - npm run-script test
-  - bash <(curl -s https://codecov.io/bash) -s coverage -F frontend
+  - curl https://codecov.io/bash -o codecov.sh && chmod +x codecov.sh && ./codecov.sh -s coverage -F frontend
 - name: pre-release
   image: plugins/github-release
   settings:
