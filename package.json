@@ -37,6 +37,7 @@
         "bootstrap": "^4.4.1",
         "codecov": "^3.6.5",
         "css-loader": "^3.4.2",
+        "identity-obj-proxy": "^3.0.0",
         "jest": "^25.1.0",
         "sass": "^1.25.0",
         "sass-loader": "^8.0.2",
@@ -46,6 +47,10 @@
     },
     "jest": {
         "verbose": true,
-        "collectCoverage": true
+        "collectCoverage": true,
+        "moduleNameMapper": {
+            "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/front/__mocks__/fileMock.js",
+            "\\.(css|less|sass|scss)$": "identity-obj-proxy"
+        }
     }
 }
