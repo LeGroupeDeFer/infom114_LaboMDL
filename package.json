@@ -25,6 +25,7 @@
     "homepage": "https://github.com/LeGroupeDeFer/infom114_LaboMDL#readme",
     "dependencies": {
         "react": "^16.12.0",
+        "react-bootstrap": "^1.0.0-beta.16",
         "react-dom": "^16.12.0"
     },
     "devDependencies": {
@@ -32,8 +33,14 @@
         "@babel/preset-env": "^7.8.4",
         "@babel/preset-react": "^7.8.3",
         "babel-loader": "^8.0.6",
+        "babel-plugin-root-import": "^6.4.1",
+        "bootstrap": "^4.4.1",
         "codecov": "^3.6.5",
+        "css-loader": "^3.4.2",
         "jest": "^25.1.0",
+        "sass": "^1.25.0",
+        "sass-loader": "^8.0.2",
+        "style-loader": "^1.1.3",
         "webpack": "^4.41.6",
         "webpack-cli": "^3.3.11"
     },
