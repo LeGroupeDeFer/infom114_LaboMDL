@@ -13,20 +13,26 @@ steps:
   commands:
   - cargo build --verbose --release --all-targets --all-features
   - cargo test --verbose --release --all-targets --all-features
+  - cargo install --root /usr/local/cargo/registry cargo-tarpaulin
+  - PATH=/usr/local/cargo/registry/bin:$PATH cargo-tarpaulin tarpaulin --out Xml
 - name: frontend
   image: node:alpine3.10
   volumes:
     - name: node-cache
       path: /drone/src/node_modules
-  environment:
-    CODECOV_TOKEN:
-      from_secret: codecov_token
   commands:
   - npm i
   - npm run-script build
   - npm run-script test
-  - apk add --no-cache --update git
-  - ./node_modules/.bin/codecov -t $CODECOV_TOKEN -F frontend
+- name: coverage
+  image: alpine:latest
+  environment:
+    CODECOV_TOKEN:
+      from_secret: codecov_token
+  commands:
+  - apk add --no-cache --update git bash curl
+  - wget https://codecov.io/bash -O codecov.sh && chmod +x codecov.sh
+  - bash codecov.sh
 - name: pre-release
   image: plugins/github-release
   settings:
