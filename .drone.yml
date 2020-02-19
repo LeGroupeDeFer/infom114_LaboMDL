@@ -11,7 +11,7 @@ steps:
     - name: cargo-registry-cache
       path: /usr/local/cargo/registry
   commands:
-  - apk add --update --no-cache libssl-dev pkg-config cmake zlib1g-dev
+  - apt update && apt install -y libssl-dev pkg-config cmake zlib1g-dev
   - cargo build --verbose --release --all-targets --all-features
   - cargo test --verbose --release --all-targets --all-features
   - cargo install --root /usr/local/cargo/registry cargo-tarpaulin
