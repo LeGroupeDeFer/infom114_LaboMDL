@@ -13,7 +13,7 @@ use rocket_contrib::templates::Template;
 
 use diesel::prelude::*;
 
-pub fn mount() -> Vec<rocket::Route> {
+pub fn collect() -> Vec<rocket::Route> {
     routes!(login, post_login, logout)
 }
 
@@ -63,4 +63,21 @@ fn post_login(
 fn logout(mut cookies: Cookies) -> Flash<Redirect> {
     Auth::logout(&mut cookies);
     return Flash::success(Redirect::to("/login"), "Successfully logout");
+}
+
+#[cfg(test)]
+mod test {
+
+    #[test]
+    fn test_collect() {
+        // its ugly af to compare strings output
+        // quicly implemented like this to test code cov
+        assert_eq!(
+            format!(
+                "{:?}",
+                routes!(super::login, super::post_login, super::logout)
+            ),
+            format!("{:?}", super::collect())
+        );
+    }
 }

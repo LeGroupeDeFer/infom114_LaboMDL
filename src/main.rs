@@ -108,7 +108,7 @@ fn main() {
             "/",
             routes![files, index, optional, hello, hidden, get_cookies],
         )
-        .mount("/", authentication::routes::mount())
+        .mount("/", authentication::routes::collect())
         .attach(Template::fairing())
         .attach(MyDbConn::fairing())
         .launch();
