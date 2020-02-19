@@ -5,6 +5,7 @@ name: default
 steps:
 - name: backend
   image: rustlang/rust:nightly
+  privileged: true
   volumes:
     - name: cargo-compilation-cache
       path: /drone/src/target
