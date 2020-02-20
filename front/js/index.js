@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import '~/front/scss/style.scss';
+import '~/front/scss/main.scss';
 import App from './App';
 
 

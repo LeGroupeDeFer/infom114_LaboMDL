@@ -1,0 +1,5 @@
+@forward 'bootstrap';
+
+.list-group-flush .list-group-item:last-of-type {
+    border-bottom: 0; /* Should on by default ? */
+}

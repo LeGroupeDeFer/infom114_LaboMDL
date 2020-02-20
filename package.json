@@ -24,9 +24,17 @@
     },
     "homepage": "https://github.com/LeGroupeDeFer/infom114_LaboMDL#readme",
     "dependencies": {
+        "@fortawesome/fontawesome-svg-core": "^1.2.27",
+        "@fortawesome/free-solid-svg-icons": "^5.12.1",
+        "@fortawesome/react-fontawesome": "^0.1.8",
+        "bluebird": "^3.7.2",
+        "clsx": "^1.1.0",
+        "prop-types": "^15.7.2",
         "react": "^16.12.0",
         "react-bootstrap": "^1.0.0-beta.16",
-        "react-dom": "^16.12.0"
+        "react-dom": "^16.12.0",
+        "react-promise-suspense": "^0.3.2",
+        "react-router-dom": "^5.1.2"
     },
     "devDependencies": {
         "@babel/core": "^7.8.4",

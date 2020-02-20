@@ -1,0 +1,45 @@
+/* Circles always respect a 1:1 aspect ratio */
+
+.ratio {
+    position: relative;
+
+    &:before {
+        content: "";
+        float: left;
+    }
+
+    .shape-content {
+        float: left;
+        overflow: hidden;
+    }
+}
+
+@for $i from 1 through 16 {
+    @for $j from 1 through 16 {
+        .ratio-#{$i}-#{$j}:before {
+            padding-top: unquote("#{$i / $j * 100}%");
+        }
+    }
+}
+
+.shape-circle {
+    @extend .ratio;
+
+    @extend .ratio-1-1;
+
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.shape-square {
+    @extend .ratio;
+
+    @extend .ratio-1-1;
+}
+
+.abs-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}

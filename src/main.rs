@@ -61,14 +61,9 @@ fn get_cookies(cookies: Cookies) -> String {
 }
 
 #[get("/")]
-fn index(conn: MyDbConn) -> String {
-    let results = schema::users::dsl::users
-        // .filter(true)
-        .limit(5)
-        .load::<User>(&*conn)
-        .expect("error loading post");
-
-    format!("{:?}", results)
+fn index(conn: MyDbConn) -> NamedFile {
+    let path = Path::new("static/").join("index.html");
+    NamedFile::open(path).expect("Index could not be found!")
 }
 
 #[get("/hidden")]

@@ -20,12 +20,13 @@ module.exports = {
       }
     ]
   },
+  devtool: 'eval-source-map',
   resolve: {
     extensions: ['.js', '.jsx', '.css', '.sass'],
   },
   output: {
     path: __dirname + '/static/js',
-    publicPath: '/',
+    publicPath: '/js/',
     filename: 'bundle.js',
   },
   devServer: {
