@@ -1,1 +1,8 @@
 @forward 'sidebar';
+
+@forward 'content';
+
+#root {
+    max-height: 100vh;
+    max-width: 100vw;
+}

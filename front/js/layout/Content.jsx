@@ -1,46 +1,44 @@
-import React, { lazy, Suspense } from 'react';
-import Spinner from 'react-bootstrap/Spinner';
+import React, { lazy, forwardRef } from 'react';
 import { Route, Switch } from 'react-router-dom';
+import Waiting from '../components/Waiting';
+import { fakeLatency } from '../utils';
 import clsx from 'clsx';
 
-const CenteredSpinner = _ => (
-  <Spinner
-    animation='grow'
-    role='status'
-    className='abs-center'
-  >
-    <span className="sr-only">Loading...</span>
-  </Spinner>
-);
-
-const Waiting = Component => props => (
-  <Suspense fallback={<CenteredSpinner />}>
-    <Component {...props} />
-  </Suspense>
-);
 
 const Stream = lazy(() => new Promise(resolve =>
-  setTimeout(() => resolve(import('../pages/Stream')), 3000)
+  setTimeout(() => resolve(import('../pages/Stream')), fakeLatency)
 ));
 const Profile = lazy(() => new Promise(resolve =>
-  setTimeout(() => resolve(import('../pages/Profile')), 3000)
+  setTimeout(() => resolve(import('../pages/Profile')), fakeLatency)
 ));
 const Settings = lazy(() => new Promise(resolve =>
-  setTimeout(() => resolve(import('../pages/Settings')), 3000)
+  setTimeout(() => resolve(import('../pages/Settings')), fakeLatency)
 ));
 const About = lazy(() => new Promise(resolve =>
-  setTimeout(() => resolve(import('../pages/About')), 3000)
+  setTimeout(() => resolve(import('../pages/About')), fakeLatency)
 ));
 
-export default function Content(props) {
+const Notifications = lazy(() => new Promise(resolve =>
+  setTimeout(() => resolve(import('../pages/Notifications')), fakeLatency)
+));
+
+const Content = forwardRef((props, ref) => {
+  const { className, ...otherProps } = props;
   return (
-    <div className={clsx('content', props.className)}>
+    <div
+      ref={ref}
+      className={clsx('content', className)}
+      {...otherProps}
+    >
       <Switch>
         <Route exact path='/' component={Waiting(Stream)} />
         <Route path='/profile' component={Waiting(Profile)} />
+        <Route path='/notifications' component={Waiting(Notifications)} />
         <Route path='/settings' component={Waiting(Settings)} />
         <Route path='/about' component={Waiting(About)} />
       </Switch>
     </div>
   );
-}
+});
+
+export default Content;

@@ -53,7 +53,7 @@ $sidebar-dim: 60px;
 }
 
 .content {
-    position: fixed;
+    position: absolute;
     top: 0;
     margin-left: $sidebar-dim;
     width: 100%;
@@ -62,7 +62,7 @@ $sidebar-dim: 60px;
 
 /* ----------------------------- Media queries ----------------------------- */
 
-@include media-breakpoint-down("md") {
+@include media-breakpoint-down("sm") {
     .sidebar {
         top: 100%;
         height: $sidebar-dim;
