@@ -40,6 +40,7 @@
         "@babel/core": "^7.8.4",
         "@babel/preset-env": "^7.8.4",
         "@babel/preset-react": "^7.8.3",
+        "@types/react": "^16.9.21",
         "babel-loader": "^8.0.6",
         "babel-plugin-root-import": "^6.4.1",
         "bootstrap": "^4.4.1",
@@ -56,6 +57,11 @@
     "jest": {
         "verbose": true,
         "collectCoverage": true,
+        "collectCoverageFrom": [
+            "front/**/*.{js,jsx}",
+            "!**/node_modules/**",
+            "!**/vendor/**"
+        ],
         "moduleNameMapper": {
             "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/front/__mocks__/fileMock.js",
             "\\.(css|less|sass|scss)$": "identity-obj-proxy"

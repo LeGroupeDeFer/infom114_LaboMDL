@@ -1,7 +1,9 @@
 import React, { Suspense } from 'react';
 import Spinner from 'react-bootstrap/Spinner';
 
-const CenteredSpinner = _ => (
+
+// DefaultSpinner :: None => Component
+const DefaultSpinner = _ => (
   <Spinner
     animation='grow'
     role='status'
@@ -11,12 +13,14 @@ const CenteredSpinner = _ => (
   </Spinner>
 );
 
-export default function Waiting(Component) {
-  return props => (
-    <Suspense fallback={<CenteredSpinner />}>
-      <Component {...props} />
-    </Suspense>
-  )
-}
+// Waiting :: (Component, Component?) => Object => Component
+const Waiting = (Component, Spinner = DefaultSpinner) => props => (
+  <Suspense fallback={<Spinner />}>
+    <Component {...props} />
+  </Suspense>
+);
 
-Waiting.Spinner = CenteredSpinner;
+Waiting.DefaultSpinner = DefaultSpinner;
+
+
+export default Waiting;

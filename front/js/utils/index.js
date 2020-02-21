@@ -1,4 +1,7 @@
 
+/* ------------------------------ App consts ------------------------------- */
+
+// bootstrapVariants :: Array<String>
 export const bootstrapVariants = Object.freeze([
   'primary', 'outline-primary',
   'secondary', 'outline-secondary',
@@ -10,37 +13,53 @@ export const bootstrapVariants = Object.freeze([
   'dark', 'outline-dark',
 ]);
 
+// colorVariants :: Map<String, String>
 export const colorVariants = Object.freeze({
   'primary': '#55AB26'
 });
 
+// breakpoints :: Map<String, Integer>
 export const breakpoints = Object.freeze({
   'sm': 576, 'md': 768, 'lg': 992, 'xl': 1200
 });
 
-export const fakeLatency = 1500;
-
-export const loremIpsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque volutpat vulputate nisl quis pulvinar. Praesent euismod magna metus, quis ultricies nunc sagittis in. Maecenas eleifend pulvinar nunc eu pulvinar. Fusce scelerisque, enim et bibendum aliquet, magna eros sodales eros, eu dictum neque mi a sapien. Aenean imperdiet cursus nisi in varius. Nam interdum imperdiet ante, sit amet sodales purus egestas sed. Proin sed felis tempus, viverra quam eu, convallis mi. In rhoncus velit lorem, interdum venenatis enim ornare at. Morbi mattis dignissim faucibus. Pellentesque pharetra ex non ante molestie rutrum. Pellentesque ullamcorper blandit turpis, eu molestie magna efficitur eget. Donec aliquet vulputate malesuada. Fusce porta nulla purus. Mauris purus ligula, elementum eu tincidunt in, consequat pretium ante. Duis eu leo eu arcu pharetra vestibulum.";
 
 /* ------------------------------- I/O utils ------------------------------- */
 
+// println :: (...Any) => None
+/* istanbul ignore next */
 export const println = console.log.bind(console);
 
+// trace<T> :: T => T
 export const trace = x => println(x) || x;
+
 
 /* ------------------------------- DOM utils ------------------------------- */
 
+// scrollbarWidth :: None => Integer
+/* istanbul ignore next */
 export const scrollbarWidth = () =>
   window.innerWidth - document.documentElement.clientWidth;
 
+
 /* ----------------------------- String utils ------------------------------ */
 
-export const capitalize = str =>
-  `${str.charAt(0).toUpperCase()}${str.slice(1).toLowerCase()}`;
+// capitalize :: String => String
+export const capitalize = str => (
+  !str.length ? str : (
+    str[0] == ' '
+      ? ' ' + capitalize(str.slice(1))
+      : `${str.charAt(0).toUpperCase()}${str.slice(1).toLowerCase()}`
+  ));
+
 
 /* ---------------------------- Function utils ----------------------------- */
 
-export function debounce(fn, ms) {
+// debounce<...Ts> :: (Callable<...Ts>, Integer?) => Callable<...Ts>
+export function debounce(fn, ms = 250) {
+  if (ms === 0)
+    return fn;
+
   let timer;
   return _ => {
     clearTimeout(timer);
@@ -50,7 +69,3 @@ export function debounce(fn, ms) {
     }, ms);
   };
 }
-
-// Temporary code to justify Jest tests
-
-export const sum = (a, b) => a + b;

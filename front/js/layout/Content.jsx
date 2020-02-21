@@ -1,35 +1,45 @@
-import React, { lazy, forwardRef } from 'react';
+import React, { forwardRef, useState, useEffect } from 'react';
 import { Route, Switch } from 'react-router-dom';
 import Waiting from '../components/Waiting';
-import { fakeLatency } from '../utils';
-import clsx from 'clsx';
+import useWindowResize from '../hooks/useWindowResize';
+import { breakpoints, scrollbarWidth } from '../utils';
+import { delay } from '../utils/dev';
+
+/**
+ * The following "components" are delayed while the layout construction is in
+ * progress!
+ * 
+ * @see delay
+ */
+const Stream = delay(() => import('unanimity/pages/Stream'));
+const Profile = delay(() => import('unanimity/pages/Profile'));
+const Settings = delay(() => import('unanimity/pages/Settings'));
+const About = delay(() => import('unanimity/pages/About'));
+const Notifications = delay(() => import('unanimity/pages/Notifications'));
 
 
-const Stream = lazy(() => new Promise(resolve =>
-  setTimeout(() => resolve(import('../pages/Stream')), fakeLatency)
-));
-const Profile = lazy(() => new Promise(resolve =>
-  setTimeout(() => resolve(import('../pages/Profile')), fakeLatency)
-));
-const Settings = lazy(() => new Promise(resolve =>
-  setTimeout(() => resolve(import('../pages/Settings')), fakeLatency)
-));
-const About = lazy(() => new Promise(resolve =>
-  setTimeout(() => resolve(import('../pages/About')), fakeLatency)
-));
+// Content :: Object => Component
+const Content = forwardRef(({ sidebar }, ref) => {
 
-const Notifications = lazy(() => new Promise(resolve =>
-  setTimeout(() => resolve(import('../pages/Notifications')), fakeLatency)
-));
+  /* Resizing logic */
+  const [dim, setDim] = useState({ width: '100%', height: '100%' });
+  const { width, height } = useWindowResize();
 
-const Content = forwardRef((props, ref) => {
-  const { className, ...otherProps } = props;
+  useEffect(() => {
+    const sidebarWidth = sidebar.current ? sidebar.current.offsetWidth : 0;
+    const sidebarHeight = sidebar.current ? sidebar.current.offsetHeight : 0;
+
+    const contentWidth = width < breakpoints['md']
+      ? '100%' : `${width - scrollbarWidth() - sidebarWidth}px`;
+    const contentHeight = width < breakpoints['md']
+      ? `${(height - sidebarHeight)}px` : '100%';
+
+    setDim({ width: contentWidth, height: contentHeight });
+  }, [sidebar, width, height]);
+  /* /Resizing logic */
+
   return (
-    <div
-      ref={ref}
-      className={clsx('content', className)}
-      {...otherProps}
-    >
+    <div ref={ref} className='content p-3' style={dim}>
       <Switch>
         <Route exact path='/' component={Waiting(Stream)} />
         <Route path='/profile' component={Waiting(Profile)} />
@@ -40,5 +50,10 @@ const Content = forwardRef((props, ref) => {
     </div>
   );
 });
+
+Content.defaultProps = {
+  sidebar: null
+};
+
 
 export default Content;

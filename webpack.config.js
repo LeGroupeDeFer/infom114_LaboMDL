@@ -1,3 +1,5 @@
+path = require('path');
+
 module.exports = {
   entry: './front/js/index.js',
   module: {
@@ -23,6 +25,9 @@ module.exports = {
   devtool: 'eval-source-map',
   resolve: {
     extensions: ['.js', '.jsx', '.css', '.sass'],
+    alias: {
+      'unanimity': path.resolve(__dirname, 'front/js/')
+    }
   },
   output: {
     path: __dirname + '/static/js',
