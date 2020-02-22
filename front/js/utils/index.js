@@ -1,3 +1,4 @@
+import { lazy } from 'react';
 
 /* ------------------------------ App consts ------------------------------- */
 
@@ -30,8 +31,12 @@ export const breakpoints = Object.freeze({
 /* istanbul ignore next */
 export const println = console.log.bind(console);
 
+// printerr :: (...Any) => None
+/* istanbul ignore next */
+export const printerr = console.error.bind(console);
+
 // trace<T> :: T => T
-export const trace = x => println(x) || x;
+export const trace = x => printerr(x) || x;
 
 
 /* ------------------------------- DOM utils ------------------------------- */
@@ -52,6 +57,9 @@ export const capitalize = str => (
       : `${str.charAt(0).toUpperCase()}${str.slice(1).toLowerCase()}`
   ));
 
+// preview :: (String, Integer?) => String
+export const preview = (text, length = 200) =>
+  text.length > length ? `${text.slice(0, length)}...` : text;
 
 /* ---------------------------- Function utils ----------------------------- */
 
@@ -61,11 +69,21 @@ export function debounce(fn, ms = 250) {
     return fn;
 
   let timer;
-  return _ => {
+  return () => {
     clearTimeout(timer);
-    timer = setTimeout(_ => {
+    timer = setTimeout(() => {
       timer = null;
       fn.apply(this, arguments)
     }, ms);
   };
 }
+
+// delay<...Ts> :: (Callable<...Ts>, Integer?) => Callable<...Ts>
+export function delay(fn, ms = 250) {
+  return ms === 0 ? fn : (() => new Promise((resolve, _) => setTimeout(
+    () => resolve(fn.apply(this, arguments)),
+    ms
+  )));
+}
+
+delay.lazy = (fn, ms = 250) => lazy(() => delay(fn, ms));

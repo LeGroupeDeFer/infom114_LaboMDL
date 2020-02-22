@@ -2,14 +2,13 @@ import React from 'react';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import { loremIpsum } from '../utils/dev';
+import { preview } from '../utils';
 
-const Post = ({ title, text, ...otherProps }) => (
+const Post = ({ title, text, previewLength, ...otherProps }) => (
   <Card {...otherProps}>
     <Card.Body >
       <Card.Title>{title}</Card.Title>
-      <Card.Text>{
-        text.length > 200 ? `${text.slice(0, 200)}...` : text
-      }</Card.Text>
+      <Card.Text>{preview(text, previewLength)}</Card.Text>
       <Button variant='primary'>Read</Button>
     </Card.Body>
   </Card>
@@ -17,7 +16,8 @@ const Post = ({ title, text, ...otherProps }) => (
 
 Post.defaultProps = {
   title: 'A post',
-  text: loremIpsum
+  text: loremIpsum,
+  previewLength: 200
 };
 
 export default Post;

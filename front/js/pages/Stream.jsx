@@ -4,7 +4,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Post from '../components/Post';
 import usePromise from 'react-promise-suspense';
-import { loremIpsum, fakeLatency } from '../utils';
+import { loremIpsum, fakeLatency } from '../utils/dev';
 
 
 /* Delayed fetching of user posts */
