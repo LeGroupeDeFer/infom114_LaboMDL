@@ -1,11 +1,11 @@
 {
     "openapi": "3.0.1",
     "info": {
-        "title": "API Title",
-        "version": "0.0.0"
+        "title": "UNAnimity",
+        "version": "0.0.2"
     },
     "servers": [{
-        "url": "https://api.server.test/"
+        "url": "https://unanimity.findot.me/"
     }],
     "tags": [{
         "name": "auth",
@@ -24,7 +24,9 @@
                         "content": {}
                     }
                 }
-            },
+            }
+        },
+        "/api/v1/register": {
             "post": {
                 "tags": [
                     "auth"
@@ -32,61 +34,58 @@
                 "description": "Send user information and login credentials for a new account on the application",
                 "requestBody": {
                     "content": {
-                        "application/x-www-form-urlencoded": {
+                        "json": {
                             "schema": {
-                                "required": [
-                                    "email",
-                                    "firstname",
-                                    "lastname",
-                                    "password",
-                                    "username"
-                                ],
+                                "$ref": "#/components/schemas/UserInformation"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {}
+                    },
+                    "400": {
+                        "description": "Bad Request : the given format is incorrect",
+                        "content": {
+                            "json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity : missing parameter",
+                        "content": {
+                            "json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/register/check_email": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "description": "Check if email given is already used on the platform",
+                "requestBody": {
+                    "content": {
+                        "json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["email"],
                                 "properties": {
-                                    "username": {
-                                        "type": "string",
-                                        "description": "The nickname of the user"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "description": "The password that the user will use to log on the platform"
-                                    },
-                                    "firstname": {
-                                        "type": "string",
-                                        "description": "The first name of the user"
-                                    },
-                                    "lastname": {
-                                        "type": "string",
-                                        "description": "The last name of the user"
-                                    },
                                     "email": {
                                         "type": "string",
-                                        "description": "The email address for the user to be contacted"
-                                    },
-                                    "street": {
-                                        "type": "string",
-                                        "description": "The street name of the address of the user"
-                                    },
-                                    "number": {
-                                        "type": "integer",
-                                        "description": "The house number of the address of the user",
-                                        "format": "int32"
-                                    },
-                                    "city": {
-                                        "type": "string",
-                                        "description": "The city where the user lives in"
-                                    },
-                                    "zipcode": {
-                                        "type": "integer",
-                                        "description": "The zip code of the address of the user",
-                                        "format": "int32"
-                                    },
-                                    "country": {
-                                        "type": "string",
-                                        "description": "The country where the user lives in"
-                                    },
-                                    "phone": {
-                                        "type": "string",
-                                        "description": "The phone number of the user"
+                                        "description": "The email we want to check the use of"
                                     }
                                 }
                             }
@@ -98,6 +97,26 @@
                     "200": {
                         "description": "OK",
                         "content": {}
+                    },
+                    "400": {
+                        "description": "Bad Request : the given format is incorrect",
+                        "content": {
+                            "json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity : missing parameter",
+                        "content": {
+                            "json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -282,6 +301,73 @@
                 "type": "apiKey",
                 "in": "cookie",
                 "name": "user_id"
+            }
+        },
+        "schemas": {
+            "Error": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "string"
+                    }
+                }
+            },
+            "UserInformation": {
+                "type": "object",
+                "required": [
+                    "email",
+                    "firstname",
+                    "lastname",
+                    "password"
+                ],
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "description": "The nickname of the user"
+                    },
+                    "password": {
+                        "type": "string",
+                        "description": "The password that the user will use to log on the platform"
+                    },
+                    "firstname": {
+                        "type": "string",
+                        "description": "The first name of the user"
+                    },
+                    "lastname": {
+                        "type": "string",
+                        "description": "The last name of the user"
+                    },
+                    "email": {
+                        "type": "string",
+                        "description": "The email address for the user to be contacted"
+                    },
+                    "street": {
+                        "type": "string",
+                        "description": "The street name of the address of the user"
+                    },
+                    "number": {
+                        "type": "integer",
+                        "description": "The house number of the address of the user",
+                        "format": "int32"
+                    },
+                    "city": {
+                        "type": "string",
+                        "description": "The city where the user lives in"
+                    },
+                    "zipcode": {
+                        "type": "integer",
+                        "description": "The zip code of the address of the user",
+                        "format": "int32"
+                    },
+                    "country": {
+                        "type": "string",
+                        "description": "The country where the user lives in"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "description": "The phone number of the user"
+                    }
+                }
             }
         }
     }
