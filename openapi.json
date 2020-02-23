@@ -14,9 +14,7 @@
     "paths": {
         "/register": {
             "get": {
-                "tags": [
-                    "auth"
-                ],
+                "tags": ["auth"],
                 "description": "Fetch the form to create a new user on the platform",
                 "responses": {
                     "200": {
@@ -28,9 +26,7 @@
         },
         "/api/v1/register": {
             "post": {
-                "tags": [
-                    "auth"
-                ],
+                "tags": ["auth"],
                 "description": "Send user information and login credentials for a new account on the application",
                 "requestBody": {
                     "content": {
@@ -45,14 +41,24 @@
                 "responses": {
                     "200": {
                         "description": "OK",
-                        "content": {}
+                        "content": {
+                            "json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Info"
+                                }
+                            }
+                        }
                     },
                     "400": {
                         "description": "Bad Request : the given format is incorrect",
                         "content": {
                             "json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Error"
+                                    "$ref": "#/components/schemas/Info"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "message": "json format is required"
                                 }
                             }
                         }
@@ -62,7 +68,11 @@
                         "content": {
                             "json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Error"
+                                    "$ref": "#/components/schemas/Info"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "message": "property 'email' is missing"
                                 }
                             }
                         }
@@ -72,9 +82,7 @@
         },
         "/api/v1/register/check_email": {
             "post": {
-                "tags": [
-                    "auth"
-                ],
+                "tags": ["auth"],
                 "description": "Check if email given is already used on the platform",
                 "requestBody": {
                     "content": {
@@ -96,14 +104,24 @@
                 "responses": {
                     "200": {
                         "description": "OK",
-                        "content": {}
+                        "content": {
+                            "json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Info"
+                                }
+                            }
+                        }
                     },
                     "400": {
                         "description": "Bad Request : the given format is incorrect",
                         "content": {
                             "json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Error"
+                                    "$ref": "#/components/schemas/Info"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "message": "json format is required"
                                 }
                             }
                         }
@@ -113,7 +131,11 @@
                         "content": {
                             "json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Error"
+                                    "$ref": "#/components/schemas/Info"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "message": "property 'email' is missing"
                                 }
                             }
                         }
@@ -123,9 +145,7 @@
         },
         "/login": {
             "get": {
-                "tags": [
-                    "auth"
-                ],
+                "tags": ["auth"],
                 "description": "Fetch the login page",
                 "responses": {
                     "200": {
@@ -135,22 +155,17 @@
                 }
             },
             "post": {
-                "tags": [
-                    "auth"
-                ],
+                "tags": ["auth"],
                 "description": "Send login credentials for authentication",
                 "requestBody": {
                     "content": {
                         "application/x-www-form-urlencoded": {
                             "schema": {
-                                "required": [
-                                    "password",
-                                    "username"
-                                ],
+                                "required": ["password", "email"],
                                 "properties": {
-                                    "username": {
+                                    "email": {
                                         "type": "string",
-                                        "description": "The username credential"
+                                        "description": "The email credential"
                                     },
                                     "password": {
                                         "type": "string",
@@ -172,9 +187,7 @@
         },
         "/recovery": {
             "get": {
-                "tags": [
-                    "auth"
-                ],
+                "tags": ["auth"],
                 "description": "Fetch the form to send a mail with a link to reset a user password when it's forgotten",
                 "responses": {
                     "200": {
@@ -184,17 +197,13 @@
                 }
             },
             "post": {
-                "tags": [
-                    "auth"
-                ],
+                "tags": ["auth"],
                 "description": "Send email to get a link to be able to reset the password",
                 "requestBody": {
                     "content": {
                         "application/x-www-form-urlencoded": {
                             "schema": {
-                                "required": [
-                                    "email"
-                                ],
+                                "required": ["email"],
                                 "properties": {
                                     "email": {
                                         "type": "string",
@@ -216,9 +225,7 @@
         },
         "/password_reset/{hash}": {
             "get": {
-                "tags": [
-                    "auth"
-                ],
+                "tags": ["auth"],
                 "description": "Fetch the form to reset a user password",
                 "parameters": [{
                     "name": "hash",
@@ -237,9 +244,7 @@
                 }
             },
             "post": {
-                "tags": [
-                    "auth"
-                ],
+                "tags": ["auth"],
                 "description": "Send the form to reset a user password",
                 "parameters": [{
                     "name": "hash",
@@ -254,9 +259,7 @@
                     "content": {
                         "application/x-www-form-urlencoded": {
                             "schema": {
-                                "required": [
-                                    "password"
-                                ],
+                                "required": ["password"],
                                 "properties": {
                                     "password": {
                                         "type": "string",
@@ -281,9 +284,7 @@
                 "security": [{
                     "UserAuth": []
                 }],
-                "tags": [
-                    "auth"
-                ],
+                "tags": ["auth"],
                 "description": "Logout the connected user",
                 "responses": {
                     "200": {
@@ -294,7 +295,6 @@
             }
         }
     },
-
     "components": {
         "securitySchemes": {
             "UserAuth": {
@@ -304,27 +304,21 @@
             }
         },
         "schemas": {
-            "Error": {
+            "Info": {
                 "type": "object",
                 "properties": {
-                    "error": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "message": {
                         "type": "string"
                     }
                 }
             },
             "UserInformation": {
                 "type": "object",
-                "required": [
-                    "email",
-                    "firstname",
-                    "lastname",
-                    "password"
-                ],
+                "required": ["email", "firstname", "lastname", "password"],
                 "properties": {
-                    "username": {
-                        "type": "string",
-                        "description": "The nickname of the user"
-                    },
                     "password": {
                         "type": "string",
                         "description": "The password that the user will use to log on the platform"
