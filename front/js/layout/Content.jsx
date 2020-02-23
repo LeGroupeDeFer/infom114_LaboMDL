@@ -52,7 +52,7 @@ const Content = forwardRef(({ sidebar }, ref) => {
 });
 
 Content.defaultProps = {
-  sidebar: null
+  sidebar: {}
 };
 
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { shallow, mount } from 'enzyme'
+import { shallow, mount } from 'enzyme';
 
 import Post from '../../js/components/Post';
 import { preview } from '../../js/utils';
@@ -13,7 +13,7 @@ describe('<Post />', () => {
     expect(wrapper).toBeTruthy();
   });
 
-  it('should renders default props', () => {
+  it('should render default props', () => {
     const wrapper = mount(<Post />);
 
     const titleWrapper = wrapper.find('div.card-title');

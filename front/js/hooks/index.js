@@ -1,6 +1,6 @@
 
 import useWindowResize from './useWindowResize';
 
-export {
-  useWindowResize
+export default {
+  useWindowResize,
 };

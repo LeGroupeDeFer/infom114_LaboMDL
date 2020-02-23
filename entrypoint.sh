@@ -4,6 +4,10 @@ set -eux
 
 cd /usr/src/app
 
+# Cargo reloader
+printf "#!/usr/bin/env sh\ncd /usr/src/app\nkill -9 \$(cat .backend.pid)\ncargo run > backend.log 2>&1 &\necho \$! > .backend.pid\n" > /usr/local/bin/reload
+chmod +x /usr/local/bin/reload
+
 # Rust
 cargo install diesel_cli --no-default-features --features mysql
 cargo build
