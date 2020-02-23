@@ -44,6 +44,8 @@ struct UserInfoTemplateContext<'a> {
     parent: &'static str,
 }
 
+/* -------------------------------- Routes --------------------------------- */
+
 #[get("/test?<option>")]
 fn optional(option: Option<u32>) -> &'static str {
     match option {
@@ -61,7 +63,7 @@ fn get_cookies(cookies: Cookies) -> String {
 }
 
 #[get("/")]
-fn index(conn: MyDbConn) -> NamedFile {
+fn index() -> NamedFile {
     let path = Path::new("static/").join("index.html");
     NamedFile::open(path).expect("Index could not be found!")
 }

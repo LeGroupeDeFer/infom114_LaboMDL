@@ -1,4 +1,4 @@
-path = require('path');
+const path = require('path');
 
 module.exports = {
   entry: './front/js/index.js',
@@ -22,7 +22,6 @@ module.exports = {
       }
     ]
   },
-  devtool: 'eval-source-map',
   resolve: {
     extensions: ['.js', '.jsx', '.css', '.sass'],
     alias: {
@@ -33,8 +32,5 @@ module.exports = {
     path: __dirname + '/static/js',
     publicPath: '/js/',
     filename: 'bundle.js',
-  },
-  devServer: {
-    contentBase: './static/js'
   }
 };

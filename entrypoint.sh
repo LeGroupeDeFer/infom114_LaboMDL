@@ -1,11 +1,32 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
-set -ex
+set -eux
 
 cd /usr/src/app
 
+# Rust
 cargo install diesel_cli --no-default-features --features mysql
 cargo build
-./wait-for-it.sh db:3306 -t 100 -q -- diesel migration run
+diesel migration run
+cargo run > backend.log 2>&1 &
+echo $! > .backend.pid
 
-cargo run
+# JS
+npm ci
+npm run watch > frontend.log 2>&1 &
+echo $! > .frontend.pid
+
+cleanup() {
+    kill -9 $(cat .backend.pid)
+    kill -9 $(cat .frontend.pid)
+    rm .backend.pid .frontend.pid
+    exit 0
+}
+
+trap cleanup SIGINT
+trap cleanup SIGQUIT
+trap cleanup SIGTERM
+
+while true; do
+    sleep 10
+done

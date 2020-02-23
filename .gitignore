@@ -1,13 +1,18 @@
-/target
+# Compilation & dependencies
+target/
 **/*.rs.bk
+static/js/
+node_modules/
 
-/static/js/
-
+# Env
 .history
 .vscode
 .drone.status
-node_modules/
 
 # Test files
 cobertura.xml
 coverage/
+
+# Runtime
+*.pid
+*.log
