@@ -7,19 +7,10 @@
 
 ## Quickstart
 
-1. install rust(cargo)
-2. go nighty
-3. setup mariadb on your machine (look at logins in .env & rocket.toml)
-4. Install `diesel-cli`
-5. `diesel migration run`
-6. `cargo build` && `cargo run`
-7. go on localhost:8000
-
-## Dockerization
-
 1. Install docker and docker-compose
-2. docker-compose up [--build]
-3. go on <http://localhost:8000/hello/yourname>
+2. `docker-compose up [--build]`
+3. `npm i && npm run-script build`
+4. go on <http://localhost:8000/hello/yourname>
 
 ## Features
 

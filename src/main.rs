@@ -63,9 +63,8 @@ fn get_cookies(cookies: Cookies) -> String {
 }
 
 #[get("/")]
-fn index() -> NamedFile {
-    let path = Path::new("static/").join("index.html");
-    NamedFile::open(path).expect("Index could not be found!")
+fn index() -> Template {
+    Template::render("layout", &())
 }
 
 #[get("/hidden")]
