@@ -1,8 +1,8 @@
 table! {
     users (id) {
         id -> Unsigned<Integer>,
-        password -> Varchar,
         email -> Varchar,
+        password -> Varchar,
         firstname -> Varchar,
         lastname -> Varchar,
         street -> Nullable<Varchar>,

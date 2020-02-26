@@ -8,7 +8,6 @@ use super::forms::{self, LoginCredentials, RegisterCredentials};
 use super::guards::Auth;
 
 use rocket::http::{Cookies, Status};
-use rocket::request::Form;
 use rocket::response::{Flash, Redirect};
 use rocket_contrib::json::{Json, JsonError};
 
@@ -16,7 +15,14 @@ use diesel::dsl::count;
 use diesel::prelude::*;
 
 pub fn collect() -> Vec<rocket::Route> {
-    routes!(post_register, post_register_v1, check_email, check_email_v1)
+    routes!(
+        post_register,
+        post_register_v1,
+        check_email,
+        check_email_v1,
+        post_login,
+        post_login_v1
+    )
 }
 
 pub fn allowed_paths() -> Vec<&'static str> {
@@ -36,12 +42,7 @@ fn post_register_v1(
                 .execute(&*conn);
             ApiResponse::new(Status::Ok, json!(Info::new(true, None)))
         }
-        Err(error) => match error {
-            JsonError::Io(_) => ApiResponse::bad_request(),
-            JsonError::Parse(_, e) => {
-                ApiResponse::error(Status::UnprocessableEntity, &e.to_string())
-            }
-        },
+        Err(error) => ApiResponse::json_error(error),
     }
 }
 
@@ -62,8 +63,10 @@ fn check_email_v1(
             {
                 Ok(nbr_rows) => {
                     if nbr_rows == 0 {
+                        // if no rows returned, it means that the email is still available for account creation
                         ApiResponse::simple_success(Status::Ok)
                     } else {
+                        // else, it's not possible to use it to create another account
                         ApiResponse::error(
                             Status::Conflict,
                             "This email is already linked to an account.",
@@ -73,38 +76,34 @@ fn check_email_v1(
                 Err(e) => ApiResponse::db_error(e),
             }
         }
-        Err(error) => ApiResponse::manage_json_error(error),
+        Err(error) => ApiResponse::json_error(error),
     }
 }
 
 #[post("/api/v1/login", data = "<credentials>")]
 fn post_login_v1(
-    credentials: Option<Form<LoginCredentials>>,
+    credentials: Result<Json<LoginCredentials>, JsonError>,
     conn: MyDbConn,
     mut cookies: Cookies,
-) -> Flash<Redirect> {
+) -> ApiResponse {
     match credentials {
-        None => Flash::error(Redirect::to("/login"), "Could not retreive credentials"),
-        Some(info) => {
-            let users = schema::users::dsl::users
+        Ok(info) => {
+            match schema::users::dsl::users
                 .filter(schema::users::columns::email.eq(&info.email))
-                .limit(1)
-                .load::<User>(&*conn)
-                .expect("user is not in db");
-
-            if users.len() < 1 {
-                return Flash::error(Redirect::to("/login"), "User not in DB");
-            }
-
-            let user = &users[0];
-            if user.password == info.password {
-                Auth::login(&mut cookies, &user);
-
-                Flash::success(Redirect::to("/hidden"), "Login successfull")
-            } else {
-                Flash::error(Redirect::to("/login"), "Wrong password")
+                .first::<User>(&*conn)
+            {
+                Ok(user) => {
+                    if user.password == *info.password {
+                        Auth::login(&mut cookies, &user);
+                        ApiResponse::success(Status::Ok, "Login successfull")
+                    } else {
+                        ApiResponse::error(Status::Unauthorized, "Wrong email/password association")
+                    }
+                }
+                Err(e) => ApiResponse::db_error(e),
             }
         }
+        Err(e) => ApiResponse::json_error(e),
     }
 }
 
@@ -126,10 +125,10 @@ fn post_register(
 
 #[post("/api/login", data = "<credentials>")]
 fn post_login(
-    credentials: Option<Form<LoginCredentials>>,
+    credentials: Result<Json<LoginCredentials>, JsonError>,
     conn: MyDbConn,
     cookies: Cookies,
-) -> Flash<Redirect> {
+) -> ApiResponse {
     post_login_v1(credentials, conn, cookies)
 }
 

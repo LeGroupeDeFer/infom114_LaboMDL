@@ -49,7 +49,7 @@ impl ApiResponse {
         )
     }
 
-    pub fn manage_json_error(error: JsonError) -> Self {
+    pub fn json_error(error: JsonError) -> Self {
         match error {
             JsonError::Io(_) => Self::bad_request(),
             JsonError::Parse(_, e) => Self::error(Status::UnprocessableEntity, &e.to_string()),
