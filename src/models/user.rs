@@ -6,12 +6,17 @@ use diesel::ExpressionMethods;
 
 #[derive(Queryable, Serialize, Deserialize, Debug)]
 pub struct User {
-    pub id: i32,
-    pub username: String,
+    pub id: u32,
+    pub email: String,
     pub password: String,
-    pub email: Option<String>,
-    pub firstname: Option<String>,
-    pub lastname: Option<String>,
+    pub firstname: String,
+    pub lastname: String,
+    pub street: Option<String>,
+    pub number: Option<u32>,
+    pub city: Option<String>,
+    pub zipcode: Option<u32>,
+    pub country: Option<String>,
+    pub phone: Option<String>,
 }
 
 impl User {
@@ -19,7 +24,7 @@ impl User {
         self.id.to_string()
     }
 
-    pub fn from(id: &i32) -> Option<Self> {
+    pub fn from(id: &u32) -> Option<Self> {
         let conn = database::connection();
 
         let mut users = schema::users::dsl::users
@@ -29,16 +34,5 @@ impl User {
             .expect("user is not in db");
 
         users.pop()
-    }
-
-    pub fn test() -> Self {
-        User {
-            id: 32,
-            username: String::from("Cowboy"),
-            password: String::from("passwrd"),
-            email: Some(String::from("coucouloucoucoupaloma@yopmail.com")),
-            firstname: Some(String::from("john")),
-            lastname: Some(String::from("Doe")),
-        }
     }
 }

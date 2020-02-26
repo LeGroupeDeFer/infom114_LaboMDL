@@ -16,6 +16,7 @@ extern crate dotenv;
 
 mod authentication;
 mod database;
+mod http;
 mod models;
 mod schema;
 
@@ -41,7 +42,9 @@ fn index() -> Template {
 /// Allow some routes to fetch entrypoint when refreshed
 #[get("/<route>", rank = 10)]
 fn dynamic_routing(route: String) -> Option<Template> {
-    let allowed_routes = vec!["profile", "notifications", "settings", "about"];
+    let mut allowed_routes = vec!["profile", "notifications", "settings", "about"];
+
+    allowed_routes.append(&mut authentication::routes::allowed_paths());
 
     if allowed_routes.contains(&&route[..]) {
         Some(Template::render("layout", &()))
