@@ -1,5 +1,5 @@
 [package]
-name = "Unanimity"
+name = "unanimity"
 version = "0.0.2"
 authors = ["Guillaume Latour <g0latour@gmail.com>"]
 edition = "2018"
