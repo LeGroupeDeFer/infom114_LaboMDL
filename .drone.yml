@@ -35,7 +35,6 @@ steps:
   - apk add --no-cache --update git bash curl
   - wget https://codecov.io/bash -O codecov.sh && chmod +x codecov.sh
   - bash codecov.sh
-  - git describe --tags > release.md
 - name: pre-release
   image: plugins/github-release
   settings:
@@ -46,6 +45,7 @@ steps:
     files:
       - static/*
       - target/release/hello-rocket
+      - git describe --tags > release.md
     prerelease: true
     draft: true
     note: changelog.md
