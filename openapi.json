@@ -1,11 +1,11 @@
 {
     "openapi": "3.0.1",
     "info": {
-        "title": "API Title",
-        "version": "0.0.0"
+        "title": "UNAnimity",
+        "version": "0.0.3"
     },
     "servers": [{
-        "url": "https://api.server.test/"
+        "url": "https://unanimity.findot.me/"
     }],
     "tags": [{
         "name": "auth",
@@ -14,9 +14,7 @@
     "paths": {
         "/register": {
             "get": {
-                "tags": [
-                    "auth"
-                ],
+                "tags": ["auth"],
                 "description": "Fetch the form to create a new user on the platform",
                 "responses": {
                     "200": {
@@ -24,69 +22,78 @@
                         "content": {}
                     }
                 }
-            },
+            }
+        },
+        "/api/v1/register": {
             "post": {
-                "tags": [
-                    "auth"
-                ],
+                "tags": ["auth"],
                 "description": "Send user information and login credentials for a new account on the application",
                 "requestBody": {
                     "content": {
-                        "application/x-www-form-urlencoded": {
+                        "json": {
                             "schema": {
-                                "required": [
-                                    "email",
-                                    "firstname",
-                                    "lastname",
-                                    "password",
-                                    "username"
-                                ],
+                                "$ref": "#/components/schemas/UserInformation"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Info"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request : the given format is incorrect",
+                        "content": {
+                            "json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Info"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "message": "json format is required"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity : missing parameter",
+                        "content": {
+                            "json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Info"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "message": "property 'email' is missing"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/register/check_email": {
+            "post": {
+                "tags": ["auth"],
+                "description": "Check if email given is already used on the platform",
+                "requestBody": {
+                    "content": {
+                        "json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["email"],
                                 "properties": {
-                                    "username": {
-                                        "type": "string",
-                                        "description": "The nickname of the user"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "description": "The password that the user will use to log on the platform"
-                                    },
-                                    "firstname": {
-                                        "type": "string",
-                                        "description": "The first name of the user"
-                                    },
-                                    "lastname": {
-                                        "type": "string",
-                                        "description": "The last name of the user"
-                                    },
                                     "email": {
                                         "type": "string",
-                                        "description": "The email address for the user to be contacted"
-                                    },
-                                    "street": {
-                                        "type": "string",
-                                        "description": "The street name of the address of the user"
-                                    },
-                                    "number": {
-                                        "type": "integer",
-                                        "description": "The house number of the address of the user",
-                                        "format": "int32"
-                                    },
-                                    "city": {
-                                        "type": "string",
-                                        "description": "The city where the user lives in"
-                                    },
-                                    "zipcode": {
-                                        "type": "integer",
-                                        "description": "The zip code of the address of the user",
-                                        "format": "int32"
-                                    },
-                                    "country": {
-                                        "type": "string",
-                                        "description": "The country where the user lives in"
-                                    },
-                                    "phone": {
-                                        "type": "string",
-                                        "description": "The phone number of the user"
+                                        "description": "The email we want to check the use of"
                                     }
                                 }
                             }
@@ -97,16 +104,62 @@
                 "responses": {
                     "200": {
                         "description": "OK",
-                        "content": {}
+                        "content": {
+                            "json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Info"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request : the given format is incorrect",
+                        "content": {
+                            "json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Info"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "message": "json format is required"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "NOK",
+                        "content": {
+                            "json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Info"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "message": "This email is already linked to an account."
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity : missing parameter",
+                        "content": {
+                            "json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Info"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "message": "property 'email' is missing"
+                                }
+                            }
+                        }
                     }
                 }
             }
         },
         "/login": {
             "get": {
-                "tags": [
-                    "auth"
-                ],
+                "tags": ["auth"],
                 "description": "Fetch the login page",
                 "responses": {
                     "200": {
@@ -116,18 +169,13 @@
                 }
             },
             "post": {
-                "tags": [
-                    "auth"
-                ],
+                "tags": ["auth"],
                 "description": "Send login credentials for authentication",
                 "requestBody": {
                     "content": {
                         "application/x-www-form-urlencoded": {
                             "schema": {
-                                "required": [
-                                    "password",
-                                    "username"
-                                ],
+                                "required": ["password", "username"],
                                 "properties": {
                                     "username": {
                                         "type": "string",
@@ -153,9 +201,7 @@
         },
         "/recovery": {
             "get": {
-                "tags": [
-                    "auth"
-                ],
+                "tags": ["auth"],
                 "description": "Fetch the form to send a mail with a link to reset a user password when it's forgotten",
                 "responses": {
                     "200": {
@@ -165,17 +211,13 @@
                 }
             },
             "post": {
-                "tags": [
-                    "auth"
-                ],
+                "tags": ["auth"],
                 "description": "Send email to get a link to be able to reset the password",
                 "requestBody": {
                     "content": {
                         "application/x-www-form-urlencoded": {
                             "schema": {
-                                "required": [
-                                    "email"
-                                ],
+                                "required": ["email"],
                                 "properties": {
                                     "email": {
                                         "type": "string",
@@ -197,9 +239,7 @@
         },
         "/password_reset/{hash}": {
             "get": {
-                "tags": [
-                    "auth"
-                ],
+                "tags": ["auth"],
                 "description": "Fetch the form to reset a user password",
                 "parameters": [{
                     "name": "hash",
@@ -218,9 +258,7 @@
                 }
             },
             "post": {
-                "tags": [
-                    "auth"
-                ],
+                "tags": ["auth"],
                 "description": "Send the form to reset a user password",
                 "parameters": [{
                     "name": "hash",
@@ -235,9 +273,7 @@
                     "content": {
                         "application/x-www-form-urlencoded": {
                             "schema": {
-                                "required": [
-                                    "password"
-                                ],
+                                "required": ["password"],
                                 "properties": {
                                     "password": {
                                         "type": "string",
@@ -262,9 +298,7 @@
                 "security": [{
                     "UserAuth": []
                 }],
-                "tags": [
-                    "auth"
-                ],
+                "tags": ["auth"],
                 "description": "Logout the connected user",
                 "responses": {
                     "200": {
@@ -275,13 +309,73 @@
             }
         }
     },
-
     "components": {
         "securitySchemes": {
             "UserAuth": {
                 "type": "apiKey",
                 "in": "cookie",
                 "name": "user_id"
+            }
+        },
+        "schemas": {
+            "Info": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                }
+            },
+            "UserInformation": {
+                "type": "object",
+                "required": ["email", "firstname", "lastname", "password"],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "description": "The email address for the user to be contacted"
+                    },
+                    "password": {
+                        "type": "string",
+                        "description": "The password that the user will use to log on the platform"
+                    },
+                    "firstname": {
+                        "type": "string",
+                        "description": "The first name of the user"
+                    },
+                    "lastname": {
+                        "type": "string",
+                        "description": "The last name of the user"
+                    },
+                    "street": {
+                        "type": "string",
+                        "description": "The street name of the address of the user"
+                    },
+                    "number": {
+                        "type": "integer",
+                        "description": "The house number of the address of the user",
+                        "format": "int32"
+                    },
+                    "city": {
+                        "type": "string",
+                        "description": "The city where the user lives in"
+                    },
+                    "zipcode": {
+                        "type": "integer",
+                        "description": "The zip code of the address of the user",
+                        "format": "int32"
+                    },
+                    "country": {
+                        "type": "string",
+                        "description": "The country where the user lives in"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "description": "The phone number of the user"
+                    }
+                }
             }
         }
     }

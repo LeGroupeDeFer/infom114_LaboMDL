@@ -13,6 +13,9 @@ node_modules/
 cobertura.xml
 coverage/
 
+# used to test REST API (https://marketplace.visualstudio.com/items?itemName=humao.rest-client)
+test.http
+
 # Runtime
 *.pid
 *.log

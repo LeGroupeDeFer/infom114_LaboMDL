@@ -15,7 +15,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for Auth {
     fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
         match request.cookies().get_private(AUTH_COOKIE) {
             Some(cookie) => {
-                let value = cookie.value().parse::<i32>().unwrap();
+                let value = cookie.value().parse::<u32>().unwrap();
                 let user = User::from(&value);
                 match user {
                     Some(u) => rocket::Outcome::Success(Auth { user: u }),

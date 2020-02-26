@@ -2,6 +2,13 @@
 
 Summary of implemented features classified by release (github tag)
 
+## [0.0.3] - 2019-02-26
+
+- clean useless template
+- register process (issue #5)
+- login process (issue #6)
+- update openapi
+
 ## [0.0.2] - 2019-02-22
 
 ### Added
