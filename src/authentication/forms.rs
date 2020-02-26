@@ -20,3 +20,8 @@ pub struct RegisterCredentials {
     pub country: Option<String>,
     pub phone: Option<String>,
 }
+
+#[derive(FromForm, Serialize, Deserialize, Debug)]
+pub struct Email {
+    pub email: String,
+}
