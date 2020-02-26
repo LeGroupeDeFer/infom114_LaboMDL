@@ -126,6 +126,20 @@
                             }
                         }
                     },
+                    "409": {
+                        "description": "NOK",
+                        "content": {
+                            "json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Info"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "message": "This email is already linked to an account."
+                                }
+                            }
+                        }
+                    },
                     "422": {
                         "description": "Unprocessable Entity : missing parameter",
                         "content": {
