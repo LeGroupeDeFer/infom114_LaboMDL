@@ -26,21 +26,10 @@ const links = [
 // App :: None => Component
 function App(_) {
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const toggleSidebar = _ => setSidebarOpen(!sidebarOpen);
-  const sidebarRef = useRef(null);
-
   return (
     <React.StrictMode>
       <Router>
-        <Sidebar
-          ref={sidebarRef}
-          open={sidebarOpen}
-          onClick={toggleSidebar}
-          user={user}
-          links={links}
-        />
-        <Content sidebar={sidebarRef} links={links} />
+        <Content links={links} />
       </Router>
     </React.StrictMode>
   );

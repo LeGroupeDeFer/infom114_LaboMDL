@@ -4,10 +4,9 @@ const endpoints = Object.freeze(['login', 'logout', 'register']);
 
 function api(endpoint, { body, ...providedConfig }) {
   
-  if (!endpoints.contains(endpoint))
+  if (!endpoints.includes(endpoint))
     throw new Error(`Unknown endpoint ${endpoint}`);
 
-  const target = endpoints[endpoint];
   const token = window.localStorage.getItem('__auth_token__');
   const headers = { 'content-type': 'application/json' };
   
@@ -27,8 +26,15 @@ function api(endpoint, { body, ...providedConfig }) {
     config.body = JSON.stringify(body);
 
   return window
-    .fetch(`${root}/${target}`, config)
-    .then(response => response.json());
+    .fetch(`${root}/${endpoint}`, config)
+    .then(response => Promise.all(
+      [new Promise(resolve => resolve(response.status)), response.json()]
+    ))
+    .then(([status, data]) => {
+      if (status < 200 || status >= 300 || !data.success)
+        throw new Error(data.message);
+      return data;
+    });
 
 }
 
@@ -42,7 +48,7 @@ function login(email, password) {
 }
 
 function logout() {
-  return api('logout')
+  return api('logout', {})
     .then(_ => window.localStorage.removeItem('__auth_token__'));
 }
 

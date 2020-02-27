@@ -1,0 +1,14 @@
+@use '../themes' as *;
+
+.content.login {
+    margin-left: 0;
+    margin-bottom: 0;
+    color: theme-color("light");
+    background: theme-color("primary");
+
+    > .container {
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+}

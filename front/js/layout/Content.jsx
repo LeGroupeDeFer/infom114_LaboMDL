@@ -1,7 +1,8 @@
-import React, { forwardRef, useState, useEffect } from 'react';
-import { Route, Switch } from 'react-router-dom';
+import React, { useRef, useState, useEffect } from 'react';
+import Sidebar from './Sidebar';
 import Waiting from '../components/Waiting';
 import useWindowResize from '../hooks/useWindowResize';
+import { Route, Switch, useLocation } from 'react-router-dom';
 import { breakpoints, scrollbarWidth } from '../utils';
 import { delay } from '../utils/dev';
 
@@ -16,14 +17,19 @@ const Profile = delay(() => import('unanimity/pages/Profile'));
 const Settings = delay(() => import('unanimity/pages/Settings'));
 const About = delay(() => import('unanimity/pages/About'));
 const Notifications = delay(() => import('unanimity/pages/Notifications'));
+const Login = delay(() => import('unanimity/pages/Login'));
 
 
 // Content :: Object => Component
-const Content = forwardRef(({ sidebar }, ref) => {
+const Content = ({ links }) => {
 
   /* Resizing logic */
   const [dim, setDim] = useState({ width: '100%', height: '100%' });
   const { width, height } = useWindowResize();
+  const sidebar = useRef(null);
+
+  const location = useLocation();
+  const locationClass = location.pathname.replace(/\W/g, '');
 
   useEffect(() => {
     const sidebarWidth = sidebar.current ? sidebar.current.offsetWidth : 0;
@@ -39,17 +45,21 @@ const Content = forwardRef(({ sidebar }, ref) => {
   /* /Resizing logic */
 
   return (
-    <div ref={ref} className='content p-3' style={dim}>
-      <Switch>
-        <Route exact path='/' component={Waiting(Stream)} />
-        <Route path='/profile' component={Waiting(Profile)} />
-        <Route path='/notifications' component={Waiting(Notifications)} />
-        <Route path='/settings' component={Waiting(Settings)} />
-        <Route path='/about' component={Waiting(About)} />
-      </Switch>
-    </div>
+    <>
+      <Sidebar ref={sidebar} links={links} />
+      <div className={`content ${locationClass} p-3`} style={dim}>
+        <Switch>
+          <Route exact path='/' component={Waiting(Stream)} />
+          <Route path='/profile' component={Waiting(Profile)} />
+          <Route path='/notifications' component={Waiting(Notifications)} />
+          <Route path='/settings' component={Waiting(Settings)} />
+          <Route path='/about' component={Waiting(About)} />
+          <Route path='/login' component={Waiting(Login)} />
+        </Switch>
+      </div>
+    </>
   );
-});
+};
 
 Content.defaultProps = {
   sidebar: {}
