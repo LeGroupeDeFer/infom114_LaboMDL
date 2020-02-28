@@ -1,5 +1,13 @@
 @forward 'bootstrap';
 
+@import url(https://fonts.googleapis.com/css?family=Lato:300,400,700,900&display=swap);
+
+$main-font: 'Lato', sans-serif;
+
+body {
+  font-family: $main-font;
+}
+
 .list-group-flush .list-group-item:last-of-type {
     border-bottom: 0; /* Should on by default ? */
 }
