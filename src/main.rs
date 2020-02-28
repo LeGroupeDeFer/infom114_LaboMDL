@@ -73,6 +73,7 @@ fn get_cookies(cookies: Cookies) -> String {
 
 fn main() {
     rocket::ignite()
+        .register(catchers!(http::errors::catchers::not_found))
         .mount("/", routes![index, dynamic_routing, files, get_cookies])
         .mount("/", authentication::routes::collect())
         .attach(Template::fairing())
