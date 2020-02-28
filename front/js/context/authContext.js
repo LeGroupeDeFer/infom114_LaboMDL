@@ -3,7 +3,8 @@ import React, {
   useContext,
   useEffect,
   useState,
-  useLayoutEffect
+  useLayoutEffect,
+  useDebugValue
 } from 'react';
 import api from 'unanimity/utils/api';
 
@@ -19,17 +20,17 @@ export function AuthProvider(props) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    console.log('Getting user');
     const storedUser = store.getItem('__auth_user__');
     if (!user && storedUser)
-      setUser(storedUser);
+      setUser(JSON.parse(storedUser));
   });
 
   useEffect(() => {
-    console.log('Setting user');
     if (user)
       store.setItem('__auth_user__', JSON.stringify(user));
   }, [user]);
+
+  useDebugValue(user ? 'Connected' : 'Anonymous');
 
   function login(email, password) {
     if (user !== null)
@@ -58,4 +59,3 @@ export function AuthProvider(props) {
 }
 
 export const useAuth = () => useContext(AuthContext);
-
