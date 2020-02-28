@@ -40,7 +40,7 @@ fn index() -> Template {
 }
 
 /// Allow some routes to fetch entrypoint when refreshed
-#[get("/<route>", rank = 10)]
+#[get("/<route>", rank = 2)]
 fn dynamic_routing(route: String) -> Option<Template> {
     let mut allowed_routes = vec!["profile", "notifications", "settings", "about"];
 
@@ -54,7 +54,7 @@ fn dynamic_routing(route: String) -> Option<Template> {
 }
 
 /// Serve static files
-#[get("/<file..>", rank = 2)]
+#[get("/<file..>", rank = 3)]
 fn files(file: PathBuf) -> Option<NamedFile> {
     NamedFile::open(Path::new("static/").join(file)).ok()
 }
