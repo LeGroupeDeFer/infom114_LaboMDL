@@ -7,6 +7,7 @@ Summary of implemented features classified by release (github tag)
 - fix issue #56 : manage 404 differently depending on uri (/api/)
 - front for login page
 - payload optimisation
+- fix issue #48 : use custom rocket igniter to bypass rocket.toml
 
 ## [0.0.3] - 2019-02-26
 
