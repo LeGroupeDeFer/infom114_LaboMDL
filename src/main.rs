@@ -72,7 +72,7 @@ fn get_cookies(cookies: Cookies) -> String {
 /* ----------------------------- Launch Rocket ----------------------------- */
 
 fn main() {
-    rocket::ignite()
+    rocket::custom(database::db_config())
         .mount("/", routes![index, dynamic_routing, files, get_cookies])
         .mount("/", authentication::routes::collect())
         .attach(Template::fairing())
