@@ -8,7 +8,6 @@ use super::forms::{self, LoginCredentials, RegisterCredentials};
 use super::guards::Auth;
 
 use rocket::http::{Cookies, Status};
-use rocket::response::{Flash, Redirect};
 use rocket_contrib::json::{Json, JsonError};
 
 use diesel::dsl::count;
@@ -21,12 +20,14 @@ pub fn collect() -> Vec<rocket::Route> {
         check_email,
         check_email_v1,
         post_login,
-        post_login_v1
+        post_login_v1,
+        post_logout,
+        post_logout_v1
     )
 }
 
 pub fn allowed_paths() -> Vec<&'static str> {
-    vec!["register", "login"]
+    vec!["register", "login", "logout"]
 }
 
 #[post("/api/v1/register", data = "<user_info>")]
@@ -95,7 +96,23 @@ fn post_login_v1(
                 Ok(user) => {
                     if user.password == *info.password {
                         Auth::login(&mut cookies, &user);
-                        ApiResponse::success(Status::Ok, "Login successfull")
+                        ApiResponse::new(
+                            Status::Ok,
+                            json!({
+                               "success": true,
+                               "user": {
+                                    "id": user.id,
+                                    "firstname": user.firstname,
+                                    "lastname": user.lastname,
+                                    "street": user.street,
+                                    "number": user.number,
+                                    "city": user.city,
+                                    "zipcode": user.zipcode,
+                                    "country": user.country,
+                                    "phone": user.phone
+                               }
+                            }),
+                        )
                     } else {
                         ApiResponse::error(Status::Unauthorized, "Wrong email/password association")
                     }
@@ -107,10 +124,10 @@ fn post_login_v1(
     }
 }
 
-#[get("/logout")]
-fn logout(mut cookies: Cookies) -> Flash<Redirect> {
+#[get("/api/v1/logout")]
+fn post_logout_v1(mut cookies: Cookies) -> ApiResponse {
     Auth::logout(&mut cookies);
-    return Flash::success(Redirect::to("/login"), "Successfully logout");
+    ApiResponse::new(Status::Ok, json!(Info::new(true, None)))
 }
 
 /* -------------------- Bindings to /api/v<x>/ ----------------------------- */
@@ -130,6 +147,11 @@ fn post_login(
     cookies: Cookies,
 ) -> ApiResponse {
     post_login_v1(credentials, conn, cookies)
+}
+
+#[get("/api/logout")]
+fn post_logout(mut cookies: Cookies) -> ApiResponse {
+    post_logout_v1(cookies)
 }
 
 #[post("/api/register/check_email", data = "<email>")]

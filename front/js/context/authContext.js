@@ -39,9 +39,9 @@ export function AuthProvider(props) {
   }
 
   function logout() {
-    if (user !== null)
-      throw new AuthError('No user connected');
-    return api.logout().then(_ => setUser(null));
+    return api.logout()
+      .then(_ => setUser(null))
+      .then(_ => store.removeItem('__auth_user__'));
   }
 
   function register(user) {

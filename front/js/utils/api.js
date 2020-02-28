@@ -62,9 +62,8 @@ function login(email, password) {
   return api('login', {
     body: { email, password }
   }).then(({ user, token }) => {
-    // TODO - Replace dumb token / user by true token/user !
     window.localStorage.setItem('__auth_token__', token || 'test_token');
-    return { firstname: 'John', lastname: 'Doe' };
+    return user;
   });
 }
 

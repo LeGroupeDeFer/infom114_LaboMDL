@@ -13,6 +13,9 @@ const Settings = lazy(() => import('../pages/Settings'));
 const About = lazy(() => import('../pages/About'));
 const Notifications = lazy(() => import('../pages/Notifications'));
 const Login = lazy(() => import('../pages/Login'));
+const Logout = lazy(() => import('../pages/Logout'));
+const Register = lazy(() => import('../pages/Register'));
+
 
 // Content :: Object => Component
 const Content = (_) => {
@@ -63,6 +66,14 @@ const Content = (_) => {
 
               <Route path='/login'>
                 <Login />
+              </Route>
+
+              <Route path='/logout'>
+                <Logout />
+              </Route>
+
+              <Route path='/register'>
+                <Register />
               </Route>
 
             </Switch>
