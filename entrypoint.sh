@@ -12,8 +12,9 @@ chmod +x /usr/local/bin/reload
 cargo install diesel_cli --no-default-features --features mysql
 cargo build
 diesel migration run
-cargo run > backend.log 2>&1 &
-echo $! > .backend.pid
+printf "#!/usr/bin/env sh\ncd /usr/src/app\ncargo run > backend.log 2>&1 &\necho \$! > .backend.pid" > /usr/local/bin/start
+chmod +x /usr/local/bin/start
+start
 
 # JS
 npm ci
