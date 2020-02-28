@@ -2,6 +2,7 @@
 target/
 **/*.rs.bk
 static/js/
+static/css/
 node_modules/
 
 # Env

@@ -1,5 +1,5 @@
 use crate::database::MyDbConn;
-use crate::http::responder::ApiResponse;
+use crate::http::responders::api::ApiResponse;
 use crate::models::quick_response::Info;
 use crate::models::user::User;
 use crate::schema;
