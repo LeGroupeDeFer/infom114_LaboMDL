@@ -1,22 +1,18 @@
-import React, { forwardRef } from 'react';
+import React from 'react';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { NavLink } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { useLocation } from 'react-router-dom';
-import clsx from 'clsx';
 
 
-const Sidebar = forwardRef(({ open, links }, ref) => {
-  
+function Sidebar({ open, links }) {
+
   const location = useLocation();
   if (location.pathname == '/login')
     return <></>;
 
   return (
-    <nav
-      ref={ref}
-      className={clsx('sidebar', open && 'sidebar-open', 'p-2')}
-    >
+    <nav className='sidebar p-2'>
 
       {/* Logo */}
       <div className="sidebar-logo">
@@ -36,10 +32,11 @@ const Sidebar = forwardRef(({ open, links }, ref) => {
 
     </nav>
   );
-});
+}
 
 Sidebar.defaultProps = {
   links: []
 };
+
 
 export default Sidebar;

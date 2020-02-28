@@ -10,6 +10,7 @@ import Flexbox from '../components/Flexbox';
 import { useHistory, Link } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import { useAuth } from 'unanimity/context/authContext';
 
 
 function Login(props) {
@@ -17,7 +18,13 @@ function Login(props) {
   const { value: email, bind: bindEmail, reset: resetEmail } = useInput("");
   const { value: password, bind: bindPassword, reset: resetPassword } = useInput("");
   const [valid, setValid] = useState(true);
+  const { login, user } = useAuth();
   const history = useHistory();
+
+  useEffect(() => {
+    if (user)
+      history.replace('/');
+  }, [user]);
 
   useEffect(() => {
     if (valid)
@@ -26,13 +33,14 @@ function Login(props) {
     setTimeout(() => {
       setValid(true);
     }, 300);
-  }, [valid])
+  }, [valid]);
 
   const handleSubmit = e => {
     e.preventDefault();
-    api.login(email, password)
+    login(email, password)
       .then(_ => history.push('/'))
-      .catch(_ => {
+      .catch(e => {
+        console.log(e);
         setValid(false);
         resetEmail();
         resetPassword();
@@ -40,7 +48,7 @@ function Login(props) {
   }
 
   return (
-    <Container>
+    <Container className="login-form">
       <Row>
         <Col lg={{ span: 6, offset: 3 }}>
 

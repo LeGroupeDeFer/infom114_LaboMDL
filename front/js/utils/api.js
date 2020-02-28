@@ -2,14 +2,25 @@
 const root = '/api/v1';
 const endpoints = Object.freeze(['login', 'logout', 'register']);
 
+/**
+ * @typedef { Object } User
+ * @property { string } firstname
+ * @property { string } lastname
+ * @property { string } street
+ * @property { number } number
+ * @property { string } city
+ * @property { string } country
+ * @property { string } phone
+ */
+
 function api(endpoint, { body, ...providedConfig }) {
-  
+
   if (!endpoints.includes(endpoint))
     throw new Error(`Unknown endpoint ${endpoint}`);
 
   const token = window.localStorage.getItem('__auth_token__');
   const headers = { 'content-type': 'application/json' };
-  
+
   if (token)
     headers['Authorization'] = `Bearer ${token}`;
 
@@ -38,18 +49,28 @@ function api(endpoint, { body, ...providedConfig }) {
 
 }
 
+/**
+ * Attempts to login the user `email` with the given `password`. If the login
+ * is successful, returns the logged user.
+ * 
+ * @param {string} email 
+ * @param {string} password 
+ * 
+ * @returns {User}
+ */
 function login(email, password) {
   return api('login', {
     body: { email, password }
   }).then(({ user, token }) => {
-    window.localStorage.setItem('__auth_token__', token);
-    return user;
+    // TODO - Replace dumb token / user by true token/user !
+    window.localStorage.setItem('__auth_token__', token || 'test_token');
+    return { firstname: 'John', lastname: 'Doe' };
   });
 }
 
 function logout() {
   return api('logout', {})
-    .then(_ => window.localStorage.removeItem('__auth_token__'));
+    .then(r => window.localStorage.removeItem('__auth_token__') || r);
 }
 
 /**

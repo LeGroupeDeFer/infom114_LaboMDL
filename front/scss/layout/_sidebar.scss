@@ -52,14 +52,6 @@ $sidebar-dim: 60px;
     }
 }
 
-.content {
-    position: absolute;
-    top: 0;
-    margin-left: $sidebar-dim;
-    width: 100%;
-    height: 100vh;
-}
-
 /* ----------------------------- Media queries ----------------------------- */
 
 @include media-breakpoint-down("sm") {

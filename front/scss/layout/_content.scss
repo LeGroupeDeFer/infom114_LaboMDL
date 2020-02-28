@@ -1,4 +1,26 @@
-.content {
-    transition: width .1s ease-out;
+@use 'sidebar';
+@use '../themes' as *;
+
+main {
+    position: absolute;
+    padding-left: sidebar.$sidebar-dim;
+    top: 0;
+    left: 0;
     overflow-y: scroll;
+    width: 100vw;
+    height: 100vh;
+}
+
+.content {
+    position: relative;
+    min-height: 100%;
+    width: 100%;
+    transition: width .1s ease-out;
+}
+
+@include media-breakpoint-down("sm") {
+    main {
+        padding-left: 0;
+        padding-bottom: sidebar.$sidebar-dim;
+    }
 }
