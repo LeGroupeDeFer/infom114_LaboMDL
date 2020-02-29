@@ -9,8 +9,8 @@ import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import DropdownButton from 'react-bootstrap/DropdownButton'
 import Dropdown from 'react-bootstrap/Dropdown'
-import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { faSortAmountDownAlt } from '@fortawesome/free-solid-svg-icons';
+
+import { MdSort } from "react-icons/md";
 
 
 
@@ -35,7 +35,6 @@ const PostList = props => {
         <div>
           <Row key={i} >
             <Col><Post {...props} {...post} /></Col>
-
           </Row>
           <br />
         </div>
@@ -80,7 +79,7 @@ const SortDropdown = () => {
   return (
     <DropdownButton
       title={
-        <span><Icon icon={faSortAmountDownAlt}></Icon> {title}</span>
+        <span><MdSort size={20} /> {title}</span>
       }
       variant="secondary"
     >

@@ -3,12 +3,11 @@ import Card from 'react-bootstrap/Card';
 import { loremIpsum } from '../utils/dev';
 import { preview } from '../utils';
 import Badge from 'react-bootstrap/Badge'
-import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { faArrowUp, faArrowDown } from '@fortawesome/free-solid-svg-icons';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import Moment from 'react-moment';
+import { GoArrowDown, GoArrowUp } from "react-icons/go";
 
 const Post = ({ title, text, username, vote, type, previewLength, createdOn, currentFilter, ...otherProps }) => {
 
@@ -27,7 +26,7 @@ const Post = ({ title, text, username, vote, type, previewLength, createdOn, cur
 
 
   return (
-    <div style={{display : (currentFilter == 'all' || currentFilter == type ) ? 'flex' : 'none' }}>
+    <div style={{ display: (currentFilter == 'all' || currentFilter == type) ? 'flex' : 'none' }}>
 
       <Card {...otherProps} className='post'>
         <Card.Header>
@@ -39,9 +38,9 @@ const Post = ({ title, text, username, vote, type, previewLength, createdOn, cur
         <Card.Body >
           <Row>
             <Col xs='auto'>
-              <Button variant="light" className='thumbsUp'> <Icon icon={faArrowUp} /></Button>
+              <Button variant="light" className='thumbsUp'> <GoArrowUp size={26} /></Button>
               <div className='text-center'> {vote}</div>
-              <Button variant="light" className='thumbsDown'> <Icon icon={faArrowDown}></Icon></Button>
+              <Button variant="light" className='thumbsDown'> <GoArrowDown size={26} /></Button>
 
             </Col>
 
