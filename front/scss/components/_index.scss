@@ -1,3 +1,5 @@
+@use '../themes' as *;
+
 /* Circles always respect a 1:1 aspect ratio */
 
 .ratio {
@@ -42,4 +44,43 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+
+
+
+
+/*  Posts */
+
+.post:hover {
+    cursor: pointer;
+}
+
+.thumbsUp{
+    padding: 0.1rem 0.2rem;
+    border: none;
+    background-color: transparent;
+}
+
+.thumbsDown{
+    padding: 0.1rem 0.2rem;
+    border: none;
+    background-color: transparent;
+}
+
+.thumbsUp :hover{
+    color: $primary;
+}
+
+.thumbsDown :hover{
+    color : #dc3545;
+}
+
+.post-info{
+    color:#fff;
+    background-color:#17a2b8;
+}
+
+.post-poll{
+    color:#fff;
+    background-color:#a4549b;
 }
