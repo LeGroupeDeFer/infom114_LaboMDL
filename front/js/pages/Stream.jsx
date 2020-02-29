@@ -32,35 +32,43 @@ const PostList = props => {
   return (
     <>
       {posts.map((post, i) => (
-        <Row key={i}>
-          <Col><Post {...props} {...post} /></Col>
-        </Row>
+        <div>
+          <Row key={i} >
+            <Col><Post {...props} {...post} /></Col>
+
+          </Row>
+          <br />
+        </div>
       ))}
+
     </>
   );
 };
 
 // Stream :: None => Component
-const Stream = () => (
+const Stream = () => {
 
+  const [filter, setFilter] = useState('all');
 
-  <Container>
-    <br />
-    <Row className='justify-content-md-center'>
-      <FilterBar />
-    </Row>
+  return (
+    <Container>
+      <br />
+      <Row className='justify-content-md-center'>
+        <FilterBar onClick={setFilter} currentFilter={filter} />
+      </Row>
 
-    <br />
-    <Row className='justify-content-end'>
-      <SortDropdown />
-    </Row>
+      <br />
+      <Row className='justify-content-end'>
+        <SortDropdown />
+      </Row>
 
-    <br />
-    <Suspense fallback={<h3>Loading posts...</h3>}>
-      <PostList />
-    </Suspense>
-  </Container>
-);
+      <br />
+      <Suspense fallback={<h3>Loading posts...</h3>}>
+        <PostList currentFilter={filter} />
+      </Suspense>
+    </Container>
+  );
+}
 
 
 // SortDropdown :: None => Component
@@ -68,7 +76,7 @@ const SortDropdown = () => {
 
   const [criteria, setCriteria] = useState('new');
   const [title, setTitle] = useState('Sort by');
-  
+
   return (
     <DropdownButton
       title={
@@ -98,45 +106,44 @@ const SortDropdown = () => {
   );
 }
 
-// FilterBar :: None => Component 
-const FilterBar = () => {
+// FilterBar :: Object => Component 
+const FilterBar = (props) => {
 
-  const [filter, setFilter] = useState('all');
 
   return (
     <ButtonGroup id='filter-bar'>
       <Button
         variant='secondary'
-        className={filter == 'all' ? 'active' : ''}
-        onClick={() => setFilter('all')}
+        className={props.currentFilter == 'all' ? 'active' : ''}
+        onClick={() => props.onClick('all')}
       >
         All
       </Button>
       <Button
         variant='secondary'
-        className={filter == 'decisional' ? 'active' : ''}
-        onClick={() => setFilter('decisional')}
+        className={props.currentFilter == 'decisional' ? 'active' : ''}
+        onClick={() => props.onClick('decisional')}
       >
         Decisional
       </Button>
       <Button
         variant='secondary'
-        className={filter == 'poll' ? 'active' : ''}
-        onClick={() => setFilter('poll')}
+        className={props.currentFilter == 'poll' ? 'active' : ''}
+        onClick={() => props.onClick('poll')}
       >
         Poll
       </Button>
       <Button
         variant='secondary'
-        className={filter == 'info' ? 'active' : ''}
-        onClick={() => setFilter('info')}
+        className={props.currentFilter == 'info' ? 'active' : ''}
+        onClick={() => props.onClick('info')}
       >
         Information
       </Button>
       <Button
         variant='secondary'
-        className={filter == 'idea' ? 'active' : ''}
-        onClick={() => setFilter('idea')}
+        className={props.currentFilter == 'idea' ? 'active' : ''}
+        onClick={() => props.onClick('idea')}
       >
         Idea submission
       </Button>

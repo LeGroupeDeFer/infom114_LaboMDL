@@ -10,7 +10,7 @@ import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import Moment from 'react-moment';
 
-const Post = ({ title, text, username, vote, type, previewLength, createdOn, ...otherProps }) => {
+const Post = ({ title, text, username, vote, type, previewLength, createdOn, currentFilter, ...otherProps }) => {
 
   function getDisplayedType(type) {
     switch (type) {
@@ -27,13 +27,12 @@ const Post = ({ title, text, username, vote, type, previewLength, createdOn, ...
 
 
   return (
-    <div>
+    <div style={{display : (currentFilter == 'all' || currentFilter == type ) ? 'flex' : 'none' }}>
 
       <Card {...otherProps} className='post'>
         <Card.Header>
           <div style={{ fontSize: '19px' }}>
-            <Badge className={'post-' + type}>{getDisplayedType(type)} </Badge>
-            <a href='#'> {username}</a>
+            <Badge className={'post-' + type}>{getDisplayedType(type)} </Badge> <a href='#'>{username}</a>
             <span className="text-muted" style={{ fontSize: '14px' }}> - <Moment fromNow>{createdOn}</Moment></span>
           </div>
         </Card.Header>
@@ -56,7 +55,6 @@ const Post = ({ title, text, username, vote, type, previewLength, createdOn, ...
         </Card.Body>
       </Card>
 
-      <br />
     </div>
 
 
