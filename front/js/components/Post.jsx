@@ -20,7 +20,12 @@ const Post = ({ title, text, username, vote, type, previewLength, createdOn, cur
       setVoteH(voteH - 1);
       setVoted('no');
     } else {
-      setVoteH(voteH + 1);
+      // Case : We directly go from down to up
+      if (voted == 'down') {
+        setVoteH(voteH + 2);
+      } else {
+        setVoteH(voteH + 1);
+      }
       setVoted('up');
     }
   }
@@ -30,7 +35,12 @@ const Post = ({ title, text, username, vote, type, previewLength, createdOn, cur
       setVoteH(voteH + 1);
       setVoted('no');
     } else {
-      setVoteH(voteH - 1);
+      // Case : We directly go from down to up
+      if (voted == 'up') {
+        setVoteH(voteH - 2);
+      } else {
+        setVoteH(voteH - 1);
+      }
       setVoted('down');
     }
   }
@@ -68,7 +78,7 @@ const Post = ({ title, text, username, vote, type, previewLength, createdOn, cur
                 <GoArrowUp size={26} />
               </Button>
 
-              <div className={'text-center ' + (voted != 'no' ? voted + '-voted' : '')} style={{fontWeight : 'bolder'}}> {voteH}</div>
+              <div className={'text-center ' + (voted != 'no' ? voted + '-voted' : '')} style={{ fontWeight: 'bolder' }}> {voteH}</div>
 
               <Button variant='light'
                 className={'down-vote-btn ' + (voted == 'down' ? 'down-voted' : '')}
