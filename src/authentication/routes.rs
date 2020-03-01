@@ -34,7 +34,11 @@ pub fn allowed_paths() -> Vec<&'static str> {
 fn post_register_v1(
     user_info: Result<Json<RegisterCredentials>, JsonError>,
     conn: MyDbConn,
+    mut cookies: Cookies,
 ) -> ApiResponse {
+    if Auth::is_authenticated(&mut cookies) {
+        return ApiResponse::error(Status::UnprocessableEntity, "Already authenticated");
+    }
     match user_info {
         Ok(infos) => {
             // TODO : hash password before giving `infos` to diesel
@@ -136,8 +140,9 @@ fn post_logout_v1(mut cookies: Cookies) -> ApiResponse {
 fn post_register(
     user_info: Result<Json<RegisterCredentials>, JsonError>,
     conn: MyDbConn,
+    cookies: Cookies,
 ) -> ApiResponse {
-    post_register_v1(user_info, conn)
+    post_register_v1(user_info, conn, cookies)
 }
 
 #[post("/api/login", data = "<credentials>")]
@@ -150,7 +155,7 @@ fn post_login(
 }
 
 #[get("/api/logout")]
-fn post_logout(mut cookies: Cookies) -> ApiResponse {
+fn post_logout(cookies: Cookies) -> ApiResponse {
     post_logout_v1(cookies)
 }
 
