@@ -18,8 +18,8 @@ import { MdSort } from 'react-icons/md';
 /* Delayed fetching of user posts */
 // fetchPosts :: int => Promise<Array<Object>>
 const fetchPosts = time => new Promise((resolve, _) => setTimeout(
-  () => resolve(Array(3).fill({ id: 0, title: 'A post title', type: 'info', text: loremIpsum, username: 'John Coffey', vote: 18, createdOn: '2020-02-19T12:59-0500' })
-    .concat(Array(2).fill({ id: 0, title: 'Im the title of the post', type: 'poll', text: loremIpsum, username: 'John Cena', vote: 5, createdOn: '2020-02-29T12:59-0500' }))
+  () => resolve(Array(3).fill({ id: 0, title: 'Im a post title', type: 'info', text: loremIpsum, username: 'John Coffey', votePoints: 18, createdOn: '2020-02-19T12:59-0500' })
+    .concat(Array(2).fill({ id: 0, title: 'Im a post title too', type: 'poll', text: loremIpsum, username: 'John Cena', votePoints: 5, createdOn: '2020-02-29T12:59-0500' }))
   ),
   time
 ));

@@ -8,23 +8,24 @@ import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import Moment from 'react-moment';
 import { GoArrowDown, GoArrowUp } from 'react-icons/go';
+import { MdModeComment } from 'react-icons/md'
 import { useState } from 'react';
 
-const Post = ({ title, text, username, vote, type, previewLength, createdOn, currentFilter, ...otherProps }) => {
+const Post = ({ title, text, username, votePoints, type, previewLength, createdOn, currentFilter, ...otherProps }) => {
 
   const [voted, setVoted] = useState('no');
-  const [voteH, setVoteH] = useState(vote);
+  const [votePointsH, setvotePointsH] = useState(votePoints);
 
   function upVote(cancel) {
     if (cancel) {
-      setVoteH(voteH - 1);
+      setvotePointsH(votePointsH - 1);
       setVoted('no');
     } else {
       // Case : We directly go from down to up
       if (voted == 'down') {
-        setVoteH(voteH + 2);
+        setvotePointsH(votePointsH + 2);
       } else {
-        setVoteH(voteH + 1);
+        setvotePointsH(votePointsH + 1);
       }
       setVoted('up');
     }
@@ -32,14 +33,14 @@ const Post = ({ title, text, username, vote, type, previewLength, createdOn, cur
 
   function downVote(cancel) {
     if (cancel) {
-      setVoteH(voteH + 1);
+      setvotePointsH(votePointsH + 1);
       setVoted('no');
     } else {
       // Case : We directly go from down to up
       if (voted == 'up') {
-        setVoteH(voteH - 2);
+        setvotePointsH(votePointsH - 2);
       } else {
-        setVoteH(voteH - 1);
+        setvotePointsH(votePointsH - 1);
       }
       setVoted('down');
     }
@@ -64,8 +65,8 @@ const Post = ({ title, text, username, vote, type, previewLength, createdOn, cur
       <Card {...otherProps} className='post'>
         <Card.Header>
           <div style={{ fontSize: '19px' }}>
-            <Badge className={'post-' + type}>{getDisplayedType(type)} </Badge> <a href='#'>{username}</a>
-            <span className='text-muted' style={{ fontSize: '14px' }}> - <Moment fromNow>{createdOn}</Moment></span>
+            <Badge className={'post-' + type}>{getDisplayedType(type)} </Badge> <a href='#' className='text-dark'>{username}</a>
+            <span className='text-muted'> - <Moment fromNow>{createdOn}</Moment></span>
           </div>
         </Card.Header>
         <Card.Body style={{ padding: '1rem' }}>
@@ -78,7 +79,7 @@ const Post = ({ title, text, username, vote, type, previewLength, createdOn, cur
                 <GoArrowUp size={26} />
               </Button>
 
-              <div className={'text-center ' + (voted != 'no' ? voted + '-voted' : '')} style={{ fontWeight: 'bolder' }}> {voteH}</div>
+              <div className={'text-center ' + (voted != 'no' ? voted + '-voted' : '')} style={{ fontWeight: 'bolder' }}> {votePointsH}</div>
 
               <Button variant='light'
                 className={'down-vote-btn ' + (voted == 'down' ? 'down-voted' : '')}
@@ -92,9 +93,14 @@ const Post = ({ title, text, username, vote, type, previewLength, createdOn, cur
             <Col>
               <Card.Title>{title}</Card.Title>
               <Card.Text>{preview(text, previewLength)} <a href='#'>Read more</a></Card.Text>
+              <a className='comments' href='#'><MdModeComment size={22} style={{ color: 'gray' }} />
+                <span className='text-muted'> 12 comments</span>
+              </a>
             </Col>
 
           </Row>
+
+
 
         </Card.Body>
       </Card>
@@ -110,7 +116,7 @@ Post.defaultProps = {
   text: loremIpsum,
   username: 'John Coffey',
   previewLength: 200,
-  vote: 25,
+  votePoints: 25,
   type: 'info',
   createdOn: '2020-02-29T12:59-0500'
 };
