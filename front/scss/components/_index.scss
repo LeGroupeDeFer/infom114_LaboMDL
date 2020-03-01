@@ -1,3 +1,5 @@
+@use '../themes'as *;
+
 /* Circles always respect a 1:1 aspect ratio */
 
 .ratio {
@@ -42,4 +44,71 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+
+
+
+
+/*  Posts */
+
+
+.up-vote-btn {
+    padding: 0 0 0 0;
+    border: none;
+    background-color: transparent;
+}
+
+.down-vote-btn {
+    padding: 0 0 0 0;
+    border: none;
+    background-color: transparent;
+}
+
+.up-vote-btn :hover,
+.up-vote-btn :focus {
+    color: $primary;
+}
+
+.down-vote-btn :hover,
+.down-vote-btn :focus {
+    color: #dc3545;
+}
+
+.down-voted,
+.down-voted:focus {
+    color: #dc3545 !important;
+}
+
+
+
+.up-voted,
+.up-voted:focus {
+    color: $primary !important;
+}
+
+.post-info {
+    color: #fff;
+    background-color: #30aadb;
+}
+
+.post-poll {
+    color: #fff;
+    background-color: #c430d9;
+}
+
+.post .text-muted {
+    font-size: 14px;
+}
+
+.vote-section {
+    padding-top: 16px;
+    margin-top: -16px;
+    margin-bottom: -16px;
+    margin-left: -1px;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-right: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.comments {
+    cursor: pointer;
 }

@@ -1,0 +1,6 @@
+@use '../themes' as *;
+
+#filter-bar .active {
+    background-color  : $primary;
+    border-color: $primary;
+}
