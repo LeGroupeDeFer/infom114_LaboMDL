@@ -51,28 +51,35 @@
 
 /*  Posts */
 
-.post:hover {
-    cursor: pointer;
-}
 
-.thumbsUp{
+.up-vote-btn{
     padding: 0 0 0 0;
     border: none;
     background-color: transparent;
 }
 
-.thumbsDown{
+.down-vote-btn{
     padding: 0 0 0 0;
     border: none;
     background-color: transparent;
 }
 
-.thumbsUp :hover{
+.up-vote-btn :hover{
     color: $primary;
 }
 
-.thumbsDown :hover{
+.down-vote-btn :hover{
     color : #dc3545;
+}
+
+.down-voted, .down-voted:focus{
+    color : #dc3545 !important;
+}
+
+
+
+.up-voted, .up-voted:focus{
+    color : $primary !important;
 }
 
 .post-info{

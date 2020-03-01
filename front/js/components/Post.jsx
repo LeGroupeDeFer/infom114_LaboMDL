@@ -8,8 +8,32 @@ import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import Moment from 'react-moment';
 import { GoArrowDown, GoArrowUp } from "react-icons/go";
+import { useState } from 'react';
 
 const Post = ({ title, text, username, vote, type, previewLength, createdOn, currentFilter, ...otherProps }) => {
+
+  const [voted, setVoted] = useState('no');
+  const [voteH, setVoteH] = useState(vote);
+
+  function upVote(cancel) {
+    if (cancel) {
+      setVoteH(voteH - 1);
+      setVoted('no');
+    } else {
+      setVoteH(voteH + 1);
+      setVoted('up');
+    }
+  }
+
+  function downVote(cancel) {
+    if (cancel) {
+      setVoteH(voteH + 1);
+      setVoted('no');
+    } else {
+      setVoteH(voteH - 1);
+      setVoted('down');
+    }
+  }
 
   function getDisplayedType(type) {
     switch (type) {
@@ -24,7 +48,6 @@ const Post = ({ title, text, username, vote, type, previewLength, createdOn, cur
     }
   }
 
-
   return (
     <div style={{ display: (currentFilter == 'all' || currentFilter == type) ? 'flex' : 'none' }}>
 
@@ -32,21 +55,33 @@ const Post = ({ title, text, username, vote, type, previewLength, createdOn, cur
         <Card.Header>
           <div style={{ fontSize: '19px' }}>
             <Badge className={'post-' + type}>{getDisplayedType(type)} </Badge> <a href='#'>{username}</a>
-            <span className="text-muted" style={{ fontSize: '14px' }}> - <Moment fromNow>{createdOn}</Moment></span>
+            <span className='text-muted' style={{ fontSize: '14px' }}> - <Moment fromNow>{createdOn}</Moment></span>
           </div>
         </Card.Header>
-        <Card.Body style={{padding : '1rem'}}>
+        <Card.Body style={{ padding: '1rem' }}>
           <Row>
             <Col xs='auto' className='vote-section'>
-              <Button variant="light" className='thumbsUp'> <GoArrowUp size={26} /></Button>
-              <div className='text-center'> {vote}</div>
-              <Button variant="light" className='thumbsDown'> <GoArrowDown size={26} /></Button>
+              <Button variant='light'
+                className={'up-vote-btn ' + (voted == 'up' ? 'up-voted' : '')}
+                onClick={() => voted != 'up' ? upVote(false) : upVote(true)}
+              >
+                <GoArrowUp size={26} />
+              </Button>
+
+              <div className={'text-center ' + (voted != 'no' ? voted + '-voted' : '')} style={{fontWeight : 'bolder'}}> {voteH}</div>
+
+              <Button variant='light'
+                className={'down-vote-btn ' + (voted == 'down' ? 'down-voted' : '')}
+                onClick={() => voted != 'down' ? downVote(false) : downVote(true)}
+              >
+                <GoArrowDown size={26} />
+              </Button>
 
             </Col>
 
             <Col>
               <Card.Title>{title}</Card.Title>
-              <Card.Text>{preview(text, previewLength)}</Card.Text>
+              <Card.Text>{preview(text, previewLength)} <a href='#'>Read more</a></Card.Text>
             </Col>
 
           </Row>
@@ -54,7 +89,7 @@ const Post = ({ title, text, username, vote, type, previewLength, createdOn, cur
         </Card.Body>
       </Card>
 
-    </div>
+    </div >
 
 
   );
