@@ -7,7 +7,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import Moment from 'react-moment';
-import { GoArrowDown, GoArrowUp } from "react-icons/go";
+import { GoArrowDown, GoArrowUp } from 'react-icons/go';
 import { useState } from 'react';
 
 const Post = ({ title, text, username, vote, type, previewLength, createdOn, currentFilter, ...otherProps }) => {

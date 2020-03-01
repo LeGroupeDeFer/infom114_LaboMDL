@@ -9,7 +9,7 @@ import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import DropdownButton from 'react-bootstrap/DropdownButton'
 import Dropdown from 'react-bootstrap/Dropdown'
-import { MdSort } from "react-icons/md";
+import { MdSort } from 'react-icons/md';
 
 
 
@@ -80,7 +80,7 @@ const SortDropdown = () => {
       title={
         <span><MdSort size={20} /> {title}</span>
       }
-      variant="secondary"
+      variant='secondary'
     >
       <Dropdown.Item
         as='button'
