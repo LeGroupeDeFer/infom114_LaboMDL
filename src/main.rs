@@ -75,6 +75,7 @@ fn main() {
     rocket::custom(database::db_config())
         .mount("/", routes![index, dynamic_routing, files, get_cookies])
         .mount("/", authentication::routes::collect())
+        .register(http::errors::catchers::collect())
         .attach(Template::fairing())
         .attach(MyDbConn::fairing())
         .launch();
