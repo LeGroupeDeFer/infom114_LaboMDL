@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import useInput from '../hooks/useInput';
 import Form from 'react-bootstrap/Form';
+import AutoForm from '../components/AutoForm';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
@@ -11,40 +12,82 @@ import { useHistory, Link } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from 'unanimity/context/authContext';
+import { isUnamurEmail, isValidPassword } from '../utils/validators';
+
+
+function Header(props) {
+
+  return (
+    <Flexbox justify="center" align="end" className='mb-3'>
+      <h4 className="mb-1 mx-2">
+        <Link to='/' className="text-secondary">
+          <Icon icon={faArrowLeft} className="mr-2" />
+          HOME
+        </Link>
+      </h4>
+      <h1 className="mb-0 mx-2">
+        SIGN IN
+      </h1>
+      <h4 className="mb-1 mx-2">
+        <Link to='/register' className="text-secondary">
+          SIGN UP
+          <Icon icon={faArrowRight} className="ml-2" />
+        </Link>
+      </h4>
+    </Flexbox>
+  );
+
+}
+
+function LoginForm() {
+
+  return (
+    <>
+      <Form.Group controlId="loginEmail">
+        <Form.Label><small><b>EMAIL</b></small></Form.Label>
+        <AutoForm.Control
+          required
+          name="email"
+          type="email"
+          placeholder="you@unamur.be"
+          validator={isUnamurEmail}
+        />
+      </Form.Group>
+
+      <Form.Group controlId="loginPassword">
+        <Form.Label><small><b>PASSWORD</b></small></Form.Label>
+        <AutoForm.Control
+          required
+          name="password"
+          type="password"
+          eraseOnFailure={true}
+          validator={isValidPassword}
+        />
+      </Form.Group>
+
+      <AutoForm.Submit
+        variant="secondary"
+        className="d-block px-5 my-2 mx-auto"
+      >Login</AutoForm.Submit>
+    </>
+  );
+
+}
 
 
 function Login(props) {
 
-  const { value: email, bind: bindEmail, reset: resetEmail } = useInput("");
-  const { value: password, bind: bindPassword, reset: resetPassword } = useInput("");
-  const [valid, setValid] = useState(true);
   const { login, user } = useAuth();
   const history = useHistory();
+  useEffect(() => user ? history.replace('/') : undefined, [user]);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    if (user)
-      history.replace('/');
-  }, [user]);
+  const handleSubmit = data => {
+    const { email, password } = data;
 
-  useEffect(() => {
-    if (valid)
-      return;
-    setValid(false);
-    setTimeout(() => {
-      setValid(true);
-    }, 300);
-  }, [valid]);
-
-  const handleSubmit = e => {
-    e.preventDefault();
     login(email, password)
       .then(_ => history.push('/'))
-      .catch(e => {
-        console.log(e);
-        setValid(false);
-        resetEmail();
-        resetPassword();
-      });
+      .catch(error => setError(error));
   }
 
   return (
@@ -52,54 +95,18 @@ function Login(props) {
       <Row>
         <Col lg={{ span: 6, offset: 3 }}>
 
-          <Flexbox justify="center" align="end" className='mb-3'>
-            <h4 className="mb-1 mx-2">
-              <Link to='/' className="text-secondary">
-                <Icon icon={faArrowLeft} className="mr-2" />
-                HOME
-              </Link>
-            </h4>
-            <h1 className="mb-0 mx-2">
-              SIGN IN
-            </h1>
-            <h4 className="mb-1 mx-2">
-              <Link to='/register' className="text-secondary">
-                SIGN UP
-                <Icon icon={faArrowRight} className="ml-2" />
-              </Link>
-            </h4>
-          </Flexbox>
-          <hr />
+          <AutoForm error={error} onSubmit={handleSubmit}>
+            <Header />
+            <hr />
 
-          <Form onSubmit={handleSubmit} validated>
-            <Form.Group controlId="loginEmail">
-              <Form.Label><small><b>EMAIL</b></small></Form.Label>
-              <Form.Control
-                required
-                type="email"
-                placeholder="you@unamur.be"
-                className="form-control"
-                {...bindEmail}
-              />
-            </Form.Group>
-            <Form.Group controlId="loginPassword">
-              <Form.Label><small><b>PASSWORD</b></small></Form.Label>
-              <Form.Control
-                required
-                type="password"
-                {...bindPassword}
-              />
-            </Form.Group>
-            <Button
-              variant={valid ? "secondary" : "danger"}
-              type="submit"
-              className="d-block px-5 mb-4 mx-auto"
-            >Login</Button>
-          </Form>
-          <hr />
-          <Link to="/recovery" className="d-block text-center text-light">
-            Forgot your password?
-          </Link>
+            <LoginForm />
+            <hr />
+
+            <Link to="/recovery" className="d-block text-center text-light">
+              Forgot your password?
+            </Link>
+          </AutoForm>
+
         </Col>
       </Row>
     </Container>
