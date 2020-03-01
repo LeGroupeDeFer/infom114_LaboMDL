@@ -150,7 +150,7 @@ fn post_login(
 }
 
 #[get("/api/logout")]
-fn post_logout(mut cookies: Cookies) -> ApiResponse {
+fn post_logout(cookies: Cookies) -> ApiResponse {
     post_logout_v1(cookies)
 }
 
