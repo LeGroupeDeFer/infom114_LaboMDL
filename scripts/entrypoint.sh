@@ -7,8 +7,8 @@ cd /usr/src/app
 # Rust
 echo "Starting Rust server..." >&2
 cargo install diesel_cli --no-default-features --features mysql
-cargo build
 diesel migration run
+cargo build
 cargo run > backend.log 2>&1 &
 echo $! > .backend.pid
 echo "OK." >&2
