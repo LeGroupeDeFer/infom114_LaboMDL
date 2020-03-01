@@ -35,9 +35,9 @@ const Post = ({ title, text, username, vote, type, previewLength, createdOn, cur
             <span className="text-muted" style={{ fontSize: '14px' }}> - <Moment fromNow>{createdOn}</Moment></span>
           </div>
         </Card.Header>
-        <Card.Body >
+        <Card.Body style={{padding : '1rem'}}>
           <Row>
-            <Col xs='auto'>
+            <Col xs='auto' className='vote-section'>
               <Button variant="light" className='thumbsUp'> <GoArrowUp size={26} /></Button>
               <div className='text-center'> {vote}</div>
               <Button variant="light" className='thumbsDown'> <GoArrowDown size={26} /></Button>
