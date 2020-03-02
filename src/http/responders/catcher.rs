@@ -35,7 +35,7 @@ impl<'r> Responder<'r> for CatcherResponse {
                     code: &self.status.code.to_string(),
                     message: &self.message,
                 };
-                // return template bulid 404 error
+                // return error template with error
                 Response::build_from(
                     Template::render("error", error_context)
                         .respond_to(&req)

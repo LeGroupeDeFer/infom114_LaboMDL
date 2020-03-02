@@ -8,6 +8,7 @@ Summary of implemented features classified by release (github tag)
 - front for login page
 - payload optimisation
 - fix issue #48 : use custom rocket igniter to bypass rocket.toml
+- fix issue #50 : send http 403 when not logged in
 - fix issue #60 : prevent register of authenticated user
 
 ## [0.0.3] - 2019-02-26

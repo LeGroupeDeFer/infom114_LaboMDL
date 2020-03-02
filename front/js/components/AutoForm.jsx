@@ -40,7 +40,11 @@ function AutoForm({ onSubmit, error, children, ...others }) {
   // On submit, simply prevent the default action and send the data
   const submit = event => {
     event.preventDefault();
-    onSubmit(state);
+    const submission = Object.keys(state).reduce(
+      (acc, key) => ({ ...acc, [key]: state[key].value }),
+      {}
+    );
+    onSubmit(submission);
   }
 
   // On error, erase inputs which subscribed for erasure
