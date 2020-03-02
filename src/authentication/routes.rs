@@ -38,17 +38,22 @@ fn post_register_v1(
     match user_info {
         Ok(infos) => {
             // hash password before giving `infos` to diesel
-            let hashed_pwd = bcrypt::hash(&infos.password, bcrypt::DEFAULT_COST)
-                .expect("Hashing password failed!");
-            let user_info_hashed = Json(RegisterCredentials{
-                password: hashed_pwd, 
-                .. infos.into_inner()
-            });
-            
-            let _rows_inserted = diesel::insert_into(schema::users::dsl::users)
-                .values(&*user_info_hashed)
-                .execute(&*conn);
-            ApiResponse::new(Status::Ok, json!(Info::new(true, None)))
+            let hash_res = bcrypt::hash(&infos.password, bcrypt::DEFAULT_COST);
+            match hash_res {
+                Ok(hash_passwd) => {
+                    let user_info_hashed = Json(RegisterCredentials{
+                        password: hash_passwd, 
+                        .. infos.into_inner()
+                    });
+                    
+                    let _rows_inserted = diesel::insert_into(schema::users::dsl::users)
+                        .values(&*user_info_hashed)
+                        .execute(&*conn);
+                    ApiResponse::new(Status::Ok, json!(Info::new(true, None)))
+                }
+                Err(error) => ApiResponse::error(Status::InternalServerError, &error.to_string())
+            }
+
         }
         Err(error) => ApiResponse::json_error(error),
     }
