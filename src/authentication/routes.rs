@@ -107,12 +107,17 @@ fn post_login_v1(
             {
                 Ok(user) => {
                     match bcrypt::verify(&*info.password, &user.password) {
-                        Ok(info) => {
-                            Auth::login(&mut cookies, &user);
-                            ApiResponse::success(Status::Ok, "Login successfull")
+                        Ok(result) => {
+                            if result {
+                                Auth::login(&mut cookies, &user);
+                                ApiResponse::success(Status::Ok, "Login successfull")
+                            } else {
+                                ApiResponse::error(Status::Unauthorized, "Wrong email/password association")
+                            }
+
                         }
 
-                        Err(e) => ApiResponse::error(Status::Unauthorized, "Wrong email/password association")
+                        Err(error) => ApiResponse::error(Status::InternalServerError, &error.to_string())
                     }
                 }
                 Err(e) => ApiResponse::db_error(e),
