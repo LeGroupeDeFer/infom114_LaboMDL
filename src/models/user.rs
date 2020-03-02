@@ -1,6 +1,10 @@
+use std::ops::Deref;
+
 use crate::database;
+use crate::database::MyDbConn;
 use crate::schema;
 
+use diesel::dsl::count;
 use diesel::prelude::*;
 use diesel::ExpressionMethods;
 
@@ -34,5 +38,29 @@ impl User {
             .expect("user is not in db");
 
         users.pop()
+    }
+
+    pub fn check_if_email_is_available(
+        email_address: &str,
+        conn: &MyDbConn,
+    ) -> Result<bool, diesel::result::Error> {
+        use schema::users::dsl::users;
+        use schema::users::*;
+
+        // get count of rows with email corresponding to email
+        match users
+            .filter(email.eq(&email_address))
+            .select(count(id))
+            .first::<i64>(conn.deref())
+        {
+            Ok(nbr_rows) => {
+                if nbr_rows == 0 {
+                    Ok(true)
+                } else {
+                    Ok(false)
+                }
+            }
+            Err(e) => Err(e),
+        }
     }
 }

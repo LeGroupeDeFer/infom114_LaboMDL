@@ -7,11 +7,9 @@ use crate::schema;
 use super::forms::{self, LoginCredentials, RegisterCredentials};
 use super::guards::Auth;
 
+use diesel::prelude::*;
 use rocket::http::{Cookies, Status};
 use rocket_contrib::json::{Json, JsonError};
-
-use diesel::dsl::count;
-use diesel::prelude::*;
 
 pub fn collect() -> Vec<rocket::Route> {
     routes!(
@@ -41,6 +39,20 @@ fn post_register_v1(
     }
     match user_info {
         Ok(infos) => {
+            match User::check_if_email_is_available(infos.email, &conn) {
+                Ok(is_available) => {
+                    if !is_available {
+                        return ApiResponse::error(
+                            Status::Conflict,
+                            "This email is already linked to an account.",
+                        );
+                    }
+                }
+                Err(e) => {
+                    return ApiResponse::db_error(e);
+                }
+            }
+
             // hash password before giving `infos` to diesel
             let hash_res = bcrypt::hash(&infos.password, bcrypt::DEFAULT_COST);
             match hash_res {
@@ -66,18 +78,11 @@ fn check_email_v1(
     email_address: Result<Json<forms::Email>, JsonError>,
     conn: MyDbConn,
 ) -> ApiResponse {
-    use schema::users::dsl::users;
-    use schema::users::*;
     match email_address {
         Ok(address) => {
-            // get count of rows with email corresponding to email
-            match users
-                .filter(email.eq(&address.email))
-                .select(count(id))
-                .first::<i64>(&*conn)
-            {
-                Ok(nbr_rows) => {
-                    if nbr_rows == 0 {
+            match User::check_if_email_is_available(&address.email, &conn) {
+                Ok(is_available) => {
+                    if is_available {
                         // if no rows returned, it means that the email is still available for account creation
                         ApiResponse::simple_success(Status::Ok)
                     } else {
