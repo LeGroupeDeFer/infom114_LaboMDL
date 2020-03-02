@@ -39,7 +39,7 @@ fn post_register_v1(
     }
     match user_info {
         Ok(infos) => {
-            match User::check_if_email_is_available(infos.email, &conn) {
+            match User::check_if_email_is_available(&infos.email, &conn) {
                 Ok(is_available) => {
                     if !is_available {
                         return ApiResponse::error(
