@@ -2,21 +2,21 @@
 
 Summary of implemented features classified by release (github tag)
 
-## pending release
+## [0.1.0] - 2019-03-02
 
-- fix issue #56 : manage 404 differently depending on uri (/api/)
-- front for login page
-- payload optimisation
-- fix issue #48 : use custom rocket igniter to bypass rocket.toml
-- fix issue #50 : send http 403 when not logged in
-- fix issue #60 : prevent register of authenticated user
+- Fix issue #56 : manage 404 differently depending on uri (/api/)
+- Login page UI (/login)
+- Payload optimisation (600 kb -> 337 kb, concurrent loading)
+- Fix issue #48 : use custom rocket igniter to bypass rocket.toml
+- Fix issue #50 : send http 403 when not logged in
+- Fix issue #60 : prevent register of authenticated user
 
 ## [0.0.3] - 2019-02-26
 
-- clean useless template
-- register process (issue #5)
-- login process (issue #6)
-- update openapi
+- Clean useless template
+- Register process (issue #5)
+- Login process (issue #6)
+- Update openapi
 
 ## [0.0.2] - 2019-02-22
 
