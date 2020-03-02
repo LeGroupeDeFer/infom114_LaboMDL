@@ -36,4 +36,17 @@ impl Auth {
     pub fn logout(cookies: &mut Cookies) {
         cookies.remove_private(Cookie::named(AUTH_COOKIE));
     }
+
+    pub fn is_authenticated(cookies: &mut Cookies) -> bool {
+        match cookies.get_private(AUTH_COOKIE) {
+            Some(cookie) => {
+                let value = cookie.value().parse::<u32>().unwrap();
+                match User::from(&value) {
+                    Some(_) => true,
+                    None => false,
+                }
+            }
+            None => false,
+        }
+    }
 }
