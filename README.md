@@ -8,9 +8,8 @@
 ## Quickstart
 
 1. Install docker and docker-compose
-2. `docker-compose up [--build]`
-3. `npm i && npm run-script build`
-4. go on <http://localhost:8000/hello/yourname>
+2. `docker-compose up [--build] [--detach]`
+3. go on <http://localhost:8000/hello/yourname>
 
 ## Features
 
