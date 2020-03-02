@@ -47,6 +47,12 @@ fn post_register_v1(
                             "This email is already linked to an account.",
                         );
                     }
+                    if !User::check_if_email_is_unamur(&infos.email) {
+                        return ApiResponse::error(
+                            Status::Unauthorized,
+                            "This is not an Unamur email.",
+                        );
+                    }
                 }
                 Err(e) => {
                     return ApiResponse::db_error(e);

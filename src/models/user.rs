@@ -8,6 +8,8 @@ use diesel::dsl::count;
 use diesel::prelude::*;
 use diesel::ExpressionMethods;
 
+use regex::Regex;
+
 #[derive(Queryable, Serialize, Deserialize, Debug)]
 pub struct User {
     pub id: u32,
@@ -62,5 +64,10 @@ impl User {
             }
             Err(e) => Err(e),
         }
+    }
+
+    pub fn check_if_email_is_unamur(email_address: &str) -> bool {
+        let re = Regex::new(r"^(.*)@(student\.)?unamur\.be$").unwrap();
+        re.is_match(email_address)
     }
 }
