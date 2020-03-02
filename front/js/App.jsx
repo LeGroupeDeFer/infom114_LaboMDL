@@ -1,47 +1,34 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, lazy, Suspense } from 'react';
+import Spinner from 'react-bootstrap/Spinner';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { Content, Sidebar } from './layout';
-import {
-  faUserCircle, faSlidersH, faInfoCircle, faSwimmer, faBell
-} from '@fortawesome/free-solid-svg-icons';
+import { AuthProvider } from 'unanimity/context/authContext';
 
 
-/* Fake user */
-const user = {
-  firstname: 'John',
-  lastname: 'Doe',
-  picture: 'https://via.placeholder.com/240'
-};
+const Loading = () => (
+  <Spinner
+    animation='grow'
+    role='status'
+    className='abs-center text-primary'
+  >
+    <span className="sr-only">Loading...</span>
+  </Spinner>
+);
 
-/* Module path should be put here instead of within the Content */
-const links = [
-  { name: 'stream', path: '/', icon: faSwimmer },
-  { name: 'profile', path: '/profile', icon: faUserCircle },
-  { name: 'notifications', path: '/notifications', icon: faBell },
-  { name: 'settings', path: '/settings', icon: faSlidersH },
-  { name: 'about', path: '/about', icon: faInfoCircle }
-];
+const Matter = lazy(() => import('./layout/Content'));
 
 
 // App :: None => Component
 function App(_) {
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const toggleSidebar = _ => setSidebarOpen(!sidebarOpen);
-  const sidebarRef = useRef(null);
-
   return (
     <React.StrictMode>
-      <Router>
-        <Sidebar
-          ref={sidebarRef}
-          open={sidebarOpen}
-          onClick={toggleSidebar}
-          user={user}
-          links={links}
-        />
-        <Content sidebar={sidebarRef} links={links} />
-      </Router>
+      <AuthProvider>
+        <Suspense fallback={<Loading />}>
+          <Router>
+            <Matter />
+          </Router>
+        </Suspense>
+      </AuthProvider>
     </React.StrictMode>
   );
 

@@ -1,0 +1,17 @@
+@use '../themes' as *;
+
+.login-form {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+main.login {
+    padding-left: 0;
+    color: theme-color("light");
+    background: theme-color("primary");
+
+    .content {
+        height: 100%;
+    }
+}

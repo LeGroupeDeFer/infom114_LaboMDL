@@ -1,58 +1,92 @@
-import React, { forwardRef, useState, useEffect } from 'react';
-import { Route, Switch } from 'react-router-dom';
-import Waiting from '../components/Waiting';
-import useWindowResize from '../hooks/useWindowResize';
-import { breakpoints, scrollbarWidth } from '../utils';
-import { delay } from '../utils/dev';
+import React, { useRef, useState, useEffect, lazy, Suspense } from 'react';
+import { Route, Switch, useLocation } from 'react-router-dom';
+import {
+  faUserCircle, faSlidersH, faInfoCircle, faSwimmer, faBell, faSignInAlt
+} from '@fortawesome/free-solid-svg-icons';
+import Sidebar from './Sidebar';
+import { useAuth } from '../context/authContext';
 
-/**
- * The following "components" are delayed while the layout construction is in
- * progress!
- * 
- * @see delay
- */
-const Stream = delay(() => import('unanimity/pages/Stream'));
-const Profile = delay(() => import('unanimity/pages/Profile'));
-const Settings = delay(() => import('unanimity/pages/Settings'));
-const About = delay(() => import('unanimity/pages/About'));
-const Notifications = delay(() => import('unanimity/pages/Notifications'));
+
+const Stream = lazy(() => import('../pages/Stream'));
+const Profile = lazy(() => import('../pages/Profile'));
+const Settings = lazy(() => import('../pages/Settings'));
+const About = lazy(() => import('../pages/About'));
+const Notifications = lazy(() => import('../pages/Notifications'));
+const Login = lazy(() => import('../pages/Login'));
+const Logout = lazy(() => import('../pages/Logout'));
+const Register = lazy(() => import('../pages/Register'));
 
 
 // Content :: Object => Component
-const Content = forwardRef(({ sidebar }, ref) => {
+const Content = (_) => {
 
-  /* Resizing logic */
-  const [dim, setDim] = useState({ width: '100%', height: '100%' });
-  const { width, height } = useWindowResize();
+  const location = useLocation();
+  const { user } = useAuth();
+  const locationClass = location.pathname.replace(/\W/g, '');
 
-  useEffect(() => {
-    const sidebarWidth = sidebar.current ? sidebar.current.offsetWidth : 0;
-    const sidebarHeight = sidebar.current ? sidebar.current.offsetHeight : 0;
-
-    const contentWidth = width < breakpoints['md']
-      ? '100%' : `${width - scrollbarWidth() - sidebarWidth}px`;
-    const contentHeight = width < breakpoints['md']
-      ? `${(height - sidebarHeight)}px` : '100%';
-
-    setDim({ width: contentWidth, height: contentHeight });
-  }, [sidebar, width, height]);
-  /* /Resizing logic */
+  const links = [
+    { name: 'stream', path: '/', icon: faSwimmer },
+    { name: 'about', path: '/about', icon: faInfoCircle }
+  ];
+  if (user)
+    links.push(
+      { name: 'profile', path: '/profile', icon: faUserCircle },
+      { name: 'notifications', path: '/notifications', icon: faBell },
+    );
+  links.push({ name: 'settings', path: '/settings', icon: faSlidersH });
 
   return (
-    <div ref={ref} className='content p-3' style={dim}>
-      <Switch>
-        <Route exact path='/' component={Waiting(Stream)} />
-        <Route path='/profile' component={Waiting(Profile)} />
-        <Route path='/notifications' component={Waiting(Notifications)} />
-        <Route path='/settings' component={Waiting(Settings)} />
-        <Route path='/about' component={Waiting(About)} />
-      </Switch>
-    </div>
+    <>
+      <Sidebar links={links} />
+
+      <main role="main" className={`${locationClass}`}>
+        <div className="content p-3">
+          <Suspense fallback={<h1>Loading...</h1>}>
+            <Switch>
+
+              <Route exact path='/'>
+                <Stream />
+              </Route>
+
+              <Route path='/profile'>
+                <Profile />
+              </Route>
+
+              <Route path='/notifications'>
+                <Notifications />
+              </Route>
+
+              <Route path='/settings'>
+                <Settings />
+              </Route>
+
+              <Route path='/about'>
+                <About />
+              </Route>
+
+              <Route path='/login'>
+                <Login />
+              </Route>
+
+              <Route path='/logout'>
+                <Logout />
+              </Route>
+
+              <Route path='/register'>
+                <Register />
+              </Route>
+
+            </Switch>
+          </Suspense>
+        </div>
+      </main>
+    </>
   );
-});
+
+};
 
 Content.defaultProps = {
-  sidebar: {}
+  links: []
 };
 
 

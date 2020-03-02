@@ -1112,7 +1112,7 @@ checksum = "8f00ed7be0c1ff1e24f46c3d2af4859f7e863672ba3a6e92e7cff702bf9f06c2"
 
 [[package]]
 name = "unanimity"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "bcrypt",
  "diesel",

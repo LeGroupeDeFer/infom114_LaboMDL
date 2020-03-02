@@ -54,7 +54,11 @@ entity Tag {
 entity Post {
   * name
   --
+  * type
   * content
+  * createdOn
+  * votePoints
+  
 }
 
 entity Role {
