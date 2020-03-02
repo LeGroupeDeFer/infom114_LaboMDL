@@ -4,6 +4,7 @@ use crate::models::quick_response::Info;
 use crate::models::user::User;
 use crate::schema;
 
+
 use super::forms::{self, LoginCredentials, RegisterCredentials};
 use super::guards::Auth;
 
@@ -36,9 +37,16 @@ fn post_register_v1(
 ) -> ApiResponse {
     match user_info {
         Ok(infos) => {
-            // TODO : hash password before giving `infos` to diesel
+            // hash password before giving `infos` to diesel
+            let hashed_pwd = bcrypt::hash(&infos.password, bcrypt::DEFAULT_COST)
+                .expect("Hashing password failed!");
+            let user_info_hashed = Json(RegisterCredentials{
+                password: hashed_pwd, 
+                .. infos.into_inner()
+            });
+            
             let _rows_inserted = diesel::insert_into(schema::users::dsl::users)
-                .values(&*infos)
+                .values(&*user_info_hashed)
                 .execute(&*conn);
             ApiResponse::new(Status::Ok, json!(Info::new(true, None)))
         }
