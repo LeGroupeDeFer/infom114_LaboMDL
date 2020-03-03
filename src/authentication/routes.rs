@@ -60,7 +60,8 @@ fn post_register_v1(
             }
 
             // hash password before giving `infos` to diesel
-            let hash_res = bcrypt::hash(&infos.password, bcrypt::DEFAULT_COST);
+            let bcrypt_cost = 8;
+            let hash_res = bcrypt::hash(&infos.password, bcrypt_cost);
             match hash_res {
                 Ok(hash_passwd) => {
                     let user_info_hashed = Json(RegisterCredentials {
