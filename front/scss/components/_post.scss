@@ -1,0 +1,60 @@
+@use '../themes' as *;
+
+/*  Posts */
+
+.up-vote-btn {
+    padding: 0 0 0 0;
+    border: none;
+    background-color: transparent;
+}
+
+.down-vote-btn {
+    padding: 0 0 0 0;
+    border: none;
+    background-color: transparent;
+}
+
+.up-vote-btn :hover,
+.up-vote-btn :focus {
+    color: theme-color("primary");
+}
+
+.down-vote-btn :hover,
+.down-vote-btn :focus {
+    color: theme-color("danger");
+}
+
+.down-voted,
+.down-voted:focus {
+    color: theme-color("danger") !important;
+}
+
+.up-voted,
+.up-voted:focus {
+    color: theme-color("primary") !important;
+}
+
+.post-info {
+    color: $white;
+    background-color: theme-color("info");
+}
+
+.post-poll {
+    color: $white;
+    background-color: #c430d9;
+}
+
+.post .text-muted {
+    font-size: .75em;
+}
+
+.vote-section {
+    padding-top: 1em;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-right: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.post-comment {
+    cursor: pointer;
+    color: gray("800");
+}

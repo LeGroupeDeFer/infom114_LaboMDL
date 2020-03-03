@@ -39,47 +39,49 @@ const Content = (_) => {
     <>
       <Sidebar links={links} />
 
-      <main role="main" className={`${locationClass}`}>
-        <div className="content p-3">
-          <Suspense fallback={<h1>Loading...</h1>}>
-            <Switch>
+      <div className={`offset ${locationClass}`}>
+        <main role="main">
+          <div className="content p-3">
+            <Suspense fallback={<h1>Loading...</h1>}>
+              <Switch>
 
-              <Route exact path='/'>
-                <Stream />
-              </Route>
+                <Route exact path='/'>
+                  <Stream />
+                </Route>
 
-              <Route path='/profile'>
-                <Profile />
-              </Route>
+                <Route path='/profile'>
+                  <Profile />
+                </Route>
 
-              <Route path='/notifications'>
-                <Notifications />
-              </Route>
+                <Route path='/notifications'>
+                  <Notifications />
+                </Route>
 
-              <Route path='/settings'>
-                <Settings />
-              </Route>
+                <Route path='/settings'>
+                  <Settings />
+                </Route>
 
-              <Route path='/about'>
-                <About />
-              </Route>
+                <Route path='/about'>
+                  <About />
+                </Route>
 
-              <Route path='/login'>
-                <Login />
-              </Route>
+                <Route path='/login'>
+                  <Login />
+                </Route>
 
-              <Route path='/logout'>
-                <Logout />
-              </Route>
+                <Route path='/logout'>
+                  <Logout />
+                </Route>
 
-              <Route path='/register'>
-                <Register />
-              </Route>
+                <Route path='/register'>
+                  <Register />
+                </Route>
 
-            </Switch>
-          </Suspense>
-        </div>
-      </main>
+              </Switch>
+            </Suspense>
+          </div>
+        </main>
+      </div>
     </>
   );
 
