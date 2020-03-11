@@ -12,9 +12,6 @@ import Dropdown from 'react-bootstrap/Dropdown'
 import { MdSort } from 'react-icons/md';
 
 
-
-
-
 /* Delayed fetching of user posts */
 // fetchPosts :: int => Promise<Array<Object>>
 const fetchPosts = time => new Promise((resolve, _) => setTimeout(
@@ -31,14 +28,10 @@ const PostList = props => {
   return (
     <>
       {posts.map((post, i) => (
-        <div>
-          <Row key={i} >
-            <Col><Post {...props} {...post} /></Col>
-          </Row>
-          <br />
-        </div>
+        <Row key={i} className="mb-4">
+          <Col><Post {...props} {...post} /></Col>
+        </Row>
       ))}
-
     </>
   );
 };
@@ -106,7 +99,6 @@ const SortDropdown = () => {
 
 // FilterBar :: Object => Component 
 const FilterBar = (props) => {
-
 
   return (
     <ButtonGroup id='filter-bar'>

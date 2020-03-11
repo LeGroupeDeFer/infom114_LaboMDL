@@ -1,17 +1,22 @@
 @use '../themes' as *;
 
 .login-form {
-    position: relative;
-    top: 50%;
-    transform: translateY(-50%);
+    // TODO - Might change when the logo kicks in
+    margin-top: 10em;
 }
 
-main.login {
-    padding-left: 0;
+.offset.login {
+    padding: 0;
+}
+
+.login main {
     color: theme-color("light");
     background: theme-color("primary");
+    padding-bottom: 0;
+}
 
-    .content {
-        height: 100%;
+@include media-breakpoint-down("sm") {
+    .form-header {
+        font-size: .7em;
     }
 }

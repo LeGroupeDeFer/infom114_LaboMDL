@@ -18,7 +18,7 @@ import { isUnamurEmail, isValidPassword } from '../utils/validators';
 function Header(props) {
 
   return (
-    <Flexbox justify="center" align="end" className='mb-3'>
+    <Flexbox justify="center" align="end" className='mb-3 form-header'>
       <h4 className="mb-1 mx-2">
         <Link to='/' className="text-secondary">
           <Icon icon={faArrowLeft} className="mr-2" />

@@ -2,5 +2,12 @@
   $body-bg: #eee,
   $primary: #A0C55F,
   $secondary: #0D6759,
-  $danger: #FF4E50
+  $danger: #FF4E50,
+  /* Sets the font sizes as being relatives (em) to their parent */
+  $h1-font-size: 2.5em,
+  $h2-font-size: 2em,
+  $h3-font-size: 1.75em,
+  $h4-font-size: 1.5em,
+  $h5-font-size: 1.25em,
+  $h6-font-size: 1em
 );

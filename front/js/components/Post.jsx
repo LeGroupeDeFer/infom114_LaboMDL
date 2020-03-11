@@ -10,6 +10,7 @@ import Moment from 'react-moment';
 import { GoArrowDown, GoArrowUp } from 'react-icons/go';
 import { MdModeComment } from 'react-icons/md'
 import { useState } from 'react';
+import clsx from 'clsx';
 
 const Post = ({ title, text, username, votePoints, type, previewLength, createdOn, currentFilter, ...otherProps }) => {
 
@@ -59,55 +60,67 @@ const Post = ({ title, text, username, votePoints, type, previewLength, createdO
     }
   }
 
+  if (!['all', type].includes(currentFilter))
+    return <></>;
+
   return (
-    <div style={{ display: (currentFilter == 'all' || currentFilter == type) ? 'flex' : 'none' }}>
+    <div className="d-flex">
 
       <Card {...otherProps} className='post'>
+
         <Card.Header>
-          <div style={{ fontSize: '19px' }}>
-            <Badge className={'post-' + type}>{getDisplayedType(type)} </Badge> <a href='#' className='text-dark'>{username}</a>
+          <h5>
+            <Badge className={`post-${type} mr-2`}>
+              {getDisplayedType(type)}
+            </Badge>
+            <a href='#' className='text-dark'>{username}</a>
             <span className='text-muted'> - <Moment fromNow>{createdOn}</Moment></span>
-          </div>
+          </h5>
         </Card.Header>
-        <Card.Body style={{ padding: '1rem' }}>
-          <Row>
-            <Col xs='auto' className='vote-section'>
-              <Button variant='light'
-                className={'up-vote-btn ' + (voted == 'up' ? 'up-voted' : '')}
-                onClick={() => voted != 'up' ? upVote(false) : upVote(true)}
+
+        <Card.Body className="p-0">
+          <div className="d-flex">
+
+            <div className='vote-section px-3'>
+
+              <Button
+                variant='light'
+                className={`up-vote-btn ${clsx(voted === 'up' && 'up-voted')}`}
+                onClick={() => upVote(voted === 'up')}
               >
-                <GoArrowUp size={26} />
+                <GoArrowUp size="1.5em" />
               </Button>
 
-              <div className={'text-center ' + (voted != 'no' ? voted + '-voted' : '')} style={{ fontWeight: 'bolder' }}> {votePointsH}</div>
+              <div className={`text-center ${clsx(voted !== 'no' && voted + '-voted')}`}>
+                <b>{votePointsH}</b>
+              </div>
 
-              <Button variant='light'
-                className={'down-vote-btn ' + (voted == 'down' ? 'down-voted' : '')}
-                onClick={() => voted != 'down' ? downVote(false) : downVote(true)}
+              <Button
+                variant='light'
+                className={`down-vote-btn ${clsx(voted === 'down' && 'down-voted')}`}
+                onClick={() => downVote(voted === 'down')}
               >
-                <GoArrowDown size={26} />
+                <GoArrowDown size="1.5em" />
               </Button>
 
-            </Col>
+            </div>
 
-            <Col>
+            <div className="p-3">
               <Card.Title>{title}</Card.Title>
-              <Card.Text>{preview(text, previewLength)} <a href='#'>Read more</a></Card.Text>
-              <a className='comments' href='#'><MdModeComment size={22} style={{ color: 'gray' }} />
-                <span className='text-muted'> 12 comments</span>
+              <Card.Text>{preview(text, previewLength)}
+                <a href='#'> read more</a>
+              </Card.Text>
+              <a className='post-comment' href='#'>
+                <MdModeComment size="1.25em" className="mr-1" />
+                <span className='text-muted'>12 comments</span>
               </a>
-            </Col>
+            </div>
 
-          </Row>
-
-
-
+          </div>
         </Card.Body>
       </Card>
 
     </div >
-
-
   );
 }
 
