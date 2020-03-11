@@ -44,10 +44,10 @@ export function AuthProvider(props) {
       .then(_ => store.removeItem('__auth_user__'));
   }
 
-  function register(user) {
+  function register(newUser) {
     if (user !== null)
       throw new AuthError('User already connected');
-    return api.register(user);
+    return api.register(newUser);
   }
 
   return (

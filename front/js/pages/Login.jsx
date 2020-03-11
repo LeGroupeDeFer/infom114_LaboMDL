@@ -43,26 +43,29 @@ function LoginForm() {
 
   return (
     <>
-      <Form.Group controlId="loginEmail">
-        <Form.Label><small><b>EMAIL</b></small></Form.Label>
+      <Form.Group className="form-group-material">
         <AutoForm.Control
-          required
+          id="email"
           name="email"
           type="email"
-          placeholder="you@unamur.be"
           validator={isUnamurEmail}
         />
+        <Form.Label><small><b>EMAIL</b></small></Form.Label>
+        <div className="underline" />
+        <div className="highlight" />
       </Form.Group>
 
-      <Form.Group controlId="loginPassword">
-        <Form.Label><small><b>PASSWORD</b></small></Form.Label>
+      <Form.Group className='form-group-material'>
         <AutoForm.Control
-          required
+          id="password"
           name="password"
           type="password"
           eraseOnFailure={true}
           validator={isValidPassword}
         />
+        <Form.Label><small><b>PASSWORD</b></small></Form.Label>
+        <span className="underline" />
+        <div className="highlight" />
       </Form.Group>
 
       <AutoForm.Submit
@@ -73,7 +76,6 @@ function LoginForm() {
   );
 
 }
-
 
 function Login(props) {
 
@@ -93,9 +95,9 @@ function Login(props) {
   return (
     <Container className="login-form">
       <Row>
-        <Col lg={{ span: 6, offset: 3 }}>
+        <Col md={{ span: 8, offset: 2 }} lg={{ span: 6, offset: 3 }}>
 
-          <AutoForm error={error} onSubmit={handleSubmit}>
+          <AutoForm failure={error} onSubmit={handleSubmit} autoComplete="off">
             <Header />
             <hr />
 

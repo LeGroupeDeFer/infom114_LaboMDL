@@ -1,22 +1,12 @@
 @use '../themes' as *;
 
+@use '../abstract/mixins' as *;
+
 .login-form {
     // TODO - Might change when the logo kicks in
-    margin-top: 10em;
+    padding-top: 10em;
 }
 
-.offset.login {
-    padding: 0;
-}
-
-.login main {
-    color: theme-color("light");
-    background: theme-color("primary");
-    padding-bottom: 0;
-}
-
-@include media-breakpoint-down("sm") {
-    .form-header {
-        font-size: .7em;
-    }
+.login {
+    @include layout-secondary;
 }

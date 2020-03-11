@@ -4,77 +4,40 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import clsx from 'clsx';
 
-
 const Validation = createContext();
 
 
-function AutoForm({ onSubmit, error, children, ...others }) {
+function AutoForm({ onSubmit, failure, ...others }) {
 
   const [state, setState] = useState({});
   const [validated, setValidated] = useState(false);
 
-  // Setup value, validator and eraseOnFailure on input register
-  const register = name => (value, validator, eraseOnFailure) =>
-    setState(oldState => ({
-      ...oldState, [name]: {
-        value, validator, eraseOnFailure, isValid: validator(value)
-      }
-    }));
+  const onInputChange = name => ({ value, isValid }) => {
+    setState(oldState => ({ ...oldState, [name]: { value, isValid } }));
+  };
 
-  // When an input change, update its value and its validity
-  const onChange = name => value =>
-    setState(oldState => ({
-      ...oldState, [name]: {
-        ...oldState[name], value, isValid: oldState[name].validator(value)
-      }
-    }));
-
-  // Prepare the input bindings
-  const binder = name => ({
-    register: register(name),
-    onChange: onChange(name),
-    value: state[name] ? state[name].value : "",
-    isValid: state[name] ? state[name].validator(state[name].value) : false
-  });
-
-  // On submit, simply prevent the default action and send the data
-  const submit = event => {
+  const onFormSubmit = event => {
     event.preventDefault();
-    const submission = Object.keys(state).reduce(
-      (acc, key) => ({ ...acc, [key]: state[key].value }),
-      {}
-    );
-    onSubmit(submission);
-  }
+    onSubmit(Object.keys(state).reduce(
+      (acc, key) => ({ ...acc, [key]: state[key].value }), {}
+    ));
+  };
 
-  // On error, erase inputs which subscribed for erasure
-  useEffect(() => {
-    if (!error)
-      return;
+  const binding = name => onInputChange(name);
 
-    const erased = Object.keys(state)
-      .filter(key => state[key].eraseOnFailure)
-      .reduce((acc, k) => ({ ...acc, [k]: { ...state[k], value: "" } }), {});
-
-    setState(oldState => ({ ...oldState, ...erased }))
-  }, [error]);
-
-  // The form validation is equal to its inputs validations
   useEffect(() => setValidated(Object.keys(state).reduce(
-    (a, key) => a && state[key].validator(state[key].value), true
+    (acc, key) => acc && state[key].isValid, true
   )), [state]);
 
   return (
-    <Validation.Provider value={{ binder, validated, error }}>
+    <Validation.Provider value={{ binding, validated, failure }}>
       <Form
-        className={clsx(error && 'submit-failure')}
         {...others}
         noValidate
         validated={validated}
-        onSubmit={submit}
-      >
-        {children}
-      </Form>
+        onSubmit={onFormSubmit}
+        className={clsx(failure && 'submit-failure')}
+      />
     </Validation.Provider>
   );
 
@@ -82,51 +45,64 @@ function AutoForm({ onSubmit, error, children, ...others }) {
 
 AutoForm.propTypes = {
   onSubmit: func.isRequired,
-  fields: arrayOf(shape({
-    name: string.isRequired,
-    value: any,
-    required: bool,
-    validator: func
-  }))
+  failure: bool.isRequired
 };
 
 
+const defaultValidator = (validator, optional) => validator
+  ? validator
+  : (optional ? (() => true) : (x => Boolean(x)));
+
 function AutoFormControl({
-  className,
   name,
-  defaultValue,
-  eraseOnFailure,
+  type,
   optional,
   validator,
+  eraseOnFailure,
+  className,
   ...others
 }) {
 
-  // Setup a validator if we don't have one
-  const localValidator = validator
-    ? validator
-    : (optional ? (() => true) : (x => Boolean(x)));
+  const localValidator = defaultValidator(validator, optional);
 
-  // Register the field to the validation context on first rendering
+  const { binding, failure } = useContext(Validation);
+  const onChange = binding(name);
+  useEffect(() => onChange({ value: '', isValid: optional }), []);
+
+  const [state, setState] = useState({
+    value: '', isValid: optional, edited: false
+  });
+
+  const localOnChange = event => {
+    const value = type === 'number'
+      ? Number(event.target.value)
+      : event.target.value;
+    const isValid = localValidator(value);
+    setState({ value, isValid, edited: Boolean(value) });
+    onChange({ value, isValid });
+  };
+
   useEffect(() => {
-    register(value, localValidator, eraseOnFailure);
-  }, []);
+    if (failure && eraseOnFailure)
+      setState({ value: '', isValid: false, edited: false });
+  }, [failure]);
 
-  // Get validation context values and hooks
-  const { binder, error } = useContext(Validation);
-  const { onChange, value, isValid, register } = binder(name);
-
-  const localOnChange = event => onChange(event.target.value);
-
-  const cssClass = clsx(className, !isValid && 'is-invalid');
+  let css = '';
+  let validationState = {};
+  if (state.edited) {
+    css = clsx(className, state.edited && !state.isValid && 'is-invalid');
+    validationState = { isValid: state.isValid };
+  }
 
   return (
     <Form.Control
       {...others}
-      className={cssClass}
       required={!optional}
+      className={css}
       onChange={localOnChange}
-      value={value}
-      isValid={isValid}
+      type={type}
+      value={state.value || ''}
+      {...validationState}
     />
   );
 
@@ -134,12 +110,50 @@ function AutoFormControl({
 
 AutoFormControl.propTypes = {
   name: string.isRequired,
-  value: any
+  type: string
 };
 
 AutoFormControl.defaultProps = {
-  eraseOnFailure: false
+  eraseOnFailure: false,
+  type: 'text'
 }
+
+
+function AutoFormSwitch({ optional, name, className, variant, ...others }) {
+
+  const [toggled, setToggled] = useState(false);
+  const localValidator = value => optional ? true : value;
+  const { binding, failure } = useContext(Validation);
+  const onChange = binding(name);
+  useEffect(() => onChange({ value: toggled, isValid: optional }), []);
+
+  const localOnChange = event => {
+    setToggled(toggled => !toggled);
+    onChange({ value: !toggled, isValid: localValidator(!toggled) });
+  };
+
+  const cls = clsx(className, `custom-switch-${variant}`);
+
+  return (
+    <Form.Check
+      {...others}
+      type="switch"
+      onChange={localOnChange}
+      className={cls}
+    />
+  )
+}
+
+AutoFormSwitch.defaultProps = {
+  variant: 'primary'
+};
+
+AutoFormSwitch.propTypes = {
+  name: string.isRequired,
+  optional: bool,
+  className: string,
+  variant: string,
+};
 
 
 function AutoFormSubmit({ className, ...others }) {
@@ -155,27 +169,9 @@ function AutoFormSubmit({ className, ...others }) {
 }
 
 
-function AsyncForm({ endpoint, andThen, ...others }) {
-
-  const [error, setError] = useState(false);
-
-  const onSubmit = data => api(endpoint, data)
-    .then(andThen)
-    .catch(e => setError(e.message));
-
-  return (
-    <AutoForm
-      error={error}
-      onSubmit={onSubmit}
-      {...others}
-    />
-  );
-
-}
-
-
 AutoForm.Control = AutoFormControl;
+AutoForm.Switch = AutoFormSwitch;
 AutoForm.Submit = AutoFormSubmit;
-AutoForm.Async = AsyncForm;
+
 
 export default AutoForm;

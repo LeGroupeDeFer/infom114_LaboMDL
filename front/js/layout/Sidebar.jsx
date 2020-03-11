@@ -2,13 +2,16 @@ import React from 'react';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { NavLink } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+import { faDoorOpen } from '@fortawesome/free-solid-svg-icons';
 import { useLocation } from 'react-router-dom';
+import { useAuth } from '../context/authContext';
 
 
 function Sidebar({ open, links }) {
 
   const location = useLocation();
-  if (location.pathname == '/login')
+  const { user } = useAuth();
+  if (['/login', '/register'].includes(location.pathname))
     return <></>;
 
   return (
@@ -20,7 +23,10 @@ function Sidebar({ open, links }) {
       </div>
 
       {/* Menu */}
-      <ListGroup variant='flush' className='sidebar-nav w-100 text-center'>
+      <ListGroup
+        variant="flush"
+        className="sidebar-nav w-100 text-center"
+      >
         {links.map(({ name, path, icon }, i) => (
           <NavLink exact to={path} key={i}>
             <ListGroup.Item>
@@ -28,6 +34,18 @@ function Sidebar({ open, links }) {
             </ListGroup.Item>
           </NavLink>
         ))}
+        {user ? (
+          <NavLink
+            variant="danger"
+            exact
+            to="/logout"
+            className="sidebar-exit"
+          >
+            <ListGroup.Item>
+              <Icon icon={faDoorOpen} />
+            </ListGroup.Item>
+          </NavLink>
+        ) : <></>}
       </ListGroup>
 
     </nav>

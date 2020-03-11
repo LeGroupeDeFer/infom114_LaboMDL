@@ -1,17 +1,18 @@
 @use '../themes' as *;
 
+@use '../abstract/mixins' as *;
+
 .register-form {
-    position: relative;
-    top: 50%;
-    transform: translateY(-50%);
+    padding-top: 10rem;
+    padding-bottom: 5rem;
 }
 
-main.register {
-    padding-left: 0;
-    color: theme-color("light");
-    background: theme-color("primary");
+.register {
+    @include layout-secondary;
+}
 
-    .content {
-        height: 100%;
+@include media-breakpoint-down("sm") {
+    .form-header {
+        font-size: .7em;
     }
 }

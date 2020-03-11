@@ -41,7 +41,7 @@ const Content = (_) => {
 
       <div className={`offset ${locationClass}`}>
         <main role="main">
-          <div className="content p-3">
+          <div className="content">
             <Suspense fallback={<h1>Loading...</h1>}>
               <Switch>
 
