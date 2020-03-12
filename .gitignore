@@ -4,6 +4,7 @@ target/
 static/js/
 static/css/
 node_modules/
+doc/front/
 
 # Env
 .history
@@ -20,3 +21,6 @@ test.http
 # Runtime
 *.pid
 *.log
+
+# Symbolic links
+bootstrap_module/

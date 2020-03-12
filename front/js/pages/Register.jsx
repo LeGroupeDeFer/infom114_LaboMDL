@@ -1,6 +1,6 @@
 import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -10,7 +10,7 @@ import AutoForm from "../components/AutoForm";
 import Flexbox from "../components/Flexbox";
 import Image from '../components/Image';
 import { useAuth } from "../context/authContext";
-import { isUnamurEmail, isValidPassword } from "../utils/validators";
+import { isUnamurEmail, isValidNatural, isValidPassword } from "../lib/validators";
 
 
 function Header() {
@@ -132,8 +132,10 @@ function RegisterForm() {
               id="number"
               name="number"
               type="number"
+              min="0"
               eraseOnFailure={false}
               className="flex-grow-1"
+              validator={isValidNatural}
             />
             <Form.Label>
               <small><b>NUMBER</b></small>
@@ -170,9 +172,11 @@ function RegisterForm() {
             <AutoForm.Control
               id="zip"
               name="zip"
+              min="0"
               type="number"
               eraseOnFailure={false}
               className="flex-grow-1"
+              validator={isValidNatural}
             />
             <Form.Label>
               <small><b>ZIP CODE</b></small>
@@ -266,17 +270,12 @@ function RegisterForm() {
 
 function Register(props) {
   const { register, user } = useAuth();
-  const [error, setError] = useState(false);
-  const history = useHistory()
-
   if (user)
     history.push('/');
 
-  const handleSubmit = newUser => {
-    register(newUser)
-      .then(_ => history.push('/login'))
-      .catch(error => setError(true));
-  }
+  const history = useHistory()
+  const handleSubmit = newUser =>
+    register(newUser).then(_ => history.push('/login'));
 
   useEffect(() => (user ? history.replace("/") : undefined), [user])
 
@@ -293,7 +292,7 @@ function Register(props) {
           />
         </Col>
         <Col>
-          <AutoForm failure={error} onSubmit={handleSubmit} autoComplete="off">
+          <AutoForm onSubmit={handleSubmit} autoComplete="off">
             <RegisterForm />
           </AutoForm>
         </Col>

@@ -3,6 +3,7 @@ use crate::http::responders::api::ApiResponse;
 use crate::models::quick_response::Info;
 use crate::models::user::User;
 use crate::schema;
+use std::convert::identity;
 
 use super::forms::{self, LoginCredentials, RegisterCredentials};
 use super::guards::Auth;
@@ -37,6 +38,7 @@ fn post_register_v1(
     if Auth::is_authenticated(&mut cookies) {
         return ApiResponse::error(Status::UnprocessableEntity, "Already authenticated");
     }
+
     match user_info {
         Ok(infos) => {
             match User::check_if_email_is_available(&infos.email, &conn) {
@@ -113,50 +115,34 @@ fn post_login_v1(
     conn: MyDbConn,
     mut cookies: Cookies,
 ) -> ApiResponse {
-    match credentials {
-        Ok(info) => {
-            match schema::users::dsl::users
+    let invalid_ids = ApiResponse::error(
+        Status::Unauthorized,
+        "The email and password you entered did not match our records. Please double-check and try again."
+    );
+    credentials
+        .map_err(ApiResponse::json_error)
+        .and_then(|info| {
+            schema::users::dsl::users
                 .filter(schema::users::columns::email.eq(&info.email))
                 .first::<User>(&*conn)
-            {
-                Ok(user) => match bcrypt::verify(&*info.password, &user.password) {
-                    Ok(result) => {
-                        if result {
-                            Auth::login(&mut cookies, &user);
-                            ApiResponse::new(
-                                Status::Ok,
-                                json!({
-                                   "success": true,
-                                   "user": {
-                                        "id": user.id,
-                                        "firstname": user.firstname,
-                                        "lastname": user.lastname,
-                                        "street": user.street,
-                                        "number": user.number,
-                                        "city": user.city,
-                                        "zipcode": user.zipcode,
-                                        "country": user.country,
-                                        "phone": user.phone
-                                   }
-                                }),
-                            )
-                        } else {
-                            ApiResponse::error(
-                                Status::Unauthorized,
-                                "Wrong email/password association",
-                            )
-                        }
-                    }
-
-                    Err(error) => {
-                        ApiResponse::error(Status::InternalServerError, &error.to_string())
-                    }
-                },
-                Err(e) => ApiResponse::db_error(e),
-            }
-        }
-        Err(e) => ApiResponse::json_error(e),
-    }
+                .map(|user| (info, user))
+                .map_err(|_| invalid_ids.clone())
+        })
+        .and_then(|(info, user)| {
+            bcrypt::verify(&*info.password, &user.password)
+                .map(|_| {
+                    Auth::login(&mut cookies, &user);
+                    ApiResponse::new(
+                        Status::Ok,
+                        json!({
+                            "success": true,
+                            "user": user.to_json()
+                        }),
+                    )
+                })
+                .map_err(|_| invalid_ids.clone())
+        })
+        .map_or_else(identity, identity)
 }
 
 #[get("/api/v1/logout")]

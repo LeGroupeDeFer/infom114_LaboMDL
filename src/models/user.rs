@@ -10,6 +10,8 @@ use diesel::ExpressionMethods;
 
 use regex::Regex;
 
+use rocket_contrib::json::JsonValue;
+
 #[derive(Queryable, Serialize, Deserialize, Debug)]
 pub struct User {
     pub id: u32,
@@ -69,5 +71,23 @@ impl User {
     pub fn check_if_email_is_unamur(email_address: &str) -> bool {
         let re = Regex::new(r"^(.*)@(student\.)?unamur\.be$").unwrap();
         re.is_match(email_address)
+    }
+
+    pub fn verify(&self, password: &str) -> bool {
+        bcrypt::verify(password, &self.password).is_ok()
+    }
+
+    pub fn to_json(&self) -> JsonValue {
+        json!({
+            "id": self.id,
+            "firstname": self.firstname,
+            "lastname": self.lastname,
+            "street": self.street,
+            "number": self.number,
+            "city": self.city,
+            "zipcode": self.zipcode,
+            "country": self.country,
+            "phone": self.phone
+        })
     }
 }

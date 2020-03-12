@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { debounce } from '../utils';
+import { debounce } from '../lib';
 
 
 export default function useWindowResize(debounceTimer = 250) {

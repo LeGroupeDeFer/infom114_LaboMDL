@@ -2,7 +2,7 @@ import React from 'react';
 import { shallow, mount } from 'enzyme'
 
 import Waiting from '../../js/components/Waiting';
-import { delay } from '../../js/utils';
+import { delay } from '../../js/lib';
 
 
 describe('<Waiting />', () => {

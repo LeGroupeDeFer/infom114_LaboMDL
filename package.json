@@ -1,16 +1,18 @@
 {
-    "name": "infom114_labomdl",
-    "version": "0.0.0",
+    "name": "UNanimity",
+    "version": "0.1.0",
     "description": "",
     "main": "index.js",
     "scripts": {
         "test": "jest --passWithNoTests",
         "build": "webpack --config webpack.prod.js --display-modules",
         "watch": "webpack --config webpack.dev.js --watch",
-        "stat": "webpack --config webpack.prod.js --profile --json > out/stats.json"
+        "stat": "webpack --config webpack.prod.js --profile --json > out/stats.json",
+        "doc": "jsdoc -c jsdoc.conf.json -t ./node_modules/foodoc/template"
     },
     "keywords": [
         "UNamur",
+        "MS1",
         "MDL",
         "Participation"
     ],
@@ -53,8 +55,10 @@
         "css-loader": "^3.4.2",
         "enzyme": "^3.11.0",
         "enzyme-adapter-react-16": "^1.15.2",
+        "foodoc": "0.0.9",
         "identity-obj-proxy": "^3.0.0",
         "jest": "^25.1.0",
+        "jsdoc": "^3.6.3",
         "mini-css-extract-plugin": "^0.9.0",
         "sass": "^1.26.2",
         "sass-loader": "^8.0.2",

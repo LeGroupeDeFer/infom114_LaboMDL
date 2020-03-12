@@ -1,7 +1,7 @@
-import { trace, capitalize, preview, debounce, delay } from '../../js/utils';
+import { trace, capitalize, preview, debounce, delay } from '../../js/lib';
 import * as sinon from 'sinon';
 
-describe('utils', () => {
+describe('lib', () => {
 
   let clock;
   beforeEach(() => { clock = sinon.useFakeTimers(); });

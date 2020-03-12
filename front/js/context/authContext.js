@@ -6,7 +6,7 @@ import React, {
   useLayoutEffect,
   useDebugValue
 } from 'react';
-import api from 'unanimity/utils/api';
+import api from 'unanimity/lib/api';
 
 
 class AuthError extends Error { }

@@ -7,7 +7,7 @@ use rocket_contrib::json::{JsonError, JsonValue};
 
 use crate::models::quick_response;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ApiResponse {
     json: JsonValue,
     status: Status,

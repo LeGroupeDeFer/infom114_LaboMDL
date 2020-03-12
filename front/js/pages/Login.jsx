@@ -1,18 +1,15 @@
+import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useState } from 'react';
-import useInput from '../hooks/useInput';
-import Form from 'react-bootstrap/Form';
-import AutoForm from '../components/AutoForm';
-import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
-import Button from 'react-bootstrap/Button';
-import api from '../utils/api';
-import Flexbox from '../components/Flexbox';
-import { useHistory, Link } from 'react-router-dom';
-import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import Form from 'react-bootstrap/Form';
+import Row from 'react-bootstrap/Row';
+import { Link, useHistory } from 'react-router-dom';
 import { useAuth } from 'unanimity/context/authContext';
-import { isUnamurEmail, isValidPassword } from '../utils/validators';
+import AutoForm from '../components/AutoForm';
+import Flexbox from '../components/Flexbox';
+import { isUnamurEmail, isValidPassword } from '../lib/validators';
 
 
 function Header(props) {
@@ -81,23 +78,21 @@ function Login(props) {
 
   const { login, user } = useAuth();
   const history = useHistory();
+
+  if (user)
+    history.push('/');
+
   useEffect(() => user ? history.replace('/') : undefined, [user]);
-  const [error, setError] = useState(false);
 
-  const handleSubmit = data => {
-    const { email, password } = data;
-
-    login(email, password)
-      .then(_ => history.push('/'))
-      .catch(error => setError(error));
-  }
+  const handleSubmit = data =>
+    login(data.email, data.password).then(_ => history.push('/'));
 
   return (
     <Container className="login-form">
       <Row>
         <Col md={{ span: 8, offset: 2 }} lg={{ span: 6, offset: 3 }}>
 
-          <AutoForm failure={error} onSubmit={handleSubmit} autoComplete="off">
+          <AutoForm onSubmit={handleSubmit} autoComplete="off">
             <Header />
             <hr />
 
