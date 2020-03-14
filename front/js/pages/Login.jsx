@@ -6,7 +6,7 @@ import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import { Link, useHistory } from 'react-router-dom';
-import { useAuth } from 'unanimity/context/authContext';
+import { useAuth } from '../context/authContext';
 import AutoForm from '../components/AutoForm';
 import Flexbox from '../components/Flexbox';
 import { isUnamurEmail, isValidPassword } from '../lib/validators';
@@ -79,9 +79,11 @@ function Login(props) {
   const { login, user } = useAuth();
   const history = useHistory();
 
-  if (user)
+  if (user) {
     history.push('/');
-
+    // Shouldn't get here except in testing
+    return <></>;
+  }
   useEffect(() => user ? history.replace('/') : undefined, [user]);
 
   const handleSubmit = data =>

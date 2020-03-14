@@ -2,7 +2,7 @@
 /* istanbul ignore next */
 const root = '/api/v1';
 /* istanbul ignore next */
-const endpoints = Object.freeze(['login', 'logout', 'register']);
+const endpoints = Object.freeze(['/login', '/logout', '/register']);
 
 /**
  * @memberof api
@@ -37,7 +37,7 @@ const endpoints = Object.freeze(['login', 'logout', 'register']);
  * @param { body }   [config.body=null] The request payload, the request defaults to a `GET` method when this argument is null, to `POST` otherwise.
  * @param { ...any } [config.others=null] [Fetch parameters]{@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API} to override automatic parameters.
  */
-function api(endpoint, { body, ...providedConfig }) {
+function api(endpoint, { body, ...providedConfig } = {}) {
 
   if (!endpoints.includes(endpoint))
     throw new Error(`Unknown endpoint ${endpoint}`);
@@ -60,8 +60,8 @@ function api(endpoint, { body, ...providedConfig }) {
   if (body)
     config.body = JSON.stringify(body);
 
-  return window
-    .fetch(`${root}/${endpoint}`, config)
+  return (window || global)
+    .fetch(`${root}${endpoint}`, config)
     .then(response => Promise.all(
       [new Promise(resolve => resolve(response.status)), response.json()]
     ))

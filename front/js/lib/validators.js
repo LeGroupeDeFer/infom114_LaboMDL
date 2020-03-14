@@ -12,7 +12,7 @@
  * @returns boolean
  */
 export function isUnamurEmail(email) {
-  return /@(student\.)?unamur\.be\s*$/.test(email);
+  return /[a-zA-Z0-9._%+-]+@(student\.)?unamur\.be\s*$/.test(email);
 }
 
 /**
@@ -34,10 +34,6 @@ export function isValidPassword(password) {
  * @returns boolean
  */
 export function isValidNatural(number) {
-  try {
     const n = Number(number);
     return n >= 0 && n % 1 === 0;
-  } catch {
-    return false;
-  }
 }

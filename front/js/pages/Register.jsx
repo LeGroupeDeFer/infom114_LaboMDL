@@ -270,10 +270,13 @@ function RegisterForm() {
 
 function Register(props) {
   const { register, user } = useAuth();
-  if (user)
-    history.push('/');
-
   const history = useHistory()
+  if (user) {
+    history.push('/');
+    // Shouldn't get here except in testing
+    return <></>;
+  }
+
   const handleSubmit = newUser =>
     register(newUser).then(_ => history.push('/login'));
 
