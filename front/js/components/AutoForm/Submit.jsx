@@ -1,23 +1,27 @@
 import clsx from 'clsx';
 import React from 'react';
 import Button from 'react-bootstrap/Button';
-import { useValidation } from './validationContext';
+import { useForm } from './formContext';
 
 /**
- * @component
  * @memberof AutoForm
  * @param {Object} props
  */
 function Submit({ className, ...others }) {
-  const { validated, error } = useValidation();
+
+  const { validity, error, submit } = useForm();
+  /* istanbul ignore next */
+  const cls = clsx(className, error && 'btn-danger')
+
   return (
     <Button
-      type="submit"
-      disabled={!validated}
-      className={clsx(className, error && 'btn-danger')}
       {...others}
+      type="submit"
+      disabled={!validity}
+      className={cls}
     />
   );
+
 }
 
 

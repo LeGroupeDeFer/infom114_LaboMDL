@@ -14,7 +14,7 @@ const AuthContext = createContext();
 const store = window.localStorage;
 
 
-export function AuthProvider(props) {
+export function AuthProvider({ children }) {
 
   /* Internal state */
   const [user, setUser] = useState(null);
@@ -52,7 +52,7 @@ export function AuthProvider(props) {
 
   return (
     <AuthContext.Provider value={{ login, logout, register, user }}>
-      {props.children}
+      {children}
     </AuthContext.Provider>
   );
 

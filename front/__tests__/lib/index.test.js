@@ -9,9 +9,14 @@ describe('lib', () => {
 
   describe('trace', () => {
     it('should return the given value', () => {
+      const spy = jest.spyOn(console, 'error');
+      spy.mockImplementation(() => { });
+
       expect(trace(5)).toEqual(5);
       expect(trace([1, 2, 3])).toStrictEqual([1, 2, 3]);
       expect(trace({ key: 'value' })).toStrictEqual({ key: 'value' });
+
+      spy.mockRestore();
     });
   });
 

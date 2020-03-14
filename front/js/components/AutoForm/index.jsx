@@ -5,7 +5,7 @@ import Form from 'react-bootstrap/Form';
 import Control from './Control';
 import Submit from './Submit';
 import Switch from './Switch';
-import { ValidationProvider } from './validationContext';
+import { FormProvider, useForm } from './formContext';
 import { trace } from '../../lib';
 
 
@@ -32,6 +32,25 @@ import { trace } from '../../lib';
  */
 
 // ----------------------------------------------------------------------------
+
+/* Not exposed! */
+function InnerForm(props) {
+
+  const { submit, validity, error } = useForm();
+  /* istanbul ignore next */
+  const cls = clsx(error && 'submit-failure');
+
+  return (
+    <Form
+      {...props}
+      noValidate
+      validated={validity}
+      onSubmit={submit}
+      className={cls}
+    />
+  );
+
+}
 
 /**
  * @namespace
@@ -72,67 +91,20 @@ import { trace } from '../../lib';
  * }
  * 
  */
-function AutoForm({ onSubmit, failureTimeout, ...others }) {
-
-  const [state, setState] = useState({});
-  const [failure, setFailure] = useState(false);
-  const [validated, setValidated] = useState(true);
-
-  const onInputChange = name => ({ value, isValid }) => {
-    setState(oldState => ({ ...oldState, [name]: { value, isValid } }));
-  };
-
-  const onFormSubmit = event => {
-    event.preventDefault();
-    onSubmit(Object.keys(state).reduce(
-      (acc, key) => ({ ...acc, [key]: state[key].value }), {}
-    )).catch(error => {
-      setFailure(error);
-      setValidated(false);
-    });
-  };
-
-  const binding = name => onInputChange(name);
-
-  useEffect(() => setValidated(Object.keys(state).reduce(
-    (acc, key) => acc && state[key].isValid, true
-  )), [state]);
-
-  useEffect(() => {
-    if (failure)
-      setTimeout(() => setFailure(false), failureTimeout);
-  }, [failure]);
+function AutoForm({ onSubmit, ...others }) {
 
   return (
-    <ValidationProvider value={{
-      binding,
-      validated,
-      failure: failure !== false
-    }}>
-      <Form
-        {...others}
-        noValidate
-        validated={validated}
-        onSubmit={onFormSubmit}
-        className={clsx(failure && 'submit-failure')}
-      />
-      {failure ? <div className='bg-danger p-1 mt-3 text-center'>
-        {failure.message}
-      </div> : <></>}
-    </ValidationProvider >
+    <FormProvider onSubmit={onSubmit}>
+      <InnerForm {...others} />
+    </FormProvider>
   );
 
 }
-
-AutoForm.defaultProps = {
-  failureTimeout: 5000
-};
 
 AutoForm.propTypes = {
   onSubmit: func.isRequired,
   failureTimeout: number
 };
-
 
 AutoForm.Switch = Switch;
 AutoForm.Control = Control;

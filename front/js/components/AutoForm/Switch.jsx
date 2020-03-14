@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import { bool, string } from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import Form from 'react-bootstrap/Form';
-import { useValidation } from './validationContext';
+import { useForm } from './formContext';
 
 
 /**
@@ -13,18 +13,19 @@ import { useValidation } from './validationContext';
  */
 function Switch({ optional, name, className, variant, ...others }) {
 
-  const [toggled, setToggled] = useState(false);
   const localValidator = value => optional ? true : value;
-  const { binding, failure } = useValidation();
-  const onChange = binding(name);
-  useEffect(() => onChange({ value: toggled, isValid: optional }), []);
+  const [toggled, setToggled] = useState(false);
+
+  const { register, onChange, error } = useForm();
+  useEffect(() => register(name, toggled, optional), []);
 
   const localOnChange = event => {
     setToggled(toggled => !toggled);
-    onChange({ value: !toggled, isValid: localValidator(!toggled) });
+    onChange(name, !toggled, localValidator(!toggled));
   };
 
-  const cls = clsx(className, `custom-switch-${variant}`);
+  /* istanbul ignore next */
+  const cls = clsx(className, `custom-switch-${error ? 'danger' : variant}`);
 
   return (
     <Form.Check
