@@ -1,6 +1,5 @@
 import React from 'react';
-import { shallow } from 'enzyme';
-
+import { act, fireEvent, render } from '@testing-library/react';
 import Stream from '../../js/pages/Stream';
 
 
@@ -8,7 +7,7 @@ import Stream from '../../js/pages/Stream';
 describe('<Stream />', () => {
 
   it('should render', () => {
-    const wrapper = shallow(<Stream />);
+    const wrapper = render(<Stream />);
     expect(wrapper).toBeTruthy();
   });
 

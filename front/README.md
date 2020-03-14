@@ -11,7 +11,7 @@
 
 ## Testing libraries used
 1. [Jest](https://jestjs.io/en/)
-2. [Enzyme](https://airbnb.io/enzyme/)
+2. [Testing Library](https://testing-library.com/)
 3. [Sinon](https://sinonjs.org/)
 
 ## Documentation

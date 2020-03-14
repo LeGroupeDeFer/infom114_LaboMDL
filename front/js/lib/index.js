@@ -133,7 +133,6 @@ function debounce(fn, ms = 250) {
   };
 }
 
-// delay<...Ts> :: (Callable<...Ts>, Integer?) => Callable<...Ts>
 /**
  * @memberof lib
  *

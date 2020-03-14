@@ -1,5 +1,5 @@
 import React from 'react';
-import { shallow } from 'enzyme';
+import { act, fireEvent, render } from '@testing-library/react';
 
 import Settings from '../../js/pages/Settings';
 
@@ -8,7 +8,7 @@ import Settings from '../../js/pages/Settings';
 describe('<Settings />', () => {
 
   it('should render', () => {
-    const wrapper = shallow(<Settings />);
+    const wrapper = render(<Settings />);
     expect(wrapper).toBeTruthy();
   });
 

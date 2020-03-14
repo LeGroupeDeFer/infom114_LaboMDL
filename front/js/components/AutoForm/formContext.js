@@ -3,6 +3,9 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const FormContext = createContext();
 
+const assertValidity = data =>
+  Object.keys(data).reduce((acc, key) => acc && data[key].valid, true);
+
 export function FormProvider({ onSubmit, children }) {
 
   const [data, setData] = useState({});
@@ -10,25 +13,16 @@ export function FormProvider({ onSubmit, children }) {
   const [error, setError] = useState(false);
   const [send, setSend] = useState(null);
 
-  const assertValidity = () => {
-    setValidity(Object.keys(data).reduce(
-      (acc, key) => acc && data[key].valid,
-      true
-    ));
+  // TODO - Test double registers
+  const register = (name, value, valid) => {
+    if (!data[name])
+      setData(data => ({ ...data, [name]: { name, value, valid } }));
   }
 
-  const register = (name, value, optional) => {
-    if (!data[name]) {
-      data[name] = { name, value, valid: optional };
-      assertValidity();
-    }
-  }
-
+  // TODO - Test Useless onChange
   const onChange = (name, value, valid) => {
-    if (data[name].value !== value) {
-      data[name] = { name, value, valid };
-      assertValidity();
-    }
+    if (data[name].value !== value)
+      setData(data => ({ ...data, [name]: { name, value, valid } }));
   }
 
   const submit = event => {
@@ -60,7 +54,10 @@ export function FormProvider({ onSubmit, children }) {
     });
   }
 
-  // Effect-ful part of submit
+  useEffect(() => { setValidity(assertValidity(data)); }, [data]);
+
+  // Basically untestable
+  /* istanbul ignore next */
   useEffect(() => {
     if (!send)
       return;

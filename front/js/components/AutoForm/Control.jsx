@@ -73,7 +73,7 @@ function Control({
 
   const localValidator = defaultValidator(validator, optional);
   const [state, setState] = useState({
-    value: cast(defaultValue, type),
+    value: defaultValue,
     valid: localValidator(defaultValue),
     edited: false
   });

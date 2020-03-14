@@ -1,10 +1,10 @@
-import 'regenerator-runtime';
+import regeneratorRuntime from "regenerator-runtime";
 import { act, fireEvent, render } from '@testing-library/react';
+import { wait } from '@testing-library/dom';
 import React from 'react';
-import ReactDOM from 'react-dom';
 import AutoForm from '../../js/components/AutoForm';
 import { FormProvider, useForm } from '../../js/components/AutoForm/formContext';
-import SynchronousPromise from 'synchronous-promise';
+
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -29,6 +29,7 @@ class ErrorBoundary extends React.Component {
 
 }
 
+
 function DebugFormProvider() {
   const { validity, error } = useForm();
   return (
@@ -38,6 +39,7 @@ function DebugFormProvider() {
     </>
   );
 }
+
 
 describe('<AutoForm.Control />', () => {
 
@@ -75,6 +77,15 @@ describe('<AutoForm.Control />', () => {
     expect(optionalValidator('')).toBeTruthy();
     expect(requiredValidator('')).toBeFalsy();
     expect(requiredValidator(42)).toBeTruthy();
+  });
+
+  it('should not fallback to base validator when a validator is provided', () => {
+    const validator = x => x > 41 && x < 43;
+    const optionalValidator = AutoForm.Control.defaultValidator(validator, true);
+    const requiredValidator = AutoForm.Control.defaultValidator(validator, true);
+
+    expect(optionalValidator).toBe(validator);
+    expect(requiredValidator).toBe(validator);
   });
 
   it('should be valid when optional', () => {
@@ -123,40 +134,52 @@ describe('<AutoForm.Control />', () => {
     const callback = jest.fn(value => new Promise(resolve => resolve(value)));
     const { container } = render(
       <AutoForm onSubmit={callback}>
-        <AutoForm.Control name="number" type="number" defaultValue="42" />
+        <AutoForm.Control name="number" type="number" />
       </AutoForm>
     );
 
+    const input = container.querySelector('input');
+    act(() => { fireEvent.change(input, { target: { value: "42" }}); })
     const form = container.querySelector('form');
     act(() => { fireEvent.submit(form); });
     expect(callback).toBeCalledWith({ number: 42 });
   });
 
-  it.skip('should erase on error', async () => {
-    // FIXME - The function actually work but getting jest to wait for the
-    // submission promise to resolve is complicated, the callback is executed
-    // from within react so we can't "await" it for completion.
-    const container = document.createElement('div');
-    document.body.appendChild(container);
+  it('should erase on error', async () => {
+    const callback = _ => Promise.reject('lets reject this because reasons');
+    const { container } = render(
+      <AutoForm onSubmit={callback}>
+        <AutoForm.Control
+          name="failed"
+          defaultValue="23"
+          eraseOnFailure />
+      </AutoForm>,
+      container
+    );
 
-    const callback = value => Promise.reject('lets reject this because reasons');
-
-    await act(async () => {
-      ReactDOM.render(
-        <AutoForm onSubmit={callback}>
-          <AutoForm.Control
-            name="failed"
-            defaultValue="23"
-            eraseOnFailure />
-        </AutoForm>,
-        container
-      );
-      const form = container.querySelector('form');
-      fireEvent.submit(form);
-    });
+    const form = container.querySelector('form');
+    fireEvent.submit(form);
 
     const input = container.querySelector('input');
-    expect(input.value).toBe('');
+    await wait(() => expect(input.value).toBe(''));
+
+  });
+
+  it('should present validity state only when edited', () => {
+    const callback = jest.fn();
+    const { container } = render(
+      <FormProvider onSubmit={callback}>
+        <AutoForm.Control name="foo" type="number" validator={x => x === 42}/>
+        <DebugFormProvider />
+      </FormProvider>
+    );
+
+    const input = container.querySelector('input');
+    let validMarker = container.querySelector('input.is-invalid');
+    expect(validMarker).toBeNull();
+    fireEvent.change(input, { target: { value: 19 }});
+    validMarker = container.querySelector('input.is-invalid');
+    expect(validMarker).toBeDefined();
   });
 
 });
@@ -180,24 +203,25 @@ describe('<AutoForm.Submit />', () => {
     expect(callback).toHaveBeenCalledTimes(0);
   });
 
-  it.skip('should present an error feedback', () => {
-    // FIXME - Same as before, the function works but I can't get jest to wait
+  it('should present an error feedback', async () => {
     const callback = _ => Promise.reject('nope');
 
     const { container } = render(
       <AutoForm onSubmit={callback}>
-        <AutoForm.Control name="foo" type="text" />
+        <AutoForm.Control name="foo" type="text" optional/>
         <AutoForm.Submit>Submit</AutoForm.Submit>
       </AutoForm>
     );
 
-    const button = container.querySelector('button');
-    act(() => { fireEvent.click(button); });
+    const form = container.querySelector('form');
+    fireEvent.submit(form);
 
-    expect(button.classList).toContain('btn-danger');
+    const button= container.querySelector('button');
+    await wait(() => expect(button.classList).toContain('btn-danger'));
   });
 
 });
+
 
 describe('<AutoForm.Switch />', () => {
 
@@ -243,6 +267,7 @@ describe('<AutoForm.Switch />', () => {
 
 });
 
+
 describe('<AutoForm />', () => {
 
   it('should prevent manual submits when invalid', () => {
@@ -281,25 +306,44 @@ describe('<AutoForm />', () => {
     expect(error).toBeTruthy();
   });
 
-  it('should handle erronous callbacks', () => {
-    const callback = () => { throw (new Error('why not')); };
+  it('should handle erronous callbacks', async () => {
+    const callback = jest.fn(() => { throw (new Error('why not')); });
 
-    const { container } = render(
-      <AutoForm onSubmit={callback}>
-        <AutoForm.Control name="foo" type="text" optional />
-        <AutoForm.Submit>Submit</AutoForm.Submit>
-      </AutoForm>
+    const { container, getByText } = render(
+        <AutoForm onSubmit={callback}>
+          <AutoForm.Control name="foo" type="text" optional />
+          <AutoForm.Submit>Submit</AutoForm.Submit>
+          <DebugFormProvider />
+        </AutoForm>
     );
 
     const button = container.querySelector('button');
     act(() => { fireEvent.click(button); });
 
-    // FIXME - Assert error boundary
-    expect(callback).toHaveBeenCalledTimes(0);
+    const error = container.querySelector('.test-error');
+    await wait(() => expect(error.textContent).toBe(Error('why not').toString()));
   });
+
+  it('should accept default functions for submission', async () => {
+    const callback = jest.fn(({ foo }) => foo + foo);
+
+    const { container, getByText } = render(
+        <AutoForm onSubmit={callback}>
+          <AutoForm.Control name="foo" type="text" optional />
+          <AutoForm.Submit>Submit</AutoForm.Submit>
+          <DebugFormProvider />
+        </AutoForm>
+    );
+
+    const form = container.querySelector('form');
+    act(() => { fireEvent.submit(form); });
+
+    const error = container.querySelector('.test-error');
+    await wait(() => expect(error.textContent).toBe('false'));
+  })
 
   it.skip('should fail when multiple inputs have the same name', () => {
     // TODO
   });
 
-})
+});

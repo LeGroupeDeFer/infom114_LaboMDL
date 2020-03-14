@@ -1,5 +1,7 @@
 
+/* istanbul ignore next */
 const root = '/api/v1';
+/* istanbul ignore next */
 const endpoints = Object.freeze(['login', 'logout', 'register']);
 
 /**
@@ -88,6 +90,7 @@ function login(email, password) {
     return user;
   });
 }
+
 /**
  * Attempts to logout the currently connected user. **Does not check if the user is connected** prior to the disconnection attempt.
  * @memberof api

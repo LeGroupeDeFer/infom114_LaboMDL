@@ -1,4 +1,4 @@
-import { mount, shallow } from 'enzyme';
+import { act, fireEvent, render } from '@testing-library/react';
 import React from 'react';
 import Post from '../../js/components/Post';
 import { preview } from '../../js/lib';
@@ -9,8 +9,9 @@ import { preview } from '../../js/lib';
 describe('<Post />', () => {
 
   it('should render', () => {
-    const wrapper = shallow(<Post />);
-    expect(wrapper).toBeTruthy();
+    const { container } = render(<Post />);
+    const post = container.querySelector('.post');
+    expect(post).toBeDefined();
   });
 
   it.skip('should render default props', () => {
