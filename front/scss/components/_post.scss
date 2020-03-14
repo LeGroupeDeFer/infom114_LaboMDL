@@ -1,4 +1,4 @@
-@use '../themes' as *;
+@use '../themes'as *;
 
 /*  Posts */
 
@@ -39,6 +39,11 @@
     background-color: theme-color("info");
 }
 
+.post-idea {
+    color: $white;
+    background-color: #d2b049;
+}
+
 .post-poll {
     color: $white;
     background-color: #c430d9;
@@ -47,6 +52,9 @@
 .post .text-muted {
     font-size: .75em;
 }
+
+
+
 
 .vote-section {
     padding-top: 1em;
@@ -57,4 +65,8 @@
 .post-comment {
     cursor: pointer;
     color: gray("800");
+}
+
+.post {
+    cursor: pointer;
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from 'react-bootstrap/Card';
 import { loremIpsum } from '../utils/dev';
 import { preview } from '../utils';
@@ -8,25 +8,28 @@ import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import Moment from 'react-moment';
 import { GoArrowDown, GoArrowUp } from 'react-icons/go';
-import { MdModeComment } from 'react-icons/md'
-import { useState } from 'react';
+import { MdModeComment } from 'react-icons/md';
 import clsx from 'clsx';
 
-const Post = ({ title, text, username, votePoints, type, previewLength, createdOn, currentFilter, ...otherProps }) => {
+const Post = ({ title, text, username, voteCount, type, previewLength, createdOn, currentFilter, ...otherProps }) => {
 
   const [voted, setVoted] = useState('no');
-  const [votePointsH, setvotePointsH] = useState(votePoints);
+  const [voteCountState, setvoteCountState] = useState(voteCount);
+
+  useEffect(() => {
+    setvoteCountState(voteCount);
+  }, [voteCount]);
 
   function upVote(cancel) {
     if (cancel) {
-      setvotePointsH(votePointsH - 1);
+      setvoteCountState(voteCountState - 1);
       setVoted('no');
     } else {
       // Case : We directly go from down to up
       if (voted == 'down') {
-        setvotePointsH(votePointsH + 2);
+        setvoteCountState(voteCountState + 2);
       } else {
-        setvotePointsH(votePointsH + 1);
+        setvoteCountState(voteCountState + 1);
       }
       setVoted('up');
     }
@@ -34,14 +37,14 @@ const Post = ({ title, text, username, votePoints, type, previewLength, createdO
 
   function downVote(cancel) {
     if (cancel) {
-      setvotePointsH(votePointsH + 1);
+      setvoteCountState(voteCountState + 1);
       setVoted('no');
     } else {
       // Case : We directly go from down to up
       if (voted == 'up') {
-        setvotePointsH(votePointsH - 2);
+        setvoteCountState(voteCountState - 2);
       } else {
-        setvotePointsH(votePointsH - 1);
+        setvoteCountState(voteCountState - 1);
       }
       setVoted('down');
     }
@@ -92,7 +95,7 @@ const Post = ({ title, text, username, votePoints, type, previewLength, createdO
               </Button>
 
               <div className={`text-center ${clsx(voted !== 'no' && voted + '-voted')}`}>
-                <b>{votePointsH}</b>
+                <b>{voteCountState}</b>
               </div>
 
               <Button
@@ -108,7 +111,6 @@ const Post = ({ title, text, username, votePoints, type, previewLength, createdO
             <div className="p-3">
               <Card.Title>{title}</Card.Title>
               <Card.Text>{preview(text, previewLength)}
-                <a href='#'> read more</a>
               </Card.Text>
               <a className='post-comment' href='#'>
                 <MdModeComment size="1.25em" className="mr-1" />
@@ -129,7 +131,7 @@ Post.defaultProps = {
   text: loremIpsum,
   username: 'John Coffey',
   previewLength: 200,
-  votePoints: 25,
+  voteCount: 25,
   type: 'info',
   createdOn: '2020-02-29T12:59-0500'
 };

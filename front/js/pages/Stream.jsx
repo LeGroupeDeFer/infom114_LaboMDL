@@ -9,25 +9,30 @@ import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import DropdownButton from 'react-bootstrap/DropdownButton'
 import Dropdown from 'react-bootstrap/Dropdown'
-import { MdSort } from 'react-icons/md';
-
+import { MdSort, MdSearch } from 'react-icons/md';
+import CreatableSelect from 'react-select/creatable';
+import { components } from 'react-select';
+import { FaSearch } from 'react-icons/fa';
 
 /* Delayed fetching of user posts */
 // fetchPosts :: int => Promise<Array<Object>>
 const fetchPosts = time => new Promise((resolve, _) => setTimeout(
-  () => resolve(Array(3).fill({ id: 0, title: 'Im a post title', type: 'info', text: loremIpsum, username: 'John Coffey', votePoints: 18, createdOn: '2020-02-19T12:59-0500' })
-    .concat(Array(2).fill({ id: 0, title: 'Im a post title too', type: 'poll', text: loremIpsum, username: 'John Cena', votePoints: 5, createdOn: '2020-02-29T12:59-0500' }))
-  ),
+  () => resolve([
+    { id: 0, title: 'Im a post title too', type: 'poll', text: loremIpsum, username: 'John Cena', voteCount: 7, createdOn: '2020-03-01T12:59-0500' },
+    { id: 0, title: 'Im a post title too', type: 'poll', text: loremIpsum, username: 'John Couscous', voteCount: 12, createdOn: '2020-02-29T12:59-0500' },
+    { id: 0, title: 'Im a post title too', type: 'idea', text: loremIpsum, username: 'John Doe', voteCount: 0, createdOn: '2020-02-27T12:59-0500' },
+    { id: 0, title: 'Im a post title', type: 'info', text: loremIpsum, username: 'John Coffey', voteCount: 2, createdOn: '2020-02-19T12:59-0500' }
+  ])
+  ,
   time
 ));
 
 // PostList :: Object => Component
 const PostList = props => {
-  const posts = usePromise(fetchPosts, [fakeLatency]);
 
   return (
     <>
-      {posts.map((post, i) => (
+      {props.posts.map((post, i) => (
         <Row key={i} className="mb-4">
           <Col><Post {...props} {...post} /></Col>
         </Row>
@@ -36,13 +41,34 @@ const PostList = props => {
   );
 };
 
+
 // Stream :: None => Component
 const Stream = () => {
 
   const [filter, setFilter] = useState('all');
 
+  const [posts, setPosts] = useState(usePromise(fetchPosts, [fakeLatency]));
+
+
+  function sortPost(criteria) {
+
+    let sortedPost =
+      [
+        { id: 0, title: 'Im a post title too', type: 'poll', text: loremIpsum, username: 'John Couscous', voteCount: 12, createdOn: '2020-02-29T12:59-0500' },
+        { id: 0, title: 'Im a post title too', type: 'poll', text: loremIpsum, username: 'John Cena', voteCount: 7, createdOn: '2020-03-01T12:59-0500' },
+        { id: 0, title: 'Im a post title', type: 'info', text: loremIpsum, username: 'John Coffey', voteCount: 2, createdOn: '2020-02-19T12:59-0500' },
+        { id: 0, title: 'Im a post title too', type: 'idea', text: loremIpsum, username: 'John Doe', voteCount: 0, createdOn: '2020-02-27T12:59-0500' }
+      ];
+    setPosts(sortedPost);
+
+  }
+
+
   return (
     <Container>
+
+      <br />
+      <SearchBar />
       <br />
       <Row className='justify-content-md-center'>
         <FilterBar onClick={setFilter} currentFilter={filter} />
@@ -50,22 +76,68 @@ const Stream = () => {
 
       <br />
       <Row className='justify-content-end'>
-        <SortDropdown />
+        <SortDropdown sortPost={sortPost} />
       </Row>
 
       <br />
       <Suspense fallback={<h3>Loading posts...</h3>}>
-        <PostList currentFilter={filter} />
+        <PostList currentFilter={filter} posts={posts} />
       </Suspense>
     </Container>
   );
 }
 
 
-// SortDropdown :: None => Component
-const SortDropdown = () => {
+// SearchBar :: None => Component
+const SearchBar = () => {
 
-  const [criteria, setCriteria] = useState('new');
+  const options = [
+    { value: 'chocolate', label: 'Chocolate' },
+    { value: 'strawberry', label: 'Strawberry' },
+    { value: 'vanilla', label: 'Vanilla' },
+  ];
+
+  const primary = '#A0C55F';
+
+  const customStyles = {
+    control: (base, state) => ({
+      ...base,
+      boxShadow: state.isFocused ? '0 0 0 1px ' + primary : 0,
+      borderColor: state.isFocused
+        ? primary
+        : base.borderColor,
+      '&:hover': {
+        borderColor: state.isFocused
+          ? primary
+          : primary,
+      }
+    }),
+    option: (styles, { isFocused }) => ({
+      ...styles,
+      backgroundColor: isFocused ? primary : null,
+    }),
+  };
+
+  return (
+    <CreatableSelect id="search-bar" isMulti options={options} components={{ DropdownIndicator }} placeholder={"Search"} styles={customStyles} formatCreateLabel={userInput => `Search for "${userInput}"`} />
+  );
+}
+
+
+
+const DropdownIndicator = props => {
+  return (
+    <components.DropdownIndicator {...props}>
+      <FaSearch size="0.85em" />
+    </components.DropdownIndicator>
+  );
+};
+
+
+// SortDropdown :: None => Component
+const SortDropdown = props => {
+
+  const [criteria, setCriteria] = useState('none');
   const [title, setTitle] = useState('Sort by');
 
   return (
@@ -77,19 +149,19 @@ const SortDropdown = () => {
     >
       <Dropdown.Item
         as='button'
-        onClick={() => { setCriteria('top'); setTitle('Sort by - Top') }}
+        onClick={() => { props.sortPost('top'); console.log("top cliqued"); setTitle('Sort by - Top') }}
       >
         Top
       </Dropdown.Item>
       <Dropdown.Item
         as='button'
-        onClick={() => { setCriteria('new'); setTitle('Sort by - New') }}
+        onClick={() => { props.sortPost('new'); setTitle('Sort by - New') }}
       >
         New
       </Dropdown.Item>
       <Dropdown.Item
         as='button'
-        onClick={() => { setCriteria('old'); setTitle('Sort by - Old') }}
+        onClick={() => { props.sortPost('old'); setTitle('Sort by - Old') }}
       >
         Old
       </Dropdown.Item>
