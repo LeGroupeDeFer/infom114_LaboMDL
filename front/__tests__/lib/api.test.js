@@ -1,52 +1,28 @@
 import regeneratorRuntime from 'regenerator-runtime';
 import api from '../../js/lib/api';
-
-const fakeResponse = (data, status=200) => Promise.resolve({
-  ok: status >= 200 && status < 400,
-  status,
-  json: () => Promise.resolve({
-    ...data,
-    success: status >= 200 && status < 400
-  }),
-});
+import '../../__mocks__/fetch.mock';
+import '../../__mocks__/storage.mock';
 
 describe('api', () => {
 
-  const store = { '__auth_token__': 'secret' };
-
-  beforeAll(() => {
-    global.fetch = jest.fn();
-    Object.defineProperty(window, 'localStorage', {
-      writable: true,
-      value: {
-        getItem: key => key in store ? store[key] : null,
-        setItem: (key, value) => {
-          store[key] = value;
-        },
-      }
-    });
-  });
+  beforeAll(() => { localStorage.setItem('__auth_token__', 'secret'); });
+  afterAll(() => { localStorage.removeItem('__auth_token__'); });
 
   it('should redirect to the api', async () => {
-    fetch.mockImplementation(() => fakeResponse({}));
     await api('/login');
 
-    expect(fetch).toHaveBeenCalledWith('/api/v1/login',  expect.anything());
+    expect(fetch).toHaveBeenCalledWith('/api/v1/login', expect.anything());
   });
 
   it('should reject invalid endpoints', async () => {
-    fetch.mockImplementation(() => fakeResponse({}));
-
     try {
       await api('/iDefinitelyExist');
-    } catch(e) {
+    } catch (e) {
       expect(e).toBeInstanceOf(Error);
     }
   });
 
   it('should attach a sane default configuration', async () => {
-    fetch.mockImplementation(() => fakeResponse({}));
-
     // We don't want per-se to get to /login but it's an available endpoint
     await api('/login');
     expect(fetch).toHaveBeenCalledWith(expect.anything(), {
@@ -59,12 +35,18 @@ describe('api', () => {
   });
 
   it('should convey the payload', async () => {
-    fetch.mockImplementation(() => fakeResponse({}));
-
-    await api('/login', { body: { things: ['one thing', 'another', 'yet another'] } });
+    await api('/login', {
+      body: {
+        email: 'jdoe@student.unamur.be',
+        password: 'secret',
+      }
+    });
     expect(fetch).toHaveBeenCalledWith(expect.anything(), {
       method: 'POST',
-      body: JSON.stringify({ things: ['one thing', 'another', 'yet another'] }),
+      body: JSON.stringify({
+        email: 'jdoe@student.unamur.be',
+        password: 'secret',
+      }),
       headers: {
         'Authorization': 'Bearer secret',
         'content-type': 'application/json'
@@ -73,24 +55,101 @@ describe('api', () => {
   });
 
   it('should fail on 4xx+ error codes', async () => {
-    fetch.mockImplementation(() => fakeResponse({}, 401));
-
     let error = false;
-    try { await api('/login'); } catch (e) { error = true; }
+    try {
+      await api('/login', { body: { thing: 'thing' } });
+    } catch (e) { error = true; }
 
     expect(error).toBeTruthy();
   });
 
 });
 
-describe.skip('api.login', () => {
-  // TODO
+describe('api.login', () => {
+
+  beforeEach(localStorage.clear);
+  afterEach(fetch.removeUser);
+
+  it('should log in the user', async () => {
+    const user = await api.login('jdoe@student.unamur.be', 'secret');
+    expect(user).toBeTruthy();
+  });
+
+  it('should setup a token', async () => {
+    await api.login('jdoe@student.unamur.be', 'secret');
+    const token = localStorage.getItem('__auth_token__');
+    expect(token).toBeTruthy();
+  });
+
 });
 
-describe.skip('api.logout', () => {
-  // TODO
+describe('api.logout', () => {
+
+  beforeEach(localStorage.clear);
+  afterEach(fetch.removeUser);
+
+  it('should fail when no user is logged in', async () => {
+    let error = false;
+    try {
+      await api.logout();
+    } catch (e) {
+      error = true;
+    }
+
+    expect(error).toBe(true);
+  });
+
+  it('should logout the user', async () => {
+    await api.login('jdoe@student.unamur.be', 'secret');
+    const loggedIntoken = localStorage.getItem('__auth_token__')
+
+    await api.logout();
+    const loggedOuttoken = localStorage.getItem('__auth_token__');
+
+    expect(loggedOuttoken).not.toBe(loggedIntoken);
+    expect(loggedOuttoken).toBe(null);
+  });
+
 });
 
-describe.skip('api.register', () => {
-  // TODO
+describe('api.register', () => {
+
+  it('should register the user', async () => {
+    // We simply test that there is no exception thrown
+    await api.register({
+      email: 'joe@student.unamur.be',
+      password: 'secret',
+      firstname: 'John',
+      lastname: 'Doe',
+      street: 'Evergreen Terass',
+      number: 742,
+      city: 'Springfield',
+      zipcode: 1020,
+      country: 'USA',
+      phone: '636-555-3226',
+      terms: true
+    });
+  });
+
+  it('should reject incorrect registration', async () => {
+    let error = false;
+    try {
+      await api.register({
+        email: 'joe2@student.unamur.be',
+        password: 'secret',
+        firstname: 'John',
+        lastname: 'Doe',
+        street: 'Evergreen Terass',
+        number: 742,
+        city: 'Springfield',
+        zipcode: 1020,
+        country: 'USA',
+        phone: '636-555-3226',
+        terms: false
+      })
+    } catch (e) { error = true; }
+
+    expect(error).toBe(true);
+  });
+
 });

@@ -60,7 +60,7 @@ function api(endpoint, { body, ...providedConfig } = {}) {
   if (body)
     config.body = JSON.stringify(body);
 
-  return (window || global)
+  return window
     .fetch(`${root}${endpoint}`, config)
     .then(response => Promise.all(
       [new Promise(resolve => resolve(response.status)), response.json()]
@@ -83,22 +83,25 @@ function api(endpoint, { body, ...providedConfig } = {}) {
  * @returns {Promise<api.User|api.Response>}
  */
 function login(email, password) {
-  return api('login', {
+  return api('/login', {
     body: { email, password }
   }).then(({ user, token }) => {
-    window.localStorage.setItem('__auth_token__', token || 'test_token');
+    window.localStorage.setItem('__auth_token__', token);
     return user;
   });
 }
 
 /**
- * Attempts to logout the currently connected user. **Does not check if the user is connected** prior to the disconnection attempt.
+ * Attempts to logout the currently connected user.
  * @memberof api
  * 
  * @returns {Promise<api.Response>}
  */
 function logout() {
-  return api('logout', {})
+  const currentToken = window.localStorage.getItem('__auth_token__');
+  if (currentToken === null)
+    throw Error('Not connected');
+  return api('/logout', {})
     .then(r => window.localStorage.removeItem('__auth_token__') || r);
 }
 
@@ -110,7 +113,9 @@ function logout() {
  * @returns {Promise<api.Response>}
  */
 function register(user) {
-  return api('register', { body: user });
+  if (!user.terms)
+    throw new Error('Must accept terms and conditions before to register');
+  return api('/register', { body: user });
 }
 
 

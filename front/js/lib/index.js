@@ -64,6 +64,7 @@ const trace = x => printerr(x) || x;
 const scrollbarWidth = () =>
   window.innerWidth - document.documentElement.clientWidth;
 
+/* istanbul ignore next */
 /**
  * [Element.querySelector]{@link https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelector} shortcut.
  * @memberof lib
@@ -73,6 +74,7 @@ const scrollbarWidth = () =>
 const query = (selector, parent = document) =>
   parent.querySelector(selector);
 
+/* istanbul ignore next */
 /**
  * [Element.querySelectorAll]{@link https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelectorAll} shortcut.
  * @memberof lib
