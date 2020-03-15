@@ -26,8 +26,10 @@ export function AuthProvider({ children }) {
   });
 
   useEffect(() => {
-    if (user)
+    if (user !== null)
       store.setItem('__auth_user__', JSON.stringify(user));
+    else
+      store.removeItem('__auth_user__');
   }, [user]);
 
   useDebugValue(user ? 'Connected' : 'Anonymous');
@@ -39,9 +41,7 @@ export function AuthProvider({ children }) {
   }
 
   function logout() {
-    return api.logout()
-      .then(_ => setUser(null))
-      .then(_ => store.removeItem('__auth_user__'));
+    return api.logout().then(_ => setUser(null));
   }
 
   function register(newUser) {

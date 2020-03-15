@@ -216,7 +216,7 @@ describe('<AutoForm.Submit />', () => {
     const form = container.querySelector('form');
     fireEvent.submit(form);
 
-    const button= container.querySelector('button');
+    const button = container.querySelector('button');
     await wait(() => expect(button.classList).toContain('btn-danger'));
   });
 
