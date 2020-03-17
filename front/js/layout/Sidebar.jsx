@@ -3,7 +3,8 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import { NavLink } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { useLocation } from 'react-router-dom';
-
+import Tooltip from 'react-bootstrap/Tooltip'
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 
 function Sidebar({ open, links }) {
 
@@ -21,10 +22,21 @@ function Sidebar({ open, links }) {
 
       {/* Menu */}
       <ListGroup variant='flush' className='sidebar-nav w-100 text-center'>
-        {links.map(({ name, path, icon }, i) => (
+        {links.map(({ name, path, icon, title }, i) => (
           <NavLink exact to={path} key={i}>
             <ListGroup.Item>
-              <Icon icon={icon} />
+
+
+              <OverlayTrigger
+                placement="right"
+                overlay={
+                  <Tooltip>
+                    {title}
+                  </Tooltip>
+                }
+              >
+                <Icon icon={icon} />
+              </OverlayTrigger>
             </ListGroup.Item>
           </NavLink>
         ))}

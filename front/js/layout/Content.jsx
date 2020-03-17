@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, lazy, Suspense } from 'react';
 import { Route, Switch, useLocation } from 'react-router-dom';
 import {
-  faUserCircle, faSlidersH, faInfoCircle, faSwimmer, faBell, faSignInAlt
+  faUserCircle, faCogs, faInfoCircle, faStream, faBell, faPencilAlt
 } from '@fortawesome/free-solid-svg-icons';
 import Sidebar from './Sidebar';
 import { useAuth } from '../context/authContext';
@@ -15,7 +15,7 @@ const Notifications = lazy(() => import('../pages/Notifications'));
 const Login = lazy(() => import('../pages/Login'));
 const Logout = lazy(() => import('../pages/Logout'));
 const Register = lazy(() => import('../pages/Register'));
-
+const Create = lazy(() => import('../pages/Create'));
 
 // Content :: Object => Component
 const Content = (_) => {
@@ -25,15 +25,17 @@ const Content = (_) => {
   const locationClass = location.pathname.replace(/\W/g, '');
 
   const links = [
-    { name: 'stream', path: '/', icon: faSwimmer },
-    { name: 'about', path: '/about', icon: faInfoCircle }
+    { name: 'stream', path: '/', icon: faStream, title: 'Stream' },
+    { name: 'about', path: '/about', icon: faInfoCircle, title: 'About' }
   ];
   if (user)
     links.push(
-      { name: 'profile', path: '/profile', icon: faUserCircle },
-      { name: 'notifications', path: '/notifications', icon: faBell },
+      { name: 'create', path: '/create', icon: faPencilAlt, title: 'Create post' },
+      { name: 'profile', path: '/profile', icon: faUserCircle, title: 'Profile' },
+      { name: 'notifications', path: '/notifications', icon: faBell, title: 'Notifications' },
+
     );
-  links.push({ name: 'settings', path: '/settings', icon: faSlidersH });
+  links.push({ name: 'settings', path: '/settings', icon: faCogs, title: 'Settings' });
 
   return (
     <>
@@ -47,6 +49,10 @@ const Content = (_) => {
 
                 <Route exact path='/'>
                   <Stream />
+                </Route>
+
+                <Route path='/create'>
+                  <Create />
                 </Route>
 
                 <Route path='/profile'>
