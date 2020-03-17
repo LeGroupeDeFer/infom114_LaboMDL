@@ -24,6 +24,23 @@
     color: theme-color("danger");
 }
 
+
+.up-vote-btn :disabled {
+    cursor: not-allowed;
+}
+
+
+.down-vote-btn :disabled,
+.down-vote-btn[disabled] {
+    cursor: not-allowed;
+}
+
+.up-vote-btn :disabled,
+.up-vote-btn[disabled] {
+    cursor: not-allowed;
+}
+
+
 .down-voted,
 .down-voted:focus {
     color: theme-color("danger") !important;
@@ -33,6 +50,8 @@
 .up-voted:focus {
     color: theme-color("primary") !important;
 }
+
+
 
 .post-info {
     color: $white;
@@ -69,4 +88,8 @@
 
 .post {
     cursor: pointer;
+}
+
+.tag {
+    font-size: 0.85em;
 }

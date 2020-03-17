@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -12,7 +12,8 @@ import Dropdown from 'react-bootstrap/Dropdown'
 import { MdSort, MdSearch } from 'react-icons/md';
 import CreatableSelect from 'react-select/creatable';
 import { components } from 'react-select';
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch, FaTag } from 'react-icons/fa';
+import { useAuth } from '../context/authContext';
 
 /* Delayed fetching of user posts */
 // fetchPosts :: int => Promise<Array<Object>>
@@ -49,6 +50,11 @@ const Stream = () => {
 
   const [posts, setPosts] = useState(usePromise(fetchPosts, [fakeLatency]));
 
+  const { login, user } = useAuth();
+
+  if (!user) {
+    // Guest
+  }
 
   function sortPost(criteria) {
 
@@ -66,7 +72,6 @@ const Stream = () => {
 
   return (
     <Container>
-
       <br />
       <SearchBar />
       <br />
@@ -81,7 +86,7 @@ const Stream = () => {
 
       <br />
       <Suspense fallback={<h3>Loading posts...</h3>}>
-        <PostList currentFilter={filter} posts={posts} />
+        <PostList currentFilter={filter} posts={posts} isLogged={user != null} />
       </Suspense>
     </Container>
   );
@@ -92,12 +97,26 @@ const Stream = () => {
 const SearchBar = () => {
 
   const options = [
-    { value: 'chocolate', label: 'Chocolate' },
-    { value: 'strawberry', label: 'Strawberry' },
-    { value: 'vanilla', label: 'Vanilla' },
+    { value: 'facInfo', label: <span><FaTag /> FacInfo</span> },
+    { value: 'facEco', label: <span><FaTag /> FacEco</span> },
+    { value: 'arsenal', label: <span><FaTag /> Arsenal</span> },
   ];
 
+
   const primary = '#A0C55F';
+
+  function handleChange(selectedOpttion) {
+    if (selectedOpttion != null) {
+      let options = selectedOpttion.map(x => x.value);
+
+      console.log(`Option selected:`, options);
+    } else {
+
+      console.log('Noptions selected');
+    }
+
+
+  };
 
   const customStyles = {
     control: (base, state) => ({
@@ -119,7 +138,16 @@ const SearchBar = () => {
   };
 
   return (
-    <CreatableSelect id="search-bar" isMulti options={options} components={{ DropdownIndicator }} placeholder={"Search"} styles={customStyles} formatCreateLabel={userInput => `Search for "${userInput}"`} />
+    <CreatableSelect
+      id="search-bar"
+      isMulti
+      options={options}
+      components={{ DropdownIndicator }}
+      placeholder={"Search"}
+      styles={customStyles}
+      formatCreateLabel={userInput => `Search for" ${userInput}"`}
+      onChange={handleChange}
+    />
   );
 }
 
