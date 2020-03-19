@@ -1,3 +1,8 @@
+//! # UNanimity Library
+//!
+//! The crate `unanimity` is a work in progress website that aims to provide a
+//! participative platform for the UNamur members.
+
 #![feature(proc_macro_hygiene, decl_macro)]
 
 /* --------------------------- Load Extern Crates -------------------------- */
@@ -15,22 +20,23 @@ extern crate regex;
 
 /* ------------------------------ Local Mod -------------------------------- */
 
-mod authentication;
-mod database;
+pub mod authentication;
+pub mod database;
 mod http;
-mod models;
+pub mod models;
 mod schema;
 
 /* --------------------------- Load Namespaces ----------------------------- */
 
 use std::path::{Path, PathBuf};
 
-use database::MyDbConn;
-
-use rocket::http::Cookies;
+use rocket::config::Config;
 use rocket::response::NamedFile;
+use rocket::Rocket;
 
 use rocket_contrib::templates::Template;
+
+use database::{db_config, MyDbConn};
 
 /* -------------------------------- Routes --------------------------------- */
 
@@ -60,24 +66,14 @@ fn files(file: PathBuf) -> Option<NamedFile> {
     NamedFile::open(Path::new("static/").join(file)).ok()
 }
 
-/// Display cookies stored
-// TODO : remove me when done testing
-#[get("/dev/cookies")]
-fn get_cookies(cookies: Cookies) -> String {
-    cookies
-        .iter()
-        .map(|c| format!("name : {:?}, value : {:?}", c.name(), c.value()))
-        .collect::<String>()
-}
+/* ----------------------------- Ignite Rocket ----------------------------- */
 
-/* ----------------------------- Launch Rocket ----------------------------- */
-
-fn main() {
-    rocket::custom(database::db_config())
-        .mount("/", routes![index, dynamic_routing, files, get_cookies])
+///
+pub fn rocket() -> Rocket {
+    rocket::custom(db_config())
+        .mount("/", routes![index, dynamic_routing, files])
         .mount("/", authentication::routes::collect())
         .register(http::errors::catchers::collect())
         .attach(Template::fairing())
         .attach(MyDbConn::fairing())
-        .launch();
 }

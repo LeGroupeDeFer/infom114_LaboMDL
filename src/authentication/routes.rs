@@ -193,23 +193,3 @@ fn post_logout(cookies: Cookies) -> ApiResponse {
 fn check_email(email: Result<Json<forms::Email>, JsonError>, conn: MyDbConn) -> ApiResponse {
     check_email_v1(email, conn)
 }
-
-/* --------------------------- Tests --------------------------------------- */
-
-// TODO : rewrite tests !
-// #[cfg(test)]
-// mod test {
-//
-//     #[test]
-//     fn test_collect() {
-//         // its ugly af to compare strings output
-//         // quicly implemented like this to test code cov
-//         assert_eq!(
-//             format!(
-//                 "{:?}",
-//                 routes!(super::post_login, super::logout)
-//             ),
-//             format!("{:?}", super::collect())
-//         );
-//     }
-// }

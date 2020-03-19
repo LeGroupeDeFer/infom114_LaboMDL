@@ -66,6 +66,24 @@ impl User {
         }
     }
 
+    /// Validate the fact that the email given
+    ///
+    /// * is a valid email
+    /// * is issued from the unamur domain
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use unanimitylibrary::models::user::User;
+    ///
+    /// // valid
+    /// assert!(User::check_if_email_is_unamur("guillaume.latour@student.unamur.be"));
+    /// assert!(User::check_if_email_is_unamur("user.member@unamur.be"));
+    ///
+    /// // invalid
+    /// assert!(!User::check_if_email_is_unamur("guillaume.latour.student.unamur.be"));
+    /// assert!(!User::check_if_email_is_unamur("unamur@be"));
+    /// ```
     pub fn check_if_email_is_unamur(email_address: &str) -> bool {
         let re = Regex::new(r"^(.*)@(student\.)?unamur\.be$").unwrap();
         re.is_match(email_address)

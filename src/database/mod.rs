@@ -12,18 +12,26 @@ use diesel::MysqlConnection;
 
 // ------------------ CONST ---------------------------------------------------
 
-const ENV_DATABASE_URL: &'static str = "DATABASE_URL";
+const PROD_DB_URL: &'static str = "DATABASE_URL";
+const TEST_DB_URL: &'static str = "TEST_DATABASE_URL";
 
 // --------------------- DB OBJECT --------------------------------------------
 
-#[database("mariadb_test")]
+#[database("mariadb_unanimity")]
 pub struct MyDbConn(diesel::MysqlConnection);
 
 // --------------------- FUNCTIONS --------------------------------------------
 
+#[cfg(not(test))]
 fn url() -> String {
     dotenv().ok();
-    env::var(ENV_DATABASE_URL).expect(&format!("{} must be set", ENV_DATABASE_URL))
+    env::var(PROD_DB_URL).expect(&format!("{} must be set", PROD_DB_URL))
+}
+
+#[cfg(test)]
+fn url() -> String {
+    dotenv().ok();
+    env::var(TEST_DB_URL).expect(&format!("{} must be set", TEST_DB_URL))
 }
 
 pub fn connection() -> MysqlConnection {
@@ -37,8 +45,8 @@ pub fn connection() -> MysqlConnection {
 pub fn db_config() -> Config {
     let mut database_config = HashMap::new();
     let mut databases = HashMap::new();
-    database_config.insert("url", Value::from(&url()[..]));
-    databases.insert("mariadb_test", database_config);
+    database_config.insert("url", Value::from(url().as_ref()));
+    databases.insert("mariadb_unanimity", database_config);
 
     Config::build(Environment::Development)
         .address("0.0.0.0")

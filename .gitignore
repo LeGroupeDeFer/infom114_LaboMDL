@@ -9,6 +9,7 @@ node_modules/
 .history
 .vscode
 .drone.status
+.env
 
 # Test files
 cobertura.xml

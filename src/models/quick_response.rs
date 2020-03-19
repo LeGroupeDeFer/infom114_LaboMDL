@@ -8,4 +8,8 @@ impl Info {
     pub fn new(success: bool, message: Option<String>) -> Self {
         Info { success, message }
     }
+
+    pub fn success(&self) -> bool {
+        self.success
+    }
 }
