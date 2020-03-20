@@ -8,6 +8,7 @@ Summary of implemented features classified by release (github tag)
 - add test structure
 - remove .env from tracked files
 - add check_email documentation test
+- improve documentation
 
 ## [0.1.0] - 2019-03-02
 

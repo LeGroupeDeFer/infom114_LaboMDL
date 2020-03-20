@@ -8,8 +8,9 @@
 ## Quickstart
 
 1. Install docker and docker-compose
-2. `docker-compose up [--build] [--detach]`
-3. go on <http://localhost:8000/hello/yourname>
+2. create a `.env` file with a `DATABASE_URL=mysql://testuser:testpassword@db/test_rocket`
+3. `docker-compose up [--build] [--detach]`
+4. go on <http://localhost:8000/hello/yourname>
 
 ## Features
 
@@ -25,3 +26,15 @@
 ## DB
 
 ![schema](out/uml/database_schema/db_mdl.png)
+
+## Tests
+
+1. add a `TEST_DATABASE_URL` in your `.env` file
+2. execute the `scripts/setup_test.sh` (This will ensure that the database schema is up to date in your test database)
+3. `cargo test -- --test-threads=1` (Since the database is truncated at the begining of each test, running the tests in parallel is impossible)
+
+## Documentation
+
+Cargo natively propose a solution for the documentation.
+
+You can use `cargo doc --open` to open the generated documentation.

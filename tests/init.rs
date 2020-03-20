@@ -1,26 +1,31 @@
-use unanimitylibrary::database::{db_config, MyDbConn};
-use unanimitylibrary::models::quick_response::Info;
+//! # Test init
+//!
+//! Initialisations and helpers to ease the developpment of automated tests.
+//!
+//! the test database MUST be availlable
+//! the migrations MUST have been applied to the test database
 
-use rocket::http::{ContentType, Status};
+use unanimitylibrary::database::{self};
+use unanimitylibrary::schema::users::dsl::users;
+
+use diesel::query_dsl::RunQueryDsl;
 use rocket::local::Client;
 
-pub fn client() -> Client {
-    let rocket = unanimitylibrary::rocket(db_config()).attach(MyDbConn::fairing());
-    Client::new(rocket).expect("valid rocket instance")
+/// Truncate all the tables
+pub fn clean() {
+    // get connection
+    let conn = database::connection();
+
+    // truncate all tables
+    diesel::delete(users).execute(&conn).unwrap();
 }
 
-#[test]
-fn test_valid_mail() {
-    let client = client();
+/// Get a client that can be used to perform some HTTP actions on the
+/// Rocket routes of the unanimity application
+pub fn client() -> Client {
+    // get Rocket instance
+    let rocket = unanimitylibrary::rocket();
 
-    let req = client
-        .post("/api/register/check_email")
-        .header(ContentType::JSON)
-        .body("{\"email\": \"guillaume.latour@student.unamur.be\"}");
-
-    let mut response = req.dispatch();
-    let json_response: Info = serde_json::from_str(&response.body_string().unwrap()).unwrap();
-
-    assert_eq!(response.status(), Status::Ok);
-    assert!(json_response.success());
+    // return new Client
+    Client::new(rocket).expect("valid rocket instance")
 }
