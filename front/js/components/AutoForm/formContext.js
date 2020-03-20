@@ -42,15 +42,17 @@ export function FormProvider({ onSubmit, children }) {
     // operate on an unmounted component. What we do isntead is that we save
     // the request function in a state variable which will be executed on the
     // next effect cycle
-    setSend(function () {
-      try {
-        let submission = onSubmit(result);
-        return typeof submission !== Promise
-          ? Promise.resolve(submission)
-          : submission;
-      } catch (error) {
-        return Promise.reject(error);
-      }
+    setSend({
+      promise: (() => {
+        try {
+          let submission = onSubmit(result);
+          return typeof submission !== Promise
+            ? Promise.resolve(submission)
+            : submission;
+        } catch (error) {
+          return Promise.reject(error);
+        }
+      })()
     });
   }
 
@@ -59,13 +61,13 @@ export function FormProvider({ onSubmit, children }) {
   // Basically untestable
   /* istanbul ignore next */
   useEffect(() => {
-    if (!send)
+    if (!send || !send.promise)
       return;
-
     let isSubscribed = true;
-    send.catch(error => {
-      if (isSubscribed)
+    send.promise.catch(error => {
+      if (isSubscribed) {
         setError(error);
+      }
     });
     return () => isSubscribed = false;
   }, [send]);

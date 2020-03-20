@@ -1,9 +1,11 @@
-use crate::models::user::User;
-
 use super::AUTH_COOKIE;
+use crate::conf::AppState;
+use crate::database::models::user::User;
 
+use diesel::prelude::MysqlConnection;
 use rocket::http::{Cookie, Cookies, Status};
 use rocket::request::{FromRequest, Outcome, Request};
+use rocket::State;
 
 pub struct Auth {
     pub user: User,
@@ -13,22 +15,22 @@ impl<'a, 'r> FromRequest<'a, 'r> for Auth {
     type Error = String;
 
     fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
-        match request.cookies().get_private(AUTH_COOKIE) {
-            Some(cookie) => {
-                let value = cookie.value().parse::<u32>().unwrap();
-                let user = User::from(&value);
-                match user {
-                    Some(u) => {
-                        // if u.has_right :
-                        rocket::Outcome::Success(Auth { user: u })
-                        // else :
-                        // Outcome::Failure((Status::Unauthorized, "Missing capability".to_string()))
-                    }
-                    None => Outcome::Failure((Status::Forbidden, "User not found".to_string())),
-                }
-            }
-            None => Outcome::Failure((Status::Forbidden, "Authentification required".to_string())),
-        }
+        let state = request.guard::<State<AppState>>().unwrap();
+        let conn = request.guard::
+        let secret = state.jwt_secret;
+
+        request
+            .cookies()
+            .get_private(AUTH_COOKIE)
+            .ok_or("Authentification required".to_string())
+            .map(|cookie| cookie.value().parse::<u32>().unwrap())
+            .map(|id| User::from(&conn, id))
+            .and_then(|user| user.ok_or("User not found".to_string()))
+            .map(|user| Auth { user: user })
+            .map_or_else(
+                |e| Outcome::Failure((Status::Forbidden, e)),
+                Outcome::Success,
+            )
     }
 }
 
@@ -42,16 +44,11 @@ impl Auth {
         cookies.remove_private(Cookie::named(AUTH_COOKIE));
     }
 
-    pub fn is_authenticated(cookies: &mut Cookies) -> bool {
-        match cookies.get_private(AUTH_COOKIE) {
-            Some(cookie) => {
-                let value = cookie.value().parse::<u32>().unwrap();
-                match User::from(&value) {
-                    Some(_) => true,
-                    None => false,
-                }
-            }
-            None => false,
-        }
+    pub fn is_authenticated(conn: &MysqlConnection, cookies: &Cookies) -> bool {
+        cookies
+            .get_private(AUTH_COOKIE)
+            .map(|cookie| cookie.value().parse::<u32>().unwrap())
+            .map(|id| User::from(conn, id))
+            .is_some()
     }
 }

@@ -12,6 +12,16 @@ services:
       - db
     links:
       - db
+    environment:
+      INTERFACE: 0.0.0.0
+      DB_PROVIDER: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: testuser
+      DB_PASSWORD: testpassword
+      DB_DATABASE: test_rocket
+      DATABASE_URL: mysql://testuser:testpassword@db/test_rocket
+      JWT_SECRET: KupnibWushCeroicDabbadBew
 
   db:
     image: mariadb:latest

@@ -11,7 +11,7 @@ import Flexbox from "../components/Flexbox";
 import Image from '../components/Image';
 import { useAuth } from "../context/authContext";
 import { isUnamurEmail, isValidNatural, isValidPassword } from "../lib/validators";
-
+import { debounce } from "../lib";
 
 function Header() {
   return (
@@ -268,8 +268,17 @@ function RegisterForm() {
   )
 }
 
+function ErrorHandler() {
+  const { error } = AutoForm.useForm();
+  if (!error)
+    return <></>
+  return <div className="bg-dark text-center py-2">{error.message}</div>
+}
+
 function Register(props) {
+
   const { register, user } = useAuth();
+
   const history = useHistory()
   if (user) {
     history.push('/');
@@ -278,31 +287,28 @@ function Register(props) {
   }
 
   const handleSubmit = newUser =>
-    register(newUser).then(_ => history.push('/login'));
+    register(newUser).then(_ => history.replace("/activate/"));
 
   useEffect(() => (user ? history.replace("/") : undefined), [user])
 
   return (
     <Container className="register-form">
-      <Header />
-      <hr />
+      <AutoForm onSubmit={handleSubmit} autoComplete="off">
 
-      <Row>
-        <Col lg="6" sm="0">
-          <Image
-            cover
-            path="https://placehold.it/500x500"
-          />
-        </Col>
-        <Col>
-          <AutoForm onSubmit={handleSubmit} autoComplete="off">
+        <Header />
+        <hr />
+
+        <Row>
+          <Col lg="6" sm="0"><Image cover path="https://placehold.it/500x500" /></Col>
+          <Col>
+            <ErrorHandler />
             <RegisterForm />
-          </AutoForm>
-        </Col>
-      </Row>
+          </Col>
+        </Row>
 
+      </AutoForm>
     </Container >
   );
 }
 
-export default Register
+export default Register;

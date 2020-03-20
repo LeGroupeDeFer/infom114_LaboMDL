@@ -1,8 +1,6 @@
 
 /* istanbul ignore next */
 const root = '/api/v1';
-/* istanbul ignore next */
-const endpoints = Object.freeze(['/login', '/logout', '/register']);
 
 /**
  * @memberof api
@@ -39,9 +37,6 @@ const endpoints = Object.freeze(['/login', '/logout', '/register']);
  */
 function api(endpoint, { body, ...providedConfig } = {}) {
 
-  if (!endpoints.includes(endpoint))
-    throw new Error(`Unknown endpoint ${endpoint}`);
-
   const token = window.localStorage.getItem('__auth_token__');
   const headers = { 'content-type': 'application/json' };
 
@@ -66,11 +61,15 @@ function api(endpoint, { body, ...providedConfig } = {}) {
       [new Promise(resolve => resolve(response.status)), response.json()]
     ))
     .then(([status, data]) => {
-      if (status < 200 || status >= 300 || !data.success)
+      if (status < 200 || status >= 300)
         throw { ...data, code: status };
       return data;
     });
 
+}
+
+function auth(endpoint, config) {
+  return api(`/auth${endpoint}`, config);
 }
 
 /**
@@ -83,11 +82,11 @@ function api(endpoint, { body, ...providedConfig } = {}) {
  * @returns {Promise<api.User|api.Response>}
  */
 function login(email, password) {
-  return api('/login', {
+  return api.auth('/login', {
     body: { email, password }
   }).then(({ user, token }) => {
     window.localStorage.setItem('__auth_token__', token);
-    return user;
+    return { user, token };
   });
 }
 
@@ -99,10 +98,9 @@ function login(email, password) {
  */
 function logout() {
   const currentToken = window.localStorage.getItem('__auth_token__');
-  if (currentToken === null)
-    throw Error('Not connected');
-  return api('/logout', {})
-    .then(r => window.localStorage.removeItem('__auth_token__') || r);
+  if (currentToken !== null)
+    window.localStorage.removeItem('__auth_token__')
+  return Promise.resolve();
 }
 
 /**
@@ -115,14 +113,22 @@ function logout() {
 function register(user) {
   if (!user.terms)
     throw new Error('Must accept terms and conditions before to register');
-  return api('/register', { body: user });
+  return api.auth('/register', { body: user });
+}
+
+function activate(id, token) {
+  return api('/auth/activate', { body: { id: Number(id), token } });
+}
+
+function recover(id, token) {
+  return api('/auth/recover', { body: { id: Number(id), token } });
 }
 
 
-api.endpoints = endpoints;
+api.auth = auth;
 api.login = login;
 api.logout = logout;
 api.register = register;
-
+api.activate = activate;
 
 export default api;

@@ -7,6 +7,7 @@ import React, {
   useDebugValue
 } from 'react';
 import api from '../lib/api';
+import * as jwtDecode from 'jwt-decode';
 
 
 class AuthError extends Error { }
@@ -18,30 +19,56 @@ export function AuthProvider({ children }) {
 
   /* Internal state */
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [loginPending, setLoginPending] = useState(null);
+  const [logoutPending, setLogoutPending] = useState(null);
 
   useEffect(() => {
     const storedUser = store.getItem('__auth_user__');
-    if (!user && storedUser)
+    const storedToken = store.getItem('__auth_token__');
+    if (!user && storedUser) {
       setUser(JSON.parse(storedUser));
+      setToken(jwtDecode(storedToken));
+    }
   });
 
   useEffect(() => {
-    if (user !== null)
-      store.setItem('__auth_user__', JSON.stringify(user));
-    else
-      store.removeItem('__auth_user__');
-  }, [user]);
+    let registered = true;
+
+    if (loginPending)
+      loginPending.then(({ user, token }) => {
+        if (registered) {
+          setUser(user);
+          setToken(jwtDecode(token));
+          store.setItem('__auth_user__', JSON.stringify(user));
+        }
+      });
+
+    if (logoutPending)
+      logoutPending.then(_ => {
+        if (registered) {
+          setUser(null)
+          store.removeItem('__auth_user__');
+        }
+      });
+
+    return () => registered = false;
+  }, [logoutPending, loginPending]);
 
   useDebugValue(user ? 'Connected' : 'Anonymous');
 
   function login(email, password) {
     if (user !== null)
       throw new AuthError('User already connected');
-    return api.login(email, password).then(setUser);
+    let promise = api.login(email, password);
+    setLoginPending(promise);
+    return promise;
   }
 
   function logout() {
-    return api.logout().then(_ => setUser(null));
+    let promise = api.logout();
+    setLogoutPending(promise);
+    return promise;
   }
 
   function register(newUser) {
@@ -51,7 +78,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ login, logout, register, user }}>
+    <AuthContext.Provider value={{ login, logout, register, user, token }}>
       {children}
     </AuthContext.Provider>
   );

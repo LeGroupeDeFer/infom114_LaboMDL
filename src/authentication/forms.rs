@@ -1,27 +1,42 @@
-use crate::schema::users;
+use crate::database::models::address::AddressMinima;
+use crate::database::models::user::UserMinima;
 
-#[derive(FromForm, Serialize, Deserialize, Debug)]
-pub struct LoginCredentials {
+#[derive(Serialize, Deserialize, Debug)]
+pub struct LoginData {
     pub email: String,
     pub password: String,
 }
 
-#[derive(FromForm, Serialize, Deserialize, Debug, Insertable)]
-#[table_name = "users"]
-pub struct RegisterCredentials {
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Email {
+    pub email: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct RegisterData {
     pub email: String,
     pub password: String,
     pub firstname: String,
     pub lastname: String,
-    pub street: Option<String>,
-    pub number: Option<u32>,
-    pub city: Option<String>,
-    pub zipcode: Option<u32>,
-    pub country: Option<String>,
+    pub address: Option<AddressMinima>,
     pub phone: Option<String>,
 }
 
-#[derive(FromForm, Serialize, Deserialize, Debug)]
-pub struct Email {
-    pub email: String,
+impl RegisterData {
+    pub fn user(&self) -> UserMinima {
+        UserMinima {
+            email: self.email.clone(),
+            password: self.password.clone(),
+            firstname: self.firstname.clone(),
+            lastname: self.lastname.clone(),
+            address: None,
+            phone: self.phone.clone(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ActivationData {
+    pub token: String,
+    pub id: u32,
 }

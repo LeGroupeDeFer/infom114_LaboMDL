@@ -10,6 +10,7 @@ doc/front/
 .history
 .vscode
 .drone.status
+.idea/
 
 # Test files
 cobertura.xml
@@ -21,6 +22,7 @@ test.http
 # Runtime
 *.pid
 *.log
+.redo
 
 # Symbolic links
 bootstrap_module/

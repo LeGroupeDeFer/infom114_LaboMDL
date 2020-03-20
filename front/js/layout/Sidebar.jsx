@@ -11,7 +11,8 @@ function Sidebar({ open, links }) {
 
   const location = useLocation();
   const { user } = useAuth();
-  if (['/login', '/register'].includes(location.pathname))
+  const localPath = location.pathname.split('/')[1];
+  if (['login', 'register', 'activate'].includes(localPath))
     return <></>;
 
   return (

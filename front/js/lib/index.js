@@ -126,7 +126,7 @@ function debounce(fn, ms = 250) {
     return fn;
 
   let timer;
-  return () => {
+  return function () {
     clearTimeout(timer);
     timer = setTimeout(() => {
       timer = null;

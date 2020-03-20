@@ -109,6 +109,6 @@ AutoForm.propTypes = {
 AutoForm.Switch = Switch;
 AutoForm.Control = Control;
 AutoForm.Submit = Submit;
-
+AutoForm.useForm = useForm;
 
 export default AutoForm;

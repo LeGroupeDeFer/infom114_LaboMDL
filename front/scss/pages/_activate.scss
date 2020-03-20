@@ -1,0 +1,12 @@
+@use '../themes' as *;
+
+@use '../abstract/mixins' as *;
+
+.activation-content {
+    // TODO - Might change when the logo kicks in
+    padding-top: 10em;
+}
+
+.activate {
+    @include layout-secondary;
+}

@@ -1,48 +1,24 @@
+pub mod models;
+pub mod schema;
+
 // ---------------- REQUIRES --------------------------------------------------
 
+use rocket::config::Value;
+use rocket_contrib::databases::diesel;
 use std::collections::HashMap;
-use std::env;
-
-use rocket::config::{Config, Environment, Value};
-
-use dotenv::dotenv;
-
-use diesel::prelude::*;
-use diesel::MysqlConnection;
-
-// ------------------ CONST ---------------------------------------------------
-
-const ENV_DATABASE_URL: &'static str = "DATABASE_URL";
 
 // --------------------- DB OBJECT --------------------------------------------
 
-#[database("mariadb_test")]
-pub struct MyDbConn(diesel::MysqlConnection);
+#[database("mariadb_pool")]
+pub struct Connection(diesel::MysqlConnection);
 
 // --------------------- FUNCTIONS --------------------------------------------
 
-fn url() -> String {
-    dotenv().ok();
-    env::var(ENV_DATABASE_URL).expect(&format!("{} must be set", ENV_DATABASE_URL))
-}
-
-pub fn connection() -> MysqlConnection {
-    dotenv().ok();
-
-    let database_url = url();
-    MysqlConnection::establish(&database_url)
-        .expect(&format!("Error connecting to {}", database_url))
-}
-
-pub fn db_config() -> Config {
+pub fn pool(database_url: &str) -> HashMap<&str, Value> {
     let mut database_config = HashMap::new();
     let mut databases = HashMap::new();
-    database_config.insert("url", Value::from(&url()[..]));
-    databases.insert("mariadb_test", database_config);
+    database_config.insert("url", Value::from(database_url));
+    databases.insert("mariadb_pool", Value::from(database_config));
 
-    Config::build(Environment::Development)
-        .address("0.0.0.0")
-        .extra("databases", databases)
-        .finalize()
-        .unwrap()
+    databases
 }

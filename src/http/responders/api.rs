@@ -5,7 +5,7 @@ use rocket::response::{Responder, Response};
 
 use rocket_contrib::json::{JsonError, JsonValue};
 
-use crate::models::quick_response;
+use crate::database::models::quick_response;
 
 #[derive(Debug, Clone)]
 pub struct ApiResponse {
@@ -14,6 +14,7 @@ pub struct ApiResponse {
 }
 
 impl ApiResponse {
+    // TODO - Transmit errors to guards
     pub fn new(status: Status, json: JsonValue) -> Self {
         Self { status, json }
     }
@@ -21,31 +22,27 @@ impl ApiResponse {
     pub fn bad_request() -> Self {
         Self::new(
             Status::BadRequest,
-            json!(quick_response::Info::new(
-                false,
-                Some(
-                    "I do not understand the language you are trying to communicate with."
-                        .to_string(),
-                )
-            )),
+            json!(quick_response::Info::new(Some(
+                "I do not understand the language you are trying to communicate with.".to_string(),
+            ))),
         )
     }
 
     pub fn success(status: Status, message: &str) -> Self {
         Self::new(
             status,
-            json!(quick_response::Info::new(true, Some(message.to_string()))),
+            json!(quick_response::Info::new(Some(message.to_string()))),
         )
     }
 
     pub fn simple_success(status: Status) -> Self {
-        Self::new(status, json!(quick_response::Info::new(true, None)))
+        Self::new(status, json!(quick_response::Info::new(None)))
     }
 
     pub fn error(status: Status, message: &str) -> Self {
         Self::new(
             status,
-            json!(quick_response::Info::new(false, Some(message.to_string()))),
+            json!(quick_response::Info::new(Some(message.to_string()))),
         )
     }
 
@@ -59,10 +56,10 @@ impl ApiResponse {
     pub fn db_error(error: diesel::result::Error) -> Self {
         Self::new(
             Status::InternalServerError,
-            json!(quick_response::Info::new(
-                false,
-                Some(format!("DB error : {}", error))
-            )),
+            json!(quick_response::Info::new(Some(format!(
+                "DB error : {}",
+                error
+            )))),
         )
     }
 }
