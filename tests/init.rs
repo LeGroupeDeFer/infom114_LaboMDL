@@ -29,3 +29,10 @@ pub fn client() -> Client {
     // return new Client
     Client::new(rocket).expect("valid rocket instance")
 }
+
+/// Truncate the database & get a rocket client
+pub fn clean_client() -> Client {
+    // init & get client
+    clean();
+    client()
+}

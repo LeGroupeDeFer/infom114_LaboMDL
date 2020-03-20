@@ -6,21 +6,22 @@
 /************************* REQUIRE *******************************************/
 mod init;
 
-use diesel::result::Error;
-use diesel::Connection;
+use diesel::query_dsl::RunQueryDsl;
 
 use rocket::http::{ContentType, Status};
 
 use unanimitylibrary::authentication::forms::RegisterCredentials;
-use unanimitylibrary::database::connection;
 use unanimitylibrary::models::quick_response::Info;
+
+use unanimitylibrary::database;
+use unanimitylibrary::models::user::User;
+use unanimitylibrary::schema::users::dsl::users;
 
 /**************************** TESTS ******************************************/
 
 #[test]
 fn test_valid_mail() {
-    init::clean();
-    let client = init::client();
+    let client = init::clean_client();
 
     let req = client
         .post("/api/register/check_email")
@@ -36,9 +37,9 @@ fn test_valid_mail() {
 
 #[test]
 fn register_new_user() {
-    init::clean();
-    let client = init::client();
+    let client = init::clean_client();
 
+    // prepare a user
     let test_user = RegisterCredentials {
         email: String::from("guillaume.latour@student.unamur.be"),
         password: String::from("mysuperpassword"),
@@ -51,14 +52,24 @@ fn register_new_user() {
         country: Some(String::from("Belgium")),
         phone: None,
     };
+
+    // request the application on the route /api/register
     let req = client
         .post("/api/register/")
         .header(ContentType::JSON)
         .body(serde_json::to_string(&test_user).unwrap());
-
     let response = req.dispatch();
 
+    // check that the response is OK
     assert_eq!(response.status(), Status::Ok);
 
-    // TODO : check that the user is correctly added in the database
+    // load users present in database
+    let conn = database::connection();
+    let tab = users.load::<User>(&conn).unwrap();
+
+    // check that there is only one user in database
+    assert_eq!(tab.len(), 1);
+
+    // check that this user is the one we just added
+    assert_eq!(tab[0].email, "guillaume.latour@student.unamur.be");
 }
