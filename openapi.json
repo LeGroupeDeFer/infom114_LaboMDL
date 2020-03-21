@@ -161,7 +161,7 @@
                 }
             }
         },
-        "/api/v1/admin/flagged": {
+        "/api/v1/admin/flagged_post": {
             "get": {
                 "security": [
                 {
@@ -178,7 +178,28 @@
                         "content": {"TODO":"Todo"}
                     }
                 }
-            },
+            }
+        },
+        "/api/v1/admin/trending_post": {
+            "get": {
+                "security": [
+                {
+                    "AdminAuth": []
+                }
+                ],
+                "tags": [
+                "admin"
+                ],
+                "description": "Fetch the most active posts and comments",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {"TODO":"Todo"}
+                    }
+                }
+            }
+        },    
+        "/api/v1/admin/hide_ressource": {
             "post": {
                 "security": [
                 {
@@ -244,6 +265,148 @@
                                 "example": {
                                     "success": false,
                                     "message": "property 'ressourceId' does not exist"
+                                }
+                            }
+                        }
+                    }
+                }   
+            }
+        },
+        "/api/v1/admin/edit_post": {
+            "post": {
+                "security": [
+                {
+                    "AdminAuth": []
+                }
+                ],
+                "tags": [
+                "admin"
+                ],
+                "description": "Edit a post or a comment",
+                "requestBody": {
+                    "content": {
+                        "json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "ressourceId": {
+                                        "type": "string",
+                                        "description": "The id of the post/comment to edit"
+                                    },
+                                    "isComment": {
+                                        "type": "boolean",
+                                        "description": "indicate whether the ressource is a post (false) or a comment (true)"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "json": {
+                                "schema": {
+                                "$ref": "#/components/schemas/Info"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request : the given format is incorrect",
+                        "content": {
+                            "json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Info"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "message": "json format is required"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity : entity does not exist",
+                        "content": {
+                            "json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Info"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "message": "property 'ressourceId' does not exist"
+                                }
+                            }
+                        }
+                    }
+                }   
+            }
+        },
+        "/api/v1/admin/close_discussion": {
+            "post": {
+                "security": [
+                {
+                    "AdminAuth": []
+                }
+                ],
+                "tags": [
+                "admin"
+                ],
+                "description": "Mark the discussion of a post as closed",
+                "requestBody": {
+                    "content": {
+                        "json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "postId": {
+                                        "type": "string",
+                                        "description": "The id of the post the discussion is associated with"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "json": {
+                                "schema": {
+                                "$ref": "#/components/schemas/Info"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request : the given format is incorrect",
+                        "content": {
+                            "json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Info"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "message": "json format is required"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity : entity does not exist",
+                        "content": {
+                            "json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Info"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "message": "property 'postId' does not exist"
                                 }
                             }
                         }
