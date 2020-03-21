@@ -7,8 +7,7 @@ import React, {
   useDebugValue
 } from 'react';
 import api from '../lib/api';
-import * as jwtDecode from 'jwt-decode';
-
+import jwtDecode from 'jwt-decode';
 
 class AuthError extends Error { }
 const AuthContext = createContext();

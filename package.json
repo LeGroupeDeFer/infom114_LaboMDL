@@ -78,6 +78,9 @@
     "jest": {
         "verbose": true,
         "collectCoverage": true,
+        "transform": {
+            "^.+\\.jsx?$": "babel-jest"
+        },
         "setupFilesAfterEnv": [
             "<rootDir>/front/__tests__/setup.js"
         ],

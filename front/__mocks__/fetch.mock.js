@@ -25,6 +25,8 @@ const fakeUser = {
   phone: '636-555-3226'
 };
 
+const fakeToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJVbmFuaW1pdHkiLCJpYXQiOjE1ODQ3MDk2MTAsImV4cCI6MTU4NTkxOTIxMCwic3ViIjoxMCwiY2FwIjpbXX0.HXBQgrw5wKXTfpkMCuNaO-OkfR89oxbkg8Z0VUNHuCU';
+
 function apiLogin(data, method = 'GET') {
   const { email, password } = data;
 
@@ -36,7 +38,7 @@ function apiLogin(data, method = 'GET') {
 
   if (email === fakeUser.email && password === fakeUser.password) {
     connectedUser = fakeUser;
-    return Response({ token: 'superSecretToken', user: fakeUser });
+    return Response({ token: fakeToken, user: fakeUser });
   }
 
   if (email === 'unverified@unamur.be')
@@ -78,16 +80,16 @@ fetch.mockImplementation((endpoint, { body, ...config }) => {
   let data = body ? JSON.parse(body) : {};
 
   switch (endpoint) {
-    case '/api/login':
-    case '/api/v1/login':
+    case '/api/auth/login':
+    case '/api/v1/auth/login':
       return apiLogin(data, method);
 
-    case '/api/register':
-    case '/api/v1/register':
+    case '/api/auth/register':
+    case '/api/v1/auth/register':
       return apiRegister(data, method);
 
-    case '/api/logout':
-    case '/api/v1/logout':
+    case '/api/auth/logout':
+    case '/api/v1/auth/logout':
       return apiLogout(data, method);
 
     default:
@@ -97,6 +99,10 @@ fetch.mockImplementation((endpoint, { body, ...config }) => {
 });
 
 fetch.removeUser = () => { connectedUser = null; };
+fetch.fakes = {
+  user: fakeUser,
+  token: fakeToken
+};
 
 global.fetch = window.fetch = fetch;
 global.Response = window.Response = Response;

@@ -139,6 +139,7 @@ describe('authContext', () => {
   });
 
   it('should load the user from memory', async () => {
+    localStorage.setItem('__auth_token__', fetch.fakes.token);
     localStorage.setItem('__auth_user__', JSON.stringify({
       email: 'jdoe@student.unamur.be',
       password: 'secret',

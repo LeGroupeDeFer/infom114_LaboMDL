@@ -9,22 +9,22 @@ describe('api', () => {
   afterAll(() => { localStorage.removeItem('__auth_token__'); });
 
   it('should redirect to the api', async () => {
-    await api('/login');
+    await api('/auth/login');
 
-    expect(fetch).toHaveBeenCalledWith('/api/v1/login', expect.anything());
+    expect(fetch).toHaveBeenCalledWith('/api/v1/auth/login', expect.anything());
   });
 
   it('should reject invalid endpoints', async () => {
     try {
       await api('/iDefinitelyExist');
     } catch (e) {
-      expect(e).toBeInstanceOf(Error);
+      expect(e.code).toBe(404);
     }
   });
 
   it('should attach a sane default configuration', async () => {
     // We don't want per-se to get to /login but it's an available endpoint
-    await api('/login');
+    await api('/auth/login');
     expect(fetch).toHaveBeenCalledWith(expect.anything(), {
       method: 'GET',
       headers: {
@@ -35,7 +35,7 @@ describe('api', () => {
   });
 
   it('should convey the payload', async () => {
-    await api('/login', {
+    await api('/auth/login', {
       body: {
         email: 'jdoe@student.unamur.be',
         password: 'secret',
@@ -71,7 +71,7 @@ describe('api.login', () => {
   afterEach(fetch.removeUser);
 
   it('should log in the user', async () => {
-    const user = await api.login('jdoe@student.unamur.be', 'secret');
+    const { user, token } = await api.login('jdoe@student.unamur.be', 'secret');
     expect(user).toBeTruthy();
   });
 
@@ -88,15 +88,8 @@ describe('api.logout', () => {
   beforeEach(localStorage.clear);
   afterEach(fetch.removeUser);
 
-  it('should fail when no user is logged in', async () => {
-    let error = false;
-    try {
-      await api.logout();
-    } catch (e) {
-      error = true;
-    }
-
-    expect(error).toBe(true);
+  it('should not do anything when the user is logged in', async () => {
+    await api.logout();
   });
 
   it('should logout the user', async () => {
