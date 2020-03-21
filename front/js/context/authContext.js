@@ -6,53 +6,79 @@ import React, {
   useLayoutEffect,
   useDebugValue
 } from 'react';
-import api from 'unanimity/utils/api';
-
+import api from '../lib/api';
+import jwtDecode from 'jwt-decode';
 
 class AuthError extends Error { }
 const AuthContext = createContext();
 const store = window.localStorage;
 
 
-export function AuthProvider(props) {
+export function AuthProvider({ children }) {
 
   /* Internal state */
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [loginPending, setLoginPending] = useState(null);
+  const [logoutPending, setLogoutPending] = useState(null);
 
   useEffect(() => {
     const storedUser = store.getItem('__auth_user__');
-    if (!user && storedUser)
+    const storedToken = store.getItem('__auth_token__');
+    if (!user && storedUser) {
       setUser(JSON.parse(storedUser));
+      setToken(jwtDecode(storedToken));
+    }
   });
 
   useEffect(() => {
-    if (user)
-      store.setItem('__auth_user__', JSON.stringify(user));
-  }, [user]);
+    let registered = true;
+
+    if (loginPending)
+      loginPending.then(({ user, token }) => {
+        if (registered) {
+          setUser(user);
+          setToken(jwtDecode(token));
+          store.setItem('__auth_user__', JSON.stringify(user));
+        }
+      });
+
+    if (logoutPending)
+      logoutPending.then(_ => {
+        if (registered) {
+          setUser(null)
+          store.removeItem('__auth_user__');
+        }
+      });
+
+    return () => registered = false;
+  }, [logoutPending, loginPending]);
 
   useDebugValue(user ? 'Connected' : 'Anonymous');
 
   function login(email, password) {
     if (user !== null)
       throw new AuthError('User already connected');
-    return api.login(email, password).then(setUser);
+    let promise = api.login(email, password);
+    setLoginPending(promise);
+    return promise;
   }
 
   function logout() {
-    return api.logout()
-      .then(_ => setUser(null))
-      .then(_ => store.removeItem('__auth_user__'));
+    let promise = api.logout();
+    setLogoutPending(promise);
+    return promise;
   }
 
-  function register(user) {
+  function register(newUser) {
     if (user !== null)
       throw new AuthError('User already connected');
-    return api.register(user);
+    return api.register(newUser);
   }
 
   return (
-    <AuthContext.Provider value={{ login, logout, register, user }}>
-      {props.children}
+    <AuthContext.Provider value={{ login, logout, register, user, token }}>
+      {children}
     </AuthContext.Provider>
   );
 

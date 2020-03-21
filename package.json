@@ -1,16 +1,18 @@
 {
-    "name": "infom114_labomdl",
-    "version": "0.0.0",
+    "name": "unanimity",
+    "version": "0.1.0",
     "description": "",
     "main": "index.js",
     "scripts": {
         "test": "jest --passWithNoTests",
         "build": "webpack --config webpack.prod.js --display-modules",
         "watch": "webpack --config webpack.dev.js --watch",
-        "stat": "webpack --config webpack.prod.js --profile --json > out/stats.json"
+        "stat": "webpack --config webpack.prod.js --profile --json > out/stats.json",
+        "doc": "jsdoc -c jsdoc.conf.json -t ./node_modules/foodoc/template"
     },
     "keywords": [
         "UNamur",
+        "MS1",
         "MDL",
         "Participation"
     ],
@@ -30,6 +32,7 @@
         "@fortawesome/react-fontawesome": "^0.1.8",
         "bluebird": "^3.7.2",
         "clsx": "^1.1.0",
+        "jwt-decode": "^2.2.0",
         "moment": "^2.24.0",
         "prop-types": "^15.7.2",
         "react": "^16.13.0",
@@ -45,17 +48,25 @@
         "@babel/plugin-syntax-export-default-from": "^7.8.3",
         "@babel/preset-env": "^7.8.4",
         "@babel/preset-react": "^7.8.3",
+        "@testing-library/dom": "^7.0.3",
+        "@testing-library/jest-dom": "^5.1.1",
+        "@testing-library/react": "^10.0.0",
+        "@types/jest": "^25.1.4",
         "@types/react": "^16.9.21",
+        "babel-jest": "^25.1.0",
         "babel-loader": "^8.0.6",
         "babel-plugin-root-import": "^6.4.1",
         "bootstrap": "^4.4.1",
         "codecov": "^3.6.5",
         "css-loader": "^3.4.2",
-        "enzyme": "^3.11.0",
         "enzyme-adapter-react-16": "^1.15.2",
+        "foodoc": "0.0.9",
         "identity-obj-proxy": "^3.0.0",
         "jest": "^25.1.0",
+        "jsdoc": "^3.6.3",
         "mini-css-extract-plugin": "^0.9.0",
+        "react-test-renderer": "^16.13.0",
+        "regenerator-runtime": "^0.13.5",
         "sass": "^1.26.2",
         "sass-loader": "^8.0.2",
         "sinon": "^9.0.0",
@@ -67,6 +78,9 @@
     "jest": {
         "verbose": true,
         "collectCoverage": true,
+        "transform": {
+            "^.+\\.jsx?$": "babel-jest"
+        },
         "setupFilesAfterEnv": [
             "<rootDir>/front/__tests__/setup.js"
         ],

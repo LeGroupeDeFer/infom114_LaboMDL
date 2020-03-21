@@ -1,18 +1,15 @@
+import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useState } from 'react';
-import useInput from '../hooks/useInput';
-import Form from 'react-bootstrap/Form';
-import AutoForm from '../components/AutoForm';
-import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
-import Button from 'react-bootstrap/Button';
-import api from '../utils/api';
+import Form from 'react-bootstrap/Form';
+import Row from 'react-bootstrap/Row';
+import { Link, useHistory } from 'react-router-dom';
+import { useAuth } from '../context/authContext';
+import AutoForm from '../components/AutoForm';
 import Flexbox from '../components/Flexbox';
-import { useHistory, Link } from 'react-router-dom';
-import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import { useAuth } from 'unanimity/context/authContext';
-import { isUnamurEmail, isValidPassword } from '../utils/validators';
+import { isUnamurEmail, isValidPassword } from '../lib/validators';
 
 
 function Header(props) {
@@ -43,26 +40,29 @@ function LoginForm() {
 
   return (
     <>
-      <Form.Group controlId="loginEmail">
-        <Form.Label><small><b>EMAIL</b></small></Form.Label>
+      <Form.Group className="form-group-material">
         <AutoForm.Control
-          required
+          id="email"
           name="email"
           type="email"
-          placeholder="you@unamur.be"
           validator={isUnamurEmail}
         />
+        <Form.Label><small><b>EMAIL</b></small></Form.Label>
+        <div className="underline" />
+        <div className="highlight" />
       </Form.Group>
 
-      <Form.Group controlId="loginPassword">
-        <Form.Label><small><b>PASSWORD</b></small></Form.Label>
+      <Form.Group className='form-group-material'>
         <AutoForm.Control
-          required
+          id="password"
           name="password"
           type="password"
           eraseOnFailure={true}
           validator={isValidPassword}
         />
+        <Form.Label><small><b>PASSWORD</b></small></Form.Label>
+        <span className="underline" />
+        <div className="highlight" />
       </Form.Group>
 
       <AutoForm.Submit
@@ -74,28 +74,27 @@ function LoginForm() {
 
 }
 
-
 function Login(props) {
 
   const { login, user } = useAuth();
   const history = useHistory();
-  useEffect(() => user ? history.replace('/') : undefined, [user]);
-  const [error, setError] = useState(false);
 
-  const handleSubmit = data => {
-    const { email, password } = data;
-
-    login(email, password)
-      .then(_ => history.push('/'))
-      .catch(error => setError(error));
+  if (user) {
+    history.push('/');
+    // Shouldn't get here except in testing
+    return <></>;
   }
+  useEffect(() => user ? history.replace('/') : undefined, [user]);
+
+  const handleSubmit = data =>
+    login(data.email, data.password).then(_ => history.push('/'));
 
   return (
     <Container className="login-form">
       <Row>
-        <Col lg={{ span: 6, offset: 3 }}>
+        <Col md={{ span: 8, offset: 2 }} lg={{ span: 6, offset: 3 }}>
 
-          <AutoForm error={error} onSubmit={handleSubmit}>
+          <AutoForm onSubmit={handleSubmit} autoComplete="off">
             <Header />
             <hr />
 

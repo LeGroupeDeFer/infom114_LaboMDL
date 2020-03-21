@@ -1,9 +1,13 @@
 //! # Database
 //!
 //! This module aims to group everything that is related to the database.
+pub mod models;
+pub mod schema;
 
 // ---------------- REQUIRES --------------------------------------------------
 
+use rocket::config::Value;
+use rocket_contrib::databases::diesel;
 use std::collections::HashMap;
 use std::env;
 
@@ -14,15 +18,23 @@ use dotenv::dotenv;
 use diesel::prelude::*;
 use diesel::MysqlConnection;
 
-// ------------------ CONST ---------------------------------------------------
-
-const PROD_DB_URL: &'static str = "DATABASE_URL";
-const TEST_DB_URL: &'static str = "TEST_DATABASE_URL";
+use crate::conf::env_setting;
 
 // --------------------- DB OBJECT --------------------------------------------
 
-#[database("mariadb_unanimity")]
-pub struct MyDbConn(diesel::MysqlConnection);
+#[database("mariadb_pool")]
+pub struct Connection(diesel::MysqlConnection);
+
+// --------------------- FUNCTIONS --------------------------------------------
+
+pub fn pool(database_url: &str) -> HashMap<&str, Value> {
+    let mut database_config = HashMap::new();
+    let mut databases = HashMap::new();
+    database_config.insert("url", Value::from(database_url));
+    databases.insert("mariadb_pool", Value::from(database_config));
+
+    databases
+}
 
 // --------------------- FUNCTIONS --------------------------------------------
 
@@ -30,15 +42,41 @@ pub struct MyDbConn(diesel::MysqlConnection);
 ///
 /// The `cfg()` tricks allows us to use a different database for live & test.
 #[cfg(not(test))]
-fn url() -> String {
+pub fn url() -> String {
     dotenv().ok();
-    env::var(PROD_DB_URL).expect(&format!("{} must be set", PROD_DB_URL))
+
+    // DB settings
+    let db_host = env_setting("DB_HOST");
+    let db_port = env_setting("DB_PORT");
+    let db_adapter = env_setting("DB_ADAPTER");
+    let db_user = env_setting("DB_USER");
+    let db_password = env_setting("DB_PASSWORD");
+    let db_database = env_setting("DB_DATABASE");
+
+    // DB url
+    format!(
+        "{}://{}:{}@{}:{}/{}",
+        db_adapter, db_user, db_password, db_host, db_port, db_database
+    )
 }
 
 #[cfg(test)]
-fn url() -> String {
+pub fn url() -> String {
     dotenv().ok();
-    env::var(TEST_DB_URL).expect(&format!("{} must be set", TEST_DB_URL))
+
+    // DB settings
+    let db_host = env_setting("TEST_DB_HOST");
+    let db_port = env_setting("TEST_DB_PORT");
+    let db_adapter = env_setting("TEST_DB_ADAPTER");
+    let db_user = env_setting("TEST_DB_USER");
+    let db_password = env_setting("TEST_DB_PASSWORD");
+    let db_database = env_setting("TEST_DB_DATABASE");
+
+    // DB url
+    format!(
+        "{}://{}:{}@{}:{}/{}",
+        db_adapter, db_user, db_password, db_host, db_port, db_database
+    )
 }
 
 /// Get a database connection.
@@ -52,18 +90,4 @@ pub fn connection() -> MysqlConnection {
     let database_url = url();
     MysqlConnection::establish(&database_url)
         .expect(&format!("Error connecting to {}", database_url))
-}
-
-/// Create a `HashMap` that can be used in `rocket::config::Config` to setup a
-/// database connection.
-///
-/// This trick allows us to avoid the need of a `Rocket.toml` file, and to
-/// use a `.env` configuration file.
-pub fn db_config() -> HashMap<&'static str, HashMap<&'static str, Value>> {
-    let mut database_config = HashMap::new();
-    let mut databases = HashMap::new();
-    database_config.insert("url", Value::from(url().as_ref()));
-    databases.insert("mariadb_unanimity", database_config);
-
-    databases
 }

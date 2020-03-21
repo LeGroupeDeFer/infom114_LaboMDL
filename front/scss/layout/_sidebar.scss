@@ -52,8 +52,13 @@ $sidebar-dim: 60px;
     }
 }
 
-/* ----------------------------- Media queries ----------------------------- */
+.sidebar-exit {
+    position: absolute;
+    top: 100%;
+    transform: translateY(-100%);
+}
 
+/* ----------------------------- Media queries ----------------------------- */
 @include media-breakpoint-down("sm") {
     .sidebar {
         top: 100%;
