@@ -125,7 +125,7 @@ impl User {
     /// # Examples
     ///
     /// ```
-    /// use unanimitylibrary::models::user::User;
+    /// use unanimitylibrary::database::models::user::User;
     ///
     /// // valid
     /// assert!(User::check_if_email_is_unamur("guillaume.latour@student.unamur.be"));

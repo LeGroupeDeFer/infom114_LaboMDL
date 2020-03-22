@@ -10,7 +10,7 @@ use diesel::query_dsl::RunQueryDsl;
 
 use rocket::http::{ContentType, Status};
 
-use unanimitylibrary::authentication::forms::RegisterCredentials;
+use unanimitylibrary::auth::forms::RegisterData;
 use unanimitylibrary::http::helpers::quick_response::Info;
 
 use unanimitylibrary::database;
@@ -20,42 +20,22 @@ use unanimitylibrary::schema::users::dsl::users;
 /**************************** TESTS ******************************************/
 
 #[test]
-fn test_valid_mail() {
-    let client = init::clean_client();
-
-    let req = client
-        .post("/api/register/check_email")
-        .header(ContentType::JSON)
-        .body("{\"email\": \"guillaume.latour@student.unamur.be\"}");
-
-    let mut response = req.dispatch();
-    let json_response: Info = serde_json::from_str(&response.body_string().unwrap()).unwrap();
-
-    assert_eq!(response.status(), Status::Ok);
-    assert!(json_response.success());
-}
-
-#[test]
 fn register_new_user() {
     let client = init::clean_client();
 
     // prepare a user
-    let test_user = RegisterCredentials {
+    let test_user = RegisterData {
         email: String::from("guillaume.latour@student.unamur.be"),
         password: String::from("mysuperpassword"),
         firstname: String::from("Guillaume"),
         lastname: String::from("Latour"),
-        street: Some(String::from("my street")),
-        number: Some(42),
-        city: Some(String::from("Namur")),
-        zipcode: Some(5000),
-        country: Some(String::from("Belgium")),
+        address: None,
         phone: None,
     };
 
     // request the application on the route /api/register
     let req = client
-        .post("/api/register/")
+        .post("/api/auth/register/")
         .header(ContentType::JSON)
         .body(serde_json::to_string(&test_user).unwrap());
     let response = req.dispatch();

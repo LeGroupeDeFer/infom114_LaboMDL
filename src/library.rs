@@ -27,7 +27,7 @@ use rocket_contrib::templates::Template;
 
 /* ----------------------------- Local modules ----------------------------- */
 
-mod auth;
+pub mod auth;
 mod conf;
 pub mod database;
 pub mod http;

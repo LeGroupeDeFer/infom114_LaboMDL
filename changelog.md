@@ -9,6 +9,7 @@ Summary of implemented features classified by release (github tag)
 - remove .env from tracked files
 - add check_email documentation test
 - improve documentation
+- model & db refactoring
 
 ## [0.1.0] - 2019-03-02
 
