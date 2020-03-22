@@ -1,6 +1,6 @@
 use crate::database::models::address::Address;
 use crate::database::models::user::User;
-use crate::database::Connection;
+use crate::database::DBConnection;
 use crate::http::responders::api::ApiResponse;
 
 use crate::auth::Auth;
@@ -18,7 +18,7 @@ pub fn collect() -> Vec<rocket::Route> {
 }
 
 #[post("/register", format = "json", data = "<data>")]
-fn register(conn: Connection, data: Json<RegisterData>) -> ApiResponse {
+fn register(conn: DBConnection, data: Json<RegisterData>) -> ApiResponse {
     let registration = data.into_inner();
     if !User::is_unamur_email(&registration.email) {
         return ApiResponse::error(
@@ -56,7 +56,7 @@ fn register(conn: Connection, data: Json<RegisterData>) -> ApiResponse {
 }
 
 #[post("/login", format = "json", data = "<data>")]
-fn login(conn: Connection, state: State, data: Json<LoginData>) -> ApiResponse {
+fn login(conn: DBConnection, state: State, data: Json<LoginData>) -> ApiResponse {
     let info = data.into_inner();
     let authentication = Auth::login(&conn, &info.email, &info.password);
 
@@ -85,7 +85,7 @@ fn login(conn: Connection, state: State, data: Json<LoginData>) -> ApiResponse {
 
 // TODO - Might find a better place with an api/account/activate route
 #[post("/activate", format = "json", data = "<data>")]
-fn activate(conn: Connection, data: Json<ActivationData>) -> ApiResponse {
+fn activate(conn: DBConnection, data: Json<ActivationData>) -> ApiResponse {
     let ActivationData { token, id } = data.into_inner();
     if let Some(user) = User::from(&conn, &id) {
         let activation = user.clone(); // FIXME - Remove clone
@@ -104,7 +104,7 @@ fn activate(conn: Connection, data: Json<ActivationData>) -> ApiResponse {
 /*
 // TODO - Might find a better place with an api/account/recover route
 #[post("/recovery", format = "json", data = "<data>")]
-fn recovery(conn: Connection, data: Json<ActivationData>) -> ApiResponse {
+fn recovery(conn: DBConnection, data: Json<ActivationData>) -> ApiResponse {
     let ActivationData { token, id } = data.into_inner();
     if let Some(user) = User::from(&conn, &id) {
         let activation = user.clone(); // FIXME - Remove clone
@@ -121,7 +121,7 @@ fn recovery(conn: Connection, data: Json<ActivationData>) -> ApiResponse {
 #[post("/check_email", data = "<email_address>")]
 fn check_email(
     email_address: Result<Json<forms::Email>, JsonError>,
-    conn: Connection,
+    conn: DBConnection,
 ) -> ApiResponse {
     match email_address {
         Ok(address) => {
@@ -143,13 +143,5 @@ fn check_email(
         }
         Err(error) => ApiResponse::json_error(error),
     }
-}
-*/
-
-/*
-#[get("/logout")]
-fn post_logout(mut cookies: Cookies) -> ApiResponse {
-    Auth::logout(&mut cookies);
-    ApiResponse::new(Status::Ok, json!(Info::new(true, None)))
 }
 */

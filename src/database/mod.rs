@@ -11,10 +11,9 @@ use rocket_contrib::databases::diesel;
 use std::collections::HashMap;
 use std::env;
 
-use rocket::config::Value;
-
 use dotenv::dotenv;
 
+use crate::diesel::Connection;
 use diesel::prelude::*;
 use diesel::MysqlConnection;
 
@@ -23,7 +22,7 @@ use crate::conf::env_setting;
 // --------------------- DB OBJECT --------------------------------------------
 
 #[database("mariadb_pool")]
-pub struct Connection(diesel::MysqlConnection);
+pub struct DBConnection(diesel::MysqlConnection);
 
 // --------------------- FUNCTIONS --------------------------------------------
 

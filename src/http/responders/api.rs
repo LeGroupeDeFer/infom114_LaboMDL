@@ -5,7 +5,7 @@ use rocket::response::{Responder, Response};
 
 use rocket_contrib::json::{JsonError, JsonValue};
 
-use crate::database::models::quick_response;
+use crate::http::helpers::quick_response;
 
 #[derive(Debug, Clone)]
 pub struct ApiResponse {

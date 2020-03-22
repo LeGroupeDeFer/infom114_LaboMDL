@@ -1,6 +1,6 @@
 use crate::conf::AppState;
 use crate::database::models::user::User;
-use crate::database::Connection;
+use crate::database::DBConnection;
 use chrono::{Duration, Utc};
 use jsonwebtoken as jwt;
 use jwt::Validation;
@@ -36,7 +36,7 @@ impl Auth {
 
     // ---------------------------- LOGIN / LOGOUT ----------------------------
 
-    pub fn login(conn: &Connection, email: &str, password: &str) -> Option<(Auth, User)> {
+    pub fn login(conn: &DBConnection, email: &str, password: &str) -> Option<(Auth, User)> {
         let validity = Duration::weeks(2).num_seconds();
         if let Some(user) = User::by_email(conn, email) {
             if user.verify(password) {

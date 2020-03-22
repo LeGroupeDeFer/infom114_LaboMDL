@@ -1,6 +1,6 @@
 use crate::database::schema::addresses;
 use crate::database::schema::addresses::dsl::addresses as table;
-use crate::database::Connection;
+use crate::database::DBConnection;
 use diesel::prelude::*;
 use either::*;
 
@@ -19,18 +19,18 @@ pub struct Address {
 impl Address {
     /* ------------------------------- STATIC ------------------------------ */
 
-    // from :: (Connection, Integer) -> Option<Address>
-    pub fn from(conn: &Connection, id: &u32) -> Option<Self> {
+    // from :: (DBConnection, Integer) -> Option<Address>
+    pub fn from(conn: &DBConnection, id: &u32) -> Option<Self> {
         table.find(id).first::<Address>(&**conn).ok()
     }
 
-    // all :: (Connection, Integer) -> Option<Address>
-    pub fn all(conn: &Connection) -> Vec<Self> {
+    // all :: (DBConnection, Integer) -> Option<Address>
+    pub fn all(conn: &DBConnection) -> Vec<Self> {
         table.load(&**conn).unwrap_or(vec![])
     }
 
-    // select_minima :: (Connection, AddressMinima) -> Option<Address>
-    pub fn select_minima(conn: &Connection, minima: &AddressMinima) -> Option<Self> {
+    // select_minima :: (DBConnection, AddressMinima) -> Option<Address>
+    pub fn select_minima(conn: &DBConnection, minima: &AddressMinima) -> Option<Self> {
         table
             .filter(addresses::street.eq(&minima.street))
             .filter(addresses::number.eq(&minima.number))
@@ -42,8 +42,8 @@ impl Address {
             .ok()
     }
 
-    // insert_minima :: (Connection, AddressMinima) -> Either<Address, Address>
-    pub fn insert_minima(conn: &Connection, minima: &AddressMinima) -> Either<Self, Self> {
+    // insert_minima :: (DBConnection, AddressMinima) -> Either<Address, Address>
+    pub fn insert_minima(conn: &DBConnection, minima: &AddressMinima) -> Either<Self, Self> {
         if let Some(past) = Address::select_minima(conn, minima) {
             Left(past)
         } else {
