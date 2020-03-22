@@ -11,10 +11,10 @@ use diesel::query_dsl::RunQueryDsl;
 use rocket::http::{ContentType, Status};
 
 use unanimitylibrary::authentication::forms::RegisterCredentials;
-use unanimitylibrary::models::quick_response::Info;
+use unanimitylibrary::http::helpers::quick_response::Info;
 
 use unanimitylibrary::database;
-use unanimitylibrary::models::user::User;
+use unanimitylibrary::database::models::user::User;
 use unanimitylibrary::schema::users::dsl::users;
 
 /**************************** TESTS ******************************************/

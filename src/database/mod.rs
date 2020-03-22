@@ -6,6 +6,8 @@ pub mod schema;
 
 // ---------------- REQUIRES --------------------------------------------------
 
+use crate::conf::env_setting;
+use crate::diesel::Connection;
 use diesel::prelude::*;
 use diesel::MysqlConnection;
 use dotenv::dotenv;
@@ -14,12 +16,10 @@ use rocket_contrib::databases::diesel;
 use std::collections::HashMap;
 use std::env;
 
-use crate::conf::env_setting;
-
 // --------------------- DB OBJECT --------------------------------------------
 
 #[database("mariadb_pool")]
-pub struct Connection(diesel::MysqlConnection);
+pub struct DBConnection(diesel::MysqlConnection);
 
 // --------------------- FUNCTIONS --------------------------------------------
 
