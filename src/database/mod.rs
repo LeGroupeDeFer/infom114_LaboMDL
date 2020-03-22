@@ -6,17 +6,13 @@ pub mod schema;
 
 // ---------------- REQUIRES --------------------------------------------------
 
+use diesel::prelude::*;
+use diesel::MysqlConnection;
+use dotenv::dotenv;
 use rocket::config::Value;
 use rocket_contrib::databases::diesel;
 use std::collections::HashMap;
 use std::env;
-
-use rocket::config::Value;
-
-use dotenv::dotenv;
-
-use diesel::prelude::*;
-use diesel::MysqlConnection;
 
 use crate::conf::env_setting;
 

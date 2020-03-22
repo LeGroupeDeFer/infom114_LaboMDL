@@ -3,8 +3,8 @@ use crate::database::models::user::User;
 use crate::database::Connection;
 use crate::http::responders::api::ApiResponse;
 
+use crate::auth::forms::{ActivationData, LoginData, RegisterData};
 use crate::auth::Auth;
-use crate::authentication::forms::{ActivationData, LoginData, RegisterData};
 use crate::conf::State;
 use crate::lib::mail;
 
@@ -115,41 +115,5 @@ fn recovery(conn: Connection, data: Json<ActivationData>) -> ApiResponse {
     }
 
     ApiResponse::new(Status::Forbidden, json!({ "reason": "Incorrect token" }))
-}
-*/
-/*
-#[post("/check_email", data = "<email_address>")]
-fn check_email(
-    email_address: Result<Json<forms::Email>, JsonError>,
-    conn: Connection,
-) -> ApiResponse {
-    match email_address {
-        Ok(address) => {
-            if User::is_available_email(&conn, &address.email) {
-                Ok(is_available) => {
-                    if is_available {
-                        // if no rows returned, it means that the email is still available for account creation
-                        ApiResponse::simple_success(Status::Ok)
-                    } else {
-                        // else, it's not possible to use it to create another account
-                        ApiResponse::error(
-                            Status::Conflict,
-                            "This email is already linked to an account.",
-                        )
-                    }
-                }
-                Err(e) => ApiResponse::db_error(e),
-            }
-        }
-        Err(error) => ApiResponse::json_error(error),
-    }
-}
-*/
-
-/*
-#[get("/logout")]
-fn post_logout(mut cookies: Cookies) -> ApiResponse {
-    Auth::logout(&mut cookies);
-    ApiResponse::new(Status::Ok, json!(Info::new(true, None)))
 }
 */

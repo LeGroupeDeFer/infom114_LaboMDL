@@ -19,12 +19,10 @@ pub struct Address {
 impl Address {
     /* ------------------------------- STATIC ------------------------------ */
 
-    // from :: (Connection, Integer) -> Option<Address>
     pub fn from(conn: &Connection, id: &u32) -> Option<Self> {
         table.find(id).first::<Address>(&**conn).ok()
     }
 
-    // all :: (Connection, Integer) -> Option<Address>
     pub fn all(conn: &Connection) -> Vec<Self> {
         table.load(&**conn).unwrap_or(vec![])
     }

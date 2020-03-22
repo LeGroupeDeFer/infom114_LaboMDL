@@ -9,6 +9,14 @@ use rocket::request::{self, FromRequest, Request};
 use rocket::{Outcome, State};
 use serde::{Deserialize, Serialize};
 
+const TOKEN_PREFIX: &'static str = "Bearer ";
+
+/* --------------------------- Exposed submodules -------------------------- */
+
+pub mod forms;
+
+/* -------------------------------- Structs -------------------------------- */
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Auth {
     pub iss: String, // Issuer (us)
@@ -17,6 +25,8 @@ pub struct Auth {
     pub sub: u32,    // Subject (id)
     pub cap: Vec<String>,
 }
+
+/* ----------------------------- Implementation ---------------------------- */
 
 impl Auth {
     pub fn new(user: &User, length: i64) -> Self {
@@ -48,23 +58,22 @@ impl Auth {
     }
 }
 
-const TOKEN_PREFIX: &'static str = "Bearer ";
+/* ------------------------- Traits implementations ------------------------ */
 
 impl<'a, 'r> FromRequest<'a, 'r> for Auth {
     type Error = String;
 
-    // from_request :: Request -> Outcome<Claims, Error>
+    // from_request :: Request -> Outcome<Auth, Error>
     fn from_request(request: &'a Request<'r>) -> request::Outcome<Auth, Self::Error> {
         let state: State<AppState> = request.guard().unwrap();
         match request_auth(request, &state.jwt_secret) {
             Ok(auth) => Outcome::Success(auth),
-            Err(msg) => {
-                println!("{}", msg);
-                Outcome::Failure((Status::Forbidden, msg))
-            }
+            Err(msg) => Outcome::Failure((Status::Forbidden, msg)),
         }
     }
 }
+
+/* ------------------------------- Functions ------------------------------- */
 
 // token_decode :: (String, [Int]) -> Result<Claims, Error>
 fn token_decode(token: &str, secret: &[u8]) -> Result<Auth, String> {
