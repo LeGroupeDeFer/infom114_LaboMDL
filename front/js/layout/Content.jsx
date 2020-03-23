@@ -15,14 +15,14 @@ const Notifications = lazy(() => import('../pages/Notifications'));
 const Login = lazy(() => import('../pages/Login'));
 const Logout = lazy(() => import('../pages/Logout'));
 const Register = lazy(() => import('../pages/Register'));
-
+const Activate = lazy(() => import('../pages/Activate'));
 
 // Content :: Object => Component
 const Content = (_) => {
 
   const location = useLocation();
   const { user } = useAuth();
-  const locationClass = location.pathname.replace(/\W/g, '');
+  const locationClass = location.pathname.split('/')[1];
 
   const links = [
     { name: 'stream', path: '/', icon: faSwimmer },
@@ -41,7 +41,7 @@ const Content = (_) => {
 
       <div className={`offset ${locationClass}`}>
         <main role="main">
-          <div className="content p-3">
+          <div className="content">
             <Suspense fallback={<h1>Loading...</h1>}>
               <Switch>
 
@@ -75,6 +75,10 @@ const Content = (_) => {
 
                 <Route path='/register'>
                   <Register />
+                </Route>
+
+                <Route path='/activate/:id?/:token?'>
+                  <Activate />
                 </Route>
 
               </Switch>

@@ -1,15 +1,15 @@
 import React, { Suspense, useState } from 'react';
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
+import Button from 'react-bootstrap/Button';
+import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Col from 'react-bootstrap/Col';
+import Container from 'react-bootstrap/Container';
+import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton';
+import Row from 'react-bootstrap/Row';
+import { MdSort } from 'react-icons/md';
 import usePromise from 'react-promise-suspense';
 import Post from '../components/Post';
 import { loremIpsum, fakeLatency } from '../utils/dev';
-import Button from 'react-bootstrap/Button';
-import ButtonGroup from 'react-bootstrap/ButtonGroup';
-import DropdownButton from 'react-bootstrap/DropdownButton'
-import Dropdown from 'react-bootstrap/Dropdown'
-import { MdSort, MdSearch } from 'react-icons/md';
 import CreatableSelect from 'react-select/creatable';
 import { components } from 'react-select';
 import { FaSearch } from 'react-icons/fa';

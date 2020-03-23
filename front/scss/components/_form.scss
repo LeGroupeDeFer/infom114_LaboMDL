@@ -1,0 +1,149 @@
+@use '../themes' as *;
+
+/* General utilities */
+
+@include media-breakpoint-down("sm") {
+    .form-header {
+        font-size: .7em;
+    }
+}
+
+
+input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+    margin: 0;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Material-like input */
+
+$input-animation: 0.2s ease all;
+
+.form-group.form-group-material {
+    position: relative;
+    margin-top: $input-padding-y * 4;
+
+    label.form-label {
+        position: absolute;
+        left: $input-padding-x;
+        top: $input-padding-y;
+        color: theme-color("light");
+        font-size: 1.2em;
+        font-weight: normal;
+        pointer-events: none;
+        transition: $input-animation;
+    }
+
+    .underline {
+        position: relative;
+        display: block;
+        width: 100%;
+
+        &:before {
+            left: 50%;
+        }
+
+        &:after {
+            right: 50%;
+        }
+
+        &:before, &:after {
+            content: '';
+            height: 2px;
+            width: 0;
+            bottom: 1px;
+            position: absolute;
+            background: theme-color("secondary");
+            transition: $input-animation;
+        }
+    }
+
+    .highlight {
+        position: absolute;
+        height: 60%;
+        width: 20%;
+        top: 25%;
+        left: 0;
+        pointer-events: none;
+        opacity: 0.5;
+    }
+
+    input.form-control {
+        color: theme-color("secondary");
+
+        &:invalid {
+            border-color: $input-border-color;
+        }
+
+        &:focus {
+            border-color: transparent;
+
+            &[value=""] ~ .highlight {
+                animation: inputHighlighter 0.3s ease;
+            }
+        }
+
+        &:focus, &:valid, &:not([value=""]) {
+            & ~ label.form-label {
+                top: -$input-font-size * 1.25;
+                font-size: 0.875 * $input-font-size;
+                color: theme-color("secondary");
+            }
+        }
+
+        &:focus ~ .underline:before, &:focus ~ .underline:after {
+            width: 50%;
+        }
+    }
+}
+
+@keyframes inputHighlighter {
+    from {
+        background: theme-color("secondary");
+    }
+
+    to {
+        width: 0;
+        background: transparent;
+    }
+}
+
+/* Switch colors */
+
+@each $variant, $color in $theme-colors {
+    .custom-switch-#{$variant} {
+        .custom-control-input {
+            &:focus:not(:checked) ~ .custom-control-label::before {
+                border: none;
+            }
+
+            &:checked ~ .custom-control-label {
+                &::before {
+                    border-color: $color;
+                    background-color: $color;
+                }
+
+                &::after {
+                    background-color: theme-color("light");
+                }
+            }
+        }
+
+        .custom-control-label {
+            &::before {
+                border-color: gray("400");
+                background: gray("400");
+            }
+
+            &::after {
+                background-color: theme-color("dark");
+            }
+        }
+    }
+}

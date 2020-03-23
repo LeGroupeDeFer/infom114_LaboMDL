@@ -1,7 +1,7 @@
 import React, { useState, useRef, lazy, Suspense } from 'react';
 import Spinner from 'react-bootstrap/Spinner';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { AuthProvider } from 'unanimity/context/authContext';
+import { AuthProvider } from './context/authContext';
 
 
 const Loading = () => (
