@@ -4,11 +4,14 @@ target/
 static/js/
 static/css/
 node_modules/
+doc/front/
 
 # Env
 .history
 .vscode
 .drone.status
+.env
+.idea/
 
 # Test files
 cobertura.xml
@@ -20,3 +23,7 @@ test.http
 # Runtime
 *.pid
 *.log
+.redo
+
+# Symbolic links
+bootstrap_module/

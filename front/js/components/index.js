@@ -1,11 +1,5 @@
-import Circle from './Circle';
-import Flexbox from './Flexbox';
-import Search from './Search';
-import Waiting from './Waiting';
-
-export default {
-  Circle,
-  Flexbox,
-  Search,
-  Waiting
-};
+export { default as AutoForm } from './AutoForm';
+export { default as Circle } from './Circle';
+export { default as Flexbox } from './Flexbox';
+export { default as Image } from './Image';
+export { default as Waiting } from './Waiting';

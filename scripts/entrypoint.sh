@@ -4,10 +4,18 @@ set -eu
 
 cd /usr/src/app
 
+# Migrations
+echo "Starting migrations..." >&2
+cargo install diesel_cli --no-default-features --features mysql
+if [ -f .redo ]; then
+    diesel migration redo
+else
+    diesel migration run
+fi
+echo "OK." >&2
+
 # Rust
 echo "Starting Rust server..." >&2
-cargo install diesel_cli --no-default-features --features mysql
-diesel migration run
 cargo build
 cargo run > backend.log 2>&1 &
 echo $! > .backend.pid

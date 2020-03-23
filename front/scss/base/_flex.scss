@@ -1,0 +1,5 @@
+@for $grow from 0 through 5 {
+    .flex-grow-#{$grow} {
+        flex-grow: $grow !important;
+    }
+}

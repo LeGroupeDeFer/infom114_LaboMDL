@@ -1,7 +1,9 @@
 import React, { Suspense, useState, useEffect } from 'react';
 import Container from 'react-bootstrap/Container';
+import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton';
 import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
+import { MdSort } from 'react-icons/md';
 import usePromise from 'react-promise-suspense';
 import Post from '../components/Post';
 import { loremIpsum, fakeLatency } from '../utils/dev';

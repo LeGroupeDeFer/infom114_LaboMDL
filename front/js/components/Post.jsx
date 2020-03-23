@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Card from 'react-bootstrap/Card';
-import { loremIpsum } from '../utils/dev';
-import { preview } from '../utils';
+import { dev, preview } from '../lib';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 import Moment from 'react-moment';
@@ -207,7 +206,7 @@ const Post = ({
 
 Post.defaultProps = {
   title: 'A post',
-  text: loremIpsum,
+  text: dev.loremIpsum,
   username: 'John Coffey',
   previewLength: 200,
   voteCount: 25,

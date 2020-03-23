@@ -1,31 +1,33 @@
 import React from 'react';
-import { shallow, mount } from 'enzyme';
-
+import { act, fireEvent, render } from '@testing-library/react';
 import Circle from '../../js/components/Circle';
 
 
 describe('<Circle />', () => {
 
   it('should render', () => {
-    const wrapper = shallow(<Circle />);
-    expect(wrapper).toBeTruthy();
+    const { container } = render(<Circle />);
+    const circle = container.querySelector('.shape-circle');
+    expect(circle).toBeDefined();
   });
 
   it('should render children', () => {
-    const wrapper = mount(
+    const { container, getByText } = render(
       <Circle>
         <p>A circled text</p>
       </Circle>
     );
 
-    expect(wrapper.contains(<p>A circled text</p>)).toEqual(true);
+    const paragraph = getByText (/A circled text/);
+    expect(paragraph).toBeDefined();
   });
 
   it('should respect circle classes', () => {
-    const wrapper = shallow(<Circle />);
 
-    expect(wrapper.find('.shape-circle')).toHaveLength(1);
-    expect(wrapper.find('.shape-content')).toHaveLength(1);
+    const { container }= render(<Circle />);
+
+    expect(container.querySelector('.shape-circle')).toBeDefined();
+    expect(container.querySelector('.shape-content')).toBeDefined();
   });
 
 });

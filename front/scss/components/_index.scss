@@ -2,6 +2,10 @@
 
 @forward './post';
 
+@forward './form';
+
+@forward './image';
+
 /* Circles always respect a 1:1 aspect ratio */
 
 .ratio {
