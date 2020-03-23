@@ -1,10 +1,9 @@
-//! # Auth Tests
+//! # Registration
 //!
-//! Here should be grouped every test that is related to the
-//! user's authentication.
+//! Here are grouped the registration tests
+//! Those tests attack the `/api/auth/register` route.
 
 /************************* REQUIRE *******************************************/
-mod init;
 
 use diesel::query_dsl::RunQueryDsl;
 
@@ -14,6 +13,8 @@ use unanimitylibrary::database::models::address::Address;
 use unanimitylibrary::database::models::user::User;
 use unanimitylibrary::database::schema::addresses::dsl::addresses;
 use unanimitylibrary::database::schema::users::dsl::users;
+
+use super::super::init;
 
 /**************************** TESTS ******************************************/
 
@@ -105,17 +106,3 @@ fn register_full_address() {
     // check that this address is the one we just added
     assert_eq!(tab_address[0].street, "rue grandganage");
 }
-
-// test register avec addresse ok
-// test register addresse pas ok
-// test register existing email
-// test double register same address
-
-// test activation good code good id
-// test activation wrong code good id
-// test activation good code wrong id
-// test activation wrong code wrong id
-// test double activation
-
-// test login inactive account
-// test login active account
