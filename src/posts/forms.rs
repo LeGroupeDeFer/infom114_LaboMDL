@@ -1,5 +1,5 @@
 use crate::schema::posts;
-use crate::models::post::Post;
+// use crate::models::post::Post;
 
 
 #[derive(FromForm, Serialize, Deserialize, Debug, Insertable)]
