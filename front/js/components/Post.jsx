@@ -2,18 +2,27 @@ import React, { useState, useEffect } from 'react';
 import Card from 'react-bootstrap/Card';
 import { loremIpsum } from '../utils/dev';
 import { preview } from '../utils';
-import Badge from 'react-bootstrap/Badge'
+import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 import Moment from 'react-moment';
 import { GoArrowDown, GoArrowUp } from 'react-icons/go';
 import { MdModeComment } from 'react-icons/md';
-import { FaTag } from 'react-icons/fa'
+import { FaTag } from 'react-icons/fa';
 import clsx from 'clsx';
-import Tooltip from 'react-bootstrap/Tooltip'
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
+import Tooltip from 'react-bootstrap/Tooltip';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
-const Post = ({ title, text, username, voteCount, type, previewLength, createdOn, currentFilter, ...otherProps }) => {
-
+const Post = ({
+  title,
+  text,
+  username,
+  voteCount,
+  type,
+  previewLength,
+  createdOn,
+  currentFilter,
+  ...otherProps
+}) => {
   const [voted, setVoted] = useState('no');
   const [voteCountState, setvoteCountState] = useState(voteCount);
 
@@ -64,118 +73,137 @@ const Post = ({ title, text, username, voteCount, type, previewLength, createdOn
     }
   }
 
-  if (!['all', type].includes(currentFilter))
-    return <></>;
+  if (!['all', type].includes(currentFilter)) return <></>;
   let upVoteBtn;
   let downVoteBtn;
 
-  if (otherProps.isLogged) {
-
-    upVoteBtn =
+  if (otherProps.is_logged) {
+    upVoteBtn = (
       <Button
-        variant='light'
-        className={`up-vote-btn ${clsx(voted === 'up' && 'up-voted')}`}
+        variant="light"
+        className={`up-vote-btn ${clsx(voted === 'up' && 'up-voted')}   `}
         onClick={() => upVote(voted === 'up')}
       >
         <GoArrowUp size="1.5em" />
-      </Button>;
+      </Button>
+    );
 
-    downVoteBtn =
+    downVoteBtn = (
       <Button
-        variant='light'
+        variant="light"
         className={`down-vote-btn ${clsx(voted === 'down' && 'down-voted')}`}
         onClick={() => downVote(voted === 'down')}
       >
         <GoArrowDown size="1.5em" />
-      </Button>;
-
+      </Button>
+    );
   } else {
-    let notLoggedMsg = "You must login to vote";
-    upVoteBtn =
-      <OverlayTrigger placement="left" overlay={<Tooltip> {notLoggedMsg} </Tooltip>}>
+    let notLoggedMsg = 'You must login to vote';
+    upVoteBtn = (
+      <OverlayTrigger
+        placement="right"
+        overlay={<Tooltip> {notLoggedMsg} </Tooltip>}
+      >
         <span className="d-inline-block">
-          <Button
-            variant='light'
-            className={"up-vote-btn"}
-            disabled
-          >
+          <Button variant="light" className={'up-vote-btn'} disabled>
             <GoArrowUp size="1.5em" />
           </Button>
         </span>
-      </OverlayTrigger>;
+      </OverlayTrigger>
+    );
 
-
-    downVoteBtn =
-      <OverlayTrigger placement="left" overlay={<Tooltip> {notLoggedMsg} </Tooltip>}>
+    downVoteBtn = (
+      <OverlayTrigger
+        placement="right"
+        overlay={<Tooltip> {notLoggedMsg} </Tooltip>}
+      >
         <span className="d-inline-block">
-          <Button
-            variant='light'
-            className={"down-vote-btn"}
-            disabled
-          >
+          <Button variant="light" className={'down-vote-btn'} disabled>
             <GoArrowDown size="1.5em" />
           </Button>
         </span>
-      </OverlayTrigger>;
+      </OverlayTrigger>
+    );
   }
-
-
 
   return (
     <div className="d-flex">
-
-      <Card {...otherProps} className='post'>
-
+      <Card {...otherProps} className="post">
         <Card.Header>
           <h5>
             <Badge className={`post-${type} mr-2`}>
               {getDisplayedType(type)}
             </Badge>
-            <a href='#' className='text-dark'>{username}</a>
-            <span className='text-muted'> - <Moment fromNow>{createdOn}</Moment></span>
+            <a href="#" className="text-dark">
+              {username}
+            </a>
+            <span className="text-muted">
+              {' '}
+              - <Moment fromNow>{createdOn}</Moment>
+            </span>
           </h5>
         </Card.Header>
 
         <Card.Body className="p-0">
           <div className="d-flex">
-
-            <div className='vote-section px-3'>
-
-
+            <div className="vote-section px-3">
               {upVoteBtn}
 
-              <div className={`text-center ${clsx(voted !== 'no' && voted + '-voted')}`}>
+              <div
+                className={`text-center ${clsx(
+                  voted !== 'no' && voted + '-voted'
+                )}`}
+              >
                 <b>{voteCountState}</b>
               </div>
 
               {downVoteBtn}
-
             </div>
 
             <div className="p-3">
-
               <Card.Title className="mb-1">{title}</Card.Title>
               <div className="mb-1">
-                <a href='#' className="mr-2 tag" ><FaTag className="mr-1" />Arsenal</a>
-                <a href='#' className="mr-2 tag" ><FaTag className="mr-1" />FacInfo</a>
-                <a href='#' className="mr-2 tag" ><FaTag className="mr-1" />FacEco</a>
+                <a
+                  href="#"
+                  className="mr-2 tag"
+                  onClick={e => otherProps.tag_click(e)}
+                  value="Arsenal"
+                >
+                  <FaTag className="mr-1" />
+                  Arsenal
+                </a>
+                <a
+                  href="#"
+                  className="mr-2 tag"
+                  onClick={e => otherProps.tag_click(e)}
+                  value="FacInfo"
+                >
+                  <FaTag className="mr-1" />
+                  FacInfo
+                </a>
+                <a
+                  href="#"
+                  className="mr-2 tag"
+                  onClick={e => otherProps.tag_click(e)}
+                  value="FacEco"
+                >
+                  <FaTag className="mr-1" />
+                  FacEco
+                </a>
               </div>
 
-              <Card.Text>{preview(text, previewLength)}
-              </Card.Text>
-              <a className='post-comment' href='#'>
+              <Card.Text>{preview(text, previewLength)}</Card.Text>
+              <a className="post-comment" href="#">
                 <MdModeComment size="1.25em" className="mr-1" />
-                <span className='text-muted'>12 comments</span>
+                <span className="text-muted">12 comments</span>
               </a>
             </div>
-
           </div>
         </Card.Body>
       </Card>
-
-    </div >
+    </div>
   );
-}
+};
 
 Post.defaultProps = {
   title: 'A post',

@@ -145,6 +145,8 @@ Post ||--o{ UpDownVotePost
 User ||-o{ Comment
 User ||--o{ UpDownVoteComment
 Comment ||--o{ UpDownVoteComment
+Post ||-o{ Comment
+Comment |o--o{ Comment
 
 Post ||--o| VotingPost
 VotingAnswer}|-|| VotingPost
