@@ -397,7 +397,7 @@
                 "type": "string"
               }
             },
-            "description": "List of strings used to filter posts. We look for the strings in the post's content, title and username."
+            "description": "List of strings used to filter posts. We look for the strings in the post's content, title and username"
           },
           {
             "in": "query",
@@ -416,6 +416,22 @@
               "enum": ["info", "idea", "pool", "decisional"]
             },
             "description": "The type used to filter posts"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The numbers of posts to return"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The number of posts to skip before starting to collect the result set"
           }
         ],
         "responses": {
