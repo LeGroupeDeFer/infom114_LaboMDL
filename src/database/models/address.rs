@@ -1,7 +1,7 @@
 use crate::database::schema::addresses;
 use crate::database::schema::addresses::dsl::addresses as table;
-use crate::database::DBConnection;
 use diesel::prelude::*;
+use diesel::MysqlConnection;
 use either::*;
 
 #[derive(Identifiable, Queryable, Associations, Serialize, Deserialize, Clone, Debug)]
@@ -19,37 +19,53 @@ pub struct Address {
 impl Address {
     /* ------------------------------- STATIC ------------------------------ */
 
-    // from :: (DBConnection, Integer) -> Option<Address>
-    pub fn from(conn: &DBConnection, id: &u32) -> Option<Self> {
-        table.find(id).first::<Address>(&**conn).ok()
+    // from :: (MysqlConnection, Integer) -> Option<Address>
+    pub fn from(conn: &MysqlConnection, id: &u32) -> Option<Self> {
+        table.find(id).first::<Address>(conn).ok()
     }
 
-    // all :: (DBConnection, Integer) -> Option<Address>
-    pub fn all(conn: &DBConnection) -> Vec<Self> {
-        table.load(&**conn).unwrap_or(vec![])
+    // all :: (MysqlConnection, Integer) -> Option<Address>
+    pub fn all(conn: &MysqlConnection) -> Vec<Self> {
+        table.load(conn).unwrap_or(vec![])
     }
 
-    // select_minima :: (DBConnection, AddressMinima) -> Option<Address>
-    pub fn select_minima(conn: &DBConnection, minima: &AddressMinima) -> Option<Self> {
-        table
-            .filter(addresses::street.eq(&minima.street))
-            .filter(addresses::number.eq(&minima.number))
-            .filter(addresses::box_number.eq(&minima.box_number))
-            .filter(addresses::city.eq(&minima.city))
-            .filter(addresses::zipcode.eq(&minima.zipcode))
-            .filter(addresses::country.eq(&minima.country))
-            .first::<Address>(&**conn)
-            .ok()
+    /// Get the address record that fits the `minima` given.
+    pub fn select_minima(conn: &MysqlConnection, minima: &AddressMinima) -> Option<Self> {
+        let filtered = table.filter(
+            addresses::street
+                .eq(&minima.street)
+                .and(addresses::number.eq(&minima.number))
+                .and(addresses::city.eq(&minima.city))
+                .and(addresses::zipcode.eq(&minima.zipcode))
+                .and(addresses::country.eq(&minima.country)),
+        );
+
+        // Since a rust `None` value is not equal to a SQL `NULL` value, a custom test must be
+        // performed to correctly identify the address.
+        match &minima.box_number {
+            None => filtered
+                .filter(addresses::box_number.is_null())
+                .first::<Address>(conn)
+                .ok(),
+            Some(box_n) => filtered
+                .filter(
+                    addresses::box_number
+                        .is_not_null()
+                        .and(addresses::box_number.eq(box_n)),
+                )
+                .first::<Address>(conn)
+                .ok(),
+        }
     }
 
-    // insert_minima :: (DBConnection, AddressMinima) -> Either<Address, Address>
-    pub fn insert_minima(conn: &DBConnection, minima: &AddressMinima) -> Either<Self, Self> {
+    // insert_minima :: (MysqlConnection, AddressMinima) -> Either<Address, Address>
+    pub fn insert_minima(conn: &MysqlConnection, minima: &AddressMinima) -> Either<Self, Self> {
         if let Some(past) = Address::select_minima(conn, minima) {
             Left(past)
         } else {
             diesel::insert_into(table)
                 .values(minima)
-                .execute(&**conn)
+                .execute(conn)
                 .expect("Failed address insertion");
             Right(
                 Address::select_minima(conn, minima)

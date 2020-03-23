@@ -4,9 +4,9 @@
 //!
 //! An effort has been made to keep the code minimal here.
 
-use unanimitylibrary::rocket;
+use unanimitylibrary;
 
 /// Launch the rocket application
 fn main() {
-    rocket().launch();
+    unanimitylibrary::rocket(unanimitylibrary::ignite()).launch();
 }

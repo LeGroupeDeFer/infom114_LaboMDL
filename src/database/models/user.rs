@@ -1,9 +1,9 @@
 use super::address::Address;
 use crate::database::schema::users;
 use crate::database::schema::users::dsl::users as table;
-use crate::database::DBConnection;
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
+use diesel::MysqlConnection;
 use either::*;
 use regex::Regex;
 use rocket_contrib::json::JsonValue;
@@ -33,26 +33,26 @@ impl User {
     /* ------------------------------- STATIC ------------------------------ */
 
     // from :: (DBConnection, Integer) -> Option<User>
-    pub fn from(conn: &DBConnection, id: &u32) -> Option<Self> {
-        table.find(id).first::<User>(&**conn).ok()
+    pub fn from(conn: &MysqlConnection, id: &u32) -> Option<Self> {
+        table.find(id).first::<User>(conn).ok()
     }
 
-    // all :: (DBConnection) -> Vec<User>
-    pub fn all(conn: &DBConnection) -> Vec<Self> {
-        table.load(&**conn).unwrap_or(vec![])
+    // all :: (MysqlConnection) -> Vec<User>
+    pub fn all(conn: &MysqlConnection) -> Vec<Self> {
+        table.load(conn).unwrap_or(vec![])
     }
 
-    // by_email :: (DBConnection, String) -> Option<User>
-    pub fn by_email(conn: &DBConnection, email: &str) -> Option<User> {
-        if let Ok(user) = table.filter(users::email.eq(email)).first(&**conn) {
+    // by_email :: (MysqlConnection, String) -> Option<User>
+    pub fn by_email(conn: &MysqlConnection, email: &str) -> Option<User> {
+        if let Ok(user) = table.filter(users::email.eq(email)).first(conn) {
             Some(user)
         } else {
             None
         }
     }
 
-    // is_available_email :: (DBConnection, String) -> Boolean
-    pub fn is_available_email(conn: &DBConnection, email: &str) -> bool {
+    // is_available_email :: (MysqlConnection, String) -> Boolean
+    pub fn is_available_email(conn: &MysqlConnection, email: &str) -> bool {
         User::by_email(conn, email).is_none()
     }
 
@@ -62,16 +62,16 @@ impl User {
         re.is_match(email)
     }
 
-    // select_minima :: (DBConnection, UserMinima) -> Option<User>
-    pub fn select_minima(conn: &DBConnection, minima: &UserMinima) -> Option<Self> {
+    // select_minima :: (MysqlConnection, UserMinima) -> Option<User>
+    pub fn select_minima(conn: &MysqlConnection, minima: &UserMinima) -> Option<Self> {
         table
             .filter(users::email.eq(minima.email.clone()))
-            .first::<User>(&**conn)
+            .first::<User>(conn)
             .ok()
     }
 
-    // insert_minima :: (DBConnection, UserMinima) -> Either<User, User>
-    pub fn insert_minima(conn: &DBConnection, minima: &UserMinima) -> Either<Self, Self> {
+    // insert_minima :: (MysqlConnection, UserMinima) -> Either<User, User>
+    pub fn insert_minima(conn: &MysqlConnection, minima: &UserMinima) -> Either<Self, Self> {
         if let Some(past) = User::select_minima(conn, minima) {
             Left(past)
         } else {
@@ -79,7 +79,7 @@ impl User {
             inserted.password = bcrypt::hash(&minima.password, 8).expect("Unable to hash password");
             diesel::insert_into(table)
                 .values(inserted)
-                .execute(&**conn)
+                .execute(conn)
                 .expect("Error inserting address");
             Right(
                 User::select_minima(conn, minima)
@@ -98,11 +98,11 @@ impl User {
         bcrypt::verify(password, &self.password).expect("Fatal: BCrypt error")
     }
 
-    pub fn activate(&self, conn: &DBConnection) {
+    pub fn activate(&self, conn: &MysqlConnection) {
         use crate::database::schema::users::dsl::*;
         diesel::update(users.filter(id.eq(self.id)))
             .set((active.eq(true), token.eq(None: Option<String>)))
-            .execute(&**conn)
+            .execute(conn)
             .expect(&format!("Error updating user #{}", self.id));
     }
 
