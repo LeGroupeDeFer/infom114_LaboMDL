@@ -8,11 +8,12 @@
 use unanimitylibrary::conf::env_setting;
 
 use unanimitylibrary::database;
-use unanimitylibrary::database::models::{address::Address, user::User};
+use unanimitylibrary::database::models::{address::Address, user::User, user::UserMinima};
 use unanimitylibrary::database::schema::addresses::dsl::addresses;
 use unanimitylibrary::database::schema::users::dsl::users;
 
 use diesel::query_dsl::RunQueryDsl;
+use either::*;
 
 /// Truncate all the tables
 pub fn clean() {
@@ -87,4 +88,28 @@ pub fn ignite() -> rocket::Rocket {
         .unwrap();
 
     rocket::custom(config)
+}
+
+pub fn get_user(active: bool) -> (User, String) {
+    let conn = database_connection();
+
+    let u = UserMinima {
+        email: String::from("guillaume.latour@student.unamur.be"),
+        password: String::from("mysuperpassword"),
+        firstname: String::from("Guillaume"),
+        lastname: String::from("Latour"),
+        address: None,
+        phone: None,
+    };
+
+    let user = match User::insert_minima(&conn, &u) {
+        Left(u) => u,
+        Right(u) => u,
+    };
+
+    if active {
+        user.activate(&conn);
+    }
+
+    (User::by_email(&conn, &u.email).unwrap(), u.password)
 }

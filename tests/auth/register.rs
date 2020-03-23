@@ -16,6 +16,8 @@ use unanimitylibrary::database::schema::users::dsl::users;
 
 use super::super::init;
 
+const ROUTE: &'static str = "/api/auth/register/";
+
 /**************************** TESTS ******************************************/
 
 #[test]
@@ -34,10 +36,7 @@ fn register_new_user() {
      }";
 
     // request the application on the route /api/register
-    let req = client
-        .post("/api/auth/register/")
-        .header(ContentType::JSON)
-        .body(test_user);
+    let req = client.post(ROUTE).header(ContentType::JSON).body(test_user);
     let response = req.dispatch();
 
     // check that the response is OK
@@ -79,10 +78,7 @@ fn register_full_address() {
      }";
 
     // request the application on the route /api/register
-    let req = client
-        .post("/api/auth/register/")
-        .header(ContentType::JSON)
-        .body(test_user);
+    let req = client.post(ROUTE).header(ContentType::JSON).body(test_user);
     let response = req.dispatch();
 
     // check that the response is OK
@@ -131,10 +127,7 @@ fn register_address_wrong_type() {
      }";
 
     // request the application on the route /api/register
-    let req = client
-        .post("/api/auth/register/")
-        .header(ContentType::JSON)
-        .body(test_user);
+    let req = client.post(ROUTE).header(ContentType::JSON).body(test_user);
     let response = req.dispatch();
 
     // check that the response is OK
@@ -167,10 +160,7 @@ fn register_incomplete_address() {
      }";
 
     // request the application on the route /api/register
-    let req = client
-        .post("/api/auth/register/")
-        .header(ContentType::JSON)
-        .body(test_user);
+    let req = client.post(ROUTE).header(ContentType::JSON).body(test_user);
     let response = req.dispatch();
 
     // check that the response is OK
@@ -197,10 +187,7 @@ fn register_with_existing_user() {
      }";
 
     // request the application on the route /api/register
-    let req = client
-        .post("/api/auth/register/")
-        .header(ContentType::JSON)
-        .body(test_user);
+    let req = client.post(ROUTE).header(ContentType::JSON).body(test_user);
     let response = req.dispatch();
 
     // check that the response is OK
@@ -217,10 +204,7 @@ fn register_with_existing_user() {
     // and there is nothing in the address table
     assert_eq!(addresses.load::<Address>(&conn).unwrap().len(), 0);
 
-    let req2 = client
-        .post("/api/auth/register/")
-        .header(ContentType::JSON)
-        .body(test_user);
+    let req2 = client.post(ROUTE).header(ContentType::JSON).body(test_user);
     let response2 = req2.dispatch();
     assert_eq!(response2.status(), Status::Conflict);
 
