@@ -29,17 +29,33 @@ impl Address {
         table.load(&**conn).unwrap_or(vec![])
     }
 
-    // select_minima :: (DBConnection, AddressMinima) -> Option<Address>
+    /// Get the address record that fits the `minima` given.
     pub fn select_minima(conn: &DBConnection, minima: &AddressMinima) -> Option<Self> {
-        table
-            .filter(addresses::street.eq(&minima.street))
-            .filter(addresses::number.eq(&minima.number))
-            .filter(addresses::box_number.eq(&minima.box_number))
-            .filter(addresses::city.eq(&minima.city))
-            .filter(addresses::zipcode.eq(&minima.zipcode))
-            .filter(addresses::country.eq(&minima.country))
-            .first::<Address>(&**conn)
-            .ok()
+        let filtered = table.filter(
+            addresses::street
+                .eq(&minima.street)
+                .and(addresses::number.eq(&minima.number))
+                .and(addresses::city.eq(&minima.city))
+                .and(addresses::zipcode.eq(&minima.zipcode))
+                .and(addresses::country.eq(&minima.country)),
+        );
+
+        // Since a rust `None` value is not equal to a SQL `NULL` value, a custom test must be
+        // performed to correctly identify the address.
+        match &minima.box_number {
+            None => filtered
+                .filter(addresses::box_number.is_null())
+                .first::<Address>(&**conn)
+                .ok(),
+            Some(box_n) => filtered
+                .filter(
+                    addresses::box_number
+                        .is_not_null()
+                        .and(addresses::box_number.eq(box_n)),
+                )
+                .first::<Address>(&**conn)
+                .ok(),
+        }
     }
 
     // insert_minima :: (DBConnection, AddressMinima) -> Either<Address, Address>

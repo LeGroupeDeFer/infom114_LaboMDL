@@ -1,4 +1,12 @@
-//! 
+//! # Routes
+//!
+//! Group all routes of the application, classified by mod respecting the
+//! route's path.
+//!
+//! Some of the routes are just hollow routes that just returns the basic
+//! application layout.
+//!
+//! This is needed since the front is managed by React.
 
 mod api;
 use crate::lib::extend_routes;
@@ -52,13 +60,15 @@ pub fn dynamic_routing(route: String) -> Option<Template> {
     }
 }
 
-#[get("/activate/<id>/<token>", rank = 1)]
-pub fn activate(id: u32, token: String) -> Option<Template> {
+/// Hollow route to be accessed by activation link
+#[get("/activate/<_id>/<_token>", rank = 1)]
+pub fn activate(_id: u32, _token: String) -> Option<Template> {
     Some(Template::render("layout", &()))
 }
 
-#[get("/recover/<id>/<token>", rank = 1)]
-pub fn recover(id: u32, token: String) -> Option<Template> {
+/// Hollow route to be accessed by recovery link
+#[get("/recover/<_id>/<_token>", rank = 1)]
+pub fn recover(_id: u32, _token: String) -> Option<Template> {
     Some(Template::render("layout", &()))
 }
 

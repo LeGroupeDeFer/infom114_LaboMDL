@@ -21,14 +21,13 @@ extern crate diesel;
 extern crate dotenv;
 extern crate regex;
 
-use dotenv::dotenv;
 use rocket::Rocket;
 use rocket_contrib::templates::Template;
 
 /* ----------------------------- Local modules ----------------------------- */
 
 pub mod auth;
-mod conf;
+pub mod conf;
 pub mod database;
 pub mod http;
 mod lib;
@@ -38,13 +37,17 @@ pub mod schema;
 /* ----------------------------- Ignite Rocket ----------------------------- */
 
 /// Prepare the Rocket app
-pub fn rocket() -> Rocket {
-    dotenv().ok();
-
-    rocket::custom(conf::from_env())
+pub fn rocket(ignited: Rocket) -> Rocket {
+    ignited
         .attach(conf::AppState::manage())
         .attach(database::DBConnection::fairing())
         .attach(Template::fairing())
         .register(http::errors::catchers::collect())
         .mount("/", routes::collect())
+}
+
+/// Load the configuration from the `.env` file
+/// Returns a basic `Rocket` object
+pub fn ignite() -> Rocket {
+    rocket::custom(conf::from_env())
 }

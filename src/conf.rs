@@ -23,6 +23,7 @@ impl AppState {
 }
 
 pub fn env_setting(key: &str) -> String {
+    dotenv::dotenv().ok();
     env::var(key)
         .ok()
         .map(|v| v)
