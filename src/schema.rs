@@ -1,17 +1,30 @@
 table! {
-    posts (id) {
+    comments (id) {
         id -> Unsigned<Integer>,
-        title -> Nullable<Varchar>,
+        post_id -> Unsigned<Integer>,
         content -> Mediumtext,
         authorid -> Unsigned<Integer>,
         created_at -> Nullable<Datetime>,
         modified_at -> Nullable<Datetime>,
-        reply_to -> Nullable<Unsigned<Integer>>,
+        nb_votes -> Unsigned<Integer>,
+        parent_id -> Nullable<Unsigned<Integer>>,
     }
 }
 
 table! {
-    post_tag_map (post_id, tag_id) {
+    posts (id) {
+        id -> Unsigned<Integer>,
+        title -> Varchar,
+        content -> Mediumtext,
+        authorid -> Unsigned<Integer>,
+        created_at -> Nullable<Datetime>,
+        modified_at -> Nullable<Datetime>,
+        nb_votes -> Unsigned<Integer>,
+    }
+}
+
+table! {
+    posts_tags (post_id, tag_id) {
         post_id -> Unsigned<Integer>,
         tag_id -> Unsigned<Integer>,
     }
@@ -41,24 +54,39 @@ table! {
 }
 
 table! {
-    votes (post_id, vote_authorid) {
-        post_id -> Unsigned<Integer>,
+    votes_comments (comment_id, vote_authorid) {
+        comment_id -> Unsigned<Integer>,
         vote_authorid -> Unsigned<Integer>,
         voted_at -> Nullable<Datetime>,
-        is_vote_up -> Bool,
+        vote_value -> Bool,
     }
 }
 
-joinable!(post_tag_map -> posts (post_id));
-joinable!(post_tag_map -> tags (tag_id));
+table! {
+    votes_posts (post_id, vote_authorid) {
+        post_id -> Unsigned<Integer>,
+        vote_authorid -> Unsigned<Integer>,
+        voted_at -> Nullable<Datetime>,
+        vote_value -> Bool,
+    }
+}
+
+joinable!(comments -> posts (post_id));
+joinable!(comments -> users (authorid));
 joinable!(posts -> users (authorid));
-joinable!(votes -> posts (post_id));
-joinable!(votes -> users (vote_authorid));
+joinable!(posts_tags -> posts (post_id));
+joinable!(posts_tags -> tags (tag_id));
+joinable!(votes_comments -> comments (comment_id));
+joinable!(votes_comments -> users (vote_authorid));
+joinable!(votes_posts -> posts (post_id));
+joinable!(votes_posts -> users (vote_authorid));
 
 allow_tables_to_appear_in_same_query!(
+    comments,
     posts,
-    post_tag_map,
+    posts_tags,
     tags,
     users,
-    votes,
+    votes_comments,
+    votes_posts,
 );
