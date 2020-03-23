@@ -1,7 +1,7 @@
 use crate::database::schema::addresses;
 use crate::database::schema::addresses::dsl::addresses as table;
-use crate::database::DBConnection;
 use diesel::prelude::*;
+use diesel::MysqlConnection;
 use either::*;
 
 #[derive(Identifiable, Queryable, Associations, Serialize, Deserialize, Clone, Debug)]
@@ -19,18 +19,18 @@ pub struct Address {
 impl Address {
     /* ------------------------------- STATIC ------------------------------ */
 
-    // from :: (DBConnection, Integer) -> Option<Address>
-    pub fn from(conn: &DBConnection, id: &u32) -> Option<Self> {
-        table.find(id).first::<Address>(&**conn).ok()
+    // from :: (MysqlConnection, Integer) -> Option<Address>
+    pub fn from(conn: &MysqlConnection, id: &u32) -> Option<Self> {
+        table.find(id).first::<Address>(conn).ok()
     }
 
-    // all :: (DBConnection, Integer) -> Option<Address>
-    pub fn all(conn: &DBConnection) -> Vec<Self> {
-        table.load(&**conn).unwrap_or(vec![])
+    // all :: (MysqlConnection, Integer) -> Option<Address>
+    pub fn all(conn: &MysqlConnection) -> Vec<Self> {
+        table.load(conn).unwrap_or(vec![])
     }
 
     /// Get the address record that fits the `minima` given.
-    pub fn select_minima(conn: &DBConnection, minima: &AddressMinima) -> Option<Self> {
+    pub fn select_minima(conn: &MysqlConnection, minima: &AddressMinima) -> Option<Self> {
         let filtered = table.filter(
             addresses::street
                 .eq(&minima.street)
@@ -45,7 +45,7 @@ impl Address {
         match &minima.box_number {
             None => filtered
                 .filter(addresses::box_number.is_null())
-                .first::<Address>(&**conn)
+                .first::<Address>(conn)
                 .ok(),
             Some(box_n) => filtered
                 .filter(
@@ -53,19 +53,19 @@ impl Address {
                         .is_not_null()
                         .and(addresses::box_number.eq(box_n)),
                 )
-                .first::<Address>(&**conn)
+                .first::<Address>(conn)
                 .ok(),
         }
     }
 
-    // insert_minima :: (DBConnection, AddressMinima) -> Either<Address, Address>
-    pub fn insert_minima(conn: &DBConnection, minima: &AddressMinima) -> Either<Self, Self> {
+    // insert_minima :: (MysqlConnection, AddressMinima) -> Either<Address, Address>
+    pub fn insert_minima(conn: &MysqlConnection, minima: &AddressMinima) -> Either<Self, Self> {
         if let Some(past) = Address::select_minima(conn, minima) {
             Left(past)
         } else {
             diesel::insert_into(table)
                 .values(minima)
-                .execute(&**conn)
+                .execute(conn)
                 .expect("Failed address insertion");
             Right(
                 Address::select_minima(conn, minima)
