@@ -16,6 +16,7 @@ extern crate regex;
 /* ------------------------------ Local Mod -------------------------------- */
 
 mod authentication;
+mod posts;
 mod database;
 mod http;
 mod models;
@@ -46,6 +47,7 @@ fn dynamic_routing(route: String) -> Option<Template> {
     let mut allowed_routes = vec!["profile", "notifications", "settings", "about"];
 
     allowed_routes.append(&mut authentication::routes::allowed_paths());
+    allowed_routes.append(&mut posts::routes::allowed_paths());
 
     if allowed_routes.contains(&&route[..]) {
         Some(Template::render("layout", &()))
@@ -76,6 +78,7 @@ fn main() {
     rocket::custom(database::db_config())
         .mount("/", routes![index, dynamic_routing, files, get_cookies])
         .mount("/", authentication::routes::collect())
+        .mount("/", posts::routes::collect())
         .register(http::errors::catchers::collect())
         .attach(Template::fairing())
         .attach(MyDbConn::fairing())
