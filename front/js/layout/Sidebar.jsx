@@ -23,7 +23,7 @@ function Sidebar({ open, links }) {
 
       {/* Menu */}
       <ListGroup variant="flush" className="sidebar-nav w-100 text-center">
-        {links.map(({ name, path, icon }, i) => (
+        {links.map(({ name, path, icon, title }, i) => (
           <NavLink exact to={path} key={i}>
             <ListGroup.Item>
               <OverlayTrigger
