@@ -10,7 +10,6 @@ doc/front/
 .history
 .vscode
 .drone.status
-.env
 .idea/
 
 # Test files
