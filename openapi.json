@@ -1462,7 +1462,7 @@
             "type": "integer"
           },
           "user_id": {
-            "type": "string"
+            "type": "integer"
           }
         }
       },
@@ -1473,7 +1473,7 @@
             "type": "integer"
           },
           "user_id": {
-            "type": "string"
+            "type": "integer"
           },
           "cancel": {
             "type": "boolean"
