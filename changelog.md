@@ -2,6 +2,10 @@
 
 Summary of implemented features classified by release (github tag)
 
+## [0.1.3] - 2019-03-24
+
+- add tags openapi specs
+
 ## [0.1.2] - 2019-03-19
 
 - transform crate into lib + bin

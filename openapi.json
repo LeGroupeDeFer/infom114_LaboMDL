@@ -4,16 +4,27 @@
     "title": "UNAnimity",
     "version": "0.2.0"
   },
-  "servers": [{
-    "url": "https://unanimity.be"
-  }],
-  "tags": [{
+  "servers": [
+    {
+      "url": "https://unanimity.be"
+    }
+  ],
+  "tags": [
+    {
       "name": "auth",
       "description": "Everything that is related to authentication"
     },
     {
       "name": "post",
       "description": "Everything related to posts"
+    },
+    {
+      "name": "tags",
+      "description": "Everything that is related to tags"
+    },
+    {
+      "name": "hollow",
+      "description": "Hollow routes that are managed by React"
     }
   ],
   "paths": {
@@ -263,7 +274,8 @@
       "get": {
         "tags": ["post"],
         "summary": "Fetch posts according to the parameters",
-        "parameters": [{
+        "parameters": [
+          {
             "in": "query",
             "name": "tag",
             "schema": {
@@ -355,9 +367,7 @@
             "content": {}
           }
         },
-        "security": [{
-          "UserAuth": []
-        }]
+        "security": [{ "UserAuth": [] }]
       },
       "put": {
         "tags": ["post"],
@@ -380,24 +390,24 @@
             "description": "Post not found"
           }
         },
-        "security": [{
-          "UserAuth": []
-        }]
+        "security": [{ "UserAuth": [] }]
       }
     },
     "/posts/{post_id}": {
       "get": {
         "tags": ["post"],
         "summary": "Find post by id",
-        "parameters": [{
-          "name": "post_id",
-          "in": "path",
-          "description": "Id of post to return",
-          "required": true,
-          "schema": {
-            "type": "string"
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "description": "Id of post to return",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -420,15 +430,17 @@
       "delete": {
         "tags": ["post"],
         "summary": "Delete a post",
-        "parameters": [{
-          "name": "post_id",
-          "in": "path",
-          "description": "Id of post to delete",
-          "required": true,
-          "schema": {
-            "type": "string"
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "description": "Id of post to delete",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -440,9 +452,11 @@
             "description": "Post not found"
           }
         },
-        "security": [{
-          "UserAuth": []
-        }]
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
       }
     },
     "/posts/up_down_vote": {
@@ -453,7 +467,10 @@
           "content": {
             "json": {
               "schema": {
-                "$ref": "#/components/schemas/UpDownVote"
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/UpDownVote"
+                }
               }
             }
           },
@@ -464,9 +481,190 @@
             "description": "OK"
           }
         },
-        "security": [{
-          "UserAuth": []
-        }]
+        "security": [{ "UserAuth": [] }]
+      }
+    },
+    "/tags": {
+      "get": {
+        "tags": ["tags", "hollow"],
+        "summary": "Return all tags of the application",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tag"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tags": {
+      "post": {
+        "tags": ["tags"],
+        "summary": "Create a tag",
+        "requestBody": {
+          "content": {
+            "json": {
+              "schema": {
+                "$ref": "#/components/schemas/Tag"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {}
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "A tag with the new name already exist"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request : the given format is incorrect",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "json format is required"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "UserAuth": [] }]
+      },
+      "put": {
+        "tags": ["tags"],
+        "summary": "Update a tag",
+        "requestBody": {
+          "content": {
+            "json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "old": {
+                    "$ref": "#/components/schemas/Tag"
+                  },
+                  "new": {
+                    "$ref": "#/components/schemas/Tag"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {}
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "A tag with the new name already exist"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request : the given format is incorrect",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "json format is required"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "The targeted tag does not exist"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "UserAuth": [] }]
+      },
+      "delete": {
+        "tags": ["tags"],
+        "summary": "Update a tag",
+        "requestBody": {
+          "content": {
+            "json": {
+              "schema": {
+                "$ref": "#/components/schemas/Tag"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {}
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "The targeted tag does not exist"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request : the given format is incorrect",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "json format is required"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "UserAuth": [] }]
       }
     }
   },
@@ -624,6 +822,14 @@
           "action": {
             "type": "integer",
             "enum": [2, 1, -1, -2]
+          }
+        }
+      },
+      "Tag": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
           }
         }
       }
