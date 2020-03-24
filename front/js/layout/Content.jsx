@@ -29,22 +29,16 @@ const Content = _ => {
   const locationClass = location.pathname.split('/')[1];
 
   const links = [
-    { name: 'stream', path: '/', icon: faStream, title: 'Stream' },
-    { name: 'about', path: '/about', icon: faInfoCircle, title: 'About' }
+    { name: 'stream', path: '/', icon: faStream, title: 'Fil d"actualité' },
+    { name: 'about', path: '/about', icon: faInfoCircle, title: 'À propos' }
   ];
   if (user)
     links.push(
       {
-        name: 'create',
-        path: '/create',
-        icon: faPencilAlt,
-        title: 'Create post'
-      },
-      {
         name: 'profile',
         path: '/profile',
         icon: faUserCircle,
-        title: 'Profile'
+        title: 'Profil'
       },
       {
         name: 'notifications',
@@ -57,7 +51,7 @@ const Content = _ => {
     name: 'settings',
     path: '/settings',
     icon: faCogs,
-    title: 'Settings'
+    title: 'Paramètres'
   });
 
   return (

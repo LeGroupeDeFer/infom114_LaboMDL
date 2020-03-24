@@ -47,7 +47,7 @@ const Stream = () => {
     let sortedPost = [
       {
         id: 1,
-        title: 'Im a post title too',
+        title: 'Je suis également un titre',
         type: 'poll',
         text: loremIpsum,
         username: 'John Couscous',
@@ -56,7 +56,7 @@ const Stream = () => {
       },
       {
         id: 1,
-        title: 'Im a post title too',
+        title: 'Je suis également un titre',
         type: 'poll',
         text: loremIpsum,
         username: 'John Cena',
@@ -74,7 +74,7 @@ const Stream = () => {
       },
       {
         id: 4,
-        title: 'Im a post title too',
+        title: 'Je suis également un titre',
         type: 'idea',
         text: loremIpsum,
         username: 'John Doe',
@@ -150,7 +150,7 @@ const fetchPosts = time =>
         resolve([
           {
             id: 2,
-            title: 'Im a post title too',
+            title: 'Je suis également un titre',
             type: 'poll',
             text: loremIpsum,
             username: 'John Cena',
@@ -159,7 +159,7 @@ const fetchPosts = time =>
           },
           {
             id: 1,
-            title: 'Im a post title too',
+            title: 'Je suis également un titre',
             type: 'poll',
             text: loremIpsum,
             username: 'John Couscous',
@@ -168,7 +168,7 @@ const fetchPosts = time =>
           },
           {
             id: 4,
-            title: 'Im a post title too',
+            title: 'Je suis également un titre',
             type: 'idea',
             text: loremIpsum,
             username: 'John Doe',
@@ -266,9 +266,9 @@ const SearchBar = () => {
       isMulti
       options={options}
       components={{ DropdownIndicator }}
-      placeholder={'Search'}
+      placeholder={'Rechercher'}
       styles={customStyles}
-      formatCreateLabel={userInput => `Search for" ${userInput}"`}
+      formatCreateLabel={userInput => `Rechercher "${userInput}"`}
       onChange={handleChange}
     />
   );
@@ -285,7 +285,7 @@ const DropdownIndicator = props => {
 // SortDropdown :: None => Component
 const SortDropdown = props => {
   const [criteria, setCriteria] = useState('none');
-  const [title, setTitle] = useState('Sort by');
+  const [title, setTitle] = useState('Trier par');
 
   return (
     <DropdownButton
@@ -300,8 +300,7 @@ const SortDropdown = props => {
         as="button"
         onClick={() => {
           props.sortPost('top');
-          console.log('top cliqued');
-          setTitle('Sort by - Top');
+          setTitle('Trier par - Top');
         }}
       >
         Top
@@ -310,19 +309,19 @@ const SortDropdown = props => {
         as="button"
         onClick={() => {
           props.sortPost('new');
-          setTitle('Sort by - New');
+          setTitle('Trier par - Récent');
         }}
       >
-        New
+        Récent
       </Dropdown.Item>
       <Dropdown.Item
         as="button"
         onClick={() => {
           props.sortPost('old');
-          setTitle('Sort by - Old');
+          setTitle('Trier par - Ancien');
         }}
       >
-        Old
+        Ancien
       </Dropdown.Item>
     </DropdownButton>
   );
@@ -337,35 +336,28 @@ const FilterBar = props => {
         className={props.currentFilter == 'all' ? 'active' : ''}
         onClick={() => props.onClick('all')}
       >
-        All
-      </Button>
-      <Button
-        variant="secondary"
-        className={props.currentFilter == 'decisional' ? 'active' : ''}
-        onClick={() => props.onClick('decisional')}
-      >
-        Decisional
+        Tout
       </Button>
       <Button
         variant="secondary"
         className={props.currentFilter == 'poll' ? 'active' : ''}
         onClick={() => props.onClick('poll')}
       >
-        Poll
+        Votes
       </Button>
       <Button
         variant="secondary"
         className={props.currentFilter == 'info' ? 'active' : ''}
         onClick={() => props.onClick('info')}
       >
-        Information
+        Informations
       </Button>
       <Button
         variant="secondary"
         className={props.currentFilter == 'idea' ? 'active' : ''}
         onClick={() => props.onClick('idea')}
       >
-        Idea submission
+        Idées
       </Button>
     </ButtonGroup>
   );

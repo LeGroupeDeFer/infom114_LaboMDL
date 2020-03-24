@@ -64,11 +64,9 @@ const Post = ({
       case 'info':
         return 'Information';
       case 'poll':
-        return 'Poll';
+        return 'Vote';
       case 'idea':
-        return 'Idea submission';
-      case 'decisional':
-        return 'Decisional';
+        return 'Idée';
     }
   }
 
@@ -97,7 +95,7 @@ const Post = ({
       </Button>
     );
   } else {
-    let notLoggedMsg = 'You must login to vote';
+    let notLoggedMsg = 'Il faut être authentifié pour pouvoir voter';
     upVoteBtn = (
       <OverlayTrigger
         placement="right"
@@ -138,7 +136,10 @@ const Post = ({
             </a>
             <span className="text-muted">
               {' '}
-              - <Moment fromNow>{createdOn}</Moment>
+              -{' '}
+              <Moment locale="fr" fromNow>
+                {createdOn}
+              </Moment>
             </span>
           </h5>
         </Card.Header>
@@ -194,7 +195,7 @@ const Post = ({
               <Card.Text>{preview(text, previewLength)}</Card.Text>
               <a className="post-comment" href="#">
                 <MdModeComment size="1.25em" className="mr-1" />
-                <span className="text-muted">12 comments</span>
+                <span className="text-muted">12 commentaires</span>
               </a>
             </div>
           </div>
