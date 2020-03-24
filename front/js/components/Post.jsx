@@ -5,11 +5,19 @@ import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 import Moment from 'react-moment';
 import { GoArrowDown, GoArrowUp } from 'react-icons/go';
-import { MdModeComment } from 'react-icons/md';
-import { FaTag } from 'react-icons/fa';
+import { MdModeComment, MdReport } from 'react-icons/md';
+import {
+  FaTag,
+  FaFacebookSquare,
+  FaEllipsisH,
+  FaEyeSlash,
+  FaFlag
+} from 'react-icons/fa';
 import clsx from 'clsx';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import DropdownButton from 'react-bootstrap/DropdownButton';
+import Dropdown from 'react-bootstrap/Dropdown';
 
 const Post = ({
   title,
@@ -141,6 +149,25 @@ const Post = ({
                 {createdOn}
               </Moment>
             </span>
+
+            <DropdownButton
+              title={
+                <span>
+                  <FaEllipsisH />
+                </span>
+              }
+              variant="link"
+              className="float-right more btn-link"
+            >
+              <Dropdown.Item as="button">
+                <FaEyeSlash className="mr-2" />
+                Masquer
+              </Dropdown.Item>
+              <Dropdown.Item as="button">
+                <FaFlag className="mr-2" />
+                Signaler
+              </Dropdown.Item>
+            </DropdownButton>
           </h5>
         </Card.Header>
 
@@ -193,9 +220,13 @@ const Post = ({
               </div>
 
               <Card.Text>{preview(text, previewLength)}</Card.Text>
-              <a className="post-comment" href="#">
+              <a className="post-footer-btn mr-2" href="#">
                 <MdModeComment size="1.25em" className="mr-1" />
                 <span className="text-muted">12 commentaires</span>
+              </a>
+              <a className="post-footer-btn mr-2" href="#">
+                <FaFacebookSquare size="1.25em" className="mr-1" />
+                <span className="text-muted">Partager</span>
               </a>
             </div>
           </div>

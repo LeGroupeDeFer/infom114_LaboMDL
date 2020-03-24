@@ -81,13 +81,27 @@
     border-right: 1px solid rgba(0, 0, 0, 0.125);
 }
 
-.post-comment {
+.post-footer-btn {
     cursor: pointer;
     color: gray("800");
 }
 
 .post {
     cursor: pointer;
+}
+
+
+.post .more {
+    visibility: hidden;
+}
+
+
+.post:hover .more {
+    visibility: visible;
+}
+
+.dropdown-toggle:after {
+    content: none
 }
 
 .tag {

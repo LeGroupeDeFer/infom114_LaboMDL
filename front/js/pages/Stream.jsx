@@ -27,16 +27,15 @@ const Stream = () => {
   const { login, user } = useAuth();
 
   function togllePreview(e) {
-    let postId = e.currentTarget.getAttribute('id');
-    if (postId == lastPostDiplayed) {
-      setPreviewDisplayed(false);
-      setLastPostDisplayed(null);
-    } else {
-      setLastPostDisplayed(postId);
-
-      // TODO : async request to fetch post's data
-      setPreviewDisplayed(true);
-    }
+    // let postId = e.currentTarget.getAttribute('id');
+    // if (postId == lastPostDiplayed) {
+    //   setPreviewDisplayed(false);
+    //   setLastPostDisplayed(null);
+    // } else {
+    //   setLastPostDisplayed(postId);
+    //   // TODO : async request to fetch post's data
+    //   setPreviewDisplayed(true);
+    // }
   }
 
   if (!user) {
