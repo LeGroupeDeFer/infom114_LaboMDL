@@ -12,10 +12,12 @@ import DropdownButton from 'react-bootstrap/DropdownButton';
 import Dropdown from 'react-bootstrap/Dropdown';
 import CreatableSelect from 'react-select/creatable';
 import { components } from 'react-select';
-import { FaSearch, FaTag } from 'react-icons/fa';
+import { FaSearch, FaTag, FaEdit } from 'react-icons/fa';
 import { useAuth } from '../context/authContext';
 import Card from 'react-bootstrap/Card';
 import clsx from 'clsx';
+import Tooltip from 'react-bootstrap/Tooltip';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
 // Stream :: None => Component
 const Stream = () => {
@@ -97,13 +99,30 @@ const Stream = () => {
     <>
       <Container>
         <br />
-        <SearchBar />
+
+        <Row>
+          <Col xs={11}>
+            <SearchBar />
+          </Col>
+          <Col xs={1}>
+            <OverlayTrigger
+              placement=""
+              overlay={<Tooltip>Créer un post</Tooltip>}
+            >
+              <Button variant="primary">
+                <FaEdit />
+              </Button>
+            </OverlayTrigger>
+          </Col>
+        </Row>
         <br />
+
         <Row className="justify-content-md-center">
           <FilterBar onClick={setFilter} currentFilter={filter} />
         </Row>
 
         <br />
+
         <Row className="justify-content-end">
           <SortDropdown sortPost={sortPost} />
         </Row>

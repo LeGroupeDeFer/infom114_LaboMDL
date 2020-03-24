@@ -86,10 +86,13 @@
     color: gray("800");
 }
 
-.post {
-    cursor: pointer;
-}
+// .post {
+    //     cursor: pointer;
+    // }
 
+.post .more.show {
+    visibility: visible;
+}
 
 .post .more {
     visibility: hidden;

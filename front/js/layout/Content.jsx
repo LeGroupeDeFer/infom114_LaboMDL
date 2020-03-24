@@ -29,7 +29,7 @@ const Content = _ => {
   const locationClass = location.pathname.split('/')[1];
 
   const links = [
-    { name: 'stream', path: '/', icon: faStream, title: 'Fil d"actualité' },
+    { name: 'stream', path: '/', icon: faStream, title: "Fil d'actualité" },
     { name: 'about', path: '/about', icon: faInfoCircle, title: 'À propos' }
   ];
   if (user)
