@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "UNAnimity",
-    "version": "0.0.4"
+    "version": "0.2.0"
   },
   "servers": [{
     "url": "https://unanimity.be"
@@ -19,7 +19,7 @@
   "paths": {
     "/register": {
       "get": {
-        "tags": ["auth"],
+        "tags": ["auth", "hollow"],
         "description": "Fetch the form to create a new user on the platform",
         "responses": {
           "200": {
@@ -29,7 +29,7 @@
         }
       }
     },
-    "/api/v1/register": {
+    "/api/auth/register": {
       "post": {
         "tags": ["auth"],
         "description": "Send user information and login credentials for a new account on the application",
@@ -62,7 +62,6 @@
                   "$ref": "#/components/schemas/Info"
                 },
                 "example": {
-                  "success": false,
                   "message": "json format is required"
                 }
               }
@@ -76,84 +75,6 @@
                   "$ref": "#/components/schemas/Info"
                 },
                 "example": {
-                  "success": false,
-                  "message": "property 'email' is missing"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/register/check_email": {
-      "post": {
-        "tags": ["auth"],
-        "description": "Check if email given is already used on the platform",
-        "requestBody": {
-          "content": {
-            "json": {
-              "schema": {
-                "type": "object",
-                "required": ["email"],
-                "properties": {
-                  "email": {
-                    "type": "string",
-                    "description": "The email we want to check the use of"
-                  }
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Info"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request : the given format is incorrect",
-            "content": {
-              "json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Info"
-                },
-                "example": {
-                  "success": false,
-                  "message": "json format is required"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Info"
-                },
-                "example": {
-                  "success": false,
-                  "message": "This email is already linked to an account."
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity : missing parameter",
-            "content": {
-              "json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Info"
-                },
-                "example": {
-                  "success": false,
                   "message": "property 'email' is missing"
                 }
               }
@@ -164,7 +85,7 @@
     },
     "/login": {
       "get": {
-        "tags": ["auth"],
+        "tags": ["auth", "hollow"],
         "description": "Fetch the login page",
         "responses": {
           "200": {
@@ -174,7 +95,7 @@
         }
       }
     },
-    "/api/v1/login": {
+    "/api/auth/login": {
       "post": {
         "tags": ["auth"],
         "description": "Send login credentials for authentication",
@@ -217,7 +138,6 @@
                   "$ref": "#/components/schemas/Info"
                 },
                 "example": {
-                  "success": false,
                   "message": "json format is required"
                 }
               }
@@ -231,7 +151,6 @@
                   "$ref": "#/components/schemas/Info"
                 },
                 "example": {
-                  "success": false,
                   "message": "Wrong email/password association"
                 }
               }
@@ -245,7 +164,6 @@
                   "$ref": "#/components/schemas/Info"
                 },
                 "example": {
-                  "success": false,
                   "message": "property 'email' is missing"
                 }
               }
@@ -254,36 +172,10 @@
         }
       }
     },
-    "/recovery": {
+    "/activate/{id}/{token}": {
       "get": {
-        "tags": ["auth"],
-        "description": "Fetch the form to send a mail with a link to reset a user password when it's forgotten",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {}
-          }
-        }
-      },
-      "post": {
-        "tags": ["auth"],
-        "description": "Send email to get a link to be able to reset the password",
-        "requestBody": {
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "required": ["email"],
-                "properties": {
-                  "email": {
-                    "type": "string",
-                    "description": "The user email. Note that the email must correspond to a valid user"
-                  }
-                }
-              }
-            }
-          },
-          "required": true
-        },
+        "tags": ["auth", "hollow"],
+        "description": "",
         "responses": {
           "200": {
             "description": "OK",
@@ -292,47 +184,23 @@
         }
       }
     },
-    "/password_reset/{hash}": {
-      "get": {
-        "tags": ["auth"],
-        "description": "Fetch the form to reset a user password",
-        "parameters": [{
-          "name": "hash",
-          "in": "path",
-          "description": "The time limited hash generated for a password reset of a user",
-          "required": true,
-          "schema": {
-            "type": "string"
-          }
-        }],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {}
-          }
-        }
-      },
+    "/api/auth/activate": {
       "post": {
         "tags": ["auth"],
-        "description": "Send the form to reset a user password",
-        "parameters": [{
-          "name": "hash",
-          "in": "path",
-          "description": "The time limited hash generated for a password reset of a user",
-          "required": true,
-          "schema": {
-            "type": "string"
-          }
-        }],
+        "description": "",
         "requestBody": {
           "content": {
             "application/x-www-form-urlencoded": {
               "schema": {
-                "required": ["password"],
+                "required": ["id", "token"],
                 "properties": {
-                  "password": {
+                  "id": {
+                    "type": "integer",
+                    "description": "The user id, it must be related to a valid user"
+                  },
+                  "token": {
                     "type": "string",
-                    "description": "The new password for the user"
+                    "description": "The generated token sent for the activation."
                   }
                 }
               }
@@ -343,7 +211,39 @@
         "responses": {
           "200": {
             "description": "OK",
-            "content": {}
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "reason: Incorrect activation scheme"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request : the given format is incorrect",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "json format is required"
+                }
+              }
+            }
           }
         }
       }
@@ -571,9 +471,6 @@
       "Info": {
         "type": "object",
         "properties": {
-          "success": {
-            "type": "boolean"
-          },
           "message": {
             "type": "string"
           }
@@ -599,51 +496,10 @@
             "type": "string",
             "description": "The last name of the user"
           },
-          "street": {
-            "type": "string",
-            "description": "The street name of the address of the user"
-          },
-          "number": {
-            "type": "integer",
-            "description": "The house number of the address of the user",
-            "format": "int32"
-          },
-          "city": {
-            "type": "string",
-            "description": "The city where the user lives in"
-          },
-          "zipcode": {
-            "type": "integer",
-            "description": "The zip code of the address of the user",
-            "format": "int32"
-          },
-          "country": {
-            "type": "string",
-            "description": "The country where the user lives in"
-          },
-          "phone": {
-            "type": "string",
-            "description": "The phone number of the user"
-          }
-        }
-      },
-      "AuthSuccessUserInformation": {
-        "type": "object",
-        "properties": {
-          "token": {
-            "type": "string"
-          },
-          "user": {
+          "address": {
             "type": "object",
+            "required": ["street", "number", "city", "zipcode", "country"],
             "properties": {
-              "firstname": {
-                "type": "string",
-                "description": "The first name of the user"
-              },
-              "lastname": {
-                "type": "string",
-                "description": "The last name of the user"
-              },
               "street": {
                 "type": "string",
                 "description": "The street name of the address of the user"
@@ -666,9 +522,54 @@
                 "type": "string",
                 "description": "The country where the user lives in"
               },
+              "box_number": {
+                "type": "string",
+                "description": "The mail box number of the user"
+              }
+            }
+          },
+          "phone": {
+            "type": "string",
+            "description": "The phone number of the user"
+          }
+        }
+      },
+      "AuthSuccessUserInformation": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "description": "The id of the user"
+              },
+              "firstname": {
+                "type": "string",
+                "description": "The first name of the user"
+              },
+              "lastname": {
+                "type": "string",
+                "description": "The last name of the user"
+              },
+              "street": {
+                "type": "string",
+                "description": "The street name of the address of the user"
+              },
               "phone": {
                 "type": "string",
                 "description": "The phone number of the user"
+              },
+              "creation_date": {
+                "type": "string",
+                "description": "The date when the user was created"
+              },
+              "last_connection": {
+                "type": "string",
+                "description": "The date when the user connected last time"
               }
             }
           }
