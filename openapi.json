@@ -4,13 +4,10 @@
     "title": "UNAnimity",
     "version": "0.0.4"
   },
-  "servers": [
-    {
-      "url": "https://unanimity.be"
-    }
-  ],
-  "tags": [
-    {
+  "servers": [{
+    "url": "https://unanimity.be"
+  }],
+  "tags": [{
       "name": "auth",
       "description": "Everything that is related to authentication"
     },
@@ -299,17 +296,15 @@
       "get": {
         "tags": ["auth"],
         "description": "Fetch the form to reset a user password",
-        "parameters": [
-          {
-            "name": "hash",
-            "in": "path",
-            "description": "The time limited hash generated for a password reset of a user",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
+        "parameters": [{
+          "name": "hash",
+          "in": "path",
+          "description": "The time limited hash generated for a password reset of a user",
+          "required": true,
+          "schema": {
+            "type": "string"
           }
-        ],
+        }],
         "responses": {
           "200": {
             "description": "OK",
@@ -320,17 +315,15 @@
       "post": {
         "tags": ["auth"],
         "description": "Send the form to reset a user password",
-        "parameters": [
-          {
-            "name": "hash",
-            "in": "path",
-            "description": "The time limited hash generated for a password reset of a user",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
+        "parameters": [{
+          "name": "hash",
+          "in": "path",
+          "description": "The time limited hash generated for a password reset of a user",
+          "required": true,
+          "schema": {
+            "type": "string"
           }
-        ],
+        }],
         "requestBody": {
           "content": {
             "application/x-www-form-urlencoded": {
@@ -355,29 +348,11 @@
         }
       }
     },
-    "/logout": {
-      "get": {
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ],
-        "tags": ["auth"],
-        "description": "Logout the connected user",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {}
-          }
-        }
-      }
-    },
     "/posts": {
       "get": {
         "tags": ["post"],
         "summary": "Fetch posts according to the parameters",
-        "parameters": [
-          {
+        "parameters": [{
             "in": "query",
             "name": "tag",
             "schema": {
@@ -469,11 +444,9 @@
             "content": {}
           }
         },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
+        "security": [{
+          "UserAuth": []
+        }]
       },
       "put": {
         "tags": ["post"],
@@ -496,28 +469,24 @@
             "description": "Post not found"
           }
         },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
+        "security": [{
+          "UserAuth": []
+        }]
       }
     },
     "/posts/{post_id}": {
       "get": {
         "tags": ["post"],
         "summary": "Find post by id",
-        "parameters": [
-          {
-            "name": "post_id",
-            "in": "path",
-            "description": "Id of post to return",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
+        "parameters": [{
+          "name": "post_id",
+          "in": "path",
+          "description": "Id of post to return",
+          "required": true,
+          "schema": {
+            "type": "string"
           }
-        ],
+        }],
         "responses": {
           "200": {
             "description": "OK",
@@ -540,17 +509,15 @@
       "delete": {
         "tags": ["post"],
         "summary": "Delete a post",
-        "parameters": [
-          {
-            "name": "post_id",
-            "in": "path",
-            "description": "Id of post to delete",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
+        "parameters": [{
+          "name": "post_id",
+          "in": "path",
+          "description": "Id of post to delete",
+          "required": true,
+          "schema": {
+            "type": "string"
           }
-        ],
+        }],
         "responses": {
           "200": {
             "description": "OK"
@@ -562,11 +529,9 @@
             "description": "Post not found"
           }
         },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
+        "security": [{
+          "UserAuth": []
+        }]
       }
     },
     "/posts/up_down_vote": {
@@ -588,11 +553,9 @@
             "description": "OK"
           }
         },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
+        "security": [{
+          "UserAuth": []
+        }]
       }
     }
   },
