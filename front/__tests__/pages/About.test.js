@@ -1,5 +1,5 @@
 import React from 'react';
-import { shallow } from 'enzyme';
+import { act, fireEvent, render } from '@testing-library/react';
 
 import About from '../../js/pages/About';
 
@@ -7,7 +7,7 @@ import About from '../../js/pages/About';
 describe('<About />', () => {
 
   it('should render', () => {
-    const wrapper = shallow(<About />);
+    const wrapper = render(<About />);
     expect(wrapper).toBeTruthy();
   });
 

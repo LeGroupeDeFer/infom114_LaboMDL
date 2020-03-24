@@ -7,7 +7,7 @@ const DefaultSpinner = _ => (
   <Spinner
     animation='grow'
     role='status'
-    className='abs-center'
+    className='abs-center default-spinner'
   >
     <span className="sr-only">Loading...</span>
   </Spinner>

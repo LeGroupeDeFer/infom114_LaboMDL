@@ -1,4 +1,5 @@
 use rocket::Request;
+pub mod quick_response;
 
 #[derive(Debug)]
 pub enum RequestType {

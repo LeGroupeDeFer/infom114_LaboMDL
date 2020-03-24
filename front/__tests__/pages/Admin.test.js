@@ -1,5 +1,5 @@
 import React from 'react';
-import { shallow } from 'enzyme';
+import { act, fireEvent, render } from '@testing-library/react';
 
 import Admin from '../../js/pages/Admin';
 
@@ -7,7 +7,7 @@ import Admin from '../../js/pages/Admin';
 describe('<Admin />', () => {
 
   it('should render', () => {
-    const wrapper = shallow(<Admin />);
+    const wrapper = render(<Admin />);
     expect(wrapper).toBeTruthy();
   });
 

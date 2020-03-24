@@ -1,7 +1,6 @@
 import React from 'react';
 import Card from 'react-bootstrap/Card';
-import { loremIpsum } from '../utils/dev';
-import { preview } from '../utils';
+import { dev, preview } from '../lib';
 import Badge from 'react-bootstrap/Badge'
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -126,7 +125,7 @@ const Post = ({ title, text, username, votePoints, type, previewLength, createdO
 
 Post.defaultProps = {
   title: 'A post',
-  text: loremIpsum,
+  text: dev.loremIpsum,
   username: 'John Coffey',
   previewLength: 200,
   votePoints: 25,

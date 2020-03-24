@@ -1,0 +1,51 @@
+{
+    "tags": {
+        "allowUnknownTags": true,
+        "dictionaries": [
+            "jsdoc",
+            "closure"
+        ]
+    },
+    "source": {
+        "include": [
+            "front/js"
+        ],
+        "includePattern": ".+\\.js(doc|x)?$",
+        "excludePattern": "(^|\\/|\\\\)_|\\.test.jsx?$"
+    },
+    "plugins": [
+        "plugins/markdown"
+    ],
+    "templates": {
+        "includeDate": true,
+        "dateFormat": "YYYY MMM Do",
+        "systemName": "UNanimity",
+        "systemSummary": "Collaborative decision-making platform for the UNamur University",
+        "systemLogo": "",
+        "systemColor": "#A0C55F",
+        "copyright": "GPLv3",
+        "linenums": true,
+        "collapseSymbols": true,
+        "inverseNav": true,
+        "inlineNav": false,
+        "outputSourceFiles": true,
+        "outputSourcePath": false,
+        "disablePackagePath": true,
+        "methodHeadingReturns": true,
+        "showTableOfContents": true,
+        "showAccessFilter": false,
+        "sort": "linenum, longname, version, since",
+        "search": true,
+        "stylesheets": [],
+        "scripts": []
+    },
+    "markdown": {
+        "parser": "gfm",
+        "hardwrap": true
+    },
+    "opts": {
+        "destination": "doc/front",
+        "recurse": true,
+        "readme": "front/README.md"
+    }
+}

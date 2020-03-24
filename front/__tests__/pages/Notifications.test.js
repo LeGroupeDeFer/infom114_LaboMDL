@@ -1,5 +1,5 @@
 import React from 'react';
-import { shallow } from 'enzyme';
+import { act, fireEvent, render } from '@testing-library/react';
 
 import Notifications from '../../js/pages/Notifications';
 
@@ -8,7 +8,7 @@ import Notifications from '../../js/pages/Notifications';
 describe('<Notification />', () => {
 
   it('should render', () => {
-    const wrapper = shallow(<Notifications />);
+    const wrapper = render(<Notifications />);
     expect(wrapper).toBeTruthy();
   });
 
