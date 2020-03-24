@@ -1,6 +1,14 @@
-@use '../themes' as *;
+@use '../themes'as *;
 
 #filter-bar .active {
-    background-color  : $primary;
+    background-color: $primary;
     border-color: $primary;
+}
+
+#search-bar {
+    z-index: 2;
+}
+
+.dropdown-item:hover {
+    background-color: $primary;
 }

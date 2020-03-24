@@ -24,29 +24,17 @@ table! {
         password -> Varchar,
         firstname -> Varchar,
         lastname -> Varchar,
-        address -> Nullable<Unsigned<Integer>>,
+        street -> Nullable<Varchar>,
+        number -> Nullable<Unsigned<Integer>>,
+        city -> Nullable<Varchar>,
+        zipcode -> Nullable<Unsigned<Integer>>,
+        country -> Nullable<Varchar>,
         phone -> Nullable<Varchar>,
-        creation_date -> Timestamp,
-        last_connection -> Timestamp,
-        token -> Nullable<Varchar>,
-        active -> Bool,
     }
 }
-
-table! {
-    users_roles (user, role) {
-        user -> Unsigned<Integer>,
-        role -> Unsigned<Integer>,
-    }
-}
-
-joinable!(users -> addresses (address));
-joinable!(users_roles -> roles (role));
-joinable!(users_roles -> users (user));
 
 allow_tables_to_appear_in_same_query!(
     addresses,
     roles,
     users,
-    users_roles,
 );

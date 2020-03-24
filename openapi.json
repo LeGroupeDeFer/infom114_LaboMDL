@@ -101,8 +101,9 @@
         "description": "Send login credentials for authentication",
         "requestBody": {
           "content": {
-            "application/x-www-form-urlencoded": {
+            "json": {
               "schema": {
+                "type": "object",
                 "required": ["email", "password"],
                 "properties": {
                   "email": {
@@ -252,7 +253,8 @@
       "get": {
         "tags": ["post"],
         "summary": "Fetch posts according to the parameters",
-        "parameters": [{
+        "parameters": [
+          {
             "in": "query",
             "name": "tag",
             "schema": {
@@ -344,9 +346,11 @@
             "content": {}
           }
         },
-        "security": [{
-          "UserAuth": []
-        }]
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
       },
       "put": {
         "tags": ["post"],
@@ -369,24 +373,28 @@
             "description": "Post not found"
           }
         },
-        "security": [{
-          "UserAuth": []
-        }]
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
       }
     },
     "/posts/{post_id}": {
       "get": {
         "tags": ["post"],
         "summary": "Find post by id",
-        "parameters": [{
-          "name": "post_id",
-          "in": "path",
-          "description": "Id of post to return",
-          "required": true,
-          "schema": {
-            "type": "string"
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "description": "Id of post to return",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -409,15 +417,17 @@
       "delete": {
         "tags": ["post"],
         "summary": "Delete a post",
-        "parameters": [{
-          "name": "post_id",
-          "in": "path",
-          "description": "Id of post to delete",
-          "required": true,
-          "schema": {
-            "type": "string"
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "description": "Id of post to delete",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
-        }],
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -429,9 +439,11 @@
             "description": "Post not found"
           }
         },
-        "security": [{
-          "UserAuth": []
-        }]
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
       }
     },
     "/posts/up_down_vote": {
@@ -453,9 +465,11 @@
             "description": "OK"
           }
         },
-        "security": [{
-          "UserAuth": []
-        }]
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
       }
     }
   },

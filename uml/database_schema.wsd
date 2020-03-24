@@ -1,0 +1,162 @@
+@startuml db_mdl
+
+hide circle
+hide empty members
+
+' entity Entity {
+'    * identifying_attribute
+'    --
+'    * mandatory_attribute
+'    optional_attribute
+' }
+
+' ' zero or one
+' A |o--o| B
+
+' ' exactly one
+' C ||--|| D
+
+' ' zero or many
+' E }o--o{ F
+
+' ' one or many
+' G }|--|{ H
+
+entity User {
+  * user_id
+  --
+  * email 
+  * firstname 
+  * lastname
+  * password
+  * adress_id (FK)
+  * ...
+}
+
+entity Address {
+  * adress_id
+  --
+  * street
+  * number
+  * city
+  * zipcode
+  * country
+  * phone
+}
+
+
+
+entity UpDownVotePost {
+  * user_id (FK)
+  * post_id (FK)
+  --
+  * created_on
+  * is_up
+}
+
+
+entity UpDownVoteComment {
+  * user_id (FK)
+  * post_id (FK)
+  --
+  * created_on
+  * is_up
+}
+
+entity TagSubscription{
+  * user_id (FK)
+  * label (FK)
+}
+
+entity Tag {
+  * label
+}
+
+entity Post {
+  * post_id
+  --
+  * title
+  * type
+  * content
+  * created_on
+  * vote_count
+  * is_masked
+  * user_id (FK)
+
+}
+
+entity Comment {
+  * comment_id
+  --
+  * content
+  * created_on
+  * vote_count
+  * is_masked
+  * user_id (FK)
+  * post_id (FK)
+  * parent_id (FK) NULL
+}
+
+
+entity VotingPost {
+  * post_id (FK)
+  --
+  * end_date
+}
+
+entity TagPost {
+    * post_id (FK)
+    * label (FK)
+}
+
+entity UserVote {
+  * post_id (FK)
+  * user_id (FK)
+  --
+  * answer (FK)
+  * created_on
+}
+
+entity VotingAnswer{
+  * post_id (FK)
+  * answer
+}
+
+entity Faculty  {
+  * fac_id
+  --
+  * name
+  * email
+  * adress_id (FK)
+}
+
+Address ||--o| User
+
+
+Faculty }|--o{ User
+Faculty |o--|| Address
+
+
+User ||-o{ Post 
+User ||--o{ UpDownVotePost
+Post ||--o{ UpDownVotePost
+
+
+User ||-o{ Comment
+User ||--o{ UpDownVoteComment
+Comment ||--o{ UpDownVoteComment
+Post ||-o{ Comment
+Comment |o--o{ Comment
+
+Post ||--o| VotingPost
+VotingAnswer}|-|| VotingPost
+
+User  ||--o{ UserVote
+VotingAnswer ||--o{  UserVote 
+
+TagSubscription }o-|| User
+TagSubscription }o-|| Tag
+
+Tag  ||-|{  TagPost
+Post ||-|{  TagPost
+@enduml
