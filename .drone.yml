@@ -4,8 +4,21 @@ name: default
 
 steps:
 - name: backend
-  image: rustlang/rust:nightly
+  image: findot/rust-node:nightly
   privileged: true
+  environment:
+    TEST_DB_HOST:
+      from_secret: test_db_host
+    TEST_DB_PORT:
+      from_secret: test_db_port
+    TEST_DB_ADAPTER:
+      from_secret: test_db_adapter
+    TEST_DB_USER:
+      from_secret: test_db_user
+    TEST_DB_PASSWORD:
+      from_secret: test_db_password
+    TEST_DB_DATABASE:
+      from_secret: test_db_database
   volumes:
     - name: cargo-compilation-cache
       path: /drone/src/target
@@ -18,7 +31,7 @@ steps:
   - cargo install --root /usr/local/cargo/registry cargo-tarpaulin
   - PATH=/usr/local/cargo/registry/bin:$PATH cargo-tarpaulin tarpaulin --out Xml
 - name: frontend
-  image: node:alpine3.10
+  image: findot/rust-node:nightly
   volumes:
     - name: node-cache
       path: /drone/src/node_modules
@@ -55,7 +68,6 @@ steps:
       - success
     event: tag
 
-volumes:
   - name: cargo-registry-cache
     host:
       path: /tmp/cargo/registry-cache
