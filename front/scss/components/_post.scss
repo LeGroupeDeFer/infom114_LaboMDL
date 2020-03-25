@@ -1,4 +1,4 @@
-@use '../themes' as *;
+@use '../themes'as *;
 
 /*  Posts */
 
@@ -24,6 +24,23 @@
     color: theme-color("danger");
 }
 
+
+.up-vote-btn :disabled {
+    cursor: not-allowed;
+}
+
+
+.down-vote-btn :disabled,
+.down-vote-btn[disabled] {
+    cursor: not-allowed;
+}
+
+.up-vote-btn :disabled,
+.up-vote-btn[disabled] {
+    cursor: not-allowed;
+}
+
+
 .down-voted,
 .down-voted:focus {
     color: theme-color("danger") !important;
@@ -34,9 +51,16 @@
     color: theme-color("primary") !important;
 }
 
+
+
 .post-info {
     color: $white;
     background-color: theme-color("info");
+}
+
+.post-idea {
+    color: $white;
+    background-color: #d2b049;
 }
 
 .post-poll {
@@ -48,13 +72,41 @@
     font-size: .75em;
 }
 
+
+
+
 .vote-section {
     padding-top: 1em;
     background-color: rgba(0, 0, 0, 0.03);
     border-right: 1px solid rgba(0, 0, 0, 0.125);
 }
 
-.post-comment {
+.post-footer-btn {
     cursor: pointer;
     color: gray("800");
+}
+
+// .post {
+    //     cursor: pointer;
+    // }
+
+.post .more.show {
+    visibility: visible;
+}
+
+.post .more {
+    visibility: hidden;
+}
+
+
+.post:hover .more {
+    visibility: visible;
+}
+
+.dropdown-toggle:after {
+    content: none
+}
+
+.tag {
+    font-size: 0.85em;
 }

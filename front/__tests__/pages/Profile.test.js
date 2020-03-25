@@ -1,6 +1,5 @@
 import React from 'react';
-import { shallow } from 'enzyme';
-
+import { act, fireEvent, render } from '@testing-library/react';
 import Profile from '../../js/pages/Profile';
 
 
@@ -8,7 +7,7 @@ import Profile from '../../js/pages/Profile';
 describe('<Profile />', () => {
 
   it('should render', () => {
-    const wrapper = shallow(<Profile />);
+    const wrapper = render(<Profile />);
     expect(wrapper).toBeTruthy();
   });
 

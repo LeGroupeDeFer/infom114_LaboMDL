@@ -2,6 +2,21 @@
 
 Summary of implemented features classified by release (github tag)
 
+## [0.1.3] - 2019-03-24
+
+- add tags openapi specs
+- add roles openapi specs
+
+## [0.1.2] - 2019-03-19
+
+- transform crate into lib + bin
+- add test structure
+- remove .env from tracked files
+- add check_email documentation test
+- improve documentation
+- model & db refactoring
+- write all auth related tests
+
 ## [0.1.0] - 2019-03-02
 
 - Fix issue #56 : manage 404 differently depending on uri (/api/)

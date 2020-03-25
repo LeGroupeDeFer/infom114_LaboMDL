@@ -1,48 +1,66 @@
+//! # Database
+//!
+//! This module aims to group everything that is related to the database.
+pub mod models;
+pub mod schema;
+
 // ---------------- REQUIRES --------------------------------------------------
 
-use std::collections::HashMap;
-use std::env;
-
-use rocket::config::{Config, Environment, Value};
-
-use dotenv::dotenv;
-
-use diesel::prelude::*;
+use crate::conf::env_setting;
+use crate::diesel::Connection;
 use diesel::MysqlConnection;
-
-// ------------------ CONST ---------------------------------------------------
-
-const ENV_DATABASE_URL: &'static str = "DATABASE_URL";
+use dotenv::dotenv;
+use rocket::config::Value;
+use rocket_contrib::databases::diesel;
+use std::collections::HashMap;
 
 // --------------------- DB OBJECT --------------------------------------------
 
-#[database("mariadb_test")]
-pub struct MyDbConn(diesel::MysqlConnection);
+#[database("mariadb_pool")]
+pub struct DBConnection(diesel::MysqlConnection);
 
 // --------------------- FUNCTIONS --------------------------------------------
 
-fn url() -> String {
-    dotenv().ok();
-    env::var(ENV_DATABASE_URL).expect(&format!("{} must be set", ENV_DATABASE_URL))
-}
-
-pub fn connection() -> MysqlConnection {
-    dotenv().ok();
-
-    let database_url = url();
-    MysqlConnection::establish(&database_url)
-        .expect(&format!("Error connecting to {}", database_url))
-}
-
-pub fn db_config() -> Config {
+/// Create a HashMap that can be used to feed a `Rocket::Config` object with
+/// database related information, such as the url of the used database.
+///
+/// The application database shared name is `mariadb_pool`.
+pub fn pool(database_url: &str) -> HashMap<&str, Value> {
     let mut database_config = HashMap::new();
     let mut databases = HashMap::new();
-    database_config.insert("url", Value::from(&url()[..]));
-    databases.insert("mariadb_test", database_config);
+    database_config.insert("url", Value::from(database_url));
+    databases.insert("mariadb_pool", Value::from(database_config));
 
-    Config::build(Environment::Development)
-        .address("0.0.0.0")
-        .extra("databases", databases)
-        .finalize()
-        .unwrap()
+    databases
+}
+
+// --------------------- FUNCTIONS --------------------------------------------
+
+/// Get the database url set in the `.env` file.
+pub fn url() -> String {
+    dotenv().ok();
+
+    // DB settings
+    let db_host = env_setting("DB_HOST");
+    let db_port = env_setting("DB_PORT");
+    let db_adapter = env_setting("DB_ADAPTER");
+    let db_user = env_setting("DB_USER");
+    let db_password = env_setting("DB_PASSWORD");
+    let db_database = env_setting("DB_DATABASE");
+
+    // DB url
+    format!(
+        "{}://{}:{}@{}:{}/{}",
+        db_adapter, db_user, db_password, db_host, db_port, db_database
+    )
+}
+
+/// Get a database connection.
+///
+/// Often used when the operations are not derived from a `Rocket::Request`.
+/// If it's possible, always prefer the use of the `DBConnection` which can be
+/// retrieved from a request.
+pub fn connection(database_url: &str) -> MysqlConnection {
+    MysqlConnection::establish(&database_url)
+        .expect(&format!("Error connecting to {}", database_url))
 }

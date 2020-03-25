@@ -23,92 +23,140 @@ hide empty members
 ' G }|--|{ H
 
 entity User {
-  * email varchar(150)
+  * user_id
   --
-  * firstname varchar(150)
-  * lastname varchar(150)
-  * password varchar(150)
-  street varchar(150)
-  number unsigned int
-  city varchar(150)
-  zipcode unisgned int
-  country varchar(150)
-  phone varchar(150)
+  * email 
+  * firstname 
+  * lastname
+  * password
+  * adress_id (FK)
+  * ...
 }
 
 entity Address {
+  * adress_id
+  --
   * street
   * number
-  * locality
+  * city
+  * zipcode
   * country
-  --
+  * phone
 }
 
 
 
-entity Tag {
-  * name
+entity UpDownVotePost {
+  * user_id (FK)
+  * post_id (FK)
   --
+  * created_on
+  * is_up
+}
+
+
+entity UpDownVoteComment {
+  * user_id (FK)
+  * post_id (FK)
+  --
+  * created_on
+  * is_up
+}
+
+entity TagSubscription{
+  * user_id (FK)
+  * label (FK)
+}
+
+entity Tag {
+  * label
 }
 
 entity Post {
-  * name
+  * post_id
   --
+  * title
   * type
   * content
-  * createdOn
-  * votePoints
-  
+  * created_on
+  * vote_count
+  * is_masked
+  * user_id (FK)
+
 }
 
-entity Role {
-  * name
+entity Comment {
+  * comment_id
   --
+  * content
+  * created_on
+  * vote_count
+  * is_masked
+  * user_id (FK)
+  * post_id (FK)
+  * parent_id (FK) NULL
 }
 
-entity Capability {
-  * name
-  --
-}
-
-entity Risk {
-  * name
-  --
-  * description
-}
 
 entity VotingPost {
-  duedate
-  final_answer
+  * post_id (FK)
+  --
+  * end_date
 }
 
-entity VotingAnswer {
-  * answer
+entity TagPost {
+    * post_id (FK)
+    * label (FK)
+}
+
+entity UserVote {
+  * post_id (FK)
+  * user_id (FK)
   --
+  * answer (FK)
+  * created_on
+}
+
+entity VotingAnswer{
+  * post_id (FK)
+  * answer
 }
 
 entity Faculty  {
-  * name
+  * fac_id
   --
-  phone_number
-  email
+  * name
+  * email
+  * adress_id (FK)
 }
 
 Address ||--o| User
-Tag }|-|{ Post
 
-Faculty }|--o| User
-Faculty |o-|{ Address
 
-Risk }|--|| Capability
-Capability }|-|{ Role
-Role }|-|{ User
+Faculty }|--o{ User
+Faculty |o--|| Address
 
-User }|-|{ Tag : Subscription
-User }|-|{ Post : Written
 
-Post <|-- VotingPost
-VotingAnswer }|- VotingPost
-User }|- VotingPost
+User ||-o{ Post 
+User ||--o{ UpDownVotePost
+Post ||--o{ UpDownVotePost
 
+
+User ||-o{ Comment
+User ||--o{ UpDownVoteComment
+Comment ||--o{ UpDownVoteComment
+Post ||-o{ Comment
+Comment |o--o{ Comment
+
+Post ||--o| VotingPost
+VotingAnswer}|-|| VotingPost
+
+User  ||--o{ UserVote
+VotingAnswer ||--o{  UserVote 
+
+TagSubscription }o-|| User
+TagSubscription }o-|| Tag
+
+Tag  ||-|{  TagPost
+Post ||-|{  TagPost
 @enduml
