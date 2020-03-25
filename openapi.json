@@ -42,7 +42,10 @@
   "paths": {
     "/register": {
       "get": {
-        "tags": ["auth", "hollow"],
+        "tags": [
+          "auth",
+          "hollow"
+        ],
         "description": "Fetch the form to create a new user on the platform",
         "responses": {
           "200": {
@@ -54,7 +57,9 @@
     },
     "/api/auth/register": {
       "post": {
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "description": "Send user information and login credentials for a new account on the application",
         "requestBody": {
           "content": {
@@ -108,7 +113,10 @@
     },
     "/login": {
       "get": {
-        "tags": ["auth", "hollow"],
+        "tags": [
+          "auth",
+          "hollow"
+        ],
         "description": "Fetch the login page",
         "responses": {
           "200": {
@@ -120,14 +128,19 @@
     },
     "/api/auth/login": {
       "post": {
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "description": "Send login credentials for authentication",
         "requestBody": {
           "content": {
             "json": {
               "schema": {
                 "type": "object",
-                "required": ["email", "password"],
+                "required": [
+                  "email",
+                  "password"
+                ],
                 "properties": {
                   "email": {
                     "type": "string",
@@ -198,7 +211,10 @@
     },
     "/activate/{id}/{token}": {
       "get": {
-        "tags": ["auth", "hollow"],
+        "tags": [
+          "auth",
+          "hollow"
+        ],
         "description": "",
         "responses": {
           "200": {
@@ -210,13 +226,18 @@
     },
     "/api/auth/activate": {
       "post": {
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "description": "",
         "requestBody": {
           "content": {
             "application/x-www-form-urlencoded": {
               "schema": {
-                "required": ["id", "token"],
+                "required": [
+                  "id",
+                  "token"
+                ],
                 "properties": {
                   "id": {
                     "type": "integer",
@@ -274,7 +295,10 @@
     },
     "/logout": {
       "get": {
-        "tags": ["auth", "hollow"],
+        "tags": [
+          "auth",
+          "hollow"
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -289,12 +313,16 @@
             "AdminAuth": []
           }
         ],
-        "tags": ["admin"],
+        "tags": [
+          "admin"
+        ],
         "description": "Fetch all the reported posts and comments",
         "responses": {
           "200": {
             "description": "OK",
-            "content": { "TODO": "Todo" }
+            "content": {
+              "TODO": "Todo"
+            }
           }
         }
       }
@@ -306,12 +334,16 @@
             "AdminAuth": []
           }
         ],
-        "tags": ["admin"],
+        "tags": [
+          "admin"
+        ],
         "description": "Fetch the most active posts and comments",
         "responses": {
           "200": {
             "description": "OK",
-            "content": { "TODO": "Todo" }
+            "content": {
+              "TODO": "Todo"
+            }
           }
         }
       }
@@ -323,7 +355,9 @@
             "AdminAuth": []
           }
         ],
-        "tags": ["admin"],
+        "tags": [
+          "admin"
+        ],
         "description": "Hide (or unhide - if already hide) a post or a comment",
         "requestBody": {
           "content": {
@@ -394,7 +428,9 @@
             "AdminAuth": []
           }
         ],
-        "tags": ["admin"],
+        "tags": [
+          "admin"
+        ],
         "description": "Edit a post or a comment",
         "requestBody": {
           "content": {
@@ -465,7 +501,9 @@
             "AdminAuth": []
           }
         ],
-        "tags": ["admin"],
+        "tags": [
+          "admin"
+        ],
         "description": "Mark the discussion of a post as closed",
         "requestBody": {
           "content": {
@@ -525,10 +563,11 @@
         }
       }
     },
-
-    "/posts": {
+    "/api/posts": {
       "get": {
-        "tags": ["post"],
+        "tags": [
+          "post"
+        ],
         "summary": "Fetch posts according to the parameters",
         "parameters": [
           {
@@ -558,7 +597,11 @@
             "name": "sort",
             "schema": {
               "type": "string",
-              "enum": ["old", "new", "top"]
+              "enum": [
+                "old",
+                "new",
+                "top"
+              ]
             },
             "description": "The criteria used to sort posts"
           },
@@ -567,7 +610,12 @@
             "name": "type",
             "schema": {
               "type": "string",
-              "enum": ["info", "idea", "pool", "decisional"]
+              "enum": [
+                "info",
+                "idea",
+                "pool",
+                "decisional"
+              ]
             },
             "description": "The type used to filter posts"
           },
@@ -603,9 +651,13 @@
             }
           }
         }
-      },
+      }
+    },
+    "/api/post": {
       "post": {
-        "tags": ["post"],
+        "tags": [
+          "post"
+        ],
         "summary": "Add a new post",
         "requestBody": {
           "required": true,
@@ -628,38 +680,13 @@
             "UserAuth": []
           }
         ]
-      },
-      "put": {
-        "tags": ["post"],
-        "summary": "Update an existing post",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "json": {
-              "schema": {
-                "$ref": "#/components/schemas/Post"
-              }
-            }
-          }
-        },
-        "responses": {
-          "400": {
-            "description": "Invalid ID supplied"
-          },
-          "404": {
-            "description": "Post not found"
-          }
-        },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
       }
     },
-    "/posts/{post_id}": {
+    "/api/post/{post_id}": {
       "get": {
-        "tags": ["post"],
+        "tags": [
+          "post"
+        ],
         "summary": "Find post by id",
         "parameters": [
           {
@@ -691,8 +718,39 @@
           }
         }
       },
+      "put": {
+        "tags": [
+          "post"
+        ],
+        "summary": "Update an existing post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "json": {
+              "schema": {
+                "$ref": "#/components/schemas/Post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Post not found"
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      },
       "delete": {
-        "tags": ["post"],
+        "tags": [
+          "post"
+        ],
         "summary": "Delete a post",
         "parameters": [
           {
@@ -723,9 +781,11 @@
         ]
       }
     },
-    "/posts/up_down_vote": {
+    "/api/post/{post_id}/upvote": {
       "post": {
-        "tags": ["post"],
+        "tags": [
+          "post"
+        ],
         "summary": "Add an up/down vote",
         "requestBody": {
           "content": {
@@ -754,7 +814,10 @@
     },
     "/api/tags": {
       "get": {
-        "tags": ["tag", "hollow"],
+        "tags": [
+          "tag",
+          "hollow"
+        ],
         "summary": "Return all tags of the application",
         "responses": {
           "200": {
@@ -775,7 +838,9 @@
     },
     "/api/tag": {
       "post": {
-        "tags": ["tag"],
+        "tags": [
+          "tag"
+        ],
         "summary": "Create a tag",
         "requestBody": {
           "content": {
@@ -826,7 +891,9 @@
         ]
       },
       "put": {
-        "tags": ["tag"],
+        "tags": [
+          "tag"
+        ],
         "summary": "Update a tag",
         "requestBody": {
           "content": {
@@ -897,7 +964,9 @@
         ]
       },
       "delete": {
-        "tags": ["tag"],
+        "tags": [
+          "tag"
+        ],
         "summary": "Update a tag",
         "requestBody": {
           "content": {
@@ -949,7 +1018,9 @@
     },
     "/api/roles": {
       "get": {
-        "tags": ["role"],
+        "tags": [
+          "role"
+        ],
         "summary": "Return all roles of the application",
         "responses": {
           "200": {
@@ -975,7 +1046,9 @@
     },
     "/api/role": {
       "post": {
-        "tags": ["role"],
+        "tags": [
+          "role"
+        ],
         "summary": "Create a new role",
         "requestBody": {
           "content": {
@@ -1026,7 +1099,9 @@
         ]
       },
       "put": {
-        "tags": ["role"],
+        "tags": [
+          "role"
+        ],
         "summary": "Update a role",
         "requestBody": {
           "content": {
@@ -1098,7 +1173,9 @@
         ]
       },
       "delete": {
-        "tags": ["role"],
+        "tags": [
+          "role"
+        ],
         "summary": "Delete a role",
         "requestBody": {
           "content": {
@@ -1156,7 +1233,9 @@
     },
     "/api/capabilities": {
       "get": {
-        "tags": ["role"],
+        "tags": [
+          "role"
+        ],
         "summary": "Return all capabilities of the application",
         "responses": {
           "200": {
@@ -1182,7 +1261,10 @@
     },
     "/api/user/role": {
       "post": {
-        "tags": ["role", "user"],
+        "tags": [
+          "role",
+          "user"
+        ],
         "summary": "Assign a role to a user",
         "requestBody": {
           "content": {
@@ -1241,7 +1323,10 @@
         ]
       },
       "delete": {
-        "tags": ["role", "user"],
+        "tags": [
+          "role",
+          "user"
+        ],
         "summary": "Remove a role from a user",
         "requestBody": {
           "content": {
@@ -1302,7 +1387,9 @@
     },
     "/api/users": {
       "get": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "Return all users of the application",
         "responses": {
           "200": {
@@ -1346,7 +1433,12 @@
       },
       "UserRegisterInformation": {
         "type": "object",
-        "required": ["email", "firstname", "lastname", "password"],
+        "required": [
+          "email",
+          "firstname",
+          "lastname",
+          "password"
+        ],
         "properties": {
           "email": {
             "type": "string",
@@ -1366,7 +1458,13 @@
           },
           "address": {
             "type": "object",
-            "required": ["street", "number", "city", "zipcode", "country"],
+            "required": [
+              "street",
+              "number",
+              "city",
+              "zipcode",
+              "country"
+            ],
             "properties": {
               "street": {
                 "type": "string",
@@ -1480,7 +1578,12 @@
           },
           "action": {
             "type": "integer",
-            "enum": [2, 1, -1, -2]
+            "enum": [
+              2,
+              1,
+              -1,
+              -2
+            ]
           }
         }
       },
