@@ -25,7 +25,7 @@ steps:
     - name: cargo-registry-cache
       path: /usr/local/cargo/registry
   commands:
-  - apk add --update --no-cache libssl-dev mariadb-dev
+  - apk add --update --no-cache mariadb-dev
   - cargo build --verbose --release --all-targets --all-features
   - cargo test --verbose --release --all-targets --all-features
   - cargo install --root /usr/local/cargo/registry cargo-tarpaulin
