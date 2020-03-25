@@ -29,8 +29,8 @@ entity User {
   * firstname 
   * lastname
   * password
-  * adress_id (FK)
-  * ...
+  phone
+  adress_id (FK)
 }
 
 entity Address {
@@ -38,15 +38,14 @@ entity Address {
   --
   * street
   * number
+  box_number
   * city
   * zipcode
   * country
-  * phone
 }
 
 
-
-entity UpDownVote {
+entity UpVote {
   * user_id (FK)
   * post_id (FK)
   --
@@ -107,7 +106,29 @@ entity Faculty  {
   * adress_id (FK)
 }
 
-Address ||--o| User
+entity Role {
+  * role_id
+  --
+  * name
+}
+
+entity UserRole {
+  * user_id (FK)
+  * role_id (FK)
+}
+
+entity RoleCapability {
+  * role_id (FK)
+  * capability_id (FK)
+  * effect (allow, prohibit)
+}
+
+entity Capability {
+  * capability_id
+  * name
+}
+
+Address ||-o| User
 
 
 Faculty }|--o{ User
@@ -115,8 +136,8 @@ Faculty |o--|| Address
 
 
 User ||-o{ Post : Write
-User ||--o{ UpDownVote 
-Post ||--o{ UpDownVote 
+User ||--o{ UpVote 
+Post ||--o{ UpVote 
 
 Post ||--o| VotingPost
 VotingAnswer}|-|| VotingPost
@@ -124,9 +145,16 @@ VotingAnswer}|-|| VotingPost
 User  ||--o{ UserVote
 VotingAnswer ||--o{  UserVote 
 
-TagSubscription }o-|| User
+TagSubscription }o--|| User
 TagSubscription }o-|| Tag
 
-Tag  ||-|{  TagPost
+Tag  ||--|{  TagPost
 Post ||-|{  TagPost
+
+
+User ||--|{ UserRole
+UserRole }|--|| Role
+Role ||--|{ RoleCapability
+RoleCapability }|-|| Capability
+
 @enduml
