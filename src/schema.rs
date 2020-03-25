@@ -16,6 +16,7 @@ table! {
         id -> Unsigned<Integer>,
         title -> Varchar,
         content -> Mediumtext,
+        post_type -> Varchar,
         authorid -> Unsigned<Integer>,
         created_at -> Nullable<Datetime>,
         modified_at -> Nullable<Datetime>,

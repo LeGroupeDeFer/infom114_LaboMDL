@@ -1,4 +1,8 @@
 -- Your SQL goes here
+SET FOREIGN_KEY_CHECKS=0;
+DROP TABLE IF EXISTS users;
+SET FOREIGN_KEY_CHECKS=1;
+
 CREATE TABLE users (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   email VARCHAR(150) NOT NULL,
@@ -13,4 +17,4 @@ CREATE TABLE users (
   phone VARCHAR(150),
   PRIMARY KEY (id),
   CONSTRAINT unique_email UNIQUE (email)
-)
+);

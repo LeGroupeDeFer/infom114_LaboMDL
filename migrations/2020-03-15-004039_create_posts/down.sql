@@ -1,4 +1,6 @@
 -- This file should undo anything in `up.sql`
+SET FOREIGN_KEY_CHECKS=1;
+
 DROP TABLE IF EXISTS votes_comments;
 DROP TABLE IF EXISTS votes_posts;
 DROP TABLE IF EXISTS votes;
@@ -7,4 +9,4 @@ DROP TABLE IF EXISTS posts_tags;
 DROP TABLE IF EXISTS tags;
 DROP TABLE IF EXISTS posts;
 
-DROP TABLE IF EXISTS users;
+SET FOREIGN_KEY_CHECKS=1;
