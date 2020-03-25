@@ -4,13 +4,10 @@
     "title": "UNAnimity",
     "version": "0.2.0"
   },
-  "servers": [
-    {
-      "url": "https://unanimity.be"
-    }
-  ],
-  "tags": [
-    {
+  "servers": [{
+    "url": "https://unanimity.be"
+  }],
+  "tags": [{
       "name": "auth",
       "description": "Everything that is related to authentication"
     },
@@ -284,11 +281,9 @@
     },
     "/api/v1/admin/flagged_post": {
       "get": {
-        "security": [
-          {
-            "AdminAuth": []
-          }
-        ],
+        "security": [{
+          "AdminAuth": []
+        }],
         "tags": ["admin"],
         "description": "Fetch all the reported posts and comments",
         "responses": {
@@ -303,11 +298,9 @@
     },
     "/api/v1/admin/trending_post": {
       "get": {
-        "security": [
-          {
-            "AdminAuth": []
-          }
-        ],
+        "security": [{
+          "AdminAuth": []
+        }],
         "tags": ["admin"],
         "description": "Fetch the most active posts and comments",
         "responses": {
@@ -322,11 +315,9 @@
     },
     "/api/v1/admin/hide_ressource": {
       "post": {
-        "security": [
-          {
-            "AdminAuth": []
-          }
-        ],
+        "security": [{
+          "AdminAuth": []
+        }],
         "tags": ["admin"],
         "description": "Hide (or unhide - if already hide) a post or a comment",
         "requestBody": {
@@ -393,11 +384,9 @@
     },
     "/api/v1/admin/edit_post": {
       "post": {
-        "security": [
-          {
-            "AdminAuth": []
-          }
-        ],
+        "security": [{
+          "AdminAuth": []
+        }],
         "tags": ["admin"],
         "description": "Edit a post or a comment",
         "requestBody": {
@@ -464,11 +453,9 @@
     },
     "/api/v1/admin/close_discussion": {
       "post": {
-        "security": [
-          {
-            "AdminAuth": []
-          }
-        ],
+        "security": [{
+          "AdminAuth": []
+        }],
         "tags": ["admin"],
         "description": "Mark the discussion of a post as closed",
         "requestBody": {
@@ -533,8 +520,7 @@
       "get": {
         "tags": ["post"],
         "summary": "Fetch posts according to the parameters",
-        "parameters": [
-          {
+        "parameters": [{
             "in": "query",
             "name": "tag",
             "schema": {
@@ -628,28 +614,24 @@
             "content": {}
           }
         },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
+        "security": [{
+          "UserAuth": []
+        }]
       }
     },
     "/api/post/{post_id}": {
       "get": {
         "tags": ["post"],
         "summary": "Find post by id",
-        "parameters": [
-          {
-            "name": "post_id",
-            "in": "path",
-            "description": "Id of post to return",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
+        "parameters": [{
+          "name": "post_id",
+          "in": "path",
+          "description": "Id of post to return",
+          "required": true,
+          "schema": {
+            "type": "string"
           }
-        ],
+        }],
         "responses": {
           "200": {
             "description": "OK",
@@ -690,26 +672,22 @@
             "description": "Post not found"
           }
         },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
+        "security": [{
+          "UserAuth": []
+        }]
       },
       "delete": {
         "tags": ["post"],
         "summary": "Delete a post",
-        "parameters": [
-          {
-            "name": "post_id",
-            "in": "path",
-            "description": "Id of post to delete",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
+        "parameters": [{
+          "name": "post_id",
+          "in": "path",
+          "description": "Id of post to delete",
+          "required": true,
+          "schema": {
+            "type": "string"
           }
-        ],
+        }],
         "responses": {
           "200": {
             "description": "OK"
@@ -721,11 +699,9 @@
             "description": "Post not found"
           }
         },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
+        "security": [{
+          "UserAuth": []
+        }]
       }
     },
     "/api/post/{post_id}/upvote": {
@@ -738,7 +714,7 @@
               "schema": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/UpDownVote"
+                  "$ref": "#/components/schemas/UpVote"
                 }
               }
             }
@@ -750,14 +726,11 @@
             "description": "OK"
           }
         },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
+        "security": [{
+          "UserAuth": []
+        }]
       }
     },
-
     "/api/post/{post_id}/hide": {
       "post": {
         "tags": ["post"],
@@ -768,11 +741,9 @@
           "description": "OK"
         }
       },
-      "security": [
-        {
-          "UserAuth": []
-        }
-      ]
+      "security": [{
+        "UserAuth": []
+      }]
     },
     "/api/post/{post_id}/report": {
       "post": {
@@ -784,11 +755,9 @@
           "description": "OK"
         }
       },
-      "security": [
-        {
-          "UserAuth": []
-        }
-      ]
+      "security": [{
+        "UserAuth": []
+      }]
     },
     "/api/tags": {
       "get": {
@@ -811,19 +780,12 @@
         }
       }
     },
-    "/api/tag": {
+    "/api/tag/{tag_name}": {
       "post": {
         "tags": ["tag"],
         "summary": "Create a tag",
         "requestBody": {
-          "content": {
-            "json": {
-              "schema": {
-                "$ref": "#/components/schemas/Tag"
-              }
-            }
-          },
-          "required": true
+          "content": {}
         },
         "responses": {
           "200": {
@@ -857,11 +819,9 @@
             }
           }
         },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
+        "security": [{
+          "UserAuth": []
+        }]
       },
       "put": {
         "tags": ["tag"],
@@ -870,15 +830,7 @@
           "content": {
             "json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "old": {
-                    "$ref": "#/components/schemas/Tag"
-                  },
-                  "new": {
-                    "$ref": "#/components/schemas/Tag"
-                  }
-                }
+                "$ref": "#/components/schemas/Tag"
               }
             }
           }
@@ -928,23 +880,15 @@
             }
           }
         },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
+        "security": [{
+          "UserAuth": []
+        }]
       },
       "delete": {
         "tags": ["tag"],
         "summary": "Update a tag",
         "requestBody": {
-          "content": {
-            "json": {
-              "schema": {
-                "$ref": "#/components/schemas/Tag"
-              }
-            }
-          }
+          "content": {}
         },
         "responses": {
           "200": {
@@ -978,11 +922,9 @@
             }
           }
         },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
+        "security": [{
+          "UserAuth": []
+        }]
       }
     },
     "/api/roles": {
@@ -1004,11 +946,9 @@
             }
           }
         },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
+        "security": [{
+          "UserAuth": []
+        }]
       }
     },
     "/api/role": {
@@ -1057,12 +997,12 @@
             }
           }
         },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
-      },
+        "security": [{
+          "UserAuth": []
+        }]
+      }
+    },
+    "/api/role/{role_id}": {
       "put": {
         "tags": ["role"],
         "summary": "Update a role",
@@ -1070,15 +1010,7 @@
           "content": {
             "json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "old": {
-                    "type": "string"
-                  },
-                  "new": {
-                    "$ref": "#/components/schemas/Role"
-                  }
-                }
+                "$ref": "#/components/schemas/Role"
               }
             }
           },
@@ -1129,29 +1061,15 @@
             }
           }
         },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
+        "security": [{
+          "UserAuth": []
+        }]
       },
       "delete": {
         "tags": ["role"],
         "summary": "Delete a role",
         "requestBody": {
-          "content": {
-            "json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
-          "required": true
+          "content": {}
         },
         "responses": {
           "200": {
@@ -1185,11 +1103,9 @@
             }
           }
         },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
+        "security": [{
+          "UserAuth": []
+        }]
       }
     },
     "/api/capabilities": {
@@ -1211,11 +1127,9 @@
             }
           }
         },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
+        "security": [{
+          "UserAuth": []
+        }]
       }
     },
     "/api/user/role": {
@@ -1228,11 +1142,11 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "user": {
+                  "user_id": {
                     "type": "integer"
                   },
-                  "role": {
-                    "type": "string"
+                  "role_id": {
+                    "type": "integer"
                   }
                 }
               }
@@ -1272,11 +1186,9 @@
             }
           }
         },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
+        "security": [{
+          "UserAuth": []
+        }]
       },
       "delete": {
         "tags": ["role", "user"],
@@ -1287,11 +1199,11 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "user": {
+                  "user_id": {
                     "type": "integer"
                   },
-                  "role": {
-                    "type": "string"
+                  "role_id": {
+                    "type": "integer"
                   }
                 }
               }
@@ -1331,11 +1243,9 @@
             }
           }
         },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
+        "security": [{
+          "UserAuth": []
+        }]
       }
     },
     "/api/users": {
@@ -1357,11 +1267,9 @@
             }
           }
         },
-        "security": [
-          {
-            "UserAuth": []
-          }
-        ]
+        "security": [{
+          "UserAuth": []
+        }]
       }
     }
   },
@@ -1504,7 +1412,7 @@
           }
         }
       },
-      "UpDownVote": {
+      "UpVote": {
         "type": "object",
         "properties": {
           "post_id": {
