@@ -18,7 +18,11 @@ function Sidebar({ open, links }) {
     <nav className="sidebar p-2">
       {/* Logo */}
       <div className="sidebar-logo">
-        <img src="https://via.placeholder.com/50" alt="logo" />
+        <img
+          src="https://www.freelogodesign.org/file/app/client/thumb/93b27fc8-6653-43ea-a4c4-3f22893f93dd_200x200.png?1585111496240"
+          alt="logo"
+          height="53"
+        />
       </div>
 
       {/* Menu */}

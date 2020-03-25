@@ -60,12 +60,12 @@
 
 .post-idea {
     color: $white;
-    background-color: #d2b049;
+    background-color: #db894d;
 }
 
 .post-poll {
     color: $white;
-    background-color: #c430d9;
+    background-color: #c15ad0;
 }
 
 .post .text-muted {
@@ -76,7 +76,8 @@
 
 
 .vote-section {
-    padding-top: 1em;
+    padding: 1rem 0.84rem 0 0.84rem;
+
     background-color: rgba(0, 0, 0, 0.03);
     border-right: 1px solid rgba(0, 0, 0, 0.125);
 }
@@ -87,8 +88,8 @@
 }
 
 // .post {
-    //     cursor: pointer;
-    // }
+//     cursor: pointer;
+// }
 
 .post .more.show {
     visibility: visible;
@@ -98,9 +99,16 @@
     visibility: hidden;
 }
 
+.more .dropdown-toggle {
+    padding: 0 0 0 0;
+}
 
 .post:hover .more {
     visibility: visible;
+}
+
+.post .card-header {
+    padding: 0.7rem 1.25rem 0.4rem 1.25rem;
 }
 
 .dropdown-toggle:after {

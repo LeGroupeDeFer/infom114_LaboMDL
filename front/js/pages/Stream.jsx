@@ -25,19 +25,53 @@ const Stream = () => {
   const [posts, setPosts] = useState(usePromise(fetchPosts, [fakeLatency]));
   const [previewDisplayed, setPreviewDisplayed] = useState(false);
   const [lastPostDiplayed, setLastPostDisplayed] = useState(null);
-
+  const [tags, setTags] = useState(null);
   const { login, user } = useAuth();
 
-  function togllePreview(e) {
-    // let postId = e.currentTarget.getAttribute('id');
-    // if (postId == lastPostDiplayed) {
-    //   setPreviewDisplayed(false);
-    //   setLastPostDisplayed(null);
-    // } else {
-    //   setLastPostDisplayed(postId);
-    //   // TODO : async request to fetch post's data
-    //   setPreviewDisplayed(true);
-    // }
+  function handleChange(selectedOpttion) {
+    if (selectedOpttion != null) {
+      let tags = selectedOpttion.map(function(x) {
+        return {
+          value: x.value,
+          label: x.label
+        };
+      });
+      setTags(tags);
+    } else {
+      setTags(null);
+    }
+  }
+
+  function tagClickHandler(e) {
+    e.stopPropagation();
+    let tagValue = e.target.getAttribute('value');
+    let tag = {
+      value: tagValue,
+      label: (
+        <span>
+          <FaTag /> {tagValue}
+        </span>
+      )
+    };
+
+    setTags(tag);
+
+    // Scroll to the top
+    document.getElementsByTagName('main')[0].scrollTo(0, 0);
+
+    // TODO fetch posts
+  }
+
+  function togglePreview(e) {
+    let postId = e.currentTarget.closest('.post').getAttribute('id');
+    if (postId == lastPostDiplayed) {
+      setPreviewDisplayed(false);
+      setLastPostDisplayed(null);
+    } else {
+      setLastPostDisplayed(postId);
+      // TODO : async request to fetch post's data
+      setPreviewDisplayed(true);
+    }
   }
 
   if (!user) {
@@ -86,15 +120,6 @@ const Stream = () => {
     setPosts(sortedPost);
   }
 
-  function tagClickHandler(e) {
-    e.stopPropagation();
-    let tag = e.target.getAttribute('value');
-
-    // TODO : Add tag to search bar, scroll to the search bar and fetch posts
-
-    window.scrollTo(0, 0);
-  }
-
   return (
     <>
       <Container>
@@ -102,11 +127,11 @@ const Stream = () => {
 
         <Row>
           <Col xs={11}>
-            <SearchBar />
+            <SearchBar handle_change={handleChange} tags={tags} />
           </Col>
           <Col xs={1}>
             <OverlayTrigger
-              placement=""
+              placement="bottom"
               overlay={<Tooltip>Créer un post</Tooltip>}
             >
               <Button variant="primary">
@@ -129,7 +154,7 @@ const Stream = () => {
       </Container>
       <br />
 
-      <div className={`${clsx(!previewDisplayed && 'container')} `}>
+      <div className={!previewDisplayed ? 'container' : 'ml-3 mr-2'}>
         <Row>
           <Col className={`${clsx(previewDisplayed && 'col-4')} `}>
             <Suspense fallback={<h3>Loading posts...</h3>}>
@@ -138,7 +163,7 @@ const Stream = () => {
                 posts={posts}
                 is_logged={user != null ? 1 : 0}
                 tag_click={tagClickHandler}
-                onClick={e => togllePreview(e)}
+                preview_click={e => togglePreview(e)}
               />
             </Suspense>
           </Col>
@@ -223,10 +248,10 @@ const PostList = props => {
 };
 
 // SearchBar :: None => Component
-const SearchBar = () => {
+const SearchBar = props => {
   const options = [
     {
-      value: 'facInfo',
+      value: 'FacInfo',
       label: (
         <span>
           <FaTag /> FacInfo
@@ -234,7 +259,7 @@ const SearchBar = () => {
       )
     },
     {
-      value: 'facEco',
+      value: 'FacEco',
       label: (
         <span>
           <FaTag /> FacEco
@@ -242,7 +267,7 @@ const SearchBar = () => {
       )
     },
     {
-      value: 'arsenal',
+      value: 'Arsenal',
       label: (
         <span>
           <FaTag /> Arsenal
@@ -252,16 +277,6 @@ const SearchBar = () => {
   ];
 
   const primary = '#A0C55F';
-
-  function handleChange(selectedOpttion) {
-    if (selectedOpttion != null) {
-      let options = selectedOpttion.map(x => x.value);
-
-      console.log('Option selected:', options);
-    } else {
-      console.log('No options selected');
-    }
-  }
 
   const customStyles = {
     control: (base, state) => ({
@@ -285,9 +300,10 @@ const SearchBar = () => {
       options={options}
       components={{ DropdownIndicator }}
       placeholder={'Rechercher'}
+      value={props.tags}
       styles={customStyles}
       formatCreateLabel={userInput => `Rechercher "${userInput}"`}
-      onChange={handleChange}
+      onChange={props.handle_change}
     />
   );
 };

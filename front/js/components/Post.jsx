@@ -131,13 +131,9 @@ const Post = ({
     );
   }
 
-  function handleHoverOff() {
-    console.log('Hover off post');
-  }
-
   return (
     <div className="d-flex">
-      <Card {...otherProps} className="post" onMouseLeave={handleHoverOff}>
+      <Card {...otherProps} className="post">
         <Card.Header>
           <h5>
             <Badge className={`post-${type} mr-2`}>
@@ -177,7 +173,7 @@ const Post = ({
 
         <Card.Body className="p-0">
           <div className="d-flex">
-            <div className="vote-section px-3">
+            <div className="vote-section">
               {upVoteBtn}
 
               <div
@@ -224,9 +220,16 @@ const Post = ({
               </div>
 
               <Card.Text>
-                {preview(text, previewLength)} <a href="#">Read more</a>
+                {preview(text, previewLength)}{' '}
+                <a href="#" onClick={e => otherProps.preview_click(e)}>
+                  Lire la suite
+                </a>
               </Card.Text>
-              <a className="post-footer-btn mr-2" href="#">
+              <a
+                className="post-footer-btn mr-2"
+                href="#"
+                onClick={e => otherProps.preview_click(e)}
+              >
                 <MdModeComment size="1.25em" className="mr-1" />
                 <span className="text-muted">12 commentaires</span>
               </a>
