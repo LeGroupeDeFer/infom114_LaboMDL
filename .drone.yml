@@ -28,7 +28,7 @@ steps:
   - apk add --update --no-cache mariadb-dev
   - cargo install --root /usr/local/cargo/registry cargo-tarpaulin
   - cargo build --verbose --release --all-targets --all-features
-  - PATH=/usr/local/cargo/registry/bin:$PATH cargo-tarpaulin tarpaulin --out Xml -- --test-threads=1
+  - PATH=/usr/local/cargo/registry/bin:$PATH cargo-tarpaulin tarpaulin --release --out Xml -- --test-threads=1
 - name: frontend
   image: findot/rust-node:nightly
   volumes:
