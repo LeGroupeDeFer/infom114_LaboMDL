@@ -68,6 +68,7 @@ steps:
       - success
     event: tag
 
+volumes:
   - name: cargo-registry-cache
     host:
       path: /tmp/cargo/registry-cache
