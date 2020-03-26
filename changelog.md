@@ -6,6 +6,9 @@ Summary of implemented features classified by release (github tag)
 
 - add tags openapi specs
 - add roles openapi specs
+- add posts openapi specs
+- improve post UI (share button, search bar, tags, first draw for posts preview)
+- users now need to be authenticated to upvote
 
 ## [0.1.2] - 2019-03-19
 
