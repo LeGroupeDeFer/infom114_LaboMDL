@@ -21,7 +21,7 @@ fn get_tags(conn: DBConnection) -> ApiResponse {
 }
 
 #[post("/<tag_label>", format = "application/json")]
-fn post_tag(conn: DBConnection, api: String, tag: String, tag_label: String) -> ApiResponse {
+fn post_tag(conn: DBConnection, tag_label: String) -> ApiResponse {
     //TODO    
     let existence = Tag::available_label(&conn, &tag_label);
     println!("Result : {:?}", existence);
