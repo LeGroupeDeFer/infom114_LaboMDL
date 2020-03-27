@@ -37,12 +37,27 @@ table! {
 }
 
 table! {
+    tags (label) {
+        label -> Varchar,
+    }
+}
+
+table! {
     users_roles (user, role) {
         user -> Unsigned<Integer>,
         role -> Unsigned<Integer>,
     }
 }
 
+table! {
+    tags_subscription (user, label) {
+        user -> Unsigned<Integer>,
+        label -> Varchar,
+    }
+}
+
 joinable!(users -> addresses(id));
 joinable!(users_roles -> users(user));
 joinable!(users_roles -> roles(role));
+joinable!(tags_subscription -> users(user));
+joinable!(tags_subscription -> tags(label));
