@@ -64,3 +64,12 @@ pub fn connection(database_url: &str) -> MysqlConnection {
     MysqlConnection::establish(&database_url)
         .expect(&format!("Error connecting to {}", database_url))
 }
+
+/// Data
+///
+/// This is a sementic wrapper so a caller is able to know the new database
+/// state simply by retreiving data wrapped inside it
+pub enum Data<T> {
+    Inserted(T),
+    Existing(T),
+}

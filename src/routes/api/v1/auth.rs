@@ -1,6 +1,6 @@
 use crate::database::models::address::Address;
 use crate::database::models::user::User;
-use crate::database::DBConnection;
+use crate::database::{DBConnection, Data};
 use crate::http::responders::api::ApiResponse;
 
 use crate::auth::forms::{ActivationData, LoginData, RegisterData};
@@ -36,9 +36,9 @@ fn register(conn: DBConnection, data: Json<RegisterData>) -> ApiResponse {
     let mut new_user = registration.user();
     new_user.address = address_id;
 
-    User::insert_minima(&conn, &new_user)
-        .map_left(|_| ApiResponse::error(Status::Conflict, "Account already exist"))
-        .map_right(|user| {
+    match User::insert_minima(&conn, &new_user) {
+        Data::Existing(_) => ApiResponse::error(Status::Conflict, "Account already exist"),
+        Data::Inserted(user) => {
             // TODO, put this email in a dedicated function
             mail::send(
                 &user.email,
@@ -51,8 +51,8 @@ fn register(conn: DBConnection, data: Json<RegisterData>) -> ApiResponse {
                 vec![],
             );
             ApiResponse::new(Status::Ok, json!({}))
-        })
-        .either(identity, identity)
+        }
+    }
 }
 
 #[post("/login", format = "json", data = "<data>")]

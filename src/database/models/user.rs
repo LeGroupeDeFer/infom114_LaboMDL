@@ -1,10 +1,10 @@
 use super::address::Address;
 use crate::database::schema::users;
 use crate::database::schema::users::dsl::users as table;
+use crate::database::Data;
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::MysqlConnection;
-use either::*;
 use regex::Regex;
 use rocket_contrib::json::JsonValue;
 
@@ -34,7 +34,7 @@ impl User {
 
     // from :: (DBConnection, Integer) -> Option<User>
     pub fn from(conn: &MysqlConnection, id: &u32) -> Option<Self> {
-        table.find(id).first::<User>(conn).ok()
+        table.find(id).first::<Self>(conn).ok()
     }
 
     // all :: (MysqlConnection) -> Vec<User>
@@ -71,9 +71,9 @@ impl User {
     }
 
     // insert_minima :: (MysqlConnection, UserMinima) -> Either<User, User>
-    pub fn insert_minima(conn: &MysqlConnection, minima: &UserMinima) -> Either<Self, Self> {
+    pub fn insert_minima(conn: &MysqlConnection, minima: &UserMinima) -> Data<Self> {
         if let Some(past) = User::select_minima(conn, minima) {
-            Left(past)
+            Data::Existing(past)
         } else {
             let mut inserted = minima.clone();
             inserted.password = bcrypt::hash(&minima.password, 8).expect("Unable to hash password");
@@ -81,7 +81,7 @@ impl User {
                 .values(inserted)
                 .execute(conn)
                 .expect("Error inserting address");
-            Right(
+            Data::Inserted(
                 User::select_minima(conn, minima)
                     .expect("User insertion succeeded but could not be retreived"),
             )

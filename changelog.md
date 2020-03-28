@@ -2,6 +2,19 @@
 
 Summary of implemented features classified by release (github tag)
 
+## [0.2.0] - 2019-03-25
+
+- add database migrations for role management
+- create structure for seeder
+- add GET /api/capabilities route
+- add GET /api/roles route
+- add structure for /api/role routes
+- update DB schemas (user, roles)
+- add DB schemas (capabilities, roles_capabilities)
+- move schema.rs to /database/
+- implement business logic for capability database model
+- begin to implement business logic for role database model
+
 ## [0.1.3] - 2019-03-24
 
 - add tags openapi specs

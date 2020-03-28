@@ -5,8 +5,31 @@ table! {
         number -> Unsigned<Integer>,
         box_number -> Nullable<Varchar>,
         city -> Varchar,
-        zipcode -> Unsigned<Integer>,
+        zipcode -> Varchar,
         country -> Varchar,
+    }
+}
+
+table! {
+    capabilities (id) {
+        id -> Unsigned<Integer>,
+        name -> Varchar,
+    }
+}
+
+table! {
+    roles (id) {
+        id -> Unsigned<Integer>,
+        name -> Varchar,
+        color -> Varchar,
+    }
+}
+
+table! {
+    roles_capabilities (id) {
+        id -> Unsigned<Integer>,
+        role_id -> Unsigned<Integer>,
+        capability_id -> Unsigned<Integer>,
     }
 }
 
@@ -17,32 +40,34 @@ table! {
         password -> Varchar,
         firstname -> Varchar,
         lastname -> Varchar,
-
         address -> Nullable<Unsigned<Integer>>,
         phone -> Nullable<Varchar>,
-
         creation_date -> Timestamp,
         last_connection -> Timestamp,
-
         token -> Nullable<Varchar>,
         active -> Bool,
     }
 }
 
 table! {
-    roles (id) {
+    users_roles (id) {
         id -> Unsigned<Integer>,
-        name -> Varchar,
+        user_id -> Unsigned<Integer>,
+        role_id -> Unsigned<Integer>,
     }
 }
 
-table! {
-    users_roles (user, role) {
-        user -> Unsigned<Integer>,
-        role -> Unsigned<Integer>,
-    }
-}
+joinable!(roles_capabilities -> capabilities (capability_id));
+joinable!(roles_capabilities -> roles (role_id));
+joinable!(users -> addresses (address));
+joinable!(users_roles -> roles (role_id));
+joinable!(users_roles -> users (user_id));
 
-joinable!(users -> addresses(id));
-joinable!(users_roles -> users(user));
-joinable!(users_roles -> roles(role));
+allow_tables_to_appear_in_same_query!(
+    addresses,
+    capabilities,
+    roles,
+    roles_capabilities,
+    users,
+    users_roles,
+);

@@ -12,7 +12,7 @@ pub struct Address {
     pub number: u32,
     pub box_number: Option<String>,
     pub city: String,
-    pub zipcode: u32,
+    pub zipcode: String,
     pub country: String,
 }
 
@@ -82,6 +82,6 @@ pub struct AddressMinima {
     pub number: u32,
     pub box_number: Option<String>,
     pub city: String,
-    pub zipcode: u32,
+    pub zipcode: String,
     pub country: String,
 }
