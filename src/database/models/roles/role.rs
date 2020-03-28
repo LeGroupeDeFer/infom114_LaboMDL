@@ -1,9 +1,14 @@
 use crate::database::Data;
 
 use crate::database::models::roles::capability::Capability;
+use crate::database::models::roles::role_capability::RelRoleCapability;
 
 use crate::database::schema::roles;
 use crate::database::schema::roles::dsl::roles as table;
+
+use crate::database::schema::roles_capabilities::{
+    self, dsl::roles_capabilities as table_roles_capabilities,
+};
 
 use diesel::prelude::*;
 use diesel::MysqlConnection;
@@ -54,8 +59,26 @@ impl Role {
         }
     }
 
+    /* ------------------------------- NOT SO STATIC ------------------------------ */
+
     pub fn capabilities(&self, conn: &MysqlConnection) -> Vec<Capability> {
-        unimplemented!()
+        RelRoleCapability::get_capabilities_for_role(&conn, &self)
     }
 
+    pub fn clear_capabilities(&self, conn: &MysqlConnection) {
+        diesel::delete(table_roles_capabilities.filter(roles_capabilities::role_id.eq(self.id)))
+            .execute(conn)
+            .unwrap();
+    }
+
+    pub fn update(&self, conn: &MysqlConnection, minima: &RoleMinima) {
+        diesel::update(self)
+            .set((roles::name.eq(&minima.name), roles::color.eq(&minima.color)))
+            .execute(conn)
+            .unwrap();
+    }
+
+    pub fn delete(self, conn: &MysqlConnection) {
+        diesel::delete(&self).execute(conn).unwrap();
+    }
 }

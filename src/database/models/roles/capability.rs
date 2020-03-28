@@ -20,8 +20,15 @@ pub struct CapabilityMinima {
 impl Capability {
     /* ------------------------------- STATIC ------------------------------ */
 
-    pub fn from(conn: &MysqlConnection, id: &u32) -> Option<Self> {
+    pub fn from_id(conn: &MysqlConnection, id: &u32) -> Option<Self> {
         table.find(id).first::<Self>(conn).ok()
+    }
+
+    pub fn from_name(conn: &MysqlConnection, name: &str) -> Option<Self> {
+        table
+            .filter(capabilities::name.eq(&name))
+            .first::<Self>(conn)
+            .ok()
     }
 
     pub fn all(conn: &MysqlConnection) -> Vec<Self> {

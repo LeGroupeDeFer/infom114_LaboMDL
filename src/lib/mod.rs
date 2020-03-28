@@ -13,5 +13,8 @@ pub fn set_uri(prefix: &str, route: &rocket::Route) -> rocket::Route {
 }
 
 pub fn extend_routes(prefix: &str, routes: Vec<rocket::Route>) -> Vec<rocket::Route> {
-    routes.iter().map(|route| set_uri(prefix, route)).collect()
+    routes
+        .iter()
+        .map(|route| set_uri(&[prefix, route.base()].concat(), route))
+        .collect()
 }
