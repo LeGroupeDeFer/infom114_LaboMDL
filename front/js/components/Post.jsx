@@ -139,11 +139,13 @@ const Post = ({
             <Badge className={`post-${type} mr-2`}>
               {getDisplayedType(type)}
             </Badge>
-            <a href="#" className="text-dark">
-              {username}
-            </a>
+            <span className="mr-2">{title}</span>
+
             <span className="text-muted">
               {' '}
+              <a href="#" className="text-muted">
+                {username}
+              </a>{' '}
               -{' '}
               <Moment locale="fr" fromNow>
                 {createdOn}
@@ -187,8 +189,7 @@ const Post = ({
               {downVoteBtn}
             </div>
 
-            <div className="p-3">
-              <Card.Title className="mb-1">{title}</Card.Title>
+            <div className="px-3 pb-3 pt-2">
               <div className="mb-1">
                 <a
                   href="#"
