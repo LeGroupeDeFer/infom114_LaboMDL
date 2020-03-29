@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import Card from 'react-bootstrap/Card';
 import { dev, preview } from '../lib';
 import Badge from 'react-bootstrap/Badge';
-import Button from 'react-bootstrap/Button';
+import GoArrowDown from 'react-icons/go';
 import Moment from 'react-moment';
-import { GoArrowDown, GoArrowUp } from 'react-icons/go';
+import DownVote from '../components/DownVote';
+import UpVote from '../components/UpVote';
 import { MdModeComment, MdReport } from 'react-icons/md';
 import {
   FaTag,
@@ -14,8 +15,6 @@ import {
   FaFlag
 } from 'react-icons/fa';
 import clsx from 'clsx';
-import Tooltip from 'react-bootstrap/Tooltip';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Dropdown from 'react-bootstrap/Dropdown';
 
@@ -79,57 +78,6 @@ const Post = ({
   }
 
   if (!['all', type].includes(currentFilter)) return <></>;
-  let upVoteBtn;
-  let downVoteBtn;
-
-  if (otherProps.is_logged) {
-    upVoteBtn = (
-      <Button
-        variant="light"
-        className={`up-vote-btn ${clsx(voted === 'up' && 'up-voted')}   `}
-        onClick={() => upVote(voted === 'up')}
-      >
-        <GoArrowUp size="1.5em" />
-      </Button>
-    );
-
-    downVoteBtn = (
-      <Button
-        variant="light"
-        className={`down-vote-btn ${clsx(voted === 'down' && 'down-voted')}`}
-        onClick={() => downVote(voted === 'down')}
-      >
-        <GoArrowDown size="1.5em" />
-      </Button>
-    );
-  } else {
-    let notLoggedMsg = 'Il faut être authentifié pour pouvoir voter';
-    upVoteBtn = (
-      <OverlayTrigger
-        placement="right"
-        overlay={<Tooltip> {notLoggedMsg} </Tooltip>}
-      >
-        <span className="d-inline-block">
-          <Button variant="light" className={'up-vote-btn'} disabled>
-            <GoArrowUp size="1.5em" />
-          </Button>
-        </span>
-      </OverlayTrigger>
-    );
-
-    downVoteBtn = (
-      <OverlayTrigger
-        placement="right"
-        overlay={<Tooltip> {notLoggedMsg} </Tooltip>}
-      >
-        <span className="d-inline-block">
-          <Button variant="light" className={'down-vote-btn'} disabled>
-            <GoArrowDown size="1.5em" />
-          </Button>
-        </span>
-      </OverlayTrigger>
-    );
-  }
 
   return (
     <div className="d-flex">
@@ -176,8 +124,11 @@ const Post = ({
         <Card.Body className="p-0">
           <div className="d-flex">
             <div className="vote-section">
-              {upVoteBtn}
-
+              <UpVote
+                is_logged={otherProps.is_logged}
+                click_handle={() => upVote(voted === 'up')}
+                voted={voted}
+              />
               <div
                 className={`text-center ${clsx(
                   voted !== 'no' && voted + '-voted'
@@ -186,7 +137,11 @@ const Post = ({
                 <b>{voteCountState}</b>
               </div>
 
-              {downVoteBtn}
+              <DownVote
+                is_logged={otherProps.is_logged}
+                click_handle={() => downVote(voted === 'down')}
+                voted={voted}
+              />
             </div>
 
             <div className="px-3 pb-3 pt-2">

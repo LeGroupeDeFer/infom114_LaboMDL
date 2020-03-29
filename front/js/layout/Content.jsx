@@ -19,8 +19,9 @@ const Notifications = lazy(() => import('../pages/Notifications'));
 const Login = lazy(() => import('../pages/Login'));
 const Logout = lazy(() => import('../pages/Logout'));
 const Register = lazy(() => import('../pages/Register'));
-const Create = lazy(() => import('../pages/Create'));
 const Activate = lazy(() => import('../pages/Activate'));
+const CreatePost = lazy(() => import('../pages/CreatePost'));
+const Post = lazy(() => import('../pages/Post'));
 
 // Content :: Object => Component
 const Content = _ => {
@@ -67,10 +68,6 @@ const Content = _ => {
                   <Stream />
                 </Route>
 
-                <Route path="/create">
-                  <Create />
-                </Route>
-
                 <Route path="/profile">
                   <Profile />
                 </Route>
@@ -101,6 +98,14 @@ const Content = _ => {
 
                 <Route path="/activate/:id?/:token?">
                   <Activate />
+                </Route>
+
+                <Route path="/post/:id">
+                  <Post />
+                </Route>
+
+                <Route path="/post/create">
+                  <CreatePost />
                 </Route>
               </Switch>
             </Suspense>

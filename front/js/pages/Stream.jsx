@@ -1,12 +1,14 @@
 import React, { Suspense, useState, useEffect } from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import { MdSort } from 'react-icons/md';
 import usePromise from 'react-promise-suspense';
 import Post from '../components/Post';
+import Comment from '../components/Comment';
 import { fakeLatency, loremIpsum } from '../lib/dev';
 import Button from 'react-bootstrap/Button';
-import Col from 'react-bootstrap/Col';
+
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -18,6 +20,7 @@ import Card from 'react-bootstrap/Card';
 import clsx from 'clsx';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import { Link } from 'react-router-dom';
 
 // Stream :: None => Component
 const Stream = () => {
@@ -125,6 +128,7 @@ const Stream = () => {
       <Container>
         <br />
 
+        <Link to="/post/1234">Post detail test</Link>
         <Row>
           <Col xs={11}>
             <SearchBar handle_change={handleChange} tags={tags} />
@@ -180,6 +184,12 @@ const Stream = () => {
           )}
         </Row>
       </div>
+      <Container>
+        <Card body>
+          <Comments is_logged={user != null ? 1 : 0} />
+        </Card>
+      </Container>
+      <br />
     </>
   );
 };
@@ -394,6 +404,61 @@ const FilterBar = props => {
         Idées
       </Button>
     </ButtonGroup>
+  );
+};
+
+const Comments = is_logged => {
+  const commentData = {
+    post_id: 1234,
+    comments: [
+      {
+        id: 1,
+        text: 'Tu racontes de la merde bro ! ',
+        author: 'John Cena',
+        created_on: '2020-02-29T12:59-0500',
+        children: [
+          {
+            id: 2,
+            text: 'tg rdv a l gar du nor. 22h vien seul ',
+            author: 'John Casey',
+            created_on: '2020-02-29T12:59-0500',
+            children: [
+              {
+                id: 3,
+                text: 'Ok.',
+                author: 'John Cena',
+                children: []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: 4,
+        text: 'Yallah ! ',
+        author: 'John Couscous',
+        created_on: '2020-02-29T12:59-0500',
+        children: []
+      },
+      {
+        id: 5,
+        text:
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque volutpat vulputate nisl quis pulvinar. Praesent euismod magna metus, quis ultricies nunc sagittis in. Maecenas eleifend pulvinar nunc Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque volutpat vulputate nisl quis pulvinar. Praesent euismod magna metus, quis ultricies nunc sagittis in. Maecenas eleifend pulvinar nunc',
+        author: 'John Latin',
+        created_on: '2020-02-29T12:59-0500',
+        children: []
+      }
+    ]
+  };
+
+  return (
+    <>
+      {commentData.comments.map(comment => {
+        return (
+          <Comment key={comment.id} comment={comment} is_logged={is_logged} />
+        );
+      })}
+    </>
   );
 };
 

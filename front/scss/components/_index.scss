@@ -1,8 +1,10 @@
-@use '../themes' as *;
+@use '../themes'as *;
 
 @forward './post';
 
 @forward './form';
+
+@forward './comment';
 
 @forward './image';
 
