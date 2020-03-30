@@ -22,7 +22,7 @@ const Post = ({
   title,
   text,
   username,
-  voteCount,
+  points,
   type,
   previewLength,
   createdOn,
@@ -30,41 +30,7 @@ const Post = ({
   ...otherProps
 }) => {
   const [voted, setVoted] = useState('no');
-  const [voteCountState, setvoteCountState] = useState(voteCount);
-
-  useEffect(() => {
-    setvoteCountState(voteCount);
-  }, [voteCount]);
-
-  function upVote(cancel) {
-    if (cancel) {
-      setvoteCountState(voteCountState - 1);
-      setVoted('no');
-    } else {
-      // Case : We directly go from down to up
-      if (voted == 'down') {
-        setvoteCountState(voteCountState + 2);
-      } else {
-        setvoteCountState(voteCountState + 1);
-      }
-      setVoted('up');
-    }
-  }
-
-  function downVote(cancel) {
-    if (cancel) {
-      setvoteCountState(voteCountState + 1);
-      setVoted('no');
-    } else {
-      // Case : We directly go from down to up
-      if (voted == 'up') {
-        setvoteCountState(voteCountState - 2);
-      } else {
-        setvoteCountState(voteCountState - 1);
-      }
-      setVoted('down');
-    }
-  }
+  const [pointsState, setPointsState] = useState(points);
 
   function getDisplayedType(type) {
     switch (type) {
@@ -91,7 +57,7 @@ const Post = ({
 
             <span className="text-muted">
               {' '}
-              <a href="#" className="text-muted">
+              <a href="#" className="text-dark">
                 {username}
               </a>{' '}
               -{' '}
@@ -125,22 +91,28 @@ const Post = ({
           <div className="d-flex">
             <div className="vote-section">
               <UpVote
-                is_logged={otherProps.is_logged}
-                click_handle={() => upVote(voted === 'up')}
+                is_logged={true}
+                //is_logged={otherProps.is_logged}
                 voted={voted}
+                set_vote={setVoted}
+                points={pointsState}
+                set_points={setPointsState}
               />
               <div
                 className={`text-center ${clsx(
                   voted !== 'no' && voted + '-voted'
                 )}`}
               >
-                <b>{voteCountState}</b>
+                <b>{pointsState}</b>
               </div>
 
               <DownVote
-                is_logged={otherProps.is_logged}
-                click_handle={() => downVote(voted === 'down')}
+                is_logged={true}
+                //is_logged={otherProps.is_logged}
                 voted={voted}
+                set_vote={setVoted}
+                points={pointsState}
+                set_points={setPointsState}
               />
             </div>
 
@@ -206,7 +178,7 @@ Post.defaultProps = {
   text: dev.loremIpsum,
   username: 'John Coffey',
   previewLength: 200,
-  voteCount: 25,
+  points: 25,
   type: 'info',
   createdOn: '2020-02-29T12:59-0500'
 };

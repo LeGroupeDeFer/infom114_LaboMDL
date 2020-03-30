@@ -89,7 +89,7 @@ const Stream = () => {
         type: 'poll',
         text: loremIpsum,
         username: 'John Couscous',
-        voteCount: 12,
+        points: 12,
         createdOn: '2020-02-29T12:59-0500'
       },
       {
@@ -98,7 +98,7 @@ const Stream = () => {
         type: 'poll',
         text: loremIpsum,
         username: 'John Cena',
-        voteCount: 7,
+        points: 7,
         createdOn: '2020-03-01T12:59-0500'
       },
       {
@@ -107,7 +107,7 @@ const Stream = () => {
         type: 'info',
         text: loremIpsum,
         username: 'John Coffey',
-        voteCount: 2,
+        points: 2,
         createdOn: '2020-02-19T12:59-0500'
       },
       {
@@ -116,7 +116,7 @@ const Stream = () => {
         type: 'idea',
         text: loremIpsum,
         username: 'John Doe',
-        voteCount: 0,
+        points: 0,
         createdOn: '2020-02-27T12:59-0500'
       }
     ];
@@ -207,7 +207,7 @@ const fetchPosts = time =>
             type: 'poll',
             text: loremIpsum,
             username: 'John Cena',
-            voteCount: 7,
+            points: 7,
             createdOn: '2020-03-01T12:59-0500'
           },
           {
@@ -216,7 +216,7 @@ const fetchPosts = time =>
             type: 'poll',
             text: loremIpsum,
             username: 'John Couscous',
-            voteCount: 12,
+            points: 12,
             createdOn: '2020-02-29T12:59-0500'
           },
           {
@@ -225,7 +225,7 @@ const fetchPosts = time =>
             type: 'idea',
             text: loremIpsum,
             username: 'John Doe',
-            voteCount: 0,
+            points: 0,
             createdOn: '2020-02-27T12:59-0500'
           },
           {
@@ -234,7 +234,7 @@ const fetchPosts = time =>
             type: 'info',
             text: loremIpsum,
             username: 'John Coffey',
-            voteCount: 2,
+            points: 2,
             createdOn: '2020-02-19T12:59-0500'
           }
         ]),
@@ -416,17 +416,21 @@ const Comments = is_logged => {
         text: 'Tu racontes de la merde bro ! ',
         author: 'John Cena',
         created_on: '2020-02-29T12:59-0500',
+        points: 12,
         children: [
           {
             id: 2,
             text: 'tg rdv a l gar du nor. 22h vien seul ',
             author: 'John Casey',
             created_on: '2020-02-29T12:59-0500',
+            points: 666,
             children: [
               {
                 id: 3,
                 text: 'Ok.',
                 author: 'John Cena',
+                created_on: '2020-03-14T12:59-0500',
+                points: 0,
                 children: []
               }
             ]
@@ -438,6 +442,7 @@ const Comments = is_logged => {
         text: 'Yallah ! ',
         author: 'John Couscous',
         created_on: '2020-02-29T12:59-0500',
+        points: -4,
         children: []
       },
       {
@@ -446,6 +451,7 @@ const Comments = is_logged => {
           'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque volutpat vulputate nisl quis pulvinar. Praesent euismod magna metus, quis ultricies nunc sagittis in. Maecenas eleifend pulvinar nunc Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque volutpat vulputate nisl quis pulvinar. Praesent euismod magna metus, quis ultricies nunc sagittis in. Maecenas eleifend pulvinar nunc',
         author: 'John Latin',
         created_on: '2020-02-29T12:59-0500',
+        points: -7,
         children: []
       }
     ]

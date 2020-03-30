@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { GoReply } from 'react-icons/go';
 import Moment from 'react-moment';
 import DownVote from '../components/DownVote';
@@ -8,31 +8,33 @@ import Col from 'react-bootstrap/Col';
 
 const Comment = ({ comment, is_logged }) => {
   const nestedComments = (comment.children || []).map(comment => {
-    return (
-      <Comment
-        key={comment.id}
-        comment={comment}
-        type="child"
-        is_logged={is_logged}
-      />
-    );
+    return <Comment key={comment.id} comment={comment} is_logged={is_logged} />;
   });
+
+  const [voted, setVoted] = useState('no');
+  const [pointsState, setPointsState] = useState(comment.points);
 
   return (
     <>
       <div className="comment">
         <Row>
           <Col className="col-auto vote-col">
-            <UpVote is_logged={is_logged} />
+            <UpVote
+              is_logged={is_logged}
+              voted={voted}
+              set_vote={setVoted}
+              points={pointsState}
+              set_points={setPointsState}
+            />
           </Col>
           <Col>
             <div>
               <span className="text-muted">
-                {' '}
-                <a href="#" className="text-muted">
+                <a href="#" className="text-dark mr-1 ml-1">
                   {comment.author}
-                </a>{' '}
-                -{' '}
+                </a>
+                <span className=" mr-1">{pointsState} points</span>
+                <span className=" mr-1">·</span>
                 <Moment locale="fr" fromNow>
                   {comment.created_on}
                 </Moment>
@@ -43,7 +45,13 @@ const Comment = ({ comment, is_logged }) => {
         <Row className="comment-content">
           <Col className="col-auto vote-col">
             <div id="white-mask">
-              <DownVote is_logged={is_logged} />
+              <DownVote
+                is_logged={is_logged}
+                voted={voted}
+                set_vote={setVoted}
+                points={pointsState}
+                set_points={setPointsState}
+              />
             </div>
           </Col>
           <Col>

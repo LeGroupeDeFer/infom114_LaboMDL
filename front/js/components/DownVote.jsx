@@ -5,8 +5,23 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Button from 'react-bootstrap/Button';
 import clsx from 'clsx';
 
-const DownVote = ({ is_logged, click_handle, voted }) => {
+const DownVote = ({ is_logged, voted, set_vote, points, set_points }) => {
   let notLoggedMsg = 'Il faut être authentifié pour pouvoir voter';
+
+  function downVote(cancel) {
+    if (cancel) {
+      set_points(points + 1);
+      set_vote('no');
+    } else {
+      // Case : We directly go from down to up
+      if (voted == 'up') {
+        set_points(points - 2);
+      } else {
+        set_points(points - 1);
+      }
+      set_vote('down');
+    }
+  }
 
   return (
     <>
@@ -14,7 +29,7 @@ const DownVote = ({ is_logged, click_handle, voted }) => {
         <Button
           variant="light"
           className={`down-vote-btn ${clsx(voted === 'down' && 'down-voted')}`}
-          onClick={click_handle}
+          onClick={() => downVote(voted === 'down')}
         >
           <GoArrowDown size="1.5em" />
         </Button>
