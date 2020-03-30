@@ -91,8 +91,7 @@ const Post = ({
           <div className="d-flex">
             <div className="vote-section">
               <UpVote
-                is_logged={true}
-                //is_logged={otherProps.is_logged}
+                is_logged={otherProps.is_logged}
                 voted={voted}
                 set_vote={setVoted}
                 points={pointsState}
@@ -107,8 +106,7 @@ const Post = ({
               </div>
 
               <DownVote
-                is_logged={true}
-                //is_logged={otherProps.is_logged}
+                is_logged={otherProps.is_logged}
                 voted={voted}
                 set_vote={setVoted}
                 points={pointsState}

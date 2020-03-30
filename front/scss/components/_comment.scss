@@ -27,6 +27,11 @@
     background: theme-color("secondary");
 }
 
+.comment-first-row:hover+.comment-content:before {
+    background: theme-color("secondary");
+}
+
+
 .comment-content {
     position: relative;
 }

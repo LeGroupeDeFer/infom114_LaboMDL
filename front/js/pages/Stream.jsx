@@ -6,8 +6,11 @@ import { MdSort } from 'react-icons/md';
 import usePromise from 'react-promise-suspense';
 import Post from '../components/Post';
 import Comment from '../components/Comment';
+import CommentEditor from '../components/CommentEditor';
+
 import { fakeLatency, loremIpsum } from '../lib/dev';
 import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
 
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import DropdownButton from 'react-bootstrap/DropdownButton';
@@ -30,6 +33,43 @@ const Stream = () => {
   const [lastPostDiplayed, setLastPostDisplayed] = useState(null);
   const [tags, setTags] = useState(null);
   const { login, user } = useAuth();
+
+  const [commentEditors, setCommentEditors] = useState({});
+
+  //const isLogged = user != null ? 1 : 0;
+  const isLogged = 1;
+
+  function toggleCommentEditor(commentId) {
+    var editors = commentEditors;
+    console.log(commentEditors);
+    editors[commentId].isVisible = !editors[commentId].isVisible;
+    setCommentEditors(commentEditors => {
+      return { ...commentEditors, ...editors };
+    });
+  }
+
+  function addCommentEditor(commentId) {
+    if (!commentEditors.hasOwnProperty(commentId)) {
+      var tmp = {
+        editor: (
+          <CommentEditor
+            type="reply"
+            is_logged={isLogged}
+            toggle_comment_editor={toggleCommentEditor}
+            comment_id={commentId}
+          />
+        ),
+        isVisible: true
+      };
+      var newEditor = {};
+      newEditor[commentId] = tmp;
+
+      // Merge previous values with a new one
+      setCommentEditors(commentEditors => {
+        return { ...commentEditors, ...newEditor };
+      });
+    }
+  }
 
   function handleChange(selectedOpttion) {
     if (selectedOpttion != null) {
@@ -75,10 +115,6 @@ const Stream = () => {
       // TODO : async request to fetch post's data
       setPreviewDisplayed(true);
     }
-  }
-
-  if (!user) {
-    // Guest
   }
 
   function sortPost(criteria) {
@@ -165,7 +201,7 @@ const Stream = () => {
               <PostList
                 currentFilter={filter}
                 posts={posts}
-                is_logged={user != null ? 1 : 0}
+                is_logged={isLogged}
                 tag_click={tagClickHandler}
                 preview_click={e => togglePreview(e)}
               />
@@ -186,7 +222,13 @@ const Stream = () => {
       </div>
       <Container>
         <Card body>
-          <Comments is_logged={user != null ? 1 : 0} />
+          <CommentEditor is_logged={isLogged} type="comment" />
+          <Comments
+            is_logged={isLogged}
+            toggle_comment_editor={toggleCommentEditor}
+            add_comment_editor={addCommentEditor}
+            comment_editors={commentEditors}
+          />
         </Card>
       </Container>
       <br />
@@ -407,7 +449,7 @@ const FilterBar = props => {
   );
 };
 
-const Comments = is_logged => {
+const Comments = props => {
   const commentData = {
     post_id: 1234,
     comments: [
@@ -461,7 +503,14 @@ const Comments = is_logged => {
     <>
       {commentData.comments.map(comment => {
         return (
-          <Comment key={comment.id} comment={comment} is_logged={is_logged} />
+          <Comment
+            key={comment.id}
+            comment={comment}
+            is_logged={props.is_logged}
+            toggle_comment_editor={props.toggle_comment_editor}
+            add_comment_editor={props.add_comment_editor}
+            comment_editors={props.comment_editors}
+          />
         );
       })}
     </>
