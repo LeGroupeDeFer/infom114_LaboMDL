@@ -40,35 +40,37 @@ const Stream = () => {
   const isLogged = 1;
 
   function toggleCommentEditor(commentId) {
-    var editors = commentEditors;
-    console.log(commentEditors);
-    editors[commentId].isVisible = !editors[commentId].isVisible;
     setCommentEditors(commentEditors => {
-      return { ...commentEditors, ...editors };
+      return {
+        ...commentEditors,
+        [commentId]: {
+          ...commentEditors[commentId],
+          isVisible: !commentEditors[commentId].isVisible
+        }
+      };
     });
   }
 
+  // Open the editor
   function addCommentEditor(commentId) {
-    if (!commentEditors.hasOwnProperty(commentId)) {
-      var tmp = {
-        editor: (
-          <CommentEditor
-            type="reply"
-            is_logged={isLogged}
-            toggle_comment_editor={toggleCommentEditor}
-            comment_id={commentId}
-          />
-        ),
-        isVisible: true
-      };
-      var newEditor = {};
-      newEditor[commentId] = tmp;
+    if (commentId in commentEditors) return;
 
-      // Merge previous values with a new one
-      setCommentEditors(commentEditors => {
-        return { ...commentEditors, ...newEditor };
-      });
-    }
+    let newEditor = {
+      editor: (
+        <CommentEditor
+          type="reply"
+          is_logged={isLogged}
+          toggle_comment_editor={toggleCommentEditor}
+          comment_id={commentId}
+        />
+      ),
+      isVisible: true
+    };
+
+    // Merge previous values with a new one
+    setCommentEditors(commentEditors => {
+      return { ...commentEditors, [commentId]: newEditor };
+    });
   }
 
   function handleChange(selectedOpttion) {

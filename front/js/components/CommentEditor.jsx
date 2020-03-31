@@ -13,7 +13,7 @@ const CommentEditor = ({
   comment_id,
   toggle_comment_editor
 }) => {
-  var editor = '';
+  let editor = '';
 
   function cancelClickHandle() {
     toggle_comment_editor(comment_id);

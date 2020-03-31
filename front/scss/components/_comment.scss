@@ -41,6 +41,12 @@
     padding-left: 0;
 }
 
+.vote-col .btn {
+    z-index: 10;
+    position: relative;
+}
+
+
 #white-mask {
     background-color: white;
 }
