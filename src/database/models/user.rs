@@ -88,6 +88,16 @@ impl User {
         }
     }
 
+    pub fn get_last_id(conn: &MysqlConnection) -> u32 {
+        use crate::database::schema::users::dsl::*;
+        table
+            .select(id)
+            .order(id.desc())
+            .first::<u32>(conn)
+            .ok()
+            .unwrap_or(0u32)
+    }
+
     /* ------------------------------ DYNAMIC ------------------------------ */
 
     pub fn cookie(&self) -> String {

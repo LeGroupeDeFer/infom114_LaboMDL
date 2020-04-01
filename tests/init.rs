@@ -14,10 +14,6 @@ use unanimitylibrary::database::models::{
     user::{User, UserMinima},
 };
 
-use unanimitylibrary::database::schema::{
-    addresses, capabilities, roles, roles_capabilities, users, users_roles,
-};
-
 use unanimitylibrary::database::schema::addresses::dsl::addresses as addresses_table;
 use unanimitylibrary::database::schema::capabilities::dsl::capabilities as capabilities_table;
 use unanimitylibrary::database::schema::roles::dsl::roles as roles_table;
@@ -155,18 +151,9 @@ pub fn ignite() -> rocket::Rocket {
 /// The activation of the user can already be managed from here.
 /// It returns the user and its password.
 pub fn get_user(do_activate: bool) -> (User, String) {
-    use diesel::query_dsl::QueryDsl;
-    use unanimitylibrary::database::schema::users::dsl::*;
-
     let conn = database_connection();
 
-    let last_id = users_table
-        .select(id)
-        .order(id.desc())
-        .first::<u32>(&conn)
-        .ok()
-        .unwrap_or(0u32)
-        + 1;
+    let last_id = User::get_last_id(&conn) + 1;
 
     let u = UserMinima {
         email: format!("firstname.lastname.{}@student.unamur.be", &last_id),
@@ -187,4 +174,34 @@ pub fn get_user(do_activate: bool) -> (User, String) {
     }
 
     (User::by_email(&conn, &u.email).unwrap(), u.password)
+}
+
+pub fn login(email: &str, password: &str) -> String {
+    use rocket::http::ContentType;
+    use serde_json::Value;
+
+    // get the client
+    let client = client();
+    let login_url = "/api/auth/login";
+
+    // create the json body
+    let json_credentials = format!(
+        "{{\"email\":\"{}\", \"password\": \"{}\"}}",
+        email, password
+    );
+
+    // perform the login
+    let mut response = client
+        .post(login_url)
+        .header(ContentType::JSON)
+        .body(json_credentials)
+        .dispatch();
+
+    // get valuable data (the auth token)
+    let content = response.body_string().unwrap();
+    let data: Value = serde_json::from_str(&content).unwrap();
+    let auth_token = data["token"].to_string();
+
+    // ugly hack to have something working
+    auth_token.replace("\"", "")
 }

@@ -4,7 +4,7 @@ use crate::database::Data;
 use diesel::prelude::*;
 use diesel::MysqlConnection;
 
-#[derive(Identifiable, Queryable, Associations, Serialize, Deserialize, Clone, Debug)]
+#[derive(Identifiable, Queryable, Associations, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[table_name = "capabilities"]
 pub struct Capability {
     pub id: u32,

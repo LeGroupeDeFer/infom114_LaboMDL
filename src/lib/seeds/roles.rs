@@ -1,5 +1,5 @@
 use crate::database::models::roles::{capability, role, role_capability::RelRoleCapability};
-use crate::database::{self, Data};
+use crate::database::Data;
 use diesel::MysqlConnection;
 
 pub fn seed_roles_and_capabilities(conn: &MysqlConnection) {

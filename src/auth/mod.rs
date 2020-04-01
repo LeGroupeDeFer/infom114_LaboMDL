@@ -9,7 +9,7 @@ use rocket::request::{self, FromRequest, Request};
 use rocket::{Outcome, State};
 use serde::{Deserialize, Serialize};
 
-const TOKEN_PREFIX: &'static str = "Bearer ";
+pub const TOKEN_PREFIX: &'static str = "Bearer ";
 
 /* --------------------------- Exposed submodules -------------------------- */
 

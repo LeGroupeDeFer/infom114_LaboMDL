@@ -6,6 +6,7 @@ Summary of implemented features classified by release (github tag)
 
 - update database helper scripts
 - refactor routes to counter issue <https://github.com/SergioBenitez/Rocket/issues/1262>
+- implement test helper for jwt token protected routes
 - begin tests for role management
 
 ## [0.2.0] - 2019-03-25
