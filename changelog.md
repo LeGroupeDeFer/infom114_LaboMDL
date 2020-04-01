@@ -2,6 +2,10 @@
 
 Summary of implemented features classified by release (github tag)
 
+## [0.2.1] - 2019-04-01
+
+- update database helper scripts
+
 ## [0.2.0] - 2019-03-25
 
 - add database migrations for role management

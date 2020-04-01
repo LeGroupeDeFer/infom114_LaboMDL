@@ -1145,7 +1145,7 @@ checksum = "56dee185309b50d1f11bfedef0fe6d036842e3fb77413abef29f8f8d1c5d4c1c"
 
 [[package]]
 name = "unanimity"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "bcrypt",
  "chrono",
