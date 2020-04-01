@@ -5,6 +5,8 @@ Summary of implemented features classified by release (github tag)
 ## [0.2.1] - 2019-04-01
 
 - update database helper scripts
+- refactor routes to counter issue <https://github.com/SergioBenitez/Rocket/issues/1262>
+- begin tests for role management
 
 ## [0.2.0] - 2019-03-25
 

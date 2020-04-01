@@ -41,9 +41,9 @@ pub fn url() -> String {
     dotenv().ok();
 
     // DB settings
+    let db_adapter = "mysql"; // imposed by the use of MysqlConnection type
     let db_host = env_setting("DB_HOST");
     let db_port = env_setting("DB_PORT");
-    let db_adapter = env_setting("DB_ADAPTER");
     let db_user = env_setting("DB_USER");
     let db_password = env_setting("DB_PASSWORD");
     let db_database = env_setting("DB_DATABASE");

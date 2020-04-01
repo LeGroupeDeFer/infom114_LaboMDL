@@ -10,7 +10,7 @@ use rocket_contrib::json::JsonValue;
 
 /* ---------------------------------- User --------------------------------- */
 
-#[derive(Identifiable, Queryable, Associations, Serialize, Deserialize, Clone, Debug)]
+#[derive(Identifiable, Queryable, Associations, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[belongs_to(Address, foreign_key = "address")]
 pub struct User {
     pub id: u32,

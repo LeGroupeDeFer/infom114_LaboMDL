@@ -11,6 +11,6 @@ pub fn collect() -> Vec<rocket::Route> {
 }
 
 #[get("/api/v1/roles")]
-pub fn get(conn: DBConnection) -> ApiResponse {
+pub fn get(conn: DBConnection, _auth: Auth) -> ApiResponse {
     ApiResponse::new(Status::Ok, json!(RoleCapabilities::all(&conn)))
 }

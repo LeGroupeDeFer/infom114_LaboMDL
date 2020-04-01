@@ -63,8 +63,12 @@ pub fn update(conn: DBConnection, role_id: u32, data: Json<RoleData>) -> ApiResp
 
     // assert that the new name is not already used
     let role_data = data.into_inner();
-    if Role::from_name(&conn, &role_data.name).is_some() {
-        return ApiResponse::error(Status::Conflict, "A role with this name already exist");
+    if let Some(r) = Role::from_name(&conn, &role_data.name) {
+        // we do not want to throw an error if the found role with the same
+        // name is the one we are working on
+        if r.id != role_id {
+            return ApiResponse::error(Status::Conflict, "A role with this name already exist");
+        }
     }
 
     role.update(

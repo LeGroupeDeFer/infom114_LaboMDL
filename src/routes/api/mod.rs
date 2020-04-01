@@ -67,6 +67,6 @@ pub fn role_delete(conn: DBConnection, role_id: u32) -> ApiResponse {
 }
 
 #[get("/api/roles")]
-pub fn roles_get(conn: DBConnection) -> ApiResponse {
-    v1::roles::get(conn)
+pub fn roles_get(conn: DBConnection, _auth: Auth) -> ApiResponse {
+    v1::roles::get(conn, _auth)
 }
