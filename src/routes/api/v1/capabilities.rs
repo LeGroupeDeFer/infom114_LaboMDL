@@ -11,7 +11,7 @@ pub fn collect() -> Vec<Route> {
     routes!(get)
 }
 
-#[get("/")]
+#[get("/api/v1/capabilities")]
 pub fn get(conn: DBConnection, _auth: Auth) -> ApiResponse {
     ApiResponse::new(Status::Ok, json!(Capability::all(&conn)))
 }

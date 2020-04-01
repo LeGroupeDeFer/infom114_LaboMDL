@@ -17,7 +17,7 @@ pub fn collect() -> Vec<rocket::Route> {
     routes!(create, update, delete)
 }
 
-#[post("/", format = "json", data = "<data>")]
+#[post("/api/v1/role", format = "json", data = "<data>")]
 pub fn create(conn: DBConnection, data: Json<RoleData>) -> ApiResponse {
     // convert data into a usable type
     let role_data = data.into_inner();
@@ -48,7 +48,7 @@ pub fn create(conn: DBConnection, data: Json<RoleData>) -> ApiResponse {
     ApiResponse::new(Status::Ok, json!({}))
 }
 
-#[put("/<role_id>", format = "json", data = "<data>", rank = 3)]
+#[put("/api/v1/role/<role_id>", format = "json", data = "<data>", rank = 3)]
 pub fn update(conn: DBConnection, role_id: u32, data: Json<RoleData>) -> ApiResponse {
     let opt_role = Role::from_id(&conn, &role_id);
 
@@ -90,7 +90,7 @@ pub fn update(conn: DBConnection, role_id: u32, data: Json<RoleData>) -> ApiResp
     ApiResponse::new(Status::Ok, json!({}))
 }
 
-#[delete("/<role_id>")]
+#[delete("/api/v1/role/<role_id>")]
 pub fn delete(conn: DBConnection, role_id: u32) -> ApiResponse {
     let opt_role = Role::from_id(&conn, &role_id);
 
