@@ -178,6 +178,13 @@ pub fn get_user(do_activate: bool) -> (User, String) {
     (User::by_email(&conn, &u.email).unwrap(), u.password)
 }
 
+/// Perform the login operation for the given `email` & `password`
+///
+/// Since it's designed for testing purposes, it will panic if the credentials
+/// are wrong.
+///
+/// This function returns a header that can instantly be used in a
+/// `ClientRequest` build.
 pub fn login<'a, 'b>(email: &'a str, password: &'a str) -> Header<'b> {
     use serde_json::Value;
 
@@ -203,12 +210,12 @@ pub fn login<'a, 'b>(email: &'a str, password: &'a str) -> Header<'b> {
     let data: Value = serde_json::from_str(&content).unwrap();
     let auth_token = data["token"].to_string();
 
-    // ugly hack to have something working
     Header::new(
         "authorization",
         format!(
             "{}{}",
             unanimitylibrary::auth::TOKEN_PREFIX,
+            // ugly hack to have something working
             auth_token.replace("\"", "")
         ),
     )
