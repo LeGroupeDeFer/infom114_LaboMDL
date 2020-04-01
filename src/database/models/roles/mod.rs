@@ -7,7 +7,7 @@ use crate::database::models::roles::capability::Capability;
 
 use diesel::MysqlConnection;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct RoleCapabilities {
     pub id: u32,
     pub name: String,

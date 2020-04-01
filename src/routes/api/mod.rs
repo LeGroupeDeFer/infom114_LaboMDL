@@ -52,8 +52,8 @@ pub fn capabilities_get(conn: DBConnection, _auth: Auth) -> ApiResponse {
 }
 
 #[post("/api/role", format = "json", data = "<data>")]
-pub fn role_create(conn: DBConnection, data: Json<RoleData>) -> ApiResponse {
-    v1::role::create(conn, data)
+pub fn role_create(conn: DBConnection, _auth: Auth, data: Json<RoleData>) -> ApiResponse {
+    v1::role::create(conn, _auth, data)
 }
 
 #[put("/api/role/<role_id>", format = "json", data = "<data>", rank = 3)]

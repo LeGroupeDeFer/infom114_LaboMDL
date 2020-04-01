@@ -25,6 +25,8 @@ use unanimitylibrary::lib::seeds;
 
 use diesel::query_dsl::RunQueryDsl;
 
+use rocket::http::{ContentType, Header};
+
 /// Truncate all the tables
 pub fn clean() {
     // get connection
@@ -176,8 +178,7 @@ pub fn get_user(do_activate: bool) -> (User, String) {
     (User::by_email(&conn, &u.email).unwrap(), u.password)
 }
 
-pub fn login(email: &str, password: &str) -> String {
-    use rocket::http::ContentType;
+pub fn login<'a, 'b>(email: &'a str, password: &'a str) -> Header<'b> {
     use serde_json::Value;
 
     // get the client
@@ -203,5 +204,12 @@ pub fn login(email: &str, password: &str) -> String {
     let auth_token = data["token"].to_string();
 
     // ugly hack to have something working
-    auth_token.replace("\"", "")
+    Header::new(
+        "authorization",
+        format!(
+            "{}{}",
+            unanimitylibrary::auth::TOKEN_PREFIX,
+            auth_token.replace("\"", "")
+        ),
+    )
 }

@@ -18,7 +18,7 @@ pub fn collect() -> Vec<rocket::Route> {
 }
 
 #[post("/api/v1/role", format = "json", data = "<data>")]
-pub fn create(conn: DBConnection, data: Json<RoleData>) -> ApiResponse {
+pub fn create(conn: DBConnection, _auth: Auth, data: Json<RoleData>) -> ApiResponse {
     // convert data into a usable type
     let role_data = data.into_inner();
 
