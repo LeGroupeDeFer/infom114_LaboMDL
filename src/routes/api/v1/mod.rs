@@ -1,17 +1,25 @@
 use crate::auth::Auth;
 use crate::http::responders::api::ApiResponse;
-use crate::lib::extend_routes;
 use rocket::http::Status;
-mod auth;
-mod tag;
+
+pub mod auth;
+pub mod tags;
+pub mod tag;
 
 pub fn collect() -> Vec<rocket::Route> {
-    let auth_routes = extend_routes("/auth", auth::collect());
-    let tag_routes = extend_routes("/tag", tag::collect());
-    [&routes!(version)[..], &auth_routes[..], &tag_routes[..]].concat()
+    let auth_routes = auth::collect();
+    let tags_routes = tags::collect();
+    let tag_routes = tag::collect();
+    [
+        &routes!(version)[..],
+        auth_routes.as_ref(),
+        tags_routes.as_ref(),
+        tag_routes.as_ref(),
+    ]
+    .concat()
 }
 
-#[get("/")]
+#[get("/api/v1", rank = 1)]
 pub fn version(_auth: Auth) -> ApiResponse {
     ApiResponse::new(
         Status::Ok,
