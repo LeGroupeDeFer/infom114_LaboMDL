@@ -1,5 +1,6 @@
 -- Your SQL goes here
 CREATE TABLE tags (
-  label             VARCHAR(150)    NOT NULL,
-  PRIMARY KEY (label)
+  id                INT UNSIGNED    NOT NULL    AUTO_INCREMENT,
+  label             VARCHAR(150)    NOT NULL    UNIQUE,
+  PRIMARY KEY (id)
 );

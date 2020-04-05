@@ -70,6 +70,8 @@ pub fn connection(database_url: &str) -> MysqlConnection {
 /// This is a sementic wrapper so a caller is able to know the new database
 /// state simply by retreiving data wrapped inside it
 pub enum Data<T> {
+    None,
+    Updated(T),
     Inserted(T),
     Existing(T),
 }

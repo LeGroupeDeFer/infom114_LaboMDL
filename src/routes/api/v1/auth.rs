@@ -52,6 +52,7 @@ pub fn register(conn: DBConnection, data: Json<RegisterData>) -> ApiResponse {
             );
             ApiResponse::new(Status::Ok, json!({}))
         }
+        _ => {return ApiResponse::new(Status::Ok, json!({}))}
     }
 }
 

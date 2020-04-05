@@ -38,6 +38,7 @@ table! {
 
 table! {
     tags (label) {
+        id -> Unsigned<Integer>,
         label -> Varchar,
     }
 }

@@ -1,7 +1,9 @@
 use crate::auth::forms::{ActivationData, LoginData, RegisterData};
-use crate::auth::Auth;
 use crate::conf;
+
 use crate::database::DBConnection;
+use crate::database::models::tags::forms::TagData;
+
 use crate::http::responders::api::ApiResponse;
 use rocket_contrib::json::Json;
 
@@ -53,9 +55,9 @@ pub fn tag_post(conn: DBConnection, tag_label: String) -> ApiResponse {
     v1::tag::post_tag(conn, tag_label)
 }
 
-#[put("/api/tag/<tag_label>")]
-pub fn tag_update(conn: DBConnection, tag_label: String) -> ApiResponse {
-    v1::tag::update_tag(conn, tag_label)
+#[put("/api/tag/<tag_label>", data="<data>")]
+pub fn tag_update(conn: DBConnection, tag_label: String, data: Json<TagData>) -> ApiResponse {
+    v1::tag::update_tag(conn, tag_label, data)
 }
 
 #[delete("/api/tag/<tag_label>")]
