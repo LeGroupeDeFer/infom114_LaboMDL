@@ -51,10 +51,6 @@ impl Tag {
     }
 
     pub fn update(conn: &MysqlConnection, old_label: String, new_label:String) -> Data<Self> {
-
-
-        //TODO : First check that the new label does not already exist and return Data:Exist(T) 
-
         if let Some(label_availability) = Self::by_label(conn, &new_label) {
             Data::Existing(label_availability)
         } else if let Some(past) = Self::by_label(conn, &old_label) {
@@ -68,4 +64,19 @@ impl Tag {
             Data::None            
         }
     }
+
+    pub fn delete(conn: &MysqlConnection, label: String) -> Data<Self> {
+        if let Some(tag) = Self::by_label(conn, &label) {
+            //Delete it
+            diesel::delete(table.filter(tags::columns::label.eq(label)))
+            .execute(conn)
+            .unwrap();
+            
+            Data::Deleted(tag)
+        } else {
+            //422
+            Data::None
+        }
+    }
+
 }

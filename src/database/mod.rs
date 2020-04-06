@@ -74,4 +74,5 @@ pub enum Data<T> {
     Updated(T),
     Inserted(T),
     Existing(T),
+    Deleted(T),
 }

@@ -53,16 +53,22 @@ pub fn update_tag(conn: DBConnection, tag_label: String, data: Json<TagData>) ->
 
         _ => { //This will never occur... but required by rust
             return ApiResponse::new(Status::Ok, json!({}))
-        },
+        }
     };
 }
 
 #[delete("/api/v1/tag/<tag_label>")]
 pub fn delete_tag(conn: DBConnection, tag_label: String) -> ApiResponse {
-    ApiResponse::new(
-        Status::Ok,
-        json!({
-            "tag_delete" : "todo"
-        }),
-    )
+
+    let deletion = match Tag::delete(&conn, tag_label) {
+        Data::Deleted(_) => {
+            return ApiResponse::new(Status::Ok, json!({})) 
+        }
+        Data::None => {
+            return ApiResponse::error(Status::UnprocessableEntity, "The targeted tag does not exist")
+        }
+        _ => { //This will never occur... but required by rust
+            return ApiResponse::new(Status::Ok, json!({}))
+        }
+    };
 }
