@@ -198,13 +198,11 @@ const Stream = () => {
     <>
       <Container>
         <br />
-
-        <Link to="/post/1234">Post detail test</Link>
         <Row>
-          <Col xs={11}>
+          <Col xs={10} sm={11}>
             <SearchBar handle_change={handleChange} tags={tags} />
           </Col>
-          <Col xs={1}>
+          <Col xs={2} sm={1}>
             <OverlayTrigger
               placement="bottom"
               overlay={<Tooltip>Créer un post</Tooltip>}
@@ -408,6 +406,7 @@ const SortDropdown = (props) => {
         </span>
       }
       variant="secondary"
+      id="sort-post"
     >
       <Dropdown.Item
         as="button"

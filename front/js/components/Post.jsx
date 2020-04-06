@@ -9,6 +9,11 @@ import UpVote from './UpVote';
 import { MdModeComment, MdReport } from 'react-icons/md';
 import { FaTag, FaFacebookSquare, FaEyeSlash, FaFlag } from 'react-icons/fa';
 import clsx from 'clsx';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import DropdownButton from 'react-bootstrap/DropdownButton';
+import Dropdown from 'react-bootstrap/Dropdown';
+import { MdSort } from 'react-icons/md';
 
 const Post = ({ is_logged, post_data }) => {
   const [commentEditors, setCommentEditors] = useState({});
@@ -102,7 +107,7 @@ const Post = ({ is_logged, post_data }) => {
       editor: (
         <CommentEditor
           type="reply"
-          is_logged={isLogged}
+          is_logged={is_logged}
           toggle_comment_editor={toggleCommentEditor}
           comment_id={commentId}
           ancestor_id={ancestorId}
@@ -121,26 +126,8 @@ const Post = ({ is_logged, post_data }) => {
   return (
     <>
       <div className="mr-3 ml-3">
-        <h5>
-          <Badge className={`post-${post_data.type} mr-1`}>
-            {getDisplayedType(post_data.type)}
-          </Badge>
-          <span className="mr-1">{post_data.title}</span>
-
-          <span className="text-muted">
-            {' '}
-            <a href="#" className="text-dark">
-              {post_data.username}
-            </a>{' '}
-            -{' '}
-            <Moment locale="fr" fromNow>
-              {post_data.createdOn}
-            </Moment>
-          </span>
-        </h5>
-
-        <div className="d-flex">
-          <div className="">
+        <Row className="comment-first-row">
+          <Col className="col-auto vote-col">
             <UpVote
               is_logged={is_logged}
               voted={voted}
@@ -148,6 +135,30 @@ const Post = ({ is_logged, post_data }) => {
               points={pointsState}
               set_points={setPointsState}
             />
+          </Col>
+          <Col>
+            {' '}
+            <h5>
+              <Badge className={`post-${post_data.type} mr-1`}>
+                {getDisplayedType(post_data.type)}
+              </Badge>
+              <span className="mr-1">{post_data.title}</span>
+
+              <span className="text-muted title-part2">
+                {' '}
+                <a href="#" className="text-dark">
+                  {post_data.username}
+                </a>{' '}
+                -{' '}
+                <Moment locale="fr" fromNow>
+                  {post_data.createdOn}
+                </Moment>
+              </span>
+            </h5>
+          </Col>{' '}
+        </Row>
+        <Row>
+          <Col className="col-auto vote-col">
             <div
               className={`text-center ${clsx(
                 voted !== 'no' && voted + '-voted'
@@ -163,9 +174,9 @@ const Post = ({ is_logged, post_data }) => {
               points={pointsState}
               set_points={setPointsState}
             />
-          </div>
+          </Col>
 
-          <div className="px-3 pb-3 pt-2">
+          <Col>
             <div className="mb-1">
               <a
                 href="#"
@@ -195,45 +206,62 @@ const Post = ({ is_logged, post_data }) => {
                 FacEco
               </a>
             </div>
-
+            <br />
             <p>{post_data.text}</p>
-
-            <a className="post-footer-btn mr-2" href="#">
-              <MdModeComment size="1.25em" className="mr-1" />
-              <span className="text-muted">
-                {post_data.commentNb}{' '}
-                {post_data.commentNb <= 1 ? 'commentaire' : 'commentaires'}
-              </span>
-            </a>
-
-            <FacebookShareButton
-              url="unanimty.be"
-              quote="Vive le covid-19"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <a className="post-footer-btn mr-2" href="#">
-                <FaFacebookSquare size="1.25em" className="mr-1" />
-                <span className="text-muted">Partager</span>
+            <div>
+              <a className="post-footer-btn mr-3" href="#">
+                <MdModeComment size="1.25em" className="mr-2" />
+                <span className="text-muted">
+                  {post_data.commentNb}{' '}
+                  {post_data.commentNb <= 1 ? 'commentaire' : 'commentaires'}
+                </span>
               </a>
-            </FacebookShareButton>
 
-            <a className="post-footer-btn mr-2" href="#">
-              <FaEyeSlash size="1.25em" className="mr-1" />
-              <span className="text-muted">Masquer</span>
-            </a>
+              <FacebookShareButton
+                url="unanimty.be"
+                quote="Vive le covid-19"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <a className="post-footer-btn mr-3" href="#">
+                  <FaFacebookSquare size="1.25em" className="mr-1" />
+                  <span className="text-muted">Partager</span>
+                </a>
+              </FacebookShareButton>
 
-            <a className="post-footer-btn mr-2" href="#">
-              <FaFlag size="1.25em" className="mr-1" />
-              <span className="text-muted">Signaler</span>
-            </a>
-          </div>
-        </div>
-        <br />
-        <CommentEditor
-          is_logged={is_logged}
-          type="comment"
-          add_comment={addComment}
-        />
+              <a className="post-footer-btn mr-3" href="#">
+                <FaEyeSlash size="1.25em" className="mr-1" />
+                <span className="text-muted">Masquer</span>
+              </a>
+
+              <a className="post-footer-btn" href="#">
+                <FaFlag size="1.25em" className="mr-1" />
+                <span className="text-muted">Signaler</span>
+              </a>
+            </div>
+            <br />
+
+            <CommentEditor
+              is_logged={is_logged}
+              type="comment"
+              add_comment={addComment}
+            />
+          </Col>
+        </Row>
+
+        {/* <DropdownButton
+          title={
+            <span>
+              <MdSort size={20} /> Tier par
+            </span>
+          }
+          variant="secondary"
+          id="sort-post"
+        >
+          <Dropdown.Item as="button">Top</Dropdown.Item>
+          <Dropdown.Item as="button">Récent</Dropdown.Item>
+          <Dropdown.Item as="button">Ancien</Dropdown.Item>
+        </DropdownButton>
+        <hr/> */}
         <Comments
           is_logged={is_logged}
           toggle_comment_editor={toggleCommentEditor}
