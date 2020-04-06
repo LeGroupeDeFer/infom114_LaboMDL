@@ -1,36 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import Card from 'react-bootstrap/Card';
-import { dev, preview } from '../lib';
+import React, { useState } from 'react';
+import CommentEditor from '../components/CommentEditor';
+import Comment from '../components/Comment';
 import Badge from 'react-bootstrap/Badge';
-import GoArrowDown from 'react-icons/go';
 import Moment from 'react-moment';
-import DownVote from '../components/DownVote';
-import UpVote from '../components/UpVote';
+import { FacebookShareButton } from 'react-share';
+import DownVote from './DownVote';
+import UpVote from './UpVote';
 import { MdModeComment, MdReport } from 'react-icons/md';
-import {
-  FaTag,
-  FaFacebookSquare,
-  FaEllipsisH,
-  FaEyeSlash,
-  FaFlag
-} from 'react-icons/fa';
+import { FaTag, FaFacebookSquare, FaEyeSlash, FaFlag } from 'react-icons/fa';
 import clsx from 'clsx';
-import DropdownButton from 'react-bootstrap/DropdownButton';
-import Dropdown from 'react-bootstrap/Dropdown';
 
-const Post = ({
-  title,
-  text,
-  username,
-  points,
-  type,
-  previewLength,
-  createdOn,
-  currentFilter,
-  ...otherProps
-}) => {
+const Post = ({ is_logged, post_data }) => {
+  const [commentEditors, setCommentEditors] = useState({});
+  const [comments, setComments] = useState(post_data.comments);
   const [voted, setVoted] = useState('no');
-  const [pointsState, setPointsState] = useState(points);
+  const [pointsState, setPointsState] = useState(post_data.points);
+
+  function addComment(comment) {
+    setComments((cmmt) =>
+      [
+        {
+          id: Date.now(),
+          text: comment,
+          author: 'John Doe',
+          created_on: Date.now(),
+          points: -8,
+          children: [],
+        },
+      ].concat(cmmt)
+    );
+  }
 
   function getDisplayedType(type) {
     switch (type) {
@@ -43,142 +42,234 @@ const Post = ({
     }
   }
 
-  if (!['all', type].includes(currentFilter)) return <></>;
+  function addReply(comment, parentId, ancestorId) {
+    let newComments = [...comments];
+    addReplyRecursively(newComments, comment, parentId, ancestorId);
+    setComments(newComments);
+  }
+
+  function addReplyRecursively(comments, comment, parentId, ancestorId) {
+    comments.forEach((o) => {
+      // Reply of reply
+      if (ancestorId == null) {
+        if (o.id == parentId) {
+          o.children.unshift({
+            id: Date.now(),
+            text: comment,
+            author: 'John Doe',
+            created_on: Date.now(),
+            points: -8,
+            children: [],
+          });
+        } else {
+          addReplyRecursively(o.children, comment, parentId, null);
+        }
+      }
+
+      if (o.id == ancestorId) {
+        if (ancestorId == parentId) {
+          o.children.unshift({
+            id: Date.now(),
+            text: comment,
+            author: 'John Doe',
+            created_on: Date.now(),
+            points: -8,
+            children: [],
+          });
+        } else {
+          addReplyRecursively(o.children, comment, parentId, null);
+        }
+      }
+    });
+  }
+
+  function toggleCommentEditor(commentId) {
+    setCommentEditors((commentEditors) => {
+      return {
+        ...commentEditors,
+        [commentId]: {
+          ...commentEditors[commentId],
+          isVisible: !commentEditors[commentId].isVisible,
+        },
+      };
+    });
+  }
+
+  function addCommentEditor(commentId, ancestorId) {
+    if (commentId in commentEditors) return;
+
+    let newEditor = {
+      editor: (
+        <CommentEditor
+          type="reply"
+          is_logged={isLogged}
+          toggle_comment_editor={toggleCommentEditor}
+          comment_id={commentId}
+          ancestor_id={ancestorId}
+          add_reply={addReply}
+        />
+      ),
+      isVisible: true,
+    };
+
+    // Merge previous values with a new one
+    setCommentEditors((commentEditors) => {
+      return { ...commentEditors, [commentId]: newEditor };
+    });
+  }
 
   return (
-    <div className="d-flex">
-      <Card {...otherProps} className="post">
-        <Card.Header>
-          <h5>
-            <Badge className={`post-${type} mr-2`}>
-              {getDisplayedType(type)}
-            </Badge>
-            <span className="mr-2">{title}</span>
+    <>
+      <div className="mr-3 ml-3">
+        <h5>
+          <Badge className={`post-${post_data.type} mr-1`}>
+            {getDisplayedType(post_data.type)}
+          </Badge>
+          <span className="mr-1">{post_data.title}</span>
 
-            <span className="text-muted">
-              {' '}
-              <a href="#" className="text-dark">
-                {username}
-              </a>{' '}
-              -{' '}
-              <Moment locale="fr" fromNow>
-                {createdOn}
-              </Moment>
-            </span>
+          <span className="text-muted">
+            {' '}
+            <a href="#" className="text-dark">
+              {post_data.username}
+            </a>{' '}
+            -{' '}
+            <Moment locale="fr" fromNow>
+              {post_data.createdOn}
+            </Moment>
+          </span>
+        </h5>
 
-            <DropdownButton
-              title={
-                <span>
-                  <FaEllipsisH />
-                </span>
-              }
-              variant="link"
-              className="float-right more btn-link"
+        <div className="d-flex">
+          <div className="">
+            <UpVote
+              is_logged={is_logged}
+              voted={voted}
+              set_vote={setVoted}
+              points={pointsState}
+              set_points={setPointsState}
+            />
+            <div
+              className={`text-center ${clsx(
+                voted !== 'no' && voted + '-voted'
+              )}`}
             >
-              <Dropdown.Item as="button">
-                <FaEyeSlash className="mr-2" />
-                Masquer
-              </Dropdown.Item>
-              <Dropdown.Item as="button">
-                <FaFlag className="mr-2" />
-                Signaler
-              </Dropdown.Item>
-            </DropdownButton>
-          </h5>
-        </Card.Header>
-
-        <Card.Body className="p-0">
-          <div className="d-flex">
-            <div className="vote-section">
-              <UpVote
-                is_logged={otherProps.is_logged}
-                voted={voted}
-                set_vote={setVoted}
-                points={pointsState}
-                set_points={setPointsState}
-              />
-              <div
-                className={`text-center ${clsx(
-                  voted !== 'no' && voted + '-voted'
-                )}`}
-              >
-                <b>{pointsState}</b>
-              </div>
-
-              <DownVote
-                is_logged={otherProps.is_logged}
-                voted={voted}
-                set_vote={setVoted}
-                points={pointsState}
-                set_points={setPointsState}
-              />
+              <b>{pointsState}</b>
             </div>
 
-            <div className="px-3 pb-3 pt-2">
-              <div className="mb-1">
-                <a
-                  href="#"
-                  className="mr-2 tag"
-                  onClick={e => otherProps.tag_click(e)}
-                  value="Arsenal"
-                >
-                  <FaTag className="mr-1" />
-                  Arsenal
-                </a>
-                <a
-                  href="#"
-                  className="mr-2 tag"
-                  onClick={e => otherProps.tag_click(e)}
-                  value="FacInfo"
-                >
-                  <FaTag className="mr-1" />
-                  FacInfo
-                </a>
-                <a
-                  href="#"
-                  className="mr-2 tag"
-                  onClick={e => otherProps.tag_click(e)}
-                  value="FacEco"
-                >
-                  <FaTag className="mr-1" />
-                  FacEco
-                </a>
-              </div>
+            <DownVote
+              is_logged={is_logged}
+              voted={voted}
+              set_vote={setVoted}
+              points={pointsState}
+              set_points={setPointsState}
+            />
+          </div>
 
-              <Card.Text>
-                {preview(text, previewLength)}{' '}
-                <a href="#" onClick={e => otherProps.preview_click(e)}>
-                  Lire la suite
-                </a>
-              </Card.Text>
+          <div className="px-3 pb-3 pt-2">
+            <div className="mb-1">
               <a
-                className="post-footer-btn mr-2"
                 href="#"
-                onClick={e => otherProps.preview_click(e)}
+                className="mr-2 tag"
+                onClick={(e) => otherProps.tag_click(e)}
+                value="Arsenal"
               >
-                <MdModeComment size="1.25em" className="mr-1" />
-                <span className="text-muted">12 commentaires</span>
+                <FaTag className="mr-1" />
+                Arsenal
               </a>
+              <a
+                href="#"
+                className="mr-2 tag"
+                onClick={(e) => otherProps.tag_click(e)}
+                value="FacInfo"
+              >
+                <FaTag className="mr-1" />
+                FacInfo
+              </a>
+              <a
+                href="#"
+                className="mr-2 tag"
+                onClick={(e) => otherProps.tag_click(e)}
+                value="FacEco"
+              >
+                <FaTag className="mr-1" />
+                FacEco
+              </a>
+            </div>
+
+            <p>{post_data.text}</p>
+
+            <a className="post-footer-btn mr-2" href="#">
+              <MdModeComment size="1.25em" className="mr-1" />
+              <span className="text-muted">
+                {post_data.commentNb}{' '}
+                {post_data.commentNb <= 1 ? 'commentaire' : 'commentaires'}
+              </span>
+            </a>
+
+            <FacebookShareButton
+              url="unanimty.be"
+              quote="Vive le covid-19"
+              onClick={(e) => e.stopPropagation()}
+            >
               <a className="post-footer-btn mr-2" href="#">
                 <FaFacebookSquare size="1.25em" className="mr-1" />
                 <span className="text-muted">Partager</span>
               </a>
-            </div>
+            </FacebookShareButton>
+
+            <a className="post-footer-btn mr-2" href="#">
+              <FaEyeSlash size="1.25em" className="mr-1" />
+              <span className="text-muted">Masquer</span>
+            </a>
+
+            <a className="post-footer-btn mr-2" href="#">
+              <FaFlag size="1.25em" className="mr-1" />
+              <span className="text-muted">Signaler</span>
+            </a>
           </div>
-        </Card.Body>
-      </Card>
-    </div>
+        </div>
+        <br />
+        <CommentEditor
+          is_logged={is_logged}
+          type="comment"
+          add_comment={addComment}
+        />
+        <Comments
+          is_logged={is_logged}
+          toggle_comment_editor={toggleCommentEditor}
+          add_comment_editor={addCommentEditor}
+          comment_editors={commentEditors}
+          comments={comments}
+        />
+      </div>
+      <br />
+    </>
   );
 };
 
-Post.defaultProps = {
-  title: 'A post',
-  text: dev.loremIpsum,
-  username: 'John Coffey',
-  previewLength: 200,
-  points: 25,
-  type: 'info',
-  createdOn: '2020-02-29T12:59-0500'
+const Comments = ({
+  is_logged,
+  toggle_comment_editor,
+  add_comment_editor,
+  comment_editors,
+  comments,
+}) => {
+  return (
+    <>
+      {Object.keys(comments).map((key) => {
+        return (
+          <Comment
+            key={comments[key].id}
+            comment={comments[key]}
+            is_logged={is_logged}
+            toggle_comment_editor={toggle_comment_editor}
+            add_comment_editor={add_comment_editor}
+            comment_editors={comment_editors}
+          />
+        );
+      })}
+    </>
+  );
 };
 
 export default Post;

@@ -12,17 +12,21 @@ const Comment = ({
   is_logged,
   add_comment_editor,
   toggle_comment_editor,
-  comment_editors
+  comment_editors,
+  add_reply,
+  ancestor_id = comment.id,
 }) => {
-  const nestedComments = (comment.children || []).map(comment => {
+  const nestedComments = (comment.children || []).map((cmmt) => {
     return (
       <Comment
-        key={comment.id}
-        comment={comment}
+        ancestor_id={ancestor_id}
+        key={cmmt.id}
+        comment={cmmt}
         is_logged={is_logged}
         add_comment_editor={add_comment_editor}
         toggle_comment_editor={toggle_comment_editor}
         comment_editors={comment_editors}
+        add_reply={add_reply}
       />
     );
   });
@@ -31,8 +35,8 @@ const Comment = ({
   const [pointsState, setPointsState] = useState(comment.points);
 
   function replyOnClickHandle() {
-    if (comment_editors[comment.id] == undefined) {
-      add_comment_editor(comment.id);
+    if (comment_editors[comment.id] === undefined) {
+      add_comment_editor(comment.id, ancestor_id);
     } else {
       toggle_comment_editor(comment.id);
     }

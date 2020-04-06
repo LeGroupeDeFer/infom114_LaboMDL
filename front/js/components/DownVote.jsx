@@ -8,7 +8,8 @@ import clsx from 'clsx';
 const DownVote = ({ is_logged, voted, set_vote, points, set_points }) => {
   let notLoggedMsg = 'Il faut être authentifié pour pouvoir voter';
 
-  function downVote(cancel) {
+  function downVote(e, cancel) {
+    e.stopPropagation();
     if (cancel) {
       set_points(points + 1);
       set_vote('no');
@@ -29,7 +30,7 @@ const DownVote = ({ is_logged, voted, set_vote, points, set_points }) => {
         <Button
           variant="light"
           className={`down-vote-btn ${clsx(voted === 'down' && 'down-voted')}`}
-          onClick={() => downVote(voted === 'down')}
+          onClick={(e) => downVote(e, voted === 'down')}
         >
           <GoArrowDown size="1.5em" />
         </Button>
@@ -52,7 +53,7 @@ const DownVote = ({ is_logged, voted, set_vote, points, set_points }) => {
 DownVote.defaultProps = {
   is_logged: false,
   click_handle: null,
-  voted: 'no'
+  voted: 'no',
 };
 
 export default DownVote;

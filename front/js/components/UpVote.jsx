@@ -8,7 +8,8 @@ import clsx from 'clsx';
 const UpVote = ({ is_logged, voted, set_vote, points, set_points }) => {
   let notLoggedMsg = 'Il faut être authentifié pour pouvoir voter';
 
-  function upVote(cancel) {
+  function upVote(e, cancel) {
+    e.stopPropagation();
     if (cancel) {
       set_points(points - 1);
       set_vote('no');
@@ -29,7 +30,7 @@ const UpVote = ({ is_logged, voted, set_vote, points, set_points }) => {
         <Button
           variant="light"
           className={`up-vote-btn ${clsx(voted === 'up' && 'up-voted')}`}
-          onClick={() => upVote(voted === 'up')}
+          onClick={(e) => upVote(e, voted === 'up')}
         >
           <GoArrowUp size="1.5em" />
         </Button>
@@ -52,7 +53,7 @@ const UpVote = ({ is_logged, voted, set_vote, points, set_points }) => {
 UpVote.defaultProps = {
   is_logged: false,
   click_handle: null,
-  voted: 'no'
+  voted: 'no',
 };
 
 export default UpVote;

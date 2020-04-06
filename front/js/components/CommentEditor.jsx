@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { GoArrowUp } from 'react-icons/go';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -11,12 +11,32 @@ const CommentEditor = ({
   type,
   is_logged,
   comment_id,
-  toggle_comment_editor
+  toggle_comment_editor,
+  add_comment,
+  add_reply,
+  ancestor_id,
 }) => {
+  const [comment, setComment] = useState('');
+
   let editor = '';
 
   function cancelClickHandle() {
     toggle_comment_editor(comment_id);
+  }
+
+  function handleChange(event) {
+    setComment(event.target.value);
+  }
+
+  function addComment() {
+    add_comment(comment);
+    setComment('');
+  }
+
+  function addReply() {
+    add_reply(comment, comment_id, ancestor_id);
+    setComment('');
+    cancelClickHandle();
   }
 
   if (!is_logged && type == 'comment') {
@@ -46,9 +66,15 @@ const CommentEditor = ({
           as="textarea"
           rows="3"
           placeholder="Ajouter un commentaire"
+          value={comment}
+          onChange={handleChange}
         />
         <div>
-          <Button variant="primary" className="float-right mt-1">
+          <Button
+            variant="primary"
+            className="float-right mt-1"
+            onClick={() => addComment()}
+          >
             Commenter
           </Button>
         </div>
@@ -64,6 +90,8 @@ const CommentEditor = ({
           as="textarea"
           rows="3"
           placeholder="Ajouter une réponse"
+          onChange={handleChange}
+          value={comment}
         />
 
         <div className="float-right">
@@ -74,7 +102,11 @@ const CommentEditor = ({
           >
             Annuler
           </Button>
-          <Button variant="primary" className=" mt-1">
+          <Button
+            variant="primary"
+            className=" mt-1"
+            onClick={() => addReply()}
+          >
             Répondre
           </Button>
         </div>

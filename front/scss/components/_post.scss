@@ -120,3 +120,8 @@
 .tag {
     font-size: 0.85em;
 }
+
+.post:hover {
+    border-color: theme-color("primary");
+    cursor: pointer;
+}

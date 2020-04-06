@@ -12,3 +12,18 @@
 .dropdown-item:hover {
     background-color: $primary;
 }
+
+.modal-80w {
+    width: 75%;
+    max-width: none;
+    margin: 0 auto;
+}
+
+.modal-header {
+    border-bottom: none;
+    padding: 0.5rem 1rem 0rem 1rem;
+}
+
+.modal-body {
+    padding: 0rem 1rem 1rem 1rem;
+}
