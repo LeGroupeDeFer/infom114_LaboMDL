@@ -2,6 +2,11 @@
 
 Summary of implemented features classified by release (github tag)
 
+## [0.2.3] - 2019-04-10
+
+- add tests related to role creation
+- add documentation on routes and models related to role management
+
 ## [0.2.1] - 2019-04-01
 
 - update database helper scripts

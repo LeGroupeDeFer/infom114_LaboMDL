@@ -1,3 +1,7 @@
+//! # Roles module
+//!
+//! This module groups every models related to role management
+
 pub mod capability;
 pub mod forms;
 pub mod role;
@@ -21,14 +25,20 @@ impl RoleCapabilities {
 
         roles
             .iter()
-            .map(|r| RoleCapabilities {
-                id: r.id,
-                name: r.name.to_string(),
-                color: r.color.to_string(),
-                capabilities: role_capability::RelRoleCapability::get_capabilities_for_role(
-                    &conn, &r,
-                ),
-            })
+            .map(|r| Self::from_role(conn, &r))
             .collect::<Vec<RoleCapabilities>>()
+    }
+
+    pub fn from_role_name(conn: &MysqlConnection, name: &str) -> Option<Self> {
+        role::Role::from_name(conn, name).map(|r| Self::from_role(conn, &r))
+    }
+
+    fn from_role(conn: &MysqlConnection, r: &role::Role) -> Self {
+        RoleCapabilities {
+            id: r.id,
+            name: r.name.to_string(),
+            color: r.color.to_string(),
+            capabilities: role_capability::RelRoleCapability::get_capabilities_for_role(&conn, &r),
+        }
     }
 }

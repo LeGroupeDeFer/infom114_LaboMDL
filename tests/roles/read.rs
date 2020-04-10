@@ -1,4 +1,4 @@
-//! # Fetching
+//! # Read roles
 //!
 //! Here are grouped the tests that are meant to retreive some information.
 //!

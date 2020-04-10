@@ -6,6 +6,6 @@
 //! - role CRUD
 //! - add capability to role
 //! - assign role to user
-//!
 
-mod fetch;
+mod create;
+mod read;
