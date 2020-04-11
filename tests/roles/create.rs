@@ -22,14 +22,13 @@ fn create_correct_role() {
     let client = init::clean_client();
     init::seed();
     let conn = init::database_connection();
-    let (user, passwd) = init::get_user(true);
 
     // login
-    let auth_token_header = init::login(&user.email, &passwd);
+    let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let role_name = "mynewrole";
     let role_color = "#ff0000";
-    let role_capabilities = vec!["post:create", "post:update", "role:add", "role:delete"];
+    let role_capabilities = vec!["post:create", "role:manage"];
 
     // craft body
     let data = format!(
@@ -82,14 +81,13 @@ fn create_role_missing_name() {
     let client = init::clean_client();
     init::seed();
     let conn = init::database_connection();
-    let (user, passwd) = init::get_user(true);
 
     // login
-    let auth_token_header = init::login(&user.email, &passwd);
+    let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let role_name = "mynewrole";
     let role_color = "#ff0000";
-    let role_capabilities = vec!["post:create", "post:update", "role:add", "role:delete"];
+    let role_capabilities = vec!["user:manage", "role:manage"];
 
     // craft body
     let data = format!(
@@ -126,14 +124,13 @@ fn create_role_empty_name() {
     let client = init::clean_client();
     init::seed();
     let conn = init::database_connection();
-    let (user, passwd) = init::get_user(true);
 
     // login
-    let auth_token_header = init::login(&user.email, &passwd);
+    let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let role_name = "mynewrole";
     let role_color = "#ff0000";
-    let role_capabilities = vec!["post:create", "post:update", "role:add", "role:delete"];
+    let role_capabilities = vec!["post:create", "role:manage"];
 
     // craft body
     let data = format!(
@@ -171,13 +168,12 @@ fn create_role_missing_color() {
     let client = init::clean_client();
     init::seed();
     let conn = init::database_connection();
-    let (user, passwd) = init::get_user(true);
 
     // login
-    let auth_token_header = init::login(&user.email, &passwd);
+    let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let role_name = "mynewrole";
-    let role_capabilities = vec!["post:create", "post:update", "role:add", "role:delete"];
+    let role_capabilities = vec!["post:create", "role:manage"];
 
     // craft body
     let data = format!(
@@ -214,10 +210,9 @@ fn create_role_missing_capabilities() {
     let client = init::clean_client();
     init::seed();
     let conn = init::database_connection();
-    let (user, passwd) = init::get_user(true);
 
     // login
-    let auth_token_header = init::login(&user.email, &passwd);
+    let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let role_name = "mynewrole";
     let role_color = "#ff0000";
@@ -252,20 +247,17 @@ fn create_role_unexistant_capability() {
     let client = init::clean_client();
     init::seed();
     let conn = init::database_connection();
-    let (user, passwd) = init::get_user(true);
 
     // login
-    let auth_token_header = init::login(&user.email, &passwd);
+    let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let role_name = "mynewrole";
     let role_color = "#ff0000";
     let role_capabilities = vec![
-        "thiscapability:donotexist",
-        "post:create",
-        "post:update",
-        "role:add",
-        "role:delete",
-    ];
+            "thiscapability:donotexist",
+            "post:create",
+            "role:manage",
+        ];
 
     // craft body
     let data = format!(
@@ -304,14 +296,13 @@ fn create_existing_role() {
     let client = init::clean_client();
     init::seed();
     let conn = init::database_connection();
-    let (user, passwd) = init::get_user(true);
 
     // login
-    let auth_token_header = init::login(&user.email, &passwd);
+    let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let role_name = "admin"; // the admin role is created at the `init::seed()` step
     let role_color = "#ff0000";
-    let role_capabilities = vec!["post:create", "post:update", "role:add", "role:delete"];
+    let role_capabilities = vec!["post:create", "role:manage"];
 
     // craft body
     let data = format!(
@@ -345,3 +336,49 @@ fn create_existing_role() {
 }
 
 // TODO : create role with a user that do not have the right to do so
+
+#[test]
+fn create_correct_role_missing_capability() {
+    // init
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+    let (user, passwd) = init::get_user(true);
+
+    // login
+    let auth_token_header = init::login(&user.email, &passwd);
+
+    let role_name = "mynewrole";
+    let role_color = "#ff0000";
+    let role_capabilities = vec!["post:create", "role:manage"];
+
+    // craft body
+    let data = format!(
+        "{{
+        \"name\": \"{}\",
+        \"color\": \"{}\",
+        \"capabilities\": [{}]
+    }}",
+        role_name,
+        role_color,
+        role_capabilities
+            .iter()
+            .map(|cap| format!("{{ \"name\" : \"{}\" }}", cap))
+            .collect::<Vec<String>>()
+            .join(", ")
+    );
+
+    // assert no role with this name already exists
+    assert!(roles::role::Role::from_name(&conn, role_name).is_none());
+
+    // request
+    let request = client
+        .post(ROLE_ROUTE)
+        .header(ContentType::JSON)
+        .header(auth_token_header)
+        .body(data);
+    let response = request.dispatch();
+
+    // validate status
+    assert_eq!(response.status(), Status::Forbidden);
+}

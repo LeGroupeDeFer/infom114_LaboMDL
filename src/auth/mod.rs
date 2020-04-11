@@ -27,20 +27,20 @@ pub struct Auth {
     pub iat: i64,    // Issued at (timestamp)
     pub exp: i64,    // Expire (timestamp)
     pub sub: u32,    // Subject (id)
-    pub cap: Vec<String>,
+    pub cap: Vec<Capability>,
 }
 
 /* ----------------------------- Implementation ---------------------------- */
 
 impl Auth {
-    pub fn new(user: &User, length: i64) -> Self {
+    pub fn new(conn: &MysqlConnection, user: &User, length: i64) -> Self {
         let now = Utc::now().timestamp();
         Auth {
             iss: "Unanimity".to_string(),
             iat: now,
             exp: now + length,
             sub: user.id,
-            cap: vec![], // TODO - User capabilites
+            cap: user.get_capabilities(&conn),
         }
     }
 
@@ -56,9 +56,9 @@ impl Auth {
     /// along with the `User` object
     pub fn login(conn: &DBConnection, email: &str, password: &str) -> Option<(Auth, User)> {
         let validity = Duration::weeks(2).num_seconds();
-        if let Some(user) = User::by_email(conn, email) {
+        if let Some(user) = User::from_email(conn, email) {
             if user.verify(password) {
-                return Some((Auth::new(&user, validity), user));
+                return Some((Auth::new(&*conn, &user, validity), user));
             }
         }
         None
@@ -66,15 +66,12 @@ impl Auth {
 
     /// Check if the authenticated user has the requested capability
     pub fn has_capability(&self, conn: &MysqlConnection, capability: &str) -> bool {
-        if let Some(user) = User::from(&conn, &self.sub) {
-            if let Some(capa) = Capability::from_name(&conn, &capability) {
-                return user.get_capabilities(&conn).contains(&capa);
-            }
+        if let Some(capa) = Capability::from_name(&conn, &capability) {
+            self.cap.contains(&capa)
+        } else {
+            // TODO : panic or log an error since the given capability potientially do not exist
+            false
         }
-
-        // TODO : should this panic since the method could have been called for an unexisting user
-        //          or an unexisting capability ?
-        false
     }
 }
 

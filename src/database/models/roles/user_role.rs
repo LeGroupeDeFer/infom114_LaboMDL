@@ -59,7 +59,7 @@ impl RelUserRole {
     }
 
     /// Insert a new row inside the `users_roles` table.
-    pub fn add_capability_for_role(
+    pub fn add_role_for_user(
         conn: &MysqlConnection,
         user: &User,
         role: &Role,

@@ -175,7 +175,20 @@ pub fn get_user(do_activate: bool) -> (User, String) {
         user.activate(&conn);
     }
 
-    (User::by_email(&conn, &u.email).unwrap(), u.password)
+    (User::from_email(&conn, &u.email).unwrap(), u.password)
+}
+
+/// Get the admin that is generated in the seeding process
+/// The admin has by default the following characteristics :
+///
+///     - email : "admin@unamur.be"
+///     - password : "admin"
+///
+/// Of course these attributes MUST be updated ASAP for real world application
+/// but for our testing purposes its perfect because we can use it to confirm
+/// that some routes are protected by auth & by capabilities
+pub fn get_admin() -> User {
+    User::from_email(&database_connection(), "admin@unamur.be").unwrap()
 }
 
 /// Perform the login operation for the given `email` & `password`

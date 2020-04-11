@@ -47,26 +47,31 @@ pub fn auth_activate(conn: DBConnection, data: Json<ActivationData>) -> ApiRespo
 /*************************** ROLE MANAGEMENT *********************************/
 
 #[get("/api/capabilities")]
-pub fn capabilities_get(conn: DBConnection, _auth: Auth) -> ApiResponse {
-    v1::capabilities::get(conn, _auth)
+pub fn capabilities_get(conn: DBConnection, auth: Auth) -> ApiResponse {
+    v1::capabilities::get(conn, auth)
 }
 
 #[post("/api/role", format = "json", data = "<data>")]
-pub fn role_create(conn: DBConnection, _auth: Auth, data: Json<RoleData>) -> ApiResponse {
-    v1::role::create(conn, _auth, data)
+pub fn role_create(conn: DBConnection, auth: Auth, data: Json<RoleData>) -> ApiResponse {
+    v1::role::create(conn, auth, data)
 }
 
 #[put("/api/role/<role_id>", format = "json", data = "<data>", rank = 3)]
-pub fn role_update(conn: DBConnection, role_id: u32, data: Json<RoleData>) -> ApiResponse {
-    v1::role::update(conn, role_id, data)
+pub fn role_update(
+    conn: DBConnection,
+    auth: Auth,
+    role_id: u32,
+    data: Json<RoleData>,
+) -> ApiResponse {
+    v1::role::update(conn, auth, role_id, data)
 }
 
 #[delete("/api/role/<role_id>")]
-pub fn role_delete(conn: DBConnection, role_id: u32) -> ApiResponse {
-    v1::role::delete(conn, role_id)
+pub fn role_delete(conn: DBConnection, auth: Auth, role_id: u32) -> ApiResponse {
+    v1::role::delete(conn, auth, role_id)
 }
 
 #[get("/api/roles")]
-pub fn roles_get(conn: DBConnection, _auth: Auth) -> ApiResponse {
-    v1::roles::get(conn, _auth)
+pub fn roles_get(conn: DBConnection, auth: Auth) -> ApiResponse {
+    v1::roles::get(conn, auth)
 }

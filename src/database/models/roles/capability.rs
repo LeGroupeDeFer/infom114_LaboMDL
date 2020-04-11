@@ -77,27 +77,4 @@ impl Capability {
 }
 
 /// All the capabilities of the application
-pub const CAPABILITIES: [&str; 22] = [
-    "user:delete",
-    "user:update",
-    "user:view",
-    "role:add",
-    "role:update",
-    "role:delete",
-    "role:view",
-    "role:update_capability",
-    "role:assign_to_user",
-    "post:create",
-    "post:delete",
-    "post:update",
-    "post:flag",
-    "post:unflag",
-    "post:comment",
-    "post:upvote",
-    "comment:create",
-    "comment:update",
-    "comment:delete",
-    "comment:flag",
-    "comment:unflag",
-    "post:view_report",
-];
+pub const CAPABILITIES: [&str; 3] = ["role:manage", "post:create", "user:manage"];

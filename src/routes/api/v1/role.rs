@@ -28,14 +28,16 @@ pub fn collect() -> Vec<rocket::Route> {
 /// The name cannot be empty
 #[post("/api/v1/role", format = "json", data = "<data>")]
 pub fn create(conn: DBConnection, auth: Auth, data: Json<RoleData>) -> ApiResponse {
-    let capability = "role:create";
+    let capability = "role:manage";
 
+    // manage capability
     if !auth.has_capability(&conn, &capability) {
         return ApiResponse::error(
             Status::Forbidden,
             &format!("The user do not have the capability {}", capability),
         );
     }
+
     // convert data into a usable type
     let role_data = data.into_inner();
 
@@ -79,7 +81,17 @@ pub fn create(conn: DBConnection, auth: Auth, data: Json<RoleData>) -> ApiRespon
 /// there is no smart mechanism implemented to perform a differencial update.
 /// The old values are removed and the new values are inserted.
 #[put("/api/v1/role/<role_id>", format = "json", data = "<data>", rank = 3)]
-pub fn update(conn: DBConnection, role_id: u32, data: Json<RoleData>) -> ApiResponse {
+pub fn update(conn: DBConnection, auth: Auth, role_id: u32, data: Json<RoleData>) -> ApiResponse {
+    let capability = "role:manage";
+
+    // manage capability
+    if !auth.has_capability(&conn, &capability) {
+        return ApiResponse::error(
+            Status::Forbidden,
+            &format!("The user do not have the capability {}", capability),
+        );
+    }
+
     let opt_role = Role::from_id(&conn, &role_id);
 
     // assert that the role_id given exist
@@ -129,7 +141,17 @@ pub fn update(conn: DBConnection, role_id: u32, data: Json<RoleData>) -> ApiResp
 /// This will first remove every capabilities linked to this role
 /// then it will remove the role.
 #[delete("/api/v1/role/<role_id>")]
-pub fn delete(conn: DBConnection, role_id: u32) -> ApiResponse {
+pub fn delete(conn: DBConnection, auth: Auth, role_id: u32) -> ApiResponse {
+    let capability = "role:manage";
+
+    // manage capability
+    if !auth.has_capability(&conn, &capability) {
+        return ApiResponse::error(
+            Status::Forbidden,
+            &format!("The user do not have the capability {}", capability),
+        );
+    }
+
     let opt_role = Role::from_id(&conn, &role_id);
 
     // assert that the role_id given exist
