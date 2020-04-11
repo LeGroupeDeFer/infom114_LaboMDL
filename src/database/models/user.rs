@@ -1,4 +1,5 @@
 use super::address::Address;
+use crate::database::models::roles;
 use crate::database::schema::users;
 use crate::database::schema::users::dsl::users as table;
 use crate::database::Data;
@@ -125,6 +126,33 @@ impl User {
             "creation_date": self.creation_date,
             "last_connection": self.last_connection
         })
+    }
+
+    /// Get the roles of a user
+    /// Return a vector of `models::roles::role::Role` struct
+    pub fn get_roles(&self, conn: &MysqlConnection) -> Vec<roles::role::Role> {
+        roles::user_role::RelUserRole::get_roles_from_user(&conn, &self)
+            .iter()
+            .map(|r| roles::role::Role::from_id(&conn, &r.id))
+            .filter(|r| r.is_some())
+            .map(|r| r.unwrap())
+            .collect::<_>()
+    }
+
+    /// Get the capabilities of a user
+    /// Return a vector of `models::roles::capability::Capability` struct
+    pub fn get_capabilities(&self, conn: &MysqlConnection) -> Vec<roles::capability::Capability> {
+        let mut tab: Vec<roles::capability::Capability> = Vec::new();
+        let roles = self.get_roles(&conn);
+        for r in roles {
+            for c in r.capabilities(&conn) {
+                if !tab.contains(&c) {
+                    tab.push(c);
+                }
+            }
+        }
+
+        tab
     }
 
     /// Validate the fact that the email given

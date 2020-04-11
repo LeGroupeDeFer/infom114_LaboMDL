@@ -27,7 +27,15 @@ pub fn collect() -> Vec<rocket::Route> {
 /// This new role is the json serialization of the `RoleData` type
 /// The name cannot be empty
 #[post("/api/v1/role", format = "json", data = "<data>")]
-pub fn create(conn: DBConnection, _auth: Auth, data: Json<RoleData>) -> ApiResponse {
+pub fn create(conn: DBConnection, auth: Auth, data: Json<RoleData>) -> ApiResponse {
+    let capability = "role:create";
+
+    if !auth.has_capability(&conn, &capability) {
+        return ApiResponse::error(
+            Status::Forbidden,
+            &format!("The user do not have the capability {}", capability),
+        );
+    }
     // convert data into a usable type
     let role_data = data.into_inner();
 

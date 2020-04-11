@@ -6,6 +6,7 @@ pub mod capability;
 pub mod forms;
 pub mod role;
 pub mod role_capability;
+pub mod user_role;
 
 use crate::database::models::roles::capability::Capability;
 
