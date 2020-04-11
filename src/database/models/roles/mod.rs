@@ -11,6 +11,15 @@ use crate::database::models::roles::capability::Capability;
 
 use diesel::MysqlConnection;
 
+/// This `RoleCapabilities` struct is not a real model because it's not a
+/// fair representation of what's in the database.
+/// In fact this struct is the concatenation of the `role::Role` and the
+/// `capability::Capability` structs.
+///
+/// It's meant to be ease the use of the mentionned structs : instead of
+/// having to manipulate three structs (you'll have to get through the
+/// `role_capability::RoleCapability` struct to correctly link a role to
+/// a capbility)
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct RoleCapabilities {
     pub id: u32,
@@ -20,6 +29,8 @@ pub struct RoleCapabilities {
 }
 
 impl RoleCapabilities {
+    /// Return all the roles with the corresponding capabilities as an array
+    /// of `RoleCapabilities`
     pub fn all(conn: &MysqlConnection) -> Vec<Self> {
         let roles = role::Role::all(conn);
 
@@ -29,10 +40,12 @@ impl RoleCapabilities {
             .collect::<Vec<RoleCapabilities>>()
     }
 
+    /// Constructor of `RoleCapabilities` based on a role name
     pub fn from_role_name(conn: &MysqlConnection, name: &str) -> Option<Self> {
         role::Role::from_name(conn, name).map(|r| Self::from_role(conn, &r))
     }
 
+    /// Constructor of `RoleCapabilities` based on a `role::Role` object
     fn from_role(conn: &MysqlConnection, r: &role::Role) -> Self {
         RoleCapabilities {
             id: r.id,
