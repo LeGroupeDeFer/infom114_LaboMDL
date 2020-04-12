@@ -7,6 +7,7 @@ Summary of implemented features classified by release (github tag)
 - add tests related to role creation
 - add documentation on routes and models related to role management
 - basic implementation of capability management
+- add tests related to role update
 
 ## [0.2.1] - 2019-04-01
 
