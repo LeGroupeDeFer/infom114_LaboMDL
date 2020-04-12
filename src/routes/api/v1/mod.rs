@@ -15,6 +15,7 @@ pub mod auth;
 pub mod capabilities;
 pub mod role;
 pub mod roles;
+pub mod user;
 
 /// Collect every routes that this module needs to share with the application
 /// The name `collect` is a project convention
@@ -23,12 +24,14 @@ pub fn collect() -> Vec<rocket::Route> {
     let capabilities_routes = capabilities::collect();
     let roles_routes = roles::collect();
     let role_routes = role::collect();
+    let user_routes = user::collect();
     [
         &routes!(version)[..],
         auth_routes.as_ref(),
         capabilities_routes.as_ref(),
         roles_routes.as_ref(),
         role_routes.as_ref(),
+        user_routes.as_ref(),
     ]
     .concat()
 }

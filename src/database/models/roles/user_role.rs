@@ -73,12 +73,16 @@ impl RelUserRole {
                         role_id: role.id,
                     })
                     .execute(conn)
-                    .expect("error while inserting rel role capability");
+                    .expect("error while inserting rel user role");
                 Data::Inserted(
                     Self::get(&conn, user.id, role.id)
                         .expect("Insert succesfful but error while fetching it"),
                 )
             }
         }
+    }
+
+    pub fn delete(self, conn: &MysqlConnection) {
+        diesel::delete(&self).execute(conn).unwrap();
     }
 }

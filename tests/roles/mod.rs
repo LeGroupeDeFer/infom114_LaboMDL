@@ -7,7 +7,8 @@
 //! - add capability to role
 //! - assign role to user
 
+mod assign;
 mod create;
+mod delete;
 mod read;
 mod update;
-mod delete;

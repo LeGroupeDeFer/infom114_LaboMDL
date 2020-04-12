@@ -9,6 +9,8 @@ Summary of implemented features classified by release (github tag)
 - basic implementation of capability management
 - add tests related to role update
 - add tests related to role deletion
+- implement route for assigning and unassagning role to/from a user
+- add tests related to user-role assignation
 
 ## [0.2.1] - 2019-04-01
 

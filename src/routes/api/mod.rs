@@ -1,7 +1,7 @@
 use crate::auth::forms::{ActivationData, LoginData, RegisterData};
 use crate::auth::Auth;
 use crate::conf;
-use crate::database::models::roles::forms::RoleData;
+use crate::database::models::roles::forms::{RoleData, UserRoleData};
 use crate::database::DBConnection;
 use crate::http::responders::api::ApiResponse;
 use rocket_contrib::json::Json;
@@ -21,7 +21,9 @@ pub fn collect() -> Vec<rocket::Route> {
             role_create,
             role_update,
             role_delete,
-            roles_get
+            roles_get,
+            user_role_assign,
+            user_role_unassign
         )[..],
     ]
     .concat()
@@ -74,4 +76,14 @@ pub fn role_delete(conn: DBConnection, auth: Auth, role_id: u32) -> ApiResponse 
 #[get("/api/roles")]
 pub fn roles_get(conn: DBConnection, auth: Auth) -> ApiResponse {
     v1::roles::get(conn, auth)
+}
+
+#[post("/api/user/role", format = "json", data = "<data>")]
+pub fn user_role_assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiResponse {
+    v1::user::role::assign(conn, auth, data)
+}
+
+#[delete("/api/user/role", format = "json", data = "<data>")]
+pub fn user_role_unassign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiResponse {
+    v1::user::role::unassign(conn, auth, data)
 }
