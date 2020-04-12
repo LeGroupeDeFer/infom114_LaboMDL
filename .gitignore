@@ -25,4 +25,4 @@ test.http
 .redo
 
 # Symbolic links
-bootstrap_module/
+bootstrap_module
