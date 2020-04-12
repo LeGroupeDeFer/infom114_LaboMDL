@@ -436,8 +436,6 @@ fn update_without_correct_capability() {
 
     // login
     let (user, passwd) = init::get_user(true);
-
-    // login
     let auth_token_header = init::login(&user.email, &passwd);
 
     let role_name = "myupdatedrole";
