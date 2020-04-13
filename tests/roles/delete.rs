@@ -35,7 +35,7 @@ fn delete_correctly() {
         _ => panic!("should be a new role"),
     };
     // assert the role is correctly added in database
-    assert!(roles::role::Role::from_name(&conn, &role_minima.name).is_some());
+    assert!(roles::role::Role::by_name(&conn, &role_minima.name).is_some());
 
     // login
     let auth_token_header = init::login("admin@unamur.be", "admin");
@@ -51,7 +51,7 @@ fn delete_correctly() {
     assert_eq!(response.status(), Status::Ok);
 
     // assert the role has correctly been deleted
-    assert!(roles::role::Role::from_name(&conn, &role_minima.name).is_none());
+    assert!(roles::role::Role::by_name(&conn, &role_minima.name).is_none());
 }
 
 #[test]
@@ -83,7 +83,7 @@ fn delete_invalid_role_id() {
 
     // first we'll find an unexisting role id
     let mut fake_id = 11;
-    while let Some(_) = roles::role::Role::from_id(&conn, &fake_id) {
+    while let Some(_) = roles::role::Role::by_id(&conn, &fake_id) {
         fake_id += 11;
     }
 
@@ -119,7 +119,7 @@ fn delete_missing_capability() {
         _ => panic!("should be a new role"),
     };
     // assert the role is correctly added in database
-    assert!(roles::role::Role::from_name(&conn, &role_minima.name).is_some());
+    assert!(roles::role::Role::by_name(&conn, &role_minima.name).is_some());
 
     // login
     let (user, passwd) = init::get_user(true);
@@ -136,5 +136,5 @@ fn delete_missing_capability() {
     assert_eq!(response.status(), Status::Forbidden);
 
     // assert the role has not been deleted
-    assert!(roles::role::Role::from_name(&conn, &role_minima.name).is_some());
+    assert!(roles::role::Role::by_name(&conn, &role_minima.name).is_some());
 }

@@ -36,7 +36,7 @@ fn activation_good_id_good_token() {
 
     assert_eq!(response.status(), Status::Ok);
 
-    let activated_user = User::from_email(&connection, &user.email).unwrap();
+    let activated_user = User::by_email(&connection, &user.email).unwrap();
 
     assert!(activated_user.active);
     assert!(activated_user.token.is_none());
@@ -68,7 +68,7 @@ fn activation_wrong_id_good_token() {
 
     assert_eq!(response.status(), Status::Forbidden);
 
-    let not_so_activated_user = User::from_email(&connection, &user.email).unwrap();
+    let not_so_activated_user = User::by_email(&connection, &user.email).unwrap();
 
     assert!(!not_so_activated_user.active);
     assert!(not_so_activated_user.token.is_some());
@@ -94,7 +94,7 @@ fn activation_good_id_wrong_token() {
 
     assert_eq!(response.status(), Status::Forbidden);
 
-    let not_so_activated_user = User::from_email(&connection, &user.email).unwrap();
+    let not_so_activated_user = User::by_email(&connection, &user.email).unwrap();
 
     assert!(!not_so_activated_user.active);
     assert!(not_so_activated_user.token.is_some());
@@ -125,7 +125,7 @@ fn activation_wrong_id_wrong_token() {
 
     assert_eq!(response.status(), Status::Forbidden);
 
-    let not_so_activated_user = User::from_email(&connection, &user.email).unwrap();
+    let not_so_activated_user = User::by_email(&connection, &user.email).unwrap();
 
     assert!(!not_so_activated_user.active);
     assert!(not_so_activated_user.token.is_some());
@@ -151,7 +151,7 @@ fn double_activation() {
 
     assert_eq!(response.status(), Status::Ok);
 
-    let activated_user = User::from_email(&connection, &user.email).unwrap();
+    let activated_user = User::by_email(&connection, &user.email).unwrap();
 
     assert!(activated_user.active);
     assert!(activated_user.token.is_none());

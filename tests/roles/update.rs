@@ -35,7 +35,7 @@ fn update_everything() {
         _ => panic!("should be a new role"),
     };
     // assert the role is correctly added in database
-    assert!(roles::role::Role::from_name(&conn, &role_minima.name).is_some());
+    assert!(roles::role::Role::by_name(&conn, &role_minima.name).is_some());
 
     // login
     let auth_token_header = init::login("admin@unamur.be", "admin");
@@ -61,7 +61,7 @@ fn update_everything() {
     );
 
     // assert no role with this name already exists
-    assert!(roles::role::Role::from_name(&conn, role_name).is_none());
+    assert!(roles::role::Role::by_name(&conn, role_name).is_none());
 
     // request
     let request = client
@@ -75,14 +75,14 @@ fn update_everything() {
     assert_eq!(response.status(), Status::Ok);
 
     // assert there is a role with this new name in database
-    let role_option = roles::role::Role::from_name(&conn, role_name);
+    let role_option = roles::role::Role::by_name(&conn, role_name);
     assert!(role_option.is_some());
     let role = role_option.unwrap();
 
     assert_eq!(role_name, role.name);
     assert_eq!(role_color, role.color);
     // if it panics, the test cannot pass !
-    let role_capa = roles::RoleCapabilities::from_role_name(&conn, &role.name).unwrap();
+    let role_capa = roles::RoleCapabilities::by_role_name(&conn, &role.name).unwrap();
     assert_eq!(role_capa.capabilities.len(), role_capabilities.len());
     for capability in role_capa.capabilities {
         assert!(role_capabilities.contains(&&capability.name[..]));
@@ -107,7 +107,7 @@ fn update_same_name() {
         _ => panic!("should be a new role"),
     };
     // assert the role exists
-    assert!(roles::role::Role::from_name(&conn, &role_minima.name).is_some());
+    assert!(roles::role::Role::by_name(&conn, &role_minima.name).is_some());
 
     // login
     let auth_token_header = init::login("admin@unamur.be", "admin");
@@ -133,7 +133,7 @@ fn update_same_name() {
     );
 
     // assert no role with this name already exists (since its the same name)
-    assert!(roles::role::Role::from_name(&conn, role_name).is_some());
+    assert!(roles::role::Role::by_name(&conn, role_name).is_some());
 
     // request
     let request = client
@@ -147,14 +147,14 @@ fn update_same_name() {
     assert_eq!(response.status(), Status::Ok);
 
     // assert there is a role with this new name in database
-    let role_option = roles::role::Role::from_name(&conn, role_name);
+    let role_option = roles::role::Role::by_name(&conn, role_name);
     assert!(role_option.is_some());
     let role = role_option.unwrap();
 
     assert_eq!(role_name, role.name);
     assert_eq!(role_color, role.color);
     // if it panics, the test cannot pass !
-    let role_capa = roles::RoleCapabilities::from_role_name(&conn, &role.name).unwrap();
+    let role_capa = roles::RoleCapabilities::by_role_name(&conn, &role.name).unwrap();
     assert_eq!(role_capa.capabilities.len(), role_capabilities.len());
     for capability in role_capa.capabilities {
         assert!(role_capabilities.contains(&&capability.name[..]));
@@ -192,7 +192,7 @@ fn update_missing_id() {
     );
 
     // assert no role with this name already exists
-    assert!(roles::role::Role::from_name(&conn, role_name).is_none());
+    assert!(roles::role::Role::by_name(&conn, role_name).is_none());
 
     // request
     let request = client
@@ -215,7 +215,7 @@ fn update_invalid_role_id() {
 
     // first we'll find an unexisting role id
     let mut fake_id = 11;
-    while let Some(_) = roles::role::Role::from_id(&conn, &fake_id) {
+    while let Some(_) = roles::role::Role::by_id(&conn, &fake_id) {
         fake_id += 11;
     }
 
@@ -243,7 +243,7 @@ fn update_invalid_role_id() {
     );
 
     // assert no role with this name already exists
-    assert!(roles::role::Role::from_name(&conn, role_name).is_none());
+    assert!(roles::role::Role::by_name(&conn, role_name).is_none());
 
     // request
     let request = client
@@ -275,7 +275,7 @@ fn update_no_color() {
         _ => panic!("should be a new role"),
     };
     // assert the role is correctly added in database
-    assert!(roles::role::Role::from_name(&conn, &role_minima.name).is_some());
+    assert!(roles::role::Role::by_name(&conn, &role_minima.name).is_some());
 
     // login
     let auth_token_header = init::login("admin@unamur.be", "admin");
@@ -298,7 +298,7 @@ fn update_no_color() {
     );
 
     // assert no role with this name already exists
-    assert!(roles::role::Role::from_name(&conn, role_name).is_none());
+    assert!(roles::role::Role::by_name(&conn, role_name).is_none());
 
     // request
     let request = client
@@ -330,7 +330,7 @@ fn update_missing_role_name() {
         _ => panic!("should be a new role"),
     };
     // assert the role is correctly added in database
-    assert!(roles::role::Role::from_name(&conn, &role_minima.name).is_some());
+    assert!(roles::role::Role::by_name(&conn, &role_minima.name).is_some());
 
     // login
     let auth_token_header = init::login("admin@unamur.be", "admin");
@@ -382,7 +382,7 @@ fn update_missing_role_capabilities() {
         _ => panic!("should be a new role"),
     };
     // assert the role is correctly added in database
-    assert!(roles::role::Role::from_name(&conn, &role_minima.name).is_some());
+    assert!(roles::role::Role::by_name(&conn, &role_minima.name).is_some());
 
     // login
     let auth_token_header = init::login("admin@unamur.be", "admin");
@@ -400,7 +400,7 @@ fn update_missing_role_capabilities() {
     );
 
     // assert no role with this name already exists
-    assert!(roles::role::Role::from_name(&conn, role_name).is_none());
+    assert!(roles::role::Role::by_name(&conn, role_name).is_none());
 
     // request
     let request = client
@@ -432,7 +432,7 @@ fn update_without_correct_capability() {
         _ => panic!("should be a new role"),
     };
     // assert the role is correctly added in database
-    assert!(roles::role::Role::from_name(&conn, &role_minima.name).is_some());
+    assert!(roles::role::Role::by_name(&conn, &role_minima.name).is_some());
 
     // login
     let (user, passwd) = init::get_user(true);
@@ -459,7 +459,7 @@ fn update_without_correct_capability() {
     );
 
     // assert no role with this name already exists
-    assert!(roles::role::Role::from_name(&conn, role_name).is_none());
+    assert!(roles::role::Role::by_name(&conn, role_name).is_none());
 
     // request
     let request = client

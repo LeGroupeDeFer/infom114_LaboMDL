@@ -32,12 +32,12 @@ pub struct CapabilityMinima {
 
 impl Capability {
     /// Constructor of `Capability` from a role id
-    pub fn from_id(conn: &MysqlConnection, id: &u32) -> Option<Self> {
+    pub fn by_id(conn: &MysqlConnection, id: &u32) -> Option<Self> {
         table.find(id).first::<Self>(conn).ok()
     }
 
     /// Constructor of `Capability` from a role name
-    pub fn from_name(conn: &MysqlConnection, name: &str) -> Option<Self> {
+    pub fn by_name(conn: &MysqlConnection, name: &str) -> Option<Self> {
         table
             .filter(capabilities::name.eq(&name))
             .first::<Self>(conn)
@@ -51,7 +51,7 @@ impl Capability {
 
     /// Constructor of `Capability` that fits the `minima` given.
     pub fn select_minima(conn: &MysqlConnection, minima: &CapabilityMinima) -> Option<Self> {
-        Self::from_name(&conn, &minima.name)
+        Self::by_name(&conn, &minima.name)
     }
 
     /// Add a new capability in database.

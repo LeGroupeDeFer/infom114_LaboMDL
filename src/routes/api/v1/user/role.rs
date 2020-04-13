@@ -3,11 +3,7 @@
 //! Group the creation, update and deletion of roles
 
 use crate::auth::Auth;
-use crate::database::models::roles::{
-    forms::UserRoleData,
-    role::{Role},
-    user_role::RelUserRole,
-};
+use crate::database::models::roles::{forms::UserRoleData, role::Role, user_role::RelUserRole};
 use crate::database::models::user::User;
 use crate::database::{DBConnection, Data};
 use crate::http::responders::api::ApiResponse;
@@ -47,7 +43,7 @@ pub fn assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiRe
         }
     };
 
-    let role = match Role::from_id(&*conn, &user_role_data.role_id) {
+    let role = match Role::by_id(&*conn, &user_role_data.role_id) {
         Some(u) => u,
         None => {
             return ApiResponse::error(

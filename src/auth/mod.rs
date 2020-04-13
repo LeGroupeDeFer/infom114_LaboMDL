@@ -56,7 +56,7 @@ impl Auth {
     /// along with the `User` object
     pub fn login(conn: &DBConnection, email: &str, password: &str) -> Option<(Auth, User)> {
         let validity = Duration::weeks(2).num_seconds();
-        if let Some(user) = User::from_email(conn, email) {
+        if let Some(user) = User::by_email(conn, email) {
             if user.verify(password) {
                 return Some((Auth::new(&*conn, &user, validity), user));
             }
@@ -66,7 +66,7 @@ impl Auth {
 
     /// Check if the authenticated user has the requested capability
     pub fn has_capability(&self, conn: &MysqlConnection, capability: &str) -> bool {
-        if let Some(capa) = Capability::from_name(&conn, &capability) {
+        if let Some(capa) = Capability::by_name(&conn, &capability) {
             self.cap.contains(&capa)
         } else {
             // TODO : panic or log an error since the given capability potientially do not exist

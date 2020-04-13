@@ -20,7 +20,7 @@ impl Address {
     /* ------------------------------- STATIC ------------------------------ */
 
     // from :: (MysqlConnection, Integer) -> Option<Address>
-    pub fn from(conn: &MysqlConnection, id: &u32) -> Option<Self> {
+    pub fn by_id(conn: &MysqlConnection, id: &u32) -> Option<Self> {
         table.find(id).first::<Address>(conn).ok()
     }
 

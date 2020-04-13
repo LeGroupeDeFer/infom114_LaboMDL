@@ -41,12 +41,12 @@ impl Role {
     /* ------------------------------- STATIC ------------------------------ */
 
     /// Constructor based on the role id.
-    pub fn from_id(conn: &MysqlConnection, id: &u32) -> Option<Self> {
+    pub fn by_id(conn: &MysqlConnection, id: &u32) -> Option<Self> {
         table.find(id).first::<Self>(conn).ok()
     }
 
     /// Get the Capability record that fits the role name given.
-    pub fn from_name(conn: &MysqlConnection, name: &str) -> Option<Self> {
+    pub fn by_name(conn: &MysqlConnection, name: &str) -> Option<Self> {
         table.filter(roles::name.eq(name)).first::<Self>(conn).ok()
     }
 
@@ -58,7 +58,7 @@ impl Role {
     /// Insert data stored in the `RoleMinima` struct given in parameter inside the
     /// database1
     pub fn insert_minima(conn: &MysqlConnection, minima: &RoleMinima) -> Data<Self> {
-        if let Some(past) = Self::from_name(conn, &minima.name) {
+        if let Some(past) = Self::by_name(conn, &minima.name) {
             Data::Existing(past)
         } else {
             diesel::insert_into(table)
@@ -66,7 +66,7 @@ impl Role {
                 .execute(conn)
                 .expect("Failed address insertion");
             Data::Inserted(
-                Self::from_name(conn, &minima.name)
+                Self::by_name(conn, &minima.name)
                     .expect("Address insertion succeeded but could not be retreived"),
             )
         }

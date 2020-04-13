@@ -37,17 +37,17 @@ impl RoleCapabilities {
 
         roles
             .iter()
-            .map(|r| Self::from_role(conn, &r))
+            .map(|r| Self::by_role(conn, &r))
             .collect::<Vec<RoleCapabilities>>()
     }
 
     /// Constructor of `RoleCapabilities` based on a role name
-    pub fn from_role_name(conn: &MysqlConnection, name: &str) -> Option<Self> {
-        role::Role::from_name(conn, name).map(|r| Self::from_role(conn, &r))
+    pub fn by_role_name(conn: &MysqlConnection, name: &str) -> Option<Self> {
+        role::Role::by_name(conn, name).map(|r| Self::by_role(conn, &r))
     }
 
     /// Constructor of `RoleCapabilities` based on a `role::Role` object
-    fn from_role(conn: &MysqlConnection, r: &role::Role) -> Self {
+    fn by_role(conn: &MysqlConnection, r: &role::Role) -> Self {
         RoleCapabilities {
             id: r.id,
             name: r.name.to_string(),

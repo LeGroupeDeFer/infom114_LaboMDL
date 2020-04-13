@@ -65,7 +65,7 @@ pub fn create(conn: DBConnection, auth: Auth, data: Json<RoleData>) -> ApiRespon
 
     // for this new role, add every given capabilities
     for capability_data in role_data.capabilities.iter() {
-        if let Some(capability) = Capability::from_name(&conn, &capability_data.name) {
+        if let Some(capability) = Capability::by_name(&conn, &capability_data.name) {
             RelRoleCapability::add_capability_for_role(&conn, &role, &capability);
         } else {
             // TODO : front-end sent an unexisting capability
@@ -92,7 +92,7 @@ pub fn update(conn: DBConnection, auth: Auth, role_id: u32, data: Json<RoleData>
         );
     }
 
-    let opt_role = Role::from_id(&conn, &role_id);
+    let opt_role = Role::by_id(&conn, &role_id);
 
     // assert that the role_id given exist
     if opt_role.is_none() {
@@ -105,7 +105,7 @@ pub fn update(conn: DBConnection, auth: Auth, role_id: u32, data: Json<RoleData>
 
     // assert that the new name is not already used
     let role_data = data.into_inner();
-    if let Some(r) = Role::from_name(&conn, &role_data.name) {
+    if let Some(r) = Role::by_name(&conn, &role_data.name) {
         // we do not want to throw an error if the found role with the same
         // name is the one we are working on
         if r.id != role_id {
@@ -126,7 +126,7 @@ pub fn update(conn: DBConnection, auth: Auth, role_id: u32, data: Json<RoleData>
 
     // add every given capabilities
     for capability_data in role_data.capabilities.iter() {
-        if let Some(capability) = Capability::from_name(&conn, &capability_data.name) {
+        if let Some(capability) = Capability::by_name(&conn, &capability_data.name) {
             RelRoleCapability::add_capability_for_role(&conn, &role, &capability);
         } else {
             // TODO : front-end sent an unexisting capability
@@ -152,7 +152,7 @@ pub fn delete(conn: DBConnection, auth: Auth, role_id: u32) -> ApiResponse {
         );
     }
 
-    let opt_role = Role::from_id(&conn, &role_id);
+    let opt_role = Role::by_id(&conn, &role_id);
 
     // assert that the role_id given exist
     if opt_role.is_none() {

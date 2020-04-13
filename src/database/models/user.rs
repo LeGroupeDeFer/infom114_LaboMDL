@@ -45,7 +45,7 @@ impl User {
 
     /// Constructor of `User` struct.
     /// Fetch a user in database based on its email field.
-    pub fn from_email(conn: &MysqlConnection, email: &str) -> Option<User> {
+    pub fn by_email(conn: &MysqlConnection, email: &str) -> Option<User> {
         if let Ok(user) = table.filter(users::email.eq(email)).first(conn) {
             Some(user)
         } else {
@@ -55,7 +55,7 @@ impl User {
 
     // is_available_email :: (MysqlConnection, String) -> Boolean
     pub fn is_available_email(conn: &MysqlConnection, email: &str) -> bool {
-        User::from_email(conn, email).is_none()
+        User::by_email(conn, email).is_none()
     }
 
     // is_unamur_email :: String -> Boolean
@@ -134,7 +134,7 @@ impl User {
     pub fn get_roles(&self, conn: &MysqlConnection) -> Vec<roles::role::Role> {
         roles::user_role::RelUserRole::get_roles_from_user(&conn, &self)
             .iter()
-            .map(|r| roles::role::Role::from_id(&conn, &r.id))
+            .map(|r| roles::role::Role::by_id(&conn, &r.id))
             .filter(|r| r.is_some())
             .map(|r| r.unwrap())
             .collect::<_>()
