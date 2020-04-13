@@ -9,8 +9,11 @@ use unanimitylibrary::conf::env_setting;
 
 use unanimitylibrary::database;
 use unanimitylibrary::database::models::{address::Address, user::User, user::UserMinima};
+use unanimitylibrary::database::models::{address::Address, user::User};
 use unanimitylibrary::database::schema::addresses::dsl::addresses;
+use unanimitylibrary::database::schema::tags::dsl::tags;
 use unanimitylibrary::database::schema::users::dsl::users;
+use unanimitylibrary::lib::seeds;
 
 use diesel::query_dsl::RunQueryDsl;
 use either::*;
@@ -23,10 +26,17 @@ pub fn clean() {
     // truncate all tables
     diesel::delete(users).execute(&conn).unwrap();
     diesel::delete(addresses).execute(&conn).unwrap();
+    diesel::delete(tags).execute(&conn).unwrap();
 
     // assert empty database
     assert_eq!(users.load::<User>(&conn).unwrap().len(), 0);
     assert_eq!(addresses.load::<Address>(&conn).unwrap().len(), 0);
+}
+
+pub fn seed() {
+    let conn = database_connection();
+
+    seeds::tags::seed_tags(&conn);
 }
 
 pub fn database_connection() -> diesel::MysqlConnection {

@@ -30,7 +30,7 @@ pub mod auth;
 pub mod conf;
 pub mod database;
 pub mod http;
-mod lib;
+pub mod lib;
 mod routes;
 pub mod schema;
 

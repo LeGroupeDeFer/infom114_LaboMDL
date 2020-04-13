@@ -1,6 +1,7 @@
 use rocket::http::uri;
 
 pub mod mail;
+pub mod seeds;
 
 pub fn set_uri(prefix: &str, route: &rocket::Route) -> rocket::Route {
     let base = uri::Origin::parse(prefix).unwrap();
