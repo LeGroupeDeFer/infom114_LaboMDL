@@ -38,7 +38,6 @@ pub fn post_tag(conn: DBConnection, tag_label: String) -> ApiResponse {
 pub fn update_tag(conn: DBConnection, tag_label: String, data: Json<TagData>) -> ApiResponse {
     
     let tag_data = data.into_inner();
-    //TODO check if correctly formed => ApiReponse 400 otherwise
 
     let tag = match Tag::update(&conn, tag_label, tag_data.label.into()){
         Data::Updated(_) => {

@@ -140,5 +140,5 @@ fn update_tag_with_malformed_json() {
     let response = req.dispatch();
 
     //check is the answer is Conflict
-    assert_eq!(response.status(), Status::BadRequest)
+    assert_eq!(response.status(), Status::UnprocessableEntity);
 }
