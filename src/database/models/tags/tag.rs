@@ -2,11 +2,11 @@ use crate::database::Data;
 
 use crate::database::schema::tags;
 use crate::database::schema::tags::dsl::tags as table;
-use diesel::MysqlConnection;
 use diesel::prelude::*;
+use diesel::MysqlConnection;
 
 /* ---------------------------------- Tag ---------------------------------- */
-#[derive(Debug, Queryable, Identifiable, Serialize, Insertable)]
+#[derive(Clone, Debug, Queryable, Identifiable, Serialize, Insertable)]
 #[primary_key(id)]
 #[table_name = "tags"]
 pub struct Tag {
@@ -27,12 +27,8 @@ impl Tag {
     }
 
     // by_label :: (MysqlConnection) -> Option<Tag>
-    pub fn by_label(conn: &MysqlConnection, label: &str) -> Option<Tag> {
-        if let Ok(tag) = table.filter(tags::label.eq(label)).first(conn) {
-            Some(tag)
-        } else {
-            None
-        }   
+    pub fn by_label(conn: &MysqlConnection, label: &str) -> Option<Self> {
+        table.filter(tags::label.eq(label)).first(conn).ok()
     }
 
     pub fn insert(conn: &MysqlConnection, tag: &TagMinima) -> Data<Self> {
@@ -42,41 +38,31 @@ impl Tag {
             diesel::insert_into(table)
                 .values(tag)
                 .execute(conn)
-                .expect("Failed address insertion");
+                .expect("Failed tag insertion");
             Data::Inserted(
                 Self::by_label(conn, &tag.label)
-                    .expect("Address insertion succeeded but could not be retrieved"),
+                    .expect("Tag insertion succeeded but could not be retrieved"),
             )
         }
     }
 
-    pub fn update(conn: &MysqlConnection, old_label: String, new_label:String) -> Data<Self> {
-        if let Some(label_availability) = Self::by_label(conn, &new_label) {
-            Data::Existing(label_availability)
-        } else if let Some(past) = Self::by_label(conn, &old_label) {
-            diesel::update(table.filter(tags::columns::label.eq(old_label))) // -> reference to the tag label to update TODO
-            .set(tags::label.eq(new_label))
-            .execute(conn)
-            .unwrap();
-            
-            Data::Updated(past) 
-        } else {
-            Data::None            
+    pub fn update(&self, conn: &MysqlConnection, new_label: &str) -> Data<Self> {
+        match Self::by_label(&conn, new_label) {
+            Some(label) => Data::Existing(label),
+            None => {
+                diesel::update(self)
+                    .set(tags::label.eq(new_label))
+                    .execute(conn)
+                    .unwrap();
+                Data::Updated(
+                    Self::by_label(&conn, &new_label)
+                        .expect("Tag update succeeded but could not be retrieved"),
+                )
+            }
         }
     }
 
-    pub fn delete(conn: &MysqlConnection, label: String) -> Data<Self> {
-        if let Some(tag) = Self::by_label(conn, &label) {
-            //Delete it
-            diesel::delete(table.filter(tags::columns::label.eq(label)))
-            .execute(conn)
-            .unwrap();
-            
-            Data::Deleted(tag)
-        } else {
-            //422
-            Data::None
-        }
+    pub fn delete(&self, conn: &MysqlConnection) {
+        diesel::delete(self).execute(conn).unwrap();
     }
-
 }

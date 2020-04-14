@@ -1,11 +1,10 @@
 -- Your SQL goes here
-
 CREATE TABLE tags_subscription (
-  user              INT UNSIGNED    NOT NULL,
-  label             INT UNSIGNED    NOT NULL    AUTO_INCREMENT,
-
-  PRIMARY KEY (user, label),
-  FOREIGN KEY (user) REFERENCES users(id),
-  FOREIGN KEY (label) REFERENCES tags(id)
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id INT UNSIGNED NOT NULL,
+  tag_id INT UNSIGNED NOT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT unique_user_tag_tagssubscription UNIQUE (`user_id`, tag_id),
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (tag_id) REFERENCES tags(id)
 );
-
