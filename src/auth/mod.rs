@@ -1,15 +1,19 @@
 use crate::conf::AppState;
+use crate::database::models::roles::capability::Capability;
 use crate::database::models::user::User;
 use crate::database::DBConnection;
+
 use chrono::{Duration, Utc};
+use diesel::MysqlConnection;
 use jsonwebtoken as jwt;
 use jwt::Validation;
+
 use rocket::http::Status;
 use rocket::request::{self, FromRequest, Request};
 use rocket::{Outcome, State};
 use serde::{Deserialize, Serialize};
 
-const TOKEN_PREFIX: &'static str = "Bearer ";
+pub const TOKEN_PREFIX: &'static str = "Bearer ";
 
 /* --------------------------- Exposed submodules -------------------------- */
 
@@ -23,20 +27,20 @@ pub struct Auth {
     pub iat: i64,    // Issued at (timestamp)
     pub exp: i64,    // Expire (timestamp)
     pub sub: u32,    // Subject (id)
-    pub cap: Vec<String>,
+    pub cap: Vec<Capability>,
 }
 
 /* ----------------------------- Implementation ---------------------------- */
 
 impl Auth {
-    pub fn new(user: &User, length: i64) -> Self {
+    pub fn new(conn: &MysqlConnection, user: &User, length: i64) -> Self {
         let now = Utc::now().timestamp();
         Auth {
             iss: "Unanimity".to_string(),
             iat: now,
             exp: now + length,
             sub: user.id,
-            cap: vec![], // TODO - User capabilites
+            cap: user.get_capabilities(&conn),
         }
     }
 
@@ -44,17 +48,30 @@ impl Auth {
         jwt::encode(&jwt::Header::default(), self, secret).expect("jwt encoding error")
     }
 
-    // ---------------------------- LOGIN / LOGOUT ----------------------------
-
+    /// Perform the login operation :
+    /// check if the given email exists and is linked to a validated account
+    /// and that the given password is correct for that user
+    ///
+    /// If so, the authentication process is completed and an `Auth` object is returned
+    /// along with the `User` object
     pub fn login(conn: &DBConnection, email: &str, password: &str) -> Option<(Auth, User)> {
         let validity = Duration::weeks(2).num_seconds();
         if let Some(user) = User::by_email(conn, email) {
             if user.verify(password) {
-                return Some((Auth::new(&user, validity), user));
+                return Some((Auth::new(&*conn, &user, validity), user));
             }
         }
-
         None
+    }
+
+    /// Check if the authenticated user has the requested capability
+    pub fn has_capability(&self, conn: &MysqlConnection, capability: &str) -> bool {
+        if let Some(capa) = Capability::by_name(&conn, &capability) {
+            self.cap.contains(&capa)
+        } else {
+            // TODO : panic or log an error since the given capability potientially do not exist
+            false
+        }
     }
 }
 

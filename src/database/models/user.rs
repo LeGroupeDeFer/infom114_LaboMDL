@@ -1,4 +1,5 @@
 use super::address::Address;
+use crate::database::models::roles;
 use crate::database::schema::users;
 use crate::database::schema::users::dsl::users as table;
 use crate::database::Data;
@@ -10,7 +11,7 @@ use rocket_contrib::json::JsonValue;
 
 /* ---------------------------------- User --------------------------------- */
 
-#[derive(Identifiable, Queryable, Associations, Serialize, Deserialize, Clone, Debug)]
+#[derive(Identifiable, Queryable, Associations, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[belongs_to(Address, foreign_key = "address")]
 pub struct User {
     pub id: u32,
@@ -42,7 +43,8 @@ impl User {
         table.load(conn).unwrap_or(vec![])
     }
 
-    // by_email :: (MysqlConnection, String) -> Option<User>
+    /// Constructor of `User` struct.
+    /// Fetch a user in database based on its email field.
     pub fn by_email(conn: &MysqlConnection, email: &str) -> Option<User> {
         if let Ok(user) = table.filter(users::email.eq(email)).first(conn) {
             Some(user)
@@ -88,6 +90,16 @@ impl User {
         }
     }
 
+    pub fn get_last_id(conn: &MysqlConnection) -> u32 {
+        use crate::database::schema::users::dsl::*;
+        table
+            .select(id)
+            .order(id.desc())
+            .first::<u32>(conn)
+            .ok()
+            .unwrap_or(0u32)
+    }
+
     /* ------------------------------ DYNAMIC ------------------------------ */
 
     pub fn cookie(&self) -> String {
@@ -115,6 +127,33 @@ impl User {
             "creation_date": self.creation_date,
             "last_connection": self.last_connection
         })
+    }
+
+    /// Get the roles of a user
+    /// Return a vector of `models::roles::role::Role` struct
+    pub fn get_roles(&self, conn: &MysqlConnection) -> Vec<roles::role::Role> {
+        roles::user_role::RelUserRole::get_roles_from_user(&conn, &self)
+            .iter()
+            .map(|r| roles::role::Role::by_id(&conn, &r.id))
+            .filter(|r| r.is_some())
+            .map(|r| r.unwrap())
+            .collect::<_>()
+    }
+
+    /// Get the capabilities of a user
+    /// Return a vector of `models::roles::capability::Capability` struct
+    pub fn get_capabilities(&self, conn: &MysqlConnection) -> Vec<roles::capability::Capability> {
+        let mut tab: Vec<roles::capability::Capability> = Vec::new();
+        let roles = self.get_roles(&conn);
+        for r in roles {
+            for c in r.capabilities(&conn) {
+                if !tab.contains(&c) {
+                    tab.push(c);
+                }
+            }
+        }
+
+        tab
     }
 
     /// Validate the fact that the email given

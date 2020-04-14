@@ -1,9 +1,9 @@
+use crate::auth::Auth;
 use crate::auth::forms::{ActivationData, LoginData, RegisterData};
-use crate::conf;
-
-use crate::database::DBConnection;
 use crate::database::models::tags::forms::TagData;
-
+use crate::conf;
+use crate::database::models::roles::forms::{RoleData, UserRoleData};
+use crate::database::DBConnection;
 use crate::http::responders::api::ApiResponse;
 use rocket_contrib::json::Json;
 
@@ -21,7 +21,14 @@ pub fn collect() -> Vec<rocket::Route> {
             tags_get,
             tag_post,
             tag_update,
-            tag_delete
+            tag_delete,
+            capabilities_get,
+            role_create,
+            role_update,
+            role_delete,
+            roles_get,
+            user_role_assign,
+            user_role_unassign,
         )[..],
     ]
     .concat()
@@ -45,6 +52,7 @@ pub fn auth_activate(conn: DBConnection, data: Json<ActivationData>) -> ApiRespo
 }
 
 /**************************** TAG MANAGEMENT *********************************/
+
 #[get("/api/tags")]
 pub fn tags_get(conn: DBConnection) -> ApiResponse {
     v1::tags::get(conn)
@@ -63,4 +71,46 @@ pub fn tag_update(conn: DBConnection, tag_label: String, data: Json<TagData>) ->
 #[delete("/api/tag/<tag_label>")]
 pub fn tag_delete(conn: DBConnection, tag_label: String) -> ApiResponse {
     v1::tag::delete_tag(conn, tag_label)
+}
+
+/*************************** ROLE MANAGEMENT *********************************/
+
+#[get("/api/capabilities")]
+pub fn capabilities_get(conn: DBConnection, auth: Auth) -> ApiResponse {
+    v1::capabilities::get(conn, auth)
+}
+
+#[post("/api/role", format = "json", data = "<data>")]
+pub fn role_create(conn: DBConnection, auth: Auth, data: Json<RoleData>) -> ApiResponse {
+    v1::role::create(conn, auth, data)
+}
+
+#[put("/api/role/<role_id>", format = "json", data = "<data>", rank = 3)]
+pub fn role_update(
+    conn: DBConnection,
+    auth: Auth,
+    role_id: u32,
+    data: Json<RoleData>,
+) -> ApiResponse {
+    v1::role::update(conn, auth, role_id, data)
+}
+
+#[delete("/api/role/<role_id>")]
+pub fn role_delete(conn: DBConnection, auth: Auth, role_id: u32) -> ApiResponse {
+    v1::role::delete(conn, auth, role_id)
+}
+
+#[get("/api/roles")]
+pub fn roles_get(conn: DBConnection, auth: Auth) -> ApiResponse {
+    v1::roles::get(conn, auth)
+}
+
+#[post("/api/user/role", format = "json", data = "<data>")]
+pub fn user_role_assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiResponse {
+    v1::user::role::assign(conn, auth, data)
+}
+
+#[delete("/api/user/role", format = "json", data = "<data>")]
+pub fn user_role_unassign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiResponse {
+    v1::user::role::unassign(conn, auth, data)
 }

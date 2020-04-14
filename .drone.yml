@@ -4,21 +4,33 @@ name: default
 
 steps:
 - name: backend
-  image: rustlang/rust:nightly
+  image: findot/rust-node:nightly
   privileged: true
+  environment:
+    TEST_DB_HOST:
+      from_secret: test_db_host
+    TEST_DB_PORT:
+      from_secret: test_db_port
+    TEST_DB_ADAPTER:
+      from_secret: test_db_adapter
+    TEST_DB_USER:
+      from_secret: test_db_user
+    TEST_DB_PASSWORD:
+      from_secret: test_db_password
+    TEST_DB_DATABASE:
+      from_secret: test_db_database
   volumes:
     - name: cargo-compilation-cache
       path: /drone/src/target
     - name: cargo-registry-cache
       path: /usr/local/cargo/registry
   commands:
-  - apt update && apt install -y libssl-dev pkg-config cmake zlib1g-dev
-  - cargo build --verbose --release --all-targets --all-features
-  - cargo test --verbose --release --all-targets --all-features
+  - apk add --update --no-cache mariadb-dev
   - cargo install --root /usr/local/cargo/registry cargo-tarpaulin
-  - PATH=/usr/local/cargo/registry/bin:$PATH cargo-tarpaulin tarpaulin --out Xml
+  - cargo build --verbose --release --all-targets --all-features
+  - PATH=/usr/local/cargo/registry/bin:$PATH cargo-tarpaulin tarpaulin --release --exclude-files tests/* --out Xml -- --test-threads=1
 - name: frontend
-  image: node:alpine3.10
+  image: findot/rust-node:nightly
   volumes:
     - name: node-cache
       path: /drone/src/node_modules

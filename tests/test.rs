@@ -11,5 +11,7 @@
 //! directory.
 //! So we have to add all the modules that are used for testing purposes.
 
+mod auth;
 mod init;
+mod roles;
 mod tags;

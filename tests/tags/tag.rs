@@ -3,9 +3,8 @@ use rocket::http::Status;
 use super::super::init;
 
 use unanimitylibrary::database::models::tags::tag::Tag;
-use unanimitylibrary::database::schema::tags::dsl::tags as table;
 use unanimitylibrary::database::schema::tags;
-
+use unanimitylibrary::database::schema::tags::dsl::tags as table;
 
 /************************************** TEST ***************************************/
 
@@ -14,6 +13,11 @@ fn add_new_tag() {
     let client = init::clean_client();
     let conn = init::database_connection();
 
+    // load all tags and assert there is none
+    let mut db_tags = Tag::all(&conn);
+    assert_eq!(db_tags.len(), 0);
+
+    // create a tag
     let req = client.post("/api/tag/test");
     let response = req.dispatch();
 
@@ -21,25 +25,23 @@ fn add_new_tag() {
     assert_eq!(response.status(), Status::Ok);
 
     //load all tags in the db and assert it contains the new tag test
-    let db_tags = Tag::all(&conn);
-    assert!(db_tags.iter().any(|tag| tag.label=="test"));
-    
-    //check there is only one tag in the db 
+    db_tags = Tag::all(&conn);
+    assert!(db_tags.iter().any(|tag| tag.label == "test"));
+
+    //check there is only one tag in the db
     assert_eq!(db_tags.len(), 1);
 }
-
 
 #[test]
 fn insert_already_existing_tag() {
     let client = init::clean_client();
     let conn = init::database_connection();
     init::seed();
-    let req = client.post("/api/tag/Info");  //it is created by default in the seed
+    let req = client.post("/api/tag/Info"); //it is created by default in the seed
     let response = req.dispatch();
 
     //check the answer is Conflict
     assert_eq!(response.status(), Status::Conflict);
-
 }
 
 #[test]
@@ -47,16 +49,15 @@ fn delete_tag() {
     let client = init::clean_client();
     let conn = init::database_connection();
     init::seed();
-    let req = client.delete("/api/tag/Droit");  //it is created by default in the seed
+    let req = client.delete("/api/tag/Droit"); //it is created by default in the seed
     let response = req.dispatch();
 
     //check the answer is Ok
     assert_eq!(response.status(), Status::Ok);
 
-    //check the tag does not exist in the db anymore 
+    //check the tag does not exist in the db anymore
     let db_tags = Tag::all(&conn);
-    assert!( !(db_tags.iter().any(|tag| tag.label=="droit")));
-    
+    assert!(!(db_tags.iter().any(|tag| tag.label == "droit")));
 }
 
 #[test]
@@ -64,7 +65,7 @@ fn delete_non_existing_tag() {
     let client = init::clean_client();
     let conn = init::database_connection();
     init::seed();
-    let req = client.delete("/api/tag/nonExisting");  //it is created by default in the seed
+    let req = client.delete("/api/tag/nonExisting"); //it is created by default in the seed
     let response = req.dispatch();
 
     //check the answer is UnprocessableEntity
@@ -72,8 +73,7 @@ fn delete_non_existing_tag() {
 
     //check it is not present in the db
     let db_tags = Tag::all(&conn);
-    assert!( !(db_tags.iter().any(|tag| tag.label=="nonExisting")));
-
+    assert!(!(db_tags.iter().any(|tag| tag.label == "nonExisting")));
 }
 #[test]
 fn update_tag() {
@@ -85,7 +85,7 @@ fn update_tag() {
         \"label\": \"NewInfo\"
     }";
 
-    let req = client.put("/api/tag/Info").body(new_label);  //it is created by default in the seed
+    let req = client.put("/api/tag/Info").body(new_label); //it is created by default in the seed
     let response = req.dispatch();
 
     //check is the answer is Ok
@@ -102,7 +102,7 @@ fn update_non_existing_tag() {
         \"label\": \"NewLabel\"
     }";
 
-    let req = client.put("/api/tag/nonExisting").body(new_label);  //it is created by default in the seed
+    let req = client.put("/api/tag/nonExisting").body(new_label); //it is created by default in the seed
     let response = req.dispatch();
 
     //check is the answer is UnprocessableEntity
@@ -119,7 +119,7 @@ fn update_tag_with_already_existing_label() {
         \"label\": \"Info\"
     }";
 
-    let req = client.put("/api/tag/Pharma").body(new_label);  //it is created by default in the seed
+    let req = client.put("/api/tag/Pharma").body(new_label); //it is created by default in the seed
     let response = req.dispatch();
 
     //check is the answer is Conflict
@@ -136,7 +136,7 @@ fn update_tag_with_malformed_json() {
         \"Malformed\": \"Json\"
     }";
 
-    let req = client.put("/api/tag/Info").body(new_label);  //it is created by default in the seed
+    let req = client.put("/api/tag/Info").body(new_label); //it is created by default in the seed
     let response = req.dispatch();
 
     //check is the answer is Conflict
