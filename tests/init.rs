@@ -8,7 +8,7 @@
 use unanimitylibrary::conf::env_setting;
 
 use unanimitylibrary::database;
-use unanimitylibrary::database::models::{address::Address, user::User, user::UserMinima};
+use unanimitylibrary::database::models::{Entity, address::Address, user::User, user::UserMinima};
 use unanimitylibrary::database::schema::addresses::dsl::addresses;
 use unanimitylibrary::database::schema::users::dsl::users;
 
@@ -100,16 +100,15 @@ pub fn get_user(active: bool) -> (User, String) {
         lastname: String::from("Latour"),
         address: None,
         phone: None,
+        activation_token: None,
+        recovery_token: None,
     };
 
-    let user = match User::insert_minima(&conn, &u) {
-        Left(u) => u,
-        Right(u) => u,
-    };
+    let user = User::insert_either(&conn, &u).unwrap();
 
     if active {
-        user.activate(&conn);
+        user.activate(&conn).unwrap();
     }
 
-    (User::by_email(&conn, &u.email).unwrap(), u.password)
+    (user, u.password)
 }

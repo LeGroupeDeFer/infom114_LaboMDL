@@ -29,7 +29,7 @@ function ActivationStatus({ status }) {
           <h4 className="text-danger"><b>Failure</b></h4>
           <p><b>
             The code you provided is either invalid or has expired. If your
-            account is still no activated, you can attempt to
+            account is still not activated, you can attempt to
             <Link to="/login" className="text-secondary mx-1">login</Link>to
             generate a new activation link.
           </b></p>
@@ -55,8 +55,8 @@ function ActivationStatus({ status }) {
         <>
           <h4 className="text-secondary"><b>Almost done...</b></h4>
           <p><b>
-            Please click on the that has just been sent to your email account
-            to verify your email and continue the registration process.
+            Please click on the link that has just been sent to your email
+            account to verify your email and continue the registration process.
           </b></p>
         </>
       );

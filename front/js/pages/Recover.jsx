@@ -43,29 +43,12 @@ function ActivationStatus({ status }) {
       </b></p>
     </>
   );
+
 }
 
-export default function Activate() {
+export default function Recover() {
 
-  let history = useHistory();
-  let { id, token } = useParams();
-  let [activated, setActivated] = useState(null);
-
-  useEffect(() => {
-    let isSubscribed = true;
-
-    api.activate(id, token)
-      .then(() => {
-        if (isSubscribed)
-          setActivated(true);
-      })
-      .catch(() => {
-        if (isSubscribed)
-          setActivated(false);
-      });
-
-    return () => isSubscribed = false;
-  }, [])
+  
 
   return (
     <Container className="activation-content text-center">

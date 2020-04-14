@@ -1,7 +1,8 @@
 use crate::conf::AppState;
-use crate::database::models::user::User;
-use crate::database::DBConnection;
-use chrono::{Duration, Utc};
+use crate::database::models::prelude::*;
+use diesel::prelude::*;
+use diesel::MysqlConnection;
+use chrono::Utc;
 use jsonwebtoken as jwt;
 use jwt::Validation;
 use rocket::http::Status;
@@ -29,39 +30,82 @@ pub struct Auth {
 /* ----------------------------- Implementation ---------------------------- */
 
 impl Auth {
-    pub fn new(user: &User, length: i64) -> Self {
+
+    pub fn new(user: &User, lifetime: &u32) -> Self {
         let now = Utc::now().timestamp();
         Auth {
             iss: "Unanimity".to_string(),
             iat: now,
-            exp: now + length,
+            exp: now + (*lifetime as i64),
             sub: user.id,
             cap: vec![], // TODO - User capabilites
         }
     }
 
-    pub fn token(&self, secret: &[u8]) -> String {
-        jwt::encode(&jwt::Header::default(), self, secret).expect("jwt encoding error")
+    pub fn token(&self, secret: &[u8]) -> Result<String> {
+        jwt::encode(&jwt::Header::default(), self, secret).map(Ok)?
     }
 
     // ---------------------------- LOGIN / LOGOUT ----------------------------
 
-    pub fn login(conn: &DBConnection, email: &str, password: &str) -> Option<(Auth, User)> {
-        let validity = Duration::weeks(2).num_seconds();
-        if let Some(user) = User::by_email(conn, email) {
-            if user.verify(password) {
-                return Some((Auth::new(&user, validity), user));
-            }
+    pub fn login(
+        conn: &MysqlConnection,
+        email: &str,
+        password: &str,
+        access_lifetime: &u32,
+        refresh_lifetime: &u32
+    ) -> Result<(Auth, Token, User)> {
+        use crate::database::schema::users::dsl;
+
+        // Get user info
+        let mut user = User::by_email(conn, email)??;
+        let verification = user.verify(password)?;
+
+        // Check the info
+        if !verification {
+            return Err(AuthError::InvalidIDs)?;
+        } else if !user.active {
+            return Err(AuthError::Inactive)?;
         }
 
-        None
+        // Get or create the refresh token
+        let mut refresh_token = user.refresh_token(conn)??;
+        refresh_token.renew(conn, Some(-1))?;
+        user.last_connection = Utc::now().naive_local();
+        user.update(conn)?;
+
+        // We're good
+        Ok((Auth::new(&user, access_lifetime), refresh_token, user))
     }
+
+    pub fn refresh(
+        conn: &MysqlConnection,
+        email: &str,
+        hash: &str,
+        access_lifetime: &u32
+    ) -> Result<Auth> {
+        let user = User::by_email(conn, email)??;
+        let token = user.refresh_token(conn)??;
+
+        token.verify(hash)?;
+        Ok(Auth::new(&user, access_lifetime))
+    }
+
+    pub fn logout(conn: &MysqlConnection, email: &str, hash: &str) -> Result<()> {
+        let user = User::by_email(conn, email)??;
+        let mut token = user.refresh_token(conn)?.ok_or(AuthError::InvalidToken)?;
+        token.verify(hash).map_err(|_| AuthError::InvalidToken)?;
+        token.revoke(conn)?;
+
+        Ok(())
+    }
+
 }
 
 /* ------------------------- Traits implementations ------------------------ */
 
 impl<'a, 'r> FromRequest<'a, 'r> for Auth {
-    type Error = String;
+    type Error = Error;
 
     // from_request :: Request -> Outcome<Auth, Error>
     fn from_request(request: &'a Request<'r>) -> request::Outcome<Auth, Self::Error> {
@@ -75,29 +119,25 @@ impl<'a, 'r> FromRequest<'a, 'r> for Auth {
 
 /* ------------------------------- Functions ------------------------------- */
 
-// token_decode :: (String, [Int]) -> Result<Claims, Error>
-fn token_decode(token: &str, secret: &[u8]) -> Result<Auth, String> {
+fn token_decode(token: &str, secret: &[u8]) -> Result<Auth> {
     jwt::decode(token, secret, &Validation::default())
-        .map_err(|err| format!("Unable to decode token : {:?}", err))
         .map(|data| data.claims)
+        .map(Ok)?
 }
 
-// token_header :: String -> Result<String, Error>
-fn token_header(header: &str) -> Result<&str, String> {
-    if header.starts_with(TOKEN_PREFIX) {
-        Ok(&header[TOKEN_PREFIX.len()..])
-    } else {
-        Err(format!("Malformed authentication header: {:?}", header))
+fn token_header(header: &str) -> Result<&str> {
+    if !header.starts_with(TOKEN_PREFIX) {
+        Err(AuthError::InvalidHeader)?;
     }
+    Ok(&header[TOKEN_PREFIX.len()..])
 }
 
-// request_auth:: (Request, [Int]) -> Result<Claims, Error>
-fn request_auth(request: &Request, secret: &[u8]) -> Result<Auth, String> {
+fn request_auth(request: &Request, secret: &[u8]) -> Result<Auth> {
     if let Some(header) = request.headers().get_one("authorization") {
         let token = token_header(header);
         token.and_then(|token| token_decode(token, secret))
     } else {
-        Err("Missing authorization header".to_string())
+        Err(AuthError::MissingHeader)?
     }
 }
 

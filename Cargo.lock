@@ -1153,6 +1153,7 @@ dependencies = [
  "dotenv",
  "either",
  "jsonwebtoken",
+ "rand",
  "regex",
  "rocket",
  "rocket_contrib",

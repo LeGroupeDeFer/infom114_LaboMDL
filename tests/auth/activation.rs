@@ -120,15 +120,15 @@ fn activation_wrong_id_wrong_token() {
     );
 
     let request = client.post(ROUTE).header(ContentType::JSON).body(data);
-
     let response = request.dispatch();
 
     assert_eq!(response.status(), Status::Forbidden);
 
-    let not_so_activated_user = User::by_email(&connection, &user.email).unwrap();
+    let not_so_activated_user = User::by_email(&connection, &user.email).unwrap().unwrap();
+    let not_so_consumed_token =  not_so_activated_user.activation_token(&connection).unwrap().unwrap();
 
     assert!(!not_so_activated_user.active);
-    assert!(not_so_activated_user.token.is_some());
+    assert!(!not_so_consumed_token.consumed);
 }
 
 #[test]
@@ -136,6 +136,7 @@ fn double_activation() {
     let client = init::clean_client();
     let (user, _passwd) = init::get_user(false);
     let connection = init::database_connection();
+    let token = user.activation_token(&connection).unwrap().unwrap();
 
     // assert the user is inactive
     assert!(!user.active);
@@ -143,7 +144,7 @@ fn double_activation() {
     let data = format!(
         "{{\"id\":{}, \"token\":\"{}\"}}",
         user.id,
-        user.token.unwrap()
+        token.hash
     );
 
     let request = client.post(ROUTE).header(ContentType::JSON).body(&data);
@@ -151,10 +152,11 @@ fn double_activation() {
 
     assert_eq!(response.status(), Status::Ok);
 
-    let activated_user = User::by_email(&connection, &user.email).unwrap();
+    let activated_user = User::by_email(&connection, &user.email).unwrap().unwrap();
+    let consumed_token = activated_user.activation_token(&connection).unwrap().unwrap();
 
     assert!(activated_user.active);
-    assert!(activated_user.token.is_none());
+    assert!(consumed_token.consumed);
 
     let request_bis = client.post(ROUTE).header(ContentType::JSON).body(&data);
     let response_bis = request_bis.dispatch();
@@ -163,5 +165,5 @@ fn double_activation() {
 
     // the request failed, but the user is still activated
     assert!(activated_user.active);
-    assert!(activated_user.token.is_none());
+    assert!(consumed_token.consumed);
 }

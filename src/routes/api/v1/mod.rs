@@ -1,7 +1,7 @@
 use crate::auth::Auth;
-use crate::http::responders::api::ApiResponse;
+use crate::http::responders::ApiResult;
 use crate::lib::extend_routes;
-use rocket::http::Status;
+use rocket_contrib::json::Json;
 mod auth;
 
 pub fn collect() -> Vec<rocket::Route> {
@@ -9,12 +9,12 @@ pub fn collect() -> Vec<rocket::Route> {
     [&routes!(version)[..], &auth_routes[..]].concat()
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct ApiVersion {
+    version: u32
+}
+
 #[get("/")]
-pub fn version(_auth: Auth) -> ApiResponse {
-    ApiResponse::new(
-        Status::Ok,
-        json!({
-            "version": 1,
-        }),
-    )
+pub fn version(_auth: Auth) -> ApiResult<ApiVersion> {
+    Ok(Json(ApiVersion { version: 1 }))
 }

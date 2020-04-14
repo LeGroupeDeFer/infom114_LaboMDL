@@ -1,11 +1,17 @@
+use crate::database::models::prelude::*;
+
 // This function is a mock of a true mailing function while a better API is developped
-pub fn send(from: &str, to: &str, message: &str, cc: Vec<&str>) {
+pub fn send(to: &User, message: &str, cc: &Vec<&User>) -> Result<bool>{
     let others = cc
         .iter()
-        .fold(String::new(), |acc, email| format!("{} {}", &acc, email));
+        .fold(String::new(), |acc, user| format!("{} {}", &acc, &user.email));
+
     println!(" -------------------- MAIL -------------------- ");
-    println!("FROM: {}", from);
-    println!("TO: {} (CC: {})", to, others);
+    println!("FROM: info@unanimity.be");
+    println!("TO: {} (CC: {})", &to.email, others);
     println!("{}", &message);
     println!(" ------------------ END MAIL ------------------ ");
+
+    Ok(true) // bool is dummy, this method will almost certainly have errors to handle so we set
+    // a dummy while it's not implemented
 }
