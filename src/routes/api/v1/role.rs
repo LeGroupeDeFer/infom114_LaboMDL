@@ -61,6 +61,7 @@ pub fn create(conn: DBConnection, auth: Auth, data: Json<RoleData>) -> ApiRespon
             return ApiResponse::error(Status::Conflict, "A role with this name already exist")
         }
         Data::Inserted(r) => r,
+        _ => panic!("unreachable code reched")
     };
 
     // for this new role, add every given capabilities

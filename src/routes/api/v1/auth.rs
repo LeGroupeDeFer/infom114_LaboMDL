@@ -70,6 +70,7 @@ pub fn register(conn: DBConnection, data: Json<RegisterData>) -> ApiResponse {
             );
             ApiResponse::new(Status::Ok, json!({}))
         }
+        _ => panic!("unreachable code reched"),
     }
 }
 

@@ -57,7 +57,8 @@ pub fn assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiRe
         Data::Inserted(_) => ApiResponse::simple_success(Status::Ok),
         Data::Existing(_) => {
             ApiResponse::error(Status::Conflict, "This user do already have this role")
-        }
+        },
+        _ => panic!("unreachable code reched")
     }
 }
 
