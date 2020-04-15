@@ -11,8 +11,9 @@ use rocket;
 use rocket_contrib::json::Json;
 
 pub fn collect() -> Vec<rocket::Route> {
-  routes!(register, login, activate, restore, recovery, refresh)
+  routes!(register, login, logout, activate, restore, recovery, refresh)
 }
+
 
 #[post("/register", format = "json", data = "<data>")]
 fn register(conn: DBConnection, data: Json<RegisterData>) -> ApiResult<()> {
@@ -54,8 +55,16 @@ fn login(conn: DBConnection, state: State, data: Json<LoginData>) -> ApiResult<L
     }))
 }
 
+#[post("/logout", format = "json", data = "<data>")]
+fn logout(conn: DBConnection, data: Json<LogoutData>) -> ApiResult<()> {
+    let LogoutData { email, refresh_token } = data.into_inner();
+    Auth::logout(&conn, &email, &refresh_token)?;
+
+    OK()
+}
+
 #[post("/activate", format = "json", data = "<data>")]
-fn activate(conn: DBConnection, data: Json<ActivationData>) -> ApiResult<()> {
+fn activate(conn: DBConnection, state: State, data: Json<ActivationData>) -> ApiResult<()> {
     let ActivationData { id, token } = data.into_inner();
 
     let mut user = User::of(&conn, &id)??;
@@ -71,6 +80,13 @@ fn activate(conn: DBConnection, data: Json<ActivationData>) -> ApiResult<()> {
     activation_token.verify(&token)?;
     activation_token.consume(&conn)?;
 
+    let refresh_token = Token::create(
+        &conn,
+        Some(&state.access_lifetime),
+        Some(&-1)
+    )?;
+
+    user.refresh_token = Some(refresh_token.id);
     user.active = true;
     user.update(&conn)?;
 
@@ -78,7 +94,7 @@ fn activate(conn: DBConnection, data: Json<ActivationData>) -> ApiResult<()> {
 }
 
 #[post("/restore", format = "json", data = "<data>")]
-fn restore(conn: DBConnection, data: Json<RestoreData>) -> ApiResult<()> {
+fn restore(conn: DBConnection, state: State, data: Json<RestoreData>) -> ApiResult<()> {
     let email = data.into_inner().email;
 
     let mut user = User::by_email(&conn, &email)??;
@@ -90,7 +106,7 @@ fn restore(conn: DBConnection, data: Json<RestoreData>) -> ApiResult<()> {
     let mut activation_token = user.activation_token(&conn)?.unwrap_or(
         Token::create_default(&conn)?
     );
-    activation_token.renew(&conn, Some(1))?;
+    activation_token.renew(&conn, Some(&state.refresh_lifetime), Some(&1))?;
     user.activation_token = Some((&activation_token).id);
     user.update(&conn)?;
 
@@ -120,9 +136,17 @@ fn recovery(conn: DBConnection, data: Json<RecoveryData>) -> ApiResult<()> {
 #[post("/refresh", format = "json", data = "<data>")]
 fn refresh(conn: DBConnection, state: State, data: Json<RefreshData>) -> ApiResult<RefreshSuccess> {
     let RefreshData { email, refresh_token } = data.into_inner();
-    let auth = Auth::refresh(&conn, &email, &refresh_token, &state.access_lifetime)?;
+    let (auth, token, user) = Auth::refresh(
+        &conn,
+        &email,
+        &refresh_token,
+        &state.access_lifetime,
+        &state.refresh_lifetime
+    )?;
 
     Ok(Json(RefreshSuccess {
-        access_token: auth.token(&state.jwt_secret)?
+        access_token: auth.token(&state.jwt_secret)?,
+        user: user.data(),
+        refresh_token: token.hash
     }))
 }

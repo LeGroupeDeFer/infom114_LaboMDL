@@ -4,6 +4,7 @@ use super::result::token::Error as TokenError;
 use super::Entity;
 use crate::database::schema::tokens;
 use crate::database::schema::tokens::dsl::tokens as table;
+use std::convert::TryFrom;
 use chrono::{Duration, NaiveDateTime, Utc};
 use diesel::prelude::*;
 use diesel::MysqlConnection;
@@ -55,8 +56,7 @@ impl Entity for Token {
     }
 
     fn update(&self, conn: &MysqlConnection) -> Result<&Self> {
-        println!("{}", &self.hash);
-        diesel::update(table).set(self).execute(conn).map(|_| self).map(Ok)?
+        diesel::update(self).set(self).execute(conn).map(|_| self).map(Ok)?
     }
 
     fn delete(self, conn: &MysqlConnection) -> Result<()> {
@@ -70,7 +70,6 @@ impl Token {
 
     /* ---------------------------------------- STATIC ---------------------------------------- */
 
-    // by_hash :: (DBConnection, String) -> Option<Token>
     pub fn by_hash(conn: &MysqlConnection, hash: &str) -> Result<Option<Self>> {
         table
             .filter(tokens::hash.eq(hash))
@@ -111,24 +110,27 @@ impl Token {
 
     /* --------------------------------------- DYNAMIC ---------------------------------------- */
 
-    pub fn renew(&mut self, conn: &MysqlConnection, uses: Option<i32>) -> Result<&Self> {
-        if self.valid() { return Ok(self); }
-
+    pub fn renew(
+        &mut self,
+        conn: &MysqlConnection,
+        lifetime: Option<&u32>,
+        count: Option<&i32>,
+    ) -> Result<&Self> {
         let hash = thread_rng().sample_iter(&Alphanumeric).take(32).collect();
         let creation_date = Utc::now().naive_local();
 
         let expiration_date = self.expiration_date.map(|expiration: NaiveDateTime| -> Result<NaiveDateTime> {
-            let lifetime = expiration.timestamp() - self.creation_date.timestamp();
-            creation_date.checked_add_signed(Duration::seconds(lifetime)).map(Ok)?
+            let new_lifetime = lifetime.map(|v| *v as i64).unwrap_or(
+                expiration.timestamp() - self.creation_date.timestamp()
+            );
+            creation_date.checked_add_signed(Duration::seconds(new_lifetime)).map(Ok)?
         }).transpose()?;
-
-        let count = if self.consumed { uses.unwrap_or(1) } else { self.count };
 
         self.hash = hash;
         self.creation_date = creation_date;
         self.expiration_date = expiration_date;
-        self.count = count;
-        self.consumed = count == 0;
+        self.count = *count.unwrap_or(&self.count);
+        self.consumed = *count.unwrap_or(&self.count) == 0;
 
         self.update(conn)?;
         Ok(self)
@@ -183,6 +185,26 @@ impl Token {
         }
     }
 
+    pub fn vouch(&mut self, conn: &MysqlConnection, hash: &str) -> Result<&Self> {
+        self.verify(hash)?;
+        self.consume(conn)
+    }
+
+    pub fn lifespan(&self) -> u32 {
+        self.expiration_date.map(|expires| {
+            // The duration for a token creation is a u32 which implies that expiration - creation
+            // can't overflow a u32, hence the unwrap()
+            u32::try_from(expires.timestamp() - self.creation_date.timestamp()).unwrap()
+        }).unwrap_or(u32::max_value())
+    }
+
+    pub fn ttl(&self) -> u32 {
+        let now = Utc::now().naive_local();
+        self.expiration_date.map(|expires| {
+            // Same logic as in lifespan for the unwrap
+            u32::try_from(expires.timestamp() - now.timestamp()).unwrap()
+        }).unwrap_or(u32::max_value())
+    }
 }
 
 impl From<Token> for String {

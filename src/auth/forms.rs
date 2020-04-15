@@ -15,6 +15,14 @@ pub struct LoginSuccess {
     pub user: PublicUser
 }
 
+// ------------------------------------------------------------------------------------ LOGOUT FORM
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct LogoutData {
+    pub email: String,
+    pub refresh_token: String,
+}
+
 // ---------------------------------------------------------------------------------------------- ?
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Email {
@@ -81,5 +89,7 @@ pub struct RefreshData {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RefreshSuccess {
-    pub access_token: String
+    pub access_token: String,
+    pub user: PublicUser,
+    pub refresh_token: String
 }

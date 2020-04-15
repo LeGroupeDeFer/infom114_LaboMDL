@@ -19,10 +19,10 @@ impl AppState {
             let secret = env_setting("JWT_SECRET");
             let access_lifetime = env_setting("JWT_LIFETIME")
                 .parse::<u32>()
-                .expect("JWT_LIFETIME must be natural");
+                .expect("JWT_LIFETIME must be a natural");
             let refresh_lifetime = env_setting("REFRESH_LIFETIME")
                 .parse::<u32>()
-                .expect("REFRESH_LIFETIME must be natural");
+                .expect("REFRESH_LIFETIME must be a natural");
 
             Ok(rocket.manage(AppState {
                 jwt_secret: secret.as_bytes().to_vec(),

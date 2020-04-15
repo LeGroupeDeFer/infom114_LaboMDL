@@ -1,6 +1,5 @@
 use crate::conf::AppState;
 use crate::database::models::prelude::*;
-use diesel::prelude::*;
 use diesel::MysqlConnection;
 use chrono::Utc;
 use jsonwebtoken as jwt;
@@ -55,7 +54,6 @@ impl Auth {
         access_lifetime: &u32,
         refresh_lifetime: &u32
     ) -> Result<(Auth, Token, User)> {
-        use crate::database::schema::users::dsl;
 
         // Get user info
         let mut user = User::by_email(conn, email)??;
@@ -70,7 +68,7 @@ impl Auth {
 
         // Get or create the refresh token
         let mut refresh_token = user.refresh_token(conn)??;
-        refresh_token.renew(conn, Some(-1))?;
+        refresh_token.renew(conn, Some(refresh_lifetime), Some(&-1))?;
         user.last_connection = Utc::now().naive_local();
         user.update(conn)?;
 
@@ -82,19 +80,27 @@ impl Auth {
         conn: &MysqlConnection,
         email: &str,
         hash: &str,
-        access_lifetime: &u32
-    ) -> Result<Auth> {
+        access_lifetime: &u32,
+        refresh_lifetime: &u32
+    ) -> Result<(Auth, Token, User)> {
         let user = User::by_email(conn, email)??;
-        let token = user.refresh_token(conn)??;
+        let mut token = user.refresh_token(conn)??;
 
         token.verify(hash)?;
-        Ok(Auth::new(&user, access_lifetime))
+        if token.ttl() < token.lifespan() / 2 {
+            token.renew(conn, Some(refresh_lifetime), Some(&-1))?;
+        }
+
+        Ok((Auth::new(&user, access_lifetime), token, user))
     }
 
     pub fn logout(conn: &MysqlConnection, email: &str, hash: &str) -> Result<()> {
         let user = User::by_email(conn, email)??;
-        let mut token = user.refresh_token(conn)?.ok_or(AuthError::InvalidToken)?;
-        token.verify(hash).map_err(|_| AuthError::InvalidToken)?;
+        let mut token = user.refresh_token(conn)?.map_or_else(
+            || Err(AuthError::InvalidToken),
+            |v| Ok(v)
+        )?;
+        token.verify(hash)?;
         token.revoke(conn)?;
 
         Ok(())

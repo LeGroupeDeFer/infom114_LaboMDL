@@ -25,6 +25,13 @@ RUN set -eux \
     && rm rustup-init \
     && chmod -R a+w $RUSTUP_HOME $CARGO_HOME
 
+# tz
+RUN set -eux \
+ && apk add --update --no-cache tzdata \
+ && cp /usr/share/zoneinfo/Europe/Brussels /etc/localtime \
+ && echo "Europe/Brussels" > /etc/timezone \
+ && apk del tzdata
+
 VOLUME /usr/src/app
 VOLUME /usr/local/cargo/registry
 EXPOSE 8000

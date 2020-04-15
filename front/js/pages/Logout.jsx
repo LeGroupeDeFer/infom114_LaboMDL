@@ -13,7 +13,7 @@ function Logout(props) {
       logout().then(_ => history.replace('/'));
     else
       history.replace('/');
-  });
+  }, []);
 
   return <></>;
 }

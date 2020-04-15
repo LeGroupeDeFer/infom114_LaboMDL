@@ -24,7 +24,7 @@ table! {
         creation_date -> Timestamp,
         expiration_date -> Nullable<Timestamp>,
         count -> Integer,
-        consumed -> Nullable<Bool>,
+        consumed -> Bool,
     }
 }
 
@@ -42,7 +42,7 @@ table! {
         activation_token -> Nullable<Unsigned<Integer>>,
         recovery_token -> Nullable<Unsigned<Integer>>,
         refresh_token -> Nullable<Unsigned<Integer>>,
-        active -> Nullable<Bool>,
+        active -> Bool,
     }
 }
 
