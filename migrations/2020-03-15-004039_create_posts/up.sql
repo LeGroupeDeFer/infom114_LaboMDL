@@ -7,10 +7,7 @@ DROP TABLE IF EXISTS votes_posts;
 DROP TABLE IF EXISTS votes;
 DROP TABLE IF EXISTS comments;
 DROP TABLE IF EXISTS posts_tags;
-DROP TABLE IF EXISTS tags;
 DROP TABLE IF EXISTS posts;
-
-SET FOREIGN_KEY_CHECKS=1;
 
 CREATE TABLE posts (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -24,12 +21,6 @@ CREATE TABLE posts (
     PRIMARY KEY (id),
     CONSTRAINT fk_posts_authorid FOREIGN KEY (authorid) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT posttype_values CHECK (post_type in ("Poll", "Idea", "Info", "Decisional", "Discussion"))
-);
-
-CREATE TABLE tags (
-    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    description VARCHAR(100) NOT NULL,
-    PRIMARY KEY  (id)
 );
 
 CREATE TABLE posts_tags (
@@ -74,3 +65,5 @@ CREATE TABLE votes_comments (
     CONSTRAINT votescomments_commentid FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE,
     CONSTRAINT votescomments_voteauthorid FOREIGN KEY (vote_authorid) REFERENCES users(id) ON DELETE CASCADE
 );
+
+SET FOREIGN_KEY_CHECKS=1;

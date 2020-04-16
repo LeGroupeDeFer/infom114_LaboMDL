@@ -12,7 +12,7 @@ pub struct Address {
     pub number: u32,
     pub box_number: Option<String>,
     pub city: String,
-    pub zipcode: u32,
+    pub zipcode: String,
     pub country: String,
 }
 
@@ -20,7 +20,7 @@ impl Address {
     /* ------------------------------- STATIC ------------------------------ */
 
     // from :: (MysqlConnection, Integer) -> Option<Address>
-    pub fn from(conn: &MysqlConnection, id: &u32) -> Option<Self> {
+    pub fn by_id(conn: &MysqlConnection, id: &u32) -> Option<Self> {
         table.find(id).first::<Address>(conn).ok()
     }
 
@@ -82,6 +82,6 @@ pub struct AddressMinima {
     pub number: u32,
     pub box_number: Option<String>,
     pub city: String,
-    pub zipcode: u32,
+    pub zipcode: String,
     pub country: String,
 }

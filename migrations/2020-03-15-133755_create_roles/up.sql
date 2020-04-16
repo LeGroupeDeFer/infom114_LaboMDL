@@ -4,9 +4,8 @@ DROP TABLE IF EXISTS roles;
 SET FOREIGN_KEY_CHECKS=1;
 
 CREATE TABLE roles (
-  id                INT UNSIGNED    NOT NULL    AUTO_INCREMENT,
-  name              VARCHAR(150),
-
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(150) NOT NULL,
   PRIMARY KEY (id),
-  CONSTRAINT unique_name UNIQUE (name)
+  CONSTRAINT unique_roles_name UNIQUE (name)
 );

@@ -1,8 +1,4 @@
 -- Your SQL goes here
-SET FOREIGN_KEY_CHECKS=0;
-DROP TABLE IF EXISTS addresses;
-SET FOREIGN_KEY_CHECKS=1;
-
 CREATE TABLE addresses (
   id                INT UNSIGNED    NOT NULL    AUTO_INCREMENT,
 
@@ -10,7 +6,7 @@ CREATE TABLE addresses (
   number            INT UNSIGNED    NOT NULL,
   box_number        VARCHAR(16),
   city              VARCHAR(150)    NOT NULL,
-  zipcode           INT UNSIGNED     NOT NULL,
+  zipcode           VARCHAR(20)     NOT NULL,
   country           VARCHAR(150)    NOT NULL,
 
   PRIMARY KEY (id),

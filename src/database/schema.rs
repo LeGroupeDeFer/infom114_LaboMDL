@@ -5,8 +5,15 @@ table! {
         number -> Unsigned<Integer>,
         box_number -> Nullable<Varchar>,
         city -> Varchar,
-        zipcode -> Unsigned<Integer>,
+        zipcode -> Varchar,
         country -> Varchar,
+    }
+}
+
+table! {
+    capabilities (id) {
+        id -> Unsigned<Integer>,
+        name -> Varchar,
     }
 }
 
@@ -46,14 +53,31 @@ table! {
 table! {
     roles (id) {
         id -> Unsigned<Integer>,
-        name -> Nullable<Varchar>,
+        name -> Varchar,
+        color -> Varchar,
+    }
+}
+
+table! {
+    roles_capabilities (id) {
+        id -> Unsigned<Integer>,
+        role_id -> Unsigned<Integer>,
+        capability_id -> Unsigned<Integer>,
     }
 }
 
 table! {
     tags (id) {
         id -> Unsigned<Integer>,
-        description -> Varchar,
+        label -> Varchar,
+    }
+}
+
+table! {
+    tags_subscription (id) {
+        id -> Unsigned<Integer>,
+        user_id -> Unsigned<Integer>,
+        tag_id -> Unsigned<Integer>,
     }
 }
 
@@ -74,9 +98,10 @@ table! {
 }
 
 table! {
-    users_roles (user, role) {
-        user -> Unsigned<Integer>,
-        role -> Unsigned<Integer>,
+    users_roles (id) {
+        id -> Unsigned<Integer>,
+        user_id -> Unsigned<Integer>,
+        role_id -> Unsigned<Integer>,
     }
 }
 
@@ -103,9 +128,13 @@ joinable!(comments -> users (authorid));
 joinable!(posts -> users (authorid));
 joinable!(posts_tags -> posts (post_id));
 joinable!(posts_tags -> tags (tag_id));
+joinable!(roles_capabilities -> capabilities (capability_id));
+joinable!(roles_capabilities -> roles (role_id));
+joinable!(tags_subscription -> tags (tag_id));
+joinable!(tags_subscription -> users (user_id));
 joinable!(users -> addresses (address));
-joinable!(users_roles -> roles (role));
-joinable!(users_roles -> users (user));
+joinable!(users_roles -> roles (role_id));
+joinable!(users_roles -> users (user_id));
 joinable!(votes_comments -> comments (comment_id));
 joinable!(votes_comments -> users (vote_authorid));
 joinable!(votes_posts -> posts (post_id));
@@ -113,11 +142,14 @@ joinable!(votes_posts -> users (vote_authorid));
 
 allow_tables_to_appear_in_same_query!(
     addresses,
+    capabilities,
     comments,
     posts,
     posts_tags,
     roles,
+    roles_capabilities,
     tags,
+    tags_subscription,
     users,
     users_roles,
     votes_comments,
