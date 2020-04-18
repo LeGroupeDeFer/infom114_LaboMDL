@@ -21,6 +21,7 @@ const Logout = lazy(() => import('../pages/Logout'));
 const Register = lazy(() => import('../pages/Register'));
 const Create = lazy(() => import('../pages/Create'));
 const Activate = lazy(() => import('../pages/Activate'));
+const Admin = lazy(() => import('../pages/Admin'));
 
 // Content :: Object => Component
 const Content = _ => {
@@ -101,6 +102,9 @@ const Content = _ => {
 
                 <Route path="/activate/:id?/:token?">
                   <Activate />
+                </Route>
+                <Route path="/admin">
+                  <Admin />
                 </Route>
               </Switch>
             </Suspense>

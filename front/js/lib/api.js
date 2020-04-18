@@ -124,11 +124,27 @@ function recover(id, token) {
   return api('/auth/recover', { body: { id: Number(id), token } });
 }
 
+function tags() {
+  return api('/tags');
+}
+
+function addTag(label) {
+  return api(`/tag/${label}`, {method: 'POST'});
+}
+
+function removeTag(label) {
+  return api(`/tag/${label}`, {method: "DELETE"})
+}
 
 api.auth = auth;
 api.login = login;
 api.logout = logout;
 api.register = register;
 api.activate = activate;
+api.tags = tags;
+api.tags.add = addTag;
+api.tags.remove = removeTag;
+api.tag = tags;
+
 
 export default api;
