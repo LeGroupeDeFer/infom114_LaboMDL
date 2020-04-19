@@ -12,5 +12,5 @@
 pub mod address;
 pub mod roles;
 pub mod user;
-pub mod post;
+pub mod posts;
 pub mod tags;

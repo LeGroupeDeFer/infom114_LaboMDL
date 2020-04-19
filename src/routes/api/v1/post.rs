@@ -1,9 +1,8 @@
-use crate::database::MyDbConn;
+use crate::database::DBConnection;
 use crate::http::responders::api::ApiResponse;
-use crate::models::post::Post;
-use crate::schema::posts;
-
-use super::forms::NewPost;
+use crate::database::models::posts::post::Post;
+use crate::database::models::posts::forms::NewPost;
+use crate::database::schema::posts;
 
 use diesel::prelude::*;
 use rocket::http::Status;
@@ -20,8 +19,8 @@ pub fn allowed_paths() -> Vec<&'static str> {
     vec!["posts"]
 }
 
-#[post("/posts", data = "<post_info>")]
-fn create_post(post_info: Result<Json<NewPost>, JsonError>, conn: MyDbConn) -> ApiResponse {
+#[post("/api/post", format = "json", data = "<post_info>")]
+fn create_post(conn: DBConnection, post_info: Result<Json<NewPost>, JsonError>) -> ApiResponse {
     match post_info {
         Ok(info) => {
             let insert_result = diesel::insert_into(posts::dsl::posts)
@@ -39,7 +38,7 @@ fn create_post(post_info: Result<Json<NewPost>, JsonError>, conn: MyDbConn) -> A
 }
 
 #[get("/posts")]
-fn get_all_posts(conn: MyDbConn) -> ApiResponse {
+fn get_all_posts(conn: DBConnection) -> ApiResponse {
     // TODO: Get all related comments
     match Post::get_all_posts(&conn) {
         Ok(posts) => ApiResponse::new(Status::Ok, json!(posts)),
