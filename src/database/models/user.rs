@@ -156,6 +156,14 @@ impl User {
         tab
     }
 
+    pub fn get_id_by_token(conn: &MysqlConnection, token: &str) -> Option<u32> {
+        if let Ok(user_id) = table.filter(users::token.eq(token)).select(users::id).first(conn) {
+            Some(user_id)
+        } else {
+            None
+        }
+    }
+
     /// Validate the fact that the email given
     ///
     /// * is a valid email

@@ -1,10 +1,8 @@
 use crate::database::schema::posts;
 
-
-#[derive(FromForm, Serialize, Deserialize, Debug, Insertable)]
-#[table_name = "posts"]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct NewPost {
-    pub title: Option<String>,
+    pub title: String,
     pub content: String,
-    pub authorid: u32
+    pub author_token: String,
 }

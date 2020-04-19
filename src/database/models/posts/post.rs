@@ -18,9 +18,18 @@ pub struct Post {
     pub nb_votes: u32,
 }
 
+#[derive(Serialize, Deserialize, Debug, Insertable)]
+#[table_name = "posts"]
+pub struct PostMinima {
+    pub title: String,
+    pub content: String,
+    pub authorid: u32,
+}
+
 impl Post {
     // get_all_posts :: (DBConnection) -> QueryResult<Vec<User>>
     pub fn get_all_posts(conn: &MysqlConnection) -> QueryResult<Vec<Post>> {
         posts::table.load::<Post>(conn.deref())
     }
+
 }
