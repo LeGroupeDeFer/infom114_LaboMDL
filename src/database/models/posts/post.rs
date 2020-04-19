@@ -32,4 +32,12 @@ impl Post {
         posts::table.load::<Post>(conn.deref())
     }
 
+    pub fn get_post_by_id(conn: &MysqlConnection, post_id: u32) -> Option<Post> {
+        if let Ok(a_post) = posts::table.filter(posts::id.eq(post_id)).first(conn) {
+            Some(a_post)
+        } else {
+            None
+        }
+    }
+
 }

@@ -13,7 +13,8 @@ use rocket_contrib::json::{Json,JsonError};
 pub fn collect() -> Vec<rocket::Route> {
     routes!(
         create_post,
-        get_all_posts
+        get_all_posts,
+        get_post_by_id
     )
 }
 
@@ -63,5 +64,18 @@ fn get_all_posts(conn: DBConnection) -> ApiResponse {
     match Post::get_all_posts(&conn) {
         Ok(posts) => ApiResponse::new(Status::Ok, json!(posts)),
         Err(e) => ApiResponse::db_error(e),
+    }
+}
+
+
+/// Get post by id (unauth)
+#[get("/post/<post_id>")]
+fn get_post_by_id(conn: DBConnection, post_id: String) -> ApiResponse {
+    match post_id.parse::<u32>() {
+        Ok(post_id) => match Post::get_post_by_id(&conn, post_id) {
+            Some(post) => ApiResponse::new(Status::Ok, json!(post)),
+            None => ApiResponse::error(Status::NotFound, "Post not found")
+        },
+        Err(e) => ApiResponse::error(Status::BadRequest, "Invalid id supplied")
     }
 }
