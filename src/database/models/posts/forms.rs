@@ -1,6 +1,6 @@
 use crate::database::schema::posts;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct NewPost {
     pub title: String,
     pub content: String,
