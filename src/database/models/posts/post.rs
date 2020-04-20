@@ -1,10 +1,11 @@
 use std::ops::Deref;
 
 use crate::database::schema::posts;
-use diesel::MysqlConnection;
+use crate::database::Data;
 
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
+use diesel::MysqlConnection;
 use diesel::*;
 
 #[derive(Queryable, Serialize, Deserialize, Debug)]
@@ -48,8 +49,9 @@ impl Post {
             .filter(posts::id.eq(post_id))
             .select(posts::authorid)
             .first(conn);
-        if let Ok(author_id) = author_id {
-            Some(author_id)
+
+        if let Ok(id) = author_id {
+            Some(id)
         } else {
             None
         }
@@ -58,8 +60,8 @@ impl Post {
     /// Delete a post permanently (not used)
     pub fn permanent_delete_post(conn: &MysqlConnection, post_id: u32) -> Option<usize> {
         let post_id = diesel::delete(posts::table.filter(posts::id.eq(post_id))).execute(conn);
-        if let Ok(post_id) = post_id {
-            Some(post_id)
+        if let Ok(id) = post_id {
+            Some(id)
         } else {
             None
         }
@@ -86,15 +88,19 @@ impl Post {
         }
     }
 
-    // pub fn upvote(conn: &MysqlConnection, post_id: u32) -> Option<i32> {
-    //     let target = posts::table.filter(posts::id.eq(post_id));
-    //     let old_nb_votes = target.select(posts::nb_votes).first(conn);
+    pub fn upvote(conn: &MysqlConnection, post_id: u32, change_vote: u32) -> Option<u32> {
+        let target = posts::table.filter(posts::id.eq(post_id));
+        let nb_votes: Result<u32, _> = target.select(posts::nb_votes).first(conn);
 
-    //     if let Ok(old_nb_votes) = old_nb_votes {
-    //         diesel::update(target).set(posts::nb_votes.eq(old_nb_votes + 1));
-    //         Some(1)
-    //     } else {
-    //         None
-    //     }
-    // }
+        if let Ok(old_nb_votes) = nb_votes {
+            let new_nb_votes = old_nb_votes + change_vote;
+            diesel::update(target)
+                .set(posts::nb_votes.eq(new_nb_votes))
+                .execute(conn)
+                .unwrap();
+            Some(new_nb_votes)
+        } else {
+            None
+        }
+    }
 }

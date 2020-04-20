@@ -1,3 +1,4 @@
+use crate::database::models::posts::forms::ChangeVote;
 use crate::database::models::posts::forms::NewPost;
 use crate::database::models::posts::post::Post;
 use crate::database::models::posts::post::PostMinima;
@@ -17,6 +18,7 @@ pub fn collect() -> Vec<rocket::Route> {
         get_post_by_id,
         delete_post_by_id,
         update_post_by_id,
+        updown_vote,
     )
 }
 
@@ -85,12 +87,12 @@ fn get_post_by_id(conn: DBConnection, post_id: String) -> ApiResponse {
 /// Delete a post by post_id (auth)
 #[delete("/api/post/<post_id>/<author_token>")]
 fn delete_post_by_id(conn: DBConnection, post_id: String, author_token: String) -> ApiResponse {
-    fn do_delete(
+    fn do_soft_delete(
         conn: DBConnection,
         post_id: u32,
         post_author_id: u32,
-        _: bool,
-        _: NewPost,
+        _: Option<i32>,
+        _: Option<NewPost>,
     ) -> ApiResponse {
         ApiResponse::new(
             Status::Ok,
@@ -103,9 +105,7 @@ fn delete_post_by_id(conn: DBConnection, post_id: String, author_token: String) 
             }),
         )
     }
-
-    let a_post = NewPost::default();
-    process_request_with_validation(conn, post_id, author_token, false, a_post, do_delete)
+    process_request_with_validation(conn, post_id, author_token, None, None, do_soft_delete)
 }
 
 /// Update a post (title/content) by post_id (auth)
@@ -118,9 +118,10 @@ fn update_post_by_id(conn: DBConnection, post_id: String, data: Json<NewPost>) -
         conn: DBConnection,
         post_id: u32,
         post_author_id: u32,
-        _: bool,
-        a_post: NewPost,
+        _: Option<i32>,
+        post_data: Option<NewPost>,
     ) -> ApiResponse {
+        let a_post = post_data.unwrap();
         match Post::update_post(&conn, post_id, a_post.title, a_post.content) {
             Some(_) => ApiResponse::new(
                 Status::Ok,
@@ -137,24 +138,66 @@ fn update_post_by_id(conn: DBConnection, post_id: String, data: Json<NewPost>) -
         }
     }
 
-    process_request_with_validation(conn, post_id, author_token, false, a_post, do_update)
+    process_request_with_validation(conn, post_id, author_token, None, Some(a_post), do_update)
+}
+
+/// Delete a post by post_id (auth)
+#[post("/api/post/<post_id>/upvote", format = "json", data = "<data>")]
+fn updown_vote(conn: DBConnection, post_id: String, data: Json<ChangeVote>) -> ApiResponse {
+    let vote_request = data.into_inner();
+    let upvote = vote_request.upvote;
+    let author_token = vote_request.author_token;
+
+    fn do_updown_vote(
+        conn: DBConnection,
+        post_id: u32,
+        post_author_id: u32,
+        change_vote: Option<i32>,
+        _: Option<NewPost>,
+    ) -> ApiResponse {
+        // FIXME nb_votes type from u32 to i32
+        let n_change = change_vote.unwrap_or_default() as u32;
+        match Post::upvote(&conn, post_id, n_change) {
+            Some(new_nb_votes) => ApiResponse::new(
+                Status::Ok,
+                json!({
+                    "msg":
+                        &format!(
+                            "Change vote of post '{}' of user '{}' successfully!",
+                            post_id, post_author_id
+                        ),
+                    "nb_votes": new_nb_votes
+                }),
+            ),
+            None => ApiResponse::error(Status::NotFound, "TODO Server error"),
+        }
+    }
+
+    process_request_with_validation(
+        conn,
+        post_id,
+        author_token,
+        Some(upvote),
+        None,
+        do_updown_vote,
+    )
 }
 
 /// Process client's request relating to post with param validation and authentication.
 /// 1: check if `post_id` is valid (u32), if failed return 400 Bad Request
 /// 2: check user authentication, if failed return 401 Unauthorized
 /// 3: get `post_author_id` from `post_id`, if failed return custome DB error
-/// 4: make sure the authorized user can delete/update his own post,
-///     if failed return 403 Forbidden.
+/// 4: make sure the authorized user can delete/update his own post
+///     or vote up/down other's post, if failed return 403 Forbidden.
 /// TODO: add option to allow admin do the same thing
 /// `client_request` is a function pointer to do delete/update
 fn process_request_with_validation(
     conn: DBConnection,
     post_id: String,
     author_token: String,
-    to_upvote: bool,
-    a_post: NewPost,
-    client_request: fn(DBConnection, u32, u32, bool, NewPost) -> ApiResponse,
+    change_vote: Option<i32>,
+    a_post: Option<NewPost>,
+    client_request: fn(DBConnection, u32, u32, Option<i32>, Option<NewPost>) -> ApiResponse,
 ) -> ApiResponse {
     match post_id.parse::<u32>() {
         Ok(post_id) => {
@@ -164,14 +207,21 @@ fn process_request_with_validation(
                 let post_author_id = Post::get_author_id_by_post_id(&conn, post_id);
 
                 if let Some(post_author_id) = post_author_id {
-                    if post_author_id == client_author_id {
-                        client_request(conn, post_id, post_author_id, to_upvote, a_post)
+                    let allowed = if change_vote.is_some() {
+                        // up/down vote: can not up/down the vote of his own
+                        post_author_id != client_author_id
+                    } else {
+                        // delete or update vote: can not modify post of other person
+                        post_author_id == client_author_id
+                    };
+                    if allowed {
+                        client_request(conn, post_id, post_author_id, change_vote, a_post)
                     } else {
                         ApiResponse::error(
                             Status::Forbidden,
                             &format!(
-                                "Post id '{}' (of user '{}') does not belong to '{}'",
-                                post_id, post_author_id, client_author_id
+                                "User '{}' is not allowed to take action on post '{}' of user '{}'",
+                                client_author_id, post_id, post_author_id
                             ),
                         )
                     }
