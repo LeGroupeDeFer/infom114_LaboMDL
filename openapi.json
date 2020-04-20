@@ -34,7 +34,7 @@
       "name": "user",
       "description": "Everything that is related to users"
     },
-    { 
+    {
       "name": "subscription",
       "description":"Everything related to tags subscription"
     },
@@ -821,36 +821,37 @@
         "tags": [
           "post"
         ],
-        "summary": "Hide a post"
-      },
-      "responses": {
-        "200": {
-          "description": "OK"
-        }
-      },
-      "security": [
-        {
-          "UserAuth": []
-        }
-      ]
+        "summary": "Hide a post",
+
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
     },
     "/api/post/{post_id}/report": {
       "post": {
         "tags": [
           "post"
         ],
-        "summary": "Report a post"
-      },
-      "responses": {
-        "200": {
-          "description": "OK"
-        }
-      },
-      "security": [
-        {
-          "UserAuth": []
-        }
-      ]
+        "summary": "Report a post",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
     },
     "/api/tags": {
       "get": {
@@ -882,9 +883,6 @@
           "tag"
         ],
         "summary": "Create a tag",
-        "requestBody": {
-          "content": {}
-        },
         "responses": {
           "200": {
             "description": "OK",
@@ -1388,9 +1386,9 @@
         ]
       }
     },
-    "/api/user/subcriptions": {
+    "/api/user/subscriptions": {
       "get": {
-        "tags": ["tag", "user", "subscription"],
+        "tags": ["tag", "user"],
         "summary": "Get all the tags subscription of the current user",
         "responses": {
           "200": {
@@ -1405,6 +1403,19 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
           }
         },
         "security": [{
@@ -1412,17 +1423,27 @@
         }]
       }
     },
-    "/api/user/subcription/{tag_name}": {
+    "/api/user/subscription/{tag_name}": {
       "post": {
-        "tags": ["tag", "user", "subscription"],
+        "tags": ["tag", "user"],
         "summary": "Let the current user subscribe to a tag",
-        "requestBody": {
-          "content": {}
-        },
         "responses": {
           "200": {
             "description": "OK",
             "content": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
           },
           "409": {
             "description": "Conflict",
@@ -1436,7 +1457,7 @@
                 }
               }
             }
-          }, 
+          },
           "422": {
             "description": "Unprocessable Entity",
             "content": {
@@ -1456,15 +1477,25 @@
         }]
       },
       "delete": {
-        "tags": ["tag", "user", "subscription"],
+        "tags": ["tag", "user"],
         "summary": "Unsubscribe the current user to the tag",
-        "requestBody": {
-          "content": {}
-        },
         "responses": {
           "200": {
             "description": "OK",
             "content": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
           },
           "422": {
             "description": "Unprocessable Entity",
