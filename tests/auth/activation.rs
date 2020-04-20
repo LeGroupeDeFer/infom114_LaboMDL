@@ -7,7 +7,7 @@
 
 use rocket::http::{ContentType, Status};
 
-use unanimitylibrary::database::models::user::User;
+use unanimitylibrary::database::models::prelude::User;
 
 use super::super::init;
 

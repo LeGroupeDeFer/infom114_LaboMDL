@@ -22,7 +22,7 @@ table! {
         id -> Unsigned<Integer>,
         post_id -> Unsigned<Integer>,
         content -> Mediumtext,
-        authorid -> Unsigned<Integer>,
+        author_id -> Unsigned<Integer>,
         created_at -> Nullable<Datetime>,
         modified_at -> Nullable<Datetime>,
         nb_votes -> Unsigned<Integer>,
@@ -44,9 +44,9 @@ table! {
 }
 
 table! {
-    posts_tags (post_id, tag_label) {
+    posts_tags (post_id, tag_id) {
         post_id -> Unsigned<Integer>,
-        tag_label -> Varchar,
+        tag_id -> Unsigned<Integer>,
     }
 }
 
@@ -124,9 +124,10 @@ table! {
 }
 
 joinable!(comments -> posts (post_id));
-joinable!(comments -> users (authorid));
+joinable!(comments -> users (author_id));
 joinable!(posts -> users (authorid));
 joinable!(posts_tags -> posts (post_id));
+joinable!(posts_tags -> tags (tag_id));
 joinable!(roles_capabilities -> capabilities (capability_id));
 joinable!(roles_capabilities -> roles (role_id));
 joinable!(tags_subscription -> tags (tag_id));

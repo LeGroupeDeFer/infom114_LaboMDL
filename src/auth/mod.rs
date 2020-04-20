@@ -1,6 +1,5 @@
 use crate::conf::AppState;
-use crate::database::models::roles::capability::Capability;
-use crate::database::models::user::User;
+use crate::database::models::prelude::{Capability, User};
 use crate::database::DBConnection;
 
 use chrono::{Duration, Utc};

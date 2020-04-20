@@ -1,10 +1,11 @@
 use std::ops::Deref;
 
-use diesel::MysqlConnection;
 use crate::database::schema::posts;
 
-use diesel::prelude::*;
 use chrono::NaiveDateTime;
+
+use diesel::prelude::*;
+use diesel::MysqlConnection;
 
 #[derive(Queryable, Serialize, Deserialize, Debug)]
 pub struct Post {
@@ -27,17 +28,17 @@ pub struct PostMinima {
 }
 
 impl Post {
-    // get_all_posts :: (DBConnection) -> QueryResult<Vec<User>>
-    pub fn get_all_posts(conn: &MysqlConnection) -> QueryResult<Vec<Post>> {
-        posts::table.load::<Post>(conn.deref())
+    /// Get all posts
+    pub fn all(conn: &MysqlConnection) -> Vec<Post> {
+        posts::table.load::<Post>(conn.deref()).unwrap_or(vec![])
     }
 
-    pub fn get_post_by_id(conn: &MysqlConnection, post_id: u32) -> Option<Post> {
+    /// Get a post by its id
+    pub fn by_id(conn: &MysqlConnection, post_id: u32) -> Option<Post> {
         if let Ok(a_post) = posts::table.filter(posts::id.eq(post_id)).first(conn) {
             Some(a_post)
         } else {
             None
         }
     }
-
 }

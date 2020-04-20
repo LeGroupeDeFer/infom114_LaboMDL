@@ -4,13 +4,11 @@
 //! inside the `users_roles` table
 
 use crate::database::schema::roles;
-use crate::database::schema::roles::dsl::roles as table_roles;
 use crate::database::schema::users_roles;
-use crate::database::schema::users_roles::dsl::users_roles as table_users_roles;
+use crate::database::tables::{roles_table, users_roles_table};
 use crate::database::Data;
 
-use crate::database::models::roles::role::Role;
-use crate::database::models::user::User;
+use crate::database::models::prelude::{Role, User};
 
 use diesel::prelude::*;
 use diesel::MysqlConnection;
@@ -40,7 +38,7 @@ impl RelUserRole {
     /// Helper to get the roles of a user
     pub fn get_roles_from_user(conn: &MysqlConnection, user: &User) -> Vec<Role> {
         let roles_id = RelUserRole::belonging_to(user).select(users_roles::role_id);
-        table_roles
+        roles_table
             .filter(roles::id.eq_any(roles_id))
             .load::<Role>(conn)
             .expect("problem fetching roles from user")
@@ -48,7 +46,7 @@ impl RelUserRole {
 
     /// Constructor of `RelUserRole` based on a user id and a role id
     pub fn get(conn: &MysqlConnection, user_id: u32, role_id: u32) -> Option<Self> {
-        table_users_roles
+        users_roles_table
             .filter(
                 users_roles::user_id
                     .eq(user_id)
@@ -67,7 +65,7 @@ impl RelUserRole {
         match Self::get(&conn, user.id, role.id) {
             Some(e) => Data::Existing(e),
             None => {
-                diesel::insert_into(table_users_roles)
+                diesel::insert_into(users_roles_table)
                     .values(&RelUserRoleMinima {
                         user_id: user.id,
                         role_id: role.id,

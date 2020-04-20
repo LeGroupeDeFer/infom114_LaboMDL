@@ -3,8 +3,6 @@ use rocket::http::Status;
 use super::super::init;
 
 use unanimitylibrary::database::models::tags::tag::Tag;
-use unanimitylibrary::database::schema::tags;
-use unanimitylibrary::database::schema::tags::dsl::tags as table;
 
 /************************************** TEST ***************************************/
 

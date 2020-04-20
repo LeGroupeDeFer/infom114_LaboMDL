@@ -3,6 +3,7 @@
 //! This module aims to group everything that is related to the database.
 pub mod models;
 pub mod schema;
+pub mod tables;
 
 // ---------------- REQUIRES --------------------------------------------------
 

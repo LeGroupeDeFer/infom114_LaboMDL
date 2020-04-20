@@ -1,7 +1,7 @@
-use super::address::Address;
+use crate::database::models::prelude::Address;
 use crate::database::models::roles;
 use crate::database::schema::users;
-use crate::database::schema::users::dsl::users as table;
+use crate::database::tables::users_table as table;
 use crate::database::Data;
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
@@ -33,8 +33,8 @@ pub struct User {
 impl User {
     /* ------------------------------- STATIC ------------------------------ */
 
-    // from :: (DBConnection, Integer) -> Option<User>
-    pub fn from(conn: &MysqlConnection, id: &u32) -> Option<Self> {
+    /// Get a post by its id
+    pub fn by_id(conn: &MysqlConnection, id: &u32) -> Option<Self> {
         table.find(id).first::<Self>(conn).ok()
     }
 
@@ -100,6 +100,10 @@ impl User {
             .unwrap_or(0u32)
     }
 
+    pub fn by_token(conn: &MysqlConnection, token: &str) -> Option<Self> {
+        table.filter(users::token.eq(token)).first(conn).ok()
+    }
+
     /* ------------------------------ DYNAMIC ------------------------------ */
 
     pub fn cookie(&self) -> String {
@@ -154,14 +158,6 @@ impl User {
         }
 
         tab
-    }
-
-    pub fn get_id_by_token(conn: &MysqlConnection, token: &str) -> Option<u32> {
-        if let Ok(user_id) = table.filter(users::token.eq(token)).select(users::id).first(conn) {
-            Some(user_id)
-        } else {
-            None
-        }
     }
 
     /// Validate the fact that the email given
