@@ -23,6 +23,10 @@
       "description": "Everything related to posts"
     },
     {
+      "name": "comment",
+      "description":"Everything related to comment"
+    },
+    {
       "name": "tag",
       "description": "Everything that is related to tags"
     },
@@ -33,10 +37,6 @@
     {
       "name": "user",
       "description": "Everything that is related to users"
-    },
-    {
-      "name": "subscription",
-      "description":"Everything related to tags subscription"
     },
     {
       "name": "hollow",
@@ -325,7 +325,14 @@
           "200": {
             "description": "OK",
             "content": {
-              "TODO": "Todo"
+              "json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Post"
+                  }
+                }
+              }
             }
           }
         }
@@ -346,7 +353,15 @@
           "200": {
             "description": "OK",
             "content": {
-              "TODO": "Todo"
+              "json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Post"
+                  }
+                }
+
+              }
             }
           }
         }
@@ -402,7 +417,6 @@
                   "$ref": "#/components/schemas/Info"
                 },
                 "example": {
-                  "success": false,
                   "message": "json format is required"
                 }
               }
@@ -416,7 +430,6 @@
                   "$ref": "#/components/schemas/Info"
                 },
                 "example": {
-                  "success": false,
                   "message": "property 'ressourceId' does not exist"
                 }
               }
@@ -475,7 +488,6 @@
                   "$ref": "#/components/schemas/Info"
                 },
                 "example": {
-                  "success": false,
                   "message": "json format is required"
                 }
               }
@@ -489,7 +501,6 @@
                   "$ref": "#/components/schemas/Info"
                 },
                 "example": {
-                  "success": false,
                   "message": "property 'ressourceId' does not exist"
                 }
               }
@@ -544,7 +555,6 @@
                   "$ref": "#/components/schemas/Info"
                 },
                 "example": {
-                  "success": false,
                   "message": "json format is required"
                 }
               }
@@ -558,7 +568,6 @@
                   "$ref": "#/components/schemas/Info"
                 },
                 "example": {
-                  "success": false,
                   "message": "property 'postId' does not exist"
                 }
               }
@@ -725,7 +734,7 @@
             "description": "Id of post to return",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
@@ -767,7 +776,7 @@
             "description": "Id of the post",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
@@ -863,7 +872,7 @@
             "description": "Id of the post",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
@@ -918,20 +927,28 @@
         ]
       }
     },
-    "/api/post/{post_id}/upvote": {
+    "/api/post/{post_id}/vote": {
       "post": {
         "tags": [
           "post"
         ],
         "summary": "Add an up/down vote",
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "description": "Id of the post",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "json": {
               "schema": {
-                "type": "array",
-                "items": {
                   "$ref": "#/components/schemas/UpVote"
-                }
               }
             }
           },
@@ -940,6 +957,45 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "There is a missing property in the json given"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -955,10 +1011,127 @@
           "post"
         ],
         "summary": "Hide a post",
-
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "description": "Id of the post",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User cannot do this"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
+    },
+    "/api/post/{post_id}/lock": {
+      "post": {
+        "tags": [
+          "post"
+        ],
+        "summary": "Lock a post, preventing the creation of any new comment and/or reply",
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "description": "Id of the post",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User cannot do this"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -974,9 +1147,799 @@
           "post"
         ],
         "summary": "Report a post",
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "description": "Id of the post",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
+    },
+    "/api/post/{post_id}/comments": {
+      "get": {
+        "tags": ["post", "comment"],
+        "summary": "Get the comments of a post",
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "description": "Id of the post",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "time",
+                "score"
+              ],
+              "default": "time"
+            },
+            "description": "The type used to filter comment"
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "asc"
+            },
+            "description": "The type used to filter comment"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The numbers of comments to return"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The number of comments to skip before starting to collect the result set"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Comment"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/post/{post_id}/comment": {
+      "post": {
+        "tags": ["post", "comment"],
+        "summary": "Comment on a post or another comment",
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "description": "Id of the post",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "comment_id",
+            "in": "query",
+            "description": "Id of the comment/reply",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewComment"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Comment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User cannot do this"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
+    },
+    "/api/comment/{comment_id}": {
+      "get": {
+        "tags": [
+          "comment"
+        ],
+        "summary": "Get the comment identified by its id",
+        "parameters": [
+          {
+            "name": "comment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Comment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "comment"
+        ],
+        "summary": "Create a comment as a reply",
+        "parameters": [
+          {
+            "name": "comment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewComment"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Comment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User cannot do this"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "There is a missing property in the given json"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "comment"
+        ],
+        "summary": "Update a comment",
+        "parameters": [
+          {
+            "name": "comment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewComment"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Comment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User cannot do this"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "There is a missing property in the given json"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "comment"
+        ],
+        "summary": "Delete a comment",
+        "parameters": [
+          {
+            "name": "comment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Comment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User cannot do this"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
+    },
+    "/api/comment/{comment_id}/report": {
+      "post": {
+        "tags": [
+          "comment"
+        ],
+        "summary": "Report a comment",
+        "parameters": [
+          {
+            "name": "comment_id",
+            "in": "path",
+            "description": "Id of the comment",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
+    },
+    "/api/comment/{comment_id}/vote": {
+      "post": {
+        "tags": [
+          "comment"
+        ],
+        "summary": "Add an up/down vote",
+        "parameters": [
+          {
+            "name": "comment_id",
+            "in": "path",
+            "description": "Id of the comment",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpVote"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "There is a missing property in the json given"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
+    },
+    "/api/comment/{comment_id}/hide": {
+      "post": {
+        "tags": [
+          "comment"
+        ],
+        "summary": "Hide a comment",
+        "parameters": [
+          {
+            "name": "comment_id",
+            "in": "path",
+            "description": "Id of the comment",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User cannot do this"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
+    },
+    "/api/comment/{comment_id}/lock": {
+      "post": {
+        "tags": [
+          "comment"
+        ],
+        "summary": "Lock a comment, preventing the creation of any new comment and/or reply",
+        "parameters": [
+          {
+            "name": "comment_id",
+            "in": "path",
+            "description": "Id of the comment",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User cannot do this"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1740,6 +2703,44 @@
           }
         }
       },
+      "Address": {
+        "type": "object",
+        "properties": {
+          "street": {
+            "type": "string",
+            "description": "The street name of the address of the user"
+          },
+          "number": {
+            "type": "integer",
+            "description": "The house number of the address of the user",
+            "format": "int32"
+          },
+          "city": {
+            "type": "string",
+            "description": "The city where the user lives in"
+          },
+          "zipcode": {
+            "type": "integer",
+            "description": "The zip code of the address of the user",
+            "format": "int32"
+          },
+          "country": {
+            "type": "string",
+            "description": "The country where the user lives in"
+          },
+          "box_number": {
+            "type": "string",
+            "description": "The mail box number of the user"
+          }
+        },
+        "required": [
+          "street",
+          "number",
+          "city",
+          "zipcode",
+          "country"
+        ]
+      },
       "UserRegisterInformation": {
         "type": "object",
         "required": [
@@ -1766,42 +2767,7 @@
             "description": "The last name of the user"
           },
           "address": {
-            "type": "object",
-            "required": [
-              "street",
-              "number",
-              "city",
-              "zipcode",
-              "country"
-            ],
-            "properties": {
-              "street": {
-                "type": "string",
-                "description": "The street name of the address of the user"
-              },
-              "number": {
-                "type": "integer",
-                "description": "The house number of the address of the user",
-                "format": "int32"
-              },
-              "city": {
-                "type": "string",
-                "description": "The city where the user lives in"
-              },
-              "zipcode": {
-                "type": "integer",
-                "description": "The zip code of the address of the user",
-                "format": "int32"
-              },
-              "country": {
-                "type": "string",
-                "description": "The country where the user lives in"
-              },
-              "box_number": {
-                "type": "string",
-                "description": "The mail box number of the user"
-              }
-            }
+            "$ref": "#/components/schemas/Address"
           },
           "phone": {
             "type": "string",
@@ -1830,9 +2796,8 @@
                 "type": "string",
                 "description": "The last name of the user"
               },
-              "street": {
-                "type": "string",
-                "description": "The street name of the address of the user"
+              "address": {
+                "$ref": "#/components/schemas/Address"
               },
               "phone": {
                 "type": "string",
@@ -1896,28 +2861,20 @@
             "items": {
                 "$ref": "#/components/schemas/Tag"
             }
+          },
+          "vote": {
+            "type": "integer"
           }
         }
       },
       "UpVote": {
         "type": "object",
         "properties": {
-          "post_id": {
-            "type": "integer"
-          },
-          "user_id": {
-            "type": "integer"
-          },
-          "cancel": {
-            "type": "boolean"
-          },
-          "action": {
+          "vote": {
             "type": "integer",
             "enum": [
-              2,
               1,
-              -1,
-              -2
+              -1
             ]
           }
         }
@@ -1985,6 +2942,36 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Role"
+            }
+          }
+        }
+      },
+      "NewComment": {
+        "type": "object",
+        "properties": {
+          "content": {"type": "string"}
+        }
+      },
+      "Comment": {
+        "type": "object",
+        "properties": {
+          "id":{"type": "integer"},
+          "post_id": {"type": "integer"},
+          "content": {"type": "string"},
+          "author": {
+            "$ref": "#/components/schemas/User"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {"type": "string"},
+          "nb_votes": {"type": "integer"},
+          "score": {"type": "integer"},
+          "vote": {"type": "integer"},
+          "replies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Comment"
             }
           }
         }
