@@ -352,7 +352,7 @@
         }
       }
     },
-    "/api/v1/admin/hide_ressource": {
+    "/api/v1/admin/hide_resource": {
       "post": {
         "security": [
           {
@@ -668,7 +668,7 @@
           "content": {
             "json": {
               "schema": {
-                "$ref": "#/components/schemas/Post"
+                "$ref": "#/components/schemas/NewPost"
               }
             }
           }
@@ -677,6 +677,32 @@
           "200": {
             "description": "OK",
             "content": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "The targeted tag does not exist"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -715,10 +741,17 @@
             }
           },
           "400": {
-            "description": "Invalid id supplied"
-          },
-          "404": {
-            "description": "Post not found"
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
           }
         }
       },
@@ -727,22 +760,89 @@
           "post"
         ],
         "summary": "Update an existing post",
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "description": "Id of the post",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "json": {
               "schema": {
-                "$ref": "#/components/schemas/Post"
+                "$ref": "#/components/schemas/NewPost"
               }
             }
           }
         },
         "responses": {
-          "400": {
-            "description": "Invalid ID supplied"
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Post"
+                }
+              }
+            }
           },
-          "404": {
-            "description": "Post not found"
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User cannot do this"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "There is a missing property in the json given"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -760,7 +860,7 @@
           {
             "name": "post_id",
             "in": "path",
-            "description": "Id of post to delete",
+            "description": "Id of the post",
             "required": true,
             "schema": {
               "type": "string"
@@ -772,10 +872,43 @@
             "description": "OK"
           },
           "400": {
-            "description": "Invalid id supplied"
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
           },
-          "404": {
-            "description": "Post not found"
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User cannot do this"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -856,8 +989,7 @@
     "/api/tags": {
       "get": {
         "tags": [
-          "tag",
-          "hollow"
+          "tag"
         ],
         "summary": "Return all tags of the application",
         "responses": {
@@ -883,6 +1015,17 @@
           "tag"
         ],
         "summary": "Create a tag",
+        "parameters": [
+          {
+            "name": "tag_name",
+            "in": "path",
+            "description": "Label of the tag",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -913,6 +1056,17 @@
           "tag"
         ],
         "summary": "Update a tag",
+        "parameters": [
+          {
+            "name": "tag_name",
+            "in": "path",
+            "description": "Label of the tag",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "json": {
@@ -978,6 +1132,17 @@
           "tag"
         ],
         "summary": "Update a tag",
+        "parameters": [
+          {
+            "name": "tag_name",
+            "in": "path",
+            "description": "Label of the tag",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {}
         },
@@ -1096,6 +1261,17 @@
           "role"
         ],
         "summary": "Update a role",
+        "parameters": [
+          {
+            "name": "role_id",
+            "in": "path",
+            "description": "Id of the role",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "json": {
@@ -1162,9 +1338,17 @@
           "role"
         ],
         "summary": "Delete a role",
-        "requestBody": {
-          "content": {}
-        },
+        "parameters": [
+          {
+            "name": "role_id",
+            "in": "path",
+            "description": "Id of the role",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -1427,6 +1611,17 @@
       "post": {
         "tags": ["tag", "user"],
         "summary": "Let the current user subscribe to a tag",
+        "parameters": [
+          {
+            "name": "tag_name",
+            "in": "path",
+            "description": "Label of the tag",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -1479,6 +1674,17 @@
       "delete": {
         "tags": ["tag", "user"],
         "summary": "Unsubscribe the current user to the tag",
+        "parameters": [
+          {
+            "name": "tag_name",
+            "in": "path",
+            "description": "Label of the tag",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -1644,6 +1850,23 @@
           }
         }
       },
+      "NewPost": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "Post": {
         "type": "object",
         "properties": {
@@ -1659,11 +1882,20 @@
           "created_on": {
             "type": "string"
           },
+          "updated_on": {
+            "type": "string"
+          },
           "voteCount": {
             "type": "integer"
           },
-          "user_id": {
+          "author_id": {
             "type": "integer"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+                "$ref": "#/components/schemas/Tag"
+            }
           }
         }
       },
