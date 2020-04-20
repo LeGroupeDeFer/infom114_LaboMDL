@@ -34,6 +34,10 @@
       "name": "user",
       "description": "Everything that is related to users"
     },
+    { 
+      "name": "subscription",
+      "description":"Everything related to tags subscription"
+    },
     {
       "name": "hollow",
       "description": "Hollow routes that are managed by React"
@@ -1383,6 +1387,103 @@
           }
         ]
       }
+    },
+    "/api/user/subcriptions": {
+      "get": {
+        "tags": ["tag", "user", "subscription"],
+        "summary": "Get all the tags subscription of the current user",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TagSubscription"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{
+          "UserAuth": []
+        }]
+      }
+    },
+    "/api/user/subcription/{tag_name}": {
+      "post": {
+        "tags": ["tag", "user", "subscription"],
+        "summary": "Let the current user subscribe to a tag",
+        "requestBody": {
+          "content": {}
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {}
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User has already subscribed to the tag"
+                }
+              }
+            }
+          }, 
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "The targeted tag does not exist"
+                }
+              }
+            }
+          }
+        },
+        "security": [{
+          "UserAuth": []
+        }]
+      },
+      "delete": {
+        "tags": ["tag", "user", "subscription"],
+        "summary": "Unsubscribe the current user to the tag",
+        "requestBody": {
+          "content": {}
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {}
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "The targeted tag does not exist"
+                }
+              }
+            }
+          }
+        },
+        "security": [{
+          "UserAuth": []
+        }]
+      }
     }
   },
   "components": {
@@ -1564,6 +1665,14 @@
           "id": {
             "type": "string"
           },
+          "label": {
+            "type": "string"
+          }
+        }
+      },
+      "TagSubscription": {
+        "type": "object",
+        "properties": {
           "label": {
             "type": "string"
           }
