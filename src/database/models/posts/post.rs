@@ -15,7 +15,7 @@ pub struct Post {
     pub post_type: String,
     pub authorid: u32,
     pub created_at: Option<NaiveDateTime>,
-    pub modified_at: Option<NaiveDateTime>,
+    pub updated_at: Option<NaiveDateTime>,
     pub nb_votes: u32,
 }
 
