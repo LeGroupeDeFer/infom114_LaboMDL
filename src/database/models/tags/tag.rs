@@ -32,11 +32,11 @@ impl Tag {
     }
 
     pub fn insert(conn: &MysqlConnection, tag: &TagMinima) -> Data<Self> {
-        if let Some(past) = Self::by_label(conn, &tag.label) {
+        if let Some(past) = Self::by_label(conn, &tag.label.to_lowercase()) {
             Data::Existing(past)
         } else {
             diesel::insert_into(table)
-                .values(tag)
+                .values(tag.to_lowercase())
                 .execute(conn)
                 .expect("Failed tag insertion");
             Data::Inserted(
@@ -64,5 +64,13 @@ impl Tag {
 
     pub fn delete(&self, conn: &MysqlConnection) {
         diesel::delete(self).execute(conn).unwrap();
+    }
+}
+
+impl TagMinima {
+    pub fn to_lowercase(&self) -> Self {
+        Self {
+            label: self.label.to_lowercase(),
+        }
     }
 }

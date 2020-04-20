@@ -59,18 +59,23 @@ pub fn tags_get(conn: DBConnection) -> ApiResponse {
 }
 
 #[post("/api/tag/<tag_label>")]
-pub fn tag_post(conn: DBConnection, tag_label: String) -> ApiResponse {
-    v1::tag::post_tag(conn, tag_label)
+pub fn tag_post(conn: DBConnection, auth: Auth, tag_label: String) -> ApiResponse {
+    v1::tag::post_tag(conn, auth, tag_label)
 }
 
 #[put("/api/tag/<tag_label>", data = "<data>")]
-pub fn tag_update(conn: DBConnection, tag_label: String, data: Json<TagData>) -> ApiResponse {
-    v1::tag::update_tag(conn, tag_label, data)
+pub fn tag_update(
+    conn: DBConnection,
+    auth: Auth,
+    tag_label: String,
+    data: Json<TagData>,
+) -> ApiResponse {
+    v1::tag::update_tag(conn, auth, tag_label, data)
 }
 
 #[delete("/api/tag/<tag_label>")]
-pub fn tag_delete(conn: DBConnection, tag_label: String) -> ApiResponse {
-    v1::tag::delete_tag(conn, tag_label)
+pub fn tag_delete(conn: DBConnection, auth: Auth, tag_label: String) -> ApiResponse {
+    v1::tag::delete_tag(conn, auth, tag_label)
 }
 
 /************************************* ROLE MANAGEMENT ********************************************/
