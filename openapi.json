@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "UNAnimity",
-    "version": "0.2.0"
+    "version": "0.2.4"
   },
   "servers": [
     {
@@ -708,7 +708,7 @@
                   "$ref": "#/components/schemas/Info"
                 },
                 "example": {
-                  "message": "The targeted tag does not exist"
+                  "message": "There is a missing property in the json given"
                 }
               }
             }
@@ -1158,6 +1158,16 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportReason"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -2975,6 +2985,12 @@
               "$ref": "#/components/schemas/Comment"
             }
           }
+        }
+      },
+      "ReportReason": {
+        "type": "object",
+        "properties": {
+          "reason":{"type": "string"}
         }
       }
     }
