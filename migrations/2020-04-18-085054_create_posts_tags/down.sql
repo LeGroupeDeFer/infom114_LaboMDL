@@ -1,2 +1,2 @@
 -- This file should undo anything in `up.sql`
-DROP TABLE posts_tags;
+DROP TABLE IF EXISTS  posts_tags;
