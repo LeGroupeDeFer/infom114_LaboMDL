@@ -28,7 +28,7 @@ fn create_correct_role() {
 
     let role_name = "mynewrole";
     let role_color = "#ff0000";
-    let role_capabilities = vec!["post:create", "role:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
@@ -130,7 +130,7 @@ fn create_role_empty_name() {
 
     let role_name = "mynewrole";
     let role_color = "#ff0000";
-    let role_capabilities = vec!["post:create", "role:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
@@ -173,7 +173,7 @@ fn create_role_missing_color() {
     let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let role_name = "mynewrole";
-    let role_capabilities = vec!["post:create", "role:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
@@ -253,7 +253,11 @@ fn create_role_unexistant_capability() {
 
     let role_name = "mynewrole";
     let role_color = "#ff0000";
-    let role_capabilities = vec!["thiscapability:donotexist", "post:create", "role:manage"];
+    let role_capabilities = vec![
+        "thiscapability:donotexist",
+        "user:manage_role",
+        "role:manage",
+    ];
 
     // craft body
     let data = format!(
@@ -298,7 +302,7 @@ fn create_existing_role() {
 
     let role_name = "admin"; // the admin role is created at the `init::seed()` step
     let role_color = "#ff0000";
-    let role_capabilities = vec!["post:create", "role:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
@@ -346,7 +350,7 @@ fn create_correct_role_missing_capability() {
 
     let role_name = "mynewrole";
     let role_color = "#ff0000";
-    let role_capabilities = vec!["post:create", "role:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
