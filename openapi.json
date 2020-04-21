@@ -24,7 +24,7 @@
     },
     {
       "name": "comment",
-      "description":"Everything related to comment"
+      "description": "Everything related to comment"
     },
     {
       "name": "tag",
@@ -219,6 +219,26 @@
           "auth",
           "hollow"
         ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of the user",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "token",
+            "in": "path",
+            "description": "user token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "description": "",
         "responses": {
           "200": {
@@ -268,19 +288,6 @@
               }
             }
           },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Info"
-                },
-                "example": {
-                  "message": "reason: Incorrect activation scheme"
-                }
-              }
-            }
-          },
           "400": {
             "description": "Bad Request : the given format is incorrect",
             "content": {
@@ -290,6 +297,19 @@
                 },
                 "example": {
                   "message": "json format is required"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "reason: Incorrect activation scheme"
                 }
               }
             }
@@ -360,7 +380,6 @@
                     "$ref": "#/components/schemas/Post"
                   }
                 }
-
               }
             }
           }
@@ -948,7 +967,7 @@
           "content": {
             "json": {
               "schema": {
-                  "$ref": "#/components/schemas/UpVote"
+                "$ref": "#/components/schemas/UpVote"
               }
             }
           },
@@ -1208,7 +1227,10 @@
     },
     "/api/post/{post_id}/comments": {
       "get": {
-        "tags": ["post", "comment"],
+        "tags": [
+          "post",
+          "comment"
+        ],
         "summary": "Get the comments of a post",
         "parameters": [
           {
@@ -1295,7 +1317,10 @@
     },
     "/api/post/{post_id}/comment": {
       "post": {
-        "tags": ["post", "comment"],
+        "tags": [
+          "post",
+          "comment"
+        ],
         "summary": "Comment on a post or another comment",
         "parameters": [
           {
@@ -2054,19 +2079,6 @@
             "description": "OK",
             "content": {}
           },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Info"
-                },
-                "example": {
-                  "message": "A tag with this name already exist"
-                }
-              }
-            }
-          },
           "400": {
             "description": "Bad Request : the given format is incorrect",
             "content": {
@@ -2076,6 +2088,19 @@
                 },
                 "example": {
                   "message": "json format is required"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "A tag with this name already exist"
                 }
               }
             }
@@ -2194,19 +2219,6 @@
             "description": "OK",
             "content": {}
           },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Info"
-                },
-                "example": {
-                  "message": "A role with this name already exist"
-                }
-              }
-            }
-          },
           "400": {
             "description": "Bad Request : the given format is incorrect",
             "content": {
@@ -2216,6 +2228,19 @@
                 },
                 "example": {
                   "message": "json format is required"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "A role with this name already exist"
                 }
               }
             }
@@ -2545,7 +2570,10 @@
     },
     "/api/user/subscriptions": {
       "get": {
-        "tags": ["tag", "user"],
+        "tags": [
+          "tag",
+          "user"
+        ],
         "summary": "Get all the tags subscription of the current user",
         "responses": {
           "200": {
@@ -2575,14 +2603,19 @@
             }
           }
         },
-        "security": [{
-          "UserAuth": []
-        }]
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
       }
     },
     "/api/user/subscription/{tag_name}": {
       "post": {
-        "tags": ["tag", "user"],
+        "tags": [
+          "tag",
+          "user"
+        ],
         "summary": "Let the current user subscribe to a tag",
         "parameters": [
           {
@@ -2640,12 +2673,17 @@
             }
           }
         },
-        "security": [{
-          "UserAuth": []
-        }]
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
       },
       "delete": {
-        "tags": ["tag", "user"],
+        "tags": [
+          "tag",
+          "user"
+        ],
         "summary": "Unsubscribe the current user to the tag",
         "parameters": [
           {
@@ -2690,9 +2728,11 @@
             }
           }
         },
-        "security": [{
-          "UserAuth": []
-        }]
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
       }
     }
   },
@@ -2869,7 +2909,7 @@
           "tags": {
             "type": "array",
             "items": {
-                "$ref": "#/components/schemas/Tag"
+              "$ref": "#/components/schemas/Tag"
             }
           },
           "vote": {
@@ -2960,25 +3000,41 @@
       "NewComment": {
         "type": "object",
         "properties": {
-          "content": {"type": "string"}
+          "content": {
+            "type": "string"
+          }
         }
       },
       "Comment": {
         "type": "object",
         "properties": {
-          "id":{"type": "integer"},
-          "post_id": {"type": "integer"},
-          "content": {"type": "string"},
+          "id": {
+            "type": "integer"
+          },
+          "post_id": {
+            "type": "integer"
+          },
+          "content": {
+            "type": "string"
+          },
           "author": {
             "$ref": "#/components/schemas/User"
           },
           "created_at": {
             "type": "string"
           },
-          "updated_at": {"type": "string"},
-          "nb_votes": {"type": "integer"},
-          "score": {"type": "integer"},
-          "vote": {"type": "integer"},
+          "updated_at": {
+            "type": "string"
+          },
+          "nb_votes": {
+            "type": "integer"
+          },
+          "score": {
+            "type": "integer"
+          },
+          "vote": {
+            "type": "integer"
+          },
           "replies": {
             "type": "array",
             "items": {
@@ -2990,7 +3046,9 @@
       "ReportReason": {
         "type": "object",
         "properties": {
-          "reason":{"type": "string"}
+          "reason": {
+            "type": "string"
+          }
         }
       }
     }
