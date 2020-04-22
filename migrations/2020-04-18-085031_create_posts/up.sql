@@ -10,9 +10,9 @@ CREATE TABLE posts (
     deleted_at DATETIME,
     hidden_at DATETIME,
     locked_at DATETIME,
-    votes INT UNSIGNED NOT NULL DEFAULT 0,
+    -- votes INT UNSIGNED NOT NULL DEFAULT 0,
     score INT NOT NULL DEFAULT 0,
     PRIMARY KEY (id),
-    CONSTRAINT fk_posts_authorid FOREIGN KEY (authorid) REFERENCES users(id),
+    CONSTRAINT fk_posts_authorid FOREIGN KEY (author_id) REFERENCES users(id),
     CONSTRAINT posttype_values CHECK (post_type in ("Poll", "Idea", "Info", "Decisional", "Discussion"))
 );

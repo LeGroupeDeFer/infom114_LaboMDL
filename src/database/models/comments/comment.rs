@@ -12,12 +12,14 @@ use diesel::prelude::*;
 pub struct Comment {
     pub id: u32,
     pub post_id: u32,
+    pub parent_id: Option<u32>,
     pub content: String,
     pub author_id: u32,
-    pub created_at: Option<NaiveDateTime>,
-    pub updated_at: Option<NaiveDateTime>,
-    pub nb_votes: u32,
-    pub parent_id: Option<u32>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub deleted_at: Option<NaiveDateTime>,
+    pub hidden_at: Option<NaiveDateTime>,
+    pub score: i32,
 }
 
 pub struct CommentMinima {
