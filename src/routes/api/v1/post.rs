@@ -110,7 +110,7 @@ fn delete_post_by_id(conn: DBConnection, post_id: String, author_token: String) 
 fn update_post_by_id(conn: DBConnection, post_id: String, data: Json<NewPost>) -> ApiResponse {
     let a_post = data.into_inner();
     let author_token = a_post.author_token.to_string();
-
+    // FIXME : no need to create a new function
     fn do_update(
         conn: DBConnection,
         post_id: u32,
@@ -119,7 +119,16 @@ fn update_post_by_id(conn: DBConnection, post_id: String, data: Json<NewPost>) -
         post_data: Option<NewPost>,
     ) -> ApiResponse {
         let a_post = post_data.unwrap();
-        match Post::update_post(&conn, post_id, a_post.title, a_post.content) {
+        let minima = PostMinima {
+            author_id: post_author_id,
+            title: a_post.title,
+            content: a_post.content,
+        };
+        // FIXME
+        match Post::by_id(&*conn, post_id)
+            .unwrap()
+            .update(&*conn, &minima)
+        {
             Some(_) => ApiResponse::new(
                 Status::Ok,
                 json!({
@@ -144,6 +153,7 @@ fn updown_vote(conn: DBConnection, post_id: String, data: Json<ChangeVote>) -> A
     let vote_request = data.into_inner();
     let upvote = vote_request.upvote;
     let author_token = vote_request.author_token;
+    // FIXME
 
     fn do_updown_vote(
         conn: DBConnection,
@@ -153,7 +163,10 @@ fn updown_vote(conn: DBConnection, post_id: String, data: Json<ChangeVote>) -> A
         _: Option<NewPost>,
     ) -> ApiResponse {
         let n_change = change_vote.unwrap_or_default();
-        match Post::upvote(&conn, post_id, n_change) {
+        match Post::by_id(&*conn, post_id)
+            .unwrap()
+            .upvote(&*conn, n_change)
+        {
             Some(new_nb_votes) => ApiResponse::new(
                 Status::Ok,
                 json!({

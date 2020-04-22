@@ -1,4 +1,39 @@
-// read all posts
+use rocket::http::Status;
+
+use super::super::init;
+use super::utils;
+
+use unanimitylibrary::database::models::prelude::{FrontPost, Post};
+use unanimitylibrary::lib::seeds::posts::seed_test_posts;
+
+#[test]
+fn read_all_posts() {
+    let route = "/api/posts";
+
+    // clean database
+    let client = init::clean_client();
+    let conn = init::database_connection();
+
+    // create random posts
+    seed_test_posts(&conn);
+
+    // login
+    let (user, password) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &password);
+
+    // perform request
+    let req = client.get(route).header(auth_token_header);
+    let mut response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::Ok);
+
+    // check the answer data is what we wanted
+    let data = response.body_string().unwrap();
+    let posts: Vec<FrontPost> = serde_json::from_str(&data).unwrap();
+    // we want a total of 6 post, the 5 normals & the locked one
+}
+
 // read all posts with a search term
 // read all posts related to a tag
 // read all posts with a sorting criteria

@@ -19,7 +19,7 @@ use diesel::MysqlConnection;
 #[table_name = "users_roles"]
 #[belongs_to(User, foreign_key = "user_id")]
 #[belongs_to(Role, foreign_key = "role_id")]
-pub struct RelUserRole {
+pub struct RelUserRoleEntity {
     pub id: u32,
     pub user_id: u32,
     pub role_id: u32,
@@ -34,7 +34,7 @@ pub struct RelUserRoleMinima {
     pub role_id: u32,
 }
 
-impl RelUserRole {
+impl RelUserRoleEntity {
     /// Helper to get the roles of a user
     pub fn get_roles_from_user(conn: &MysqlConnection, user: &User) -> Vec<Role> {
         let roles_id = RelUserRole::belonging_to(user).select(users_roles::role_id);

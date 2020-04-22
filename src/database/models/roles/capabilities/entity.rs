@@ -3,12 +3,8 @@
 //! In this module we'll go through the models needed to fetch an insert data
 //! inside the `roles_capabilities` table
 
-use crate::database::schema::capabilities::dsl::capabilities as table_capabilities;
-use crate::database::schema::roles_capabilities::dsl::roles_capabilities as table_roles_capabilities;
 use crate::database::schema::{capabilities, roles_capabilities};
 use crate::database::Data;
-
-use crate::database::models::roles::{capability::Capability, role::Role};
 
 use diesel::prelude::*;
 use diesel::MysqlConnection;
@@ -19,7 +15,7 @@ use diesel::MysqlConnection;
 #[table_name = "roles_capabilities"]
 #[belongs_to(Role, foreign_key = "role_id")]
 #[belongs_to(Capability, foreign_key = "capability_id")]
-pub struct RelRoleCapability {
+pub struct RelRoleCapabilityEntity {
     pub id: u32,
     pub role_id: u32,
     pub capability_id: u32,
@@ -34,11 +30,10 @@ pub struct RelRoleCapabilityMinima {
     pub capability_id: u32,
 }
 
-impl RelRoleCapability {
+impl RelRoleCapabilityEntity {
     /// Helper to get the capabilities of a role
     pub fn get_capabilities_for_role(conn: &MysqlConnection, role: &Role) -> Vec<Capability> {
-        let capabilities_id =
-            RelRoleCapability::belonging_to(role).select(roles_capabilities::capability_id);
+        let capabilities_id = Self::belonging_to(role).select(roles_capabilities::capability_id);
 
         table_capabilities
             .filter(capabilities::id.eq_any(capabilities_id))
@@ -63,7 +58,7 @@ impl RelRoleCapability {
         conn: &MysqlConnection,
         role: &Role,
         capability: &Capability,
-    ) -> Data<RelRoleCapability> {
+    ) -> Data<Self> {
         match Self::get(&conn, role.id, capability.id) {
             Some(e) => Data::Existing(e),
             None => {

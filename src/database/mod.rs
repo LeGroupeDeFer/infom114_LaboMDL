@@ -11,6 +11,7 @@ use crate::conf::env_setting;
 use crate::diesel::Connection;
 use diesel::MysqlConnection;
 use dotenv::dotenv;
+use either::Either::{self, Left, Right};
 use rocket::config::Value;
 use rocket_contrib::databases::diesel;
 use std::collections::HashMap;

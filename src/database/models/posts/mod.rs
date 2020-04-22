@@ -1,3 +1,4 @@
+pub mod entity;
 pub mod forms;
 pub mod post;
 pub mod tags;

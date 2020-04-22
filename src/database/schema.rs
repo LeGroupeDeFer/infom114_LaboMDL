@@ -24,10 +24,12 @@ table! {
         parent_id -> Nullable<Unsigned<Integer>>,
         content -> Mediumtext,
         author_id -> Unsigned<Integer>,
-        created_at -> Datetime,
-        updated_at -> Datetime,
-        deleted_at -> Nullable<Datetime>,
-        hidden_at -> Nullable<Datetime>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+        deleted_at -> Nullable<Timestamp>,
+        hidden_at -> Nullable<Timestamp>,
+        locked_at -> Nullable<Timestamp>,
+        votes -> Unsigned<Integer>,
         score -> Integer,
     }
 }
@@ -46,11 +48,12 @@ table! {
         content -> Mediumtext,
         post_type -> Varchar,
         author_id -> Unsigned<Integer>,
-        created_at -> Datetime,
-        updated_at -> Datetime,
-        deleted_at -> Nullable<Datetime>,
-        hidden_at -> Nullable<Datetime>,
-        locked_at -> Nullable<Datetime>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+        deleted_at -> Nullable<Timestamp>,
+        hidden_at -> Nullable<Timestamp>,
+        locked_at -> Nullable<Timestamp>,
+        votes -> Unsigned<Integer>,
         score -> Integer,
     }
 }
@@ -135,7 +138,7 @@ table! {
     votes_comments (comment_id, vote_authorid) {
         comment_id -> Unsigned<Integer>,
         vote_authorid -> Unsigned<Integer>,
-        voted_at -> Nullable<Datetime>,
+        voted_at -> Timestamp,
         vote_value -> Bool,
     }
 }
@@ -144,7 +147,7 @@ table! {
     votes_posts (post_id, vote_authorid) {
         post_id -> Unsigned<Integer>,
         vote_authorid -> Unsigned<Integer>,
-        voted_at -> Nullable<Datetime>,
+        voted_at -> Timestamp,
         vote_value -> Bool,
     }
 }

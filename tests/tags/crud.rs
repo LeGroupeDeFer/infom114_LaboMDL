@@ -2,7 +2,7 @@ use rocket::http::Status;
 
 use super::super::init;
 
-use unanimitylibrary::database::models::tags::tag::Tag;
+use unanimitylibrary::database::models::prelude::Tag;
 
 /************************************** TEST ***************************************/
 
