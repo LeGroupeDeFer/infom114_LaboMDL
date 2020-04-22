@@ -12,12 +12,12 @@ use crate::http::responders::api::ApiResponse;
 use rocket::http::Status;
 pub mod auth;
 pub mod capabilities;
+pub mod post;
 pub mod role;
 pub mod roles;
 pub mod tag;
 pub mod tags;
 pub mod user;
-pub mod post;
 
 /// Collect every routes that this module needs to share with the application
 /// The name `collect` is a project convention

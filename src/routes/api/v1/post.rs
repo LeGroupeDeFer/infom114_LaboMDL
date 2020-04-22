@@ -1,15 +1,13 @@
-use crate::database::models::posts::forms::ChangeVote;
-use crate::database::models::posts::forms::NewPost;
-use crate::database::models::posts::post::Post;
+use crate::database::models::posts::forms::{ChangeVote, NewPost};
 use crate::database::models::posts::post::PostMinima;
-use crate::database::models::user::User;
+use crate::database::models::prelude::{Post, User};
 use crate::database::schema::posts;
 use crate::database::DBConnection;
 use crate::http::responders::api::ApiResponse;
 
 use diesel::prelude::*;
 use rocket::http::Status;
-use rocket_contrib::json::{Json, JsonError};
+use rocket_contrib::json::Json;
 
 pub fn collect() -> Vec<rocket::Route> {
     routes!(
@@ -32,31 +30,33 @@ pub fn allowed_paths() -> Vec<&'static str> {
 #[post("/api/post", format = "json", data = "<data>")]
 fn create_post(conn: DBConnection, data: Json<NewPost>) -> ApiResponse {
     let post_request = data.into_inner();
-    let user_id = User::get_id_by_token(&conn, &post_request.author_token);
+    let user = User::by_token(&*conn, &post_request.author_token);
 
-    if let Some(authorid) = user_id {
+    if let Some(author) = user {
         let new_post = PostMinima {
             title: post_request.title,
             content: post_request.content,
-            authorid: authorid,
+            author_id: author.id,
         };
 
         let insert_result = diesel::insert_into(posts::dsl::posts)
             .values(&new_post)
             .execute(&*conn);
 
-        match insert_result {
-            Ok(_) => ApiResponse::new(
+        if insert_result.is_ok() {
+            ApiResponse::new(
                 Status::Ok,
                 json!({
                     "msg":
                         &format!(
                             "Post '{}' of user '{}' inserted succesfully",
-                            new_post.title, authorid
+                            new_post.title, author.id
                         )
                 }),
-            ),
-            Err(e) => ApiResponse::db_error(e),
+            )
+        } else {
+            // since we are sure that insert_result is a type Err, we can unwrap
+            ApiResponse::db_error(insert_result.err().unwrap())
         }
     } else {
         ApiResponse::error(Status::Unauthorized, "Token not found!.")
@@ -66,17 +66,14 @@ fn create_post(conn: DBConnection, data: Json<NewPost>) -> ApiResponse {
 #[get("/api/posts")]
 fn get_all_posts(conn: DBConnection) -> ApiResponse {
     // TODO: Get all related comments
-    match Post::get_all_posts(&conn) {
-        Ok(posts) => ApiResponse::new(Status::Ok, json!(posts)),
-        Err(e) => ApiResponse::db_error(e),
-    }
+    ApiResponse::new(Status::Ok, json!(Post::all(&conn)))
 }
 
-/// Get post by post_id (unauth)
-#[get("/api/post/<post_id>")]
+/// Get post by id (unauth)
+#[get("/post/<post_id>")]
 fn get_post_by_id(conn: DBConnection, post_id: String) -> ApiResponse {
     match post_id.parse::<u32>() {
-        Ok(post_id) => match Post::get_post_by_id(&conn, post_id) {
+        Ok(post_id) => match Post::by_id(&*conn, post_id) {
             Some(post) => ApiResponse::new(Status::Ok, json!(post)),
             None => ApiResponse::error(Status::NotFound, "Post not found"),
         },
@@ -155,8 +152,7 @@ fn updown_vote(conn: DBConnection, post_id: String, data: Json<ChangeVote>) -> A
         change_vote: Option<i32>,
         _: Option<NewPost>,
     ) -> ApiResponse {
-        // FIXME nb_votes type from u32 to i32
-        let n_change = change_vote.unwrap_or_default() as u32;
+        let n_change = change_vote.unwrap_or_default();
         match Post::upvote(&conn, post_id, n_change) {
             Some(new_nb_votes) => ApiResponse::new(
                 Status::Ok,
@@ -201,18 +197,15 @@ fn process_request_with_validation(
 ) -> ApiResponse {
     match post_id.parse::<u32>() {
         Ok(post_id) => {
-            let user_id = User::get_id_by_token(&conn, &author_token);
-
-            if let Some(client_author_id) = user_id {
+            if let Some(user_by_token) = User::by_token(&conn, &author_token) {
                 let post_author_id = Post::get_author_id_by_post_id(&conn, post_id);
-
                 if let Some(post_author_id) = post_author_id {
                     let allowed = if change_vote.is_some() {
                         // up/down vote: can not up/down the vote of his own
-                        post_author_id != client_author_id
+                        post_author_id != user_by_token.id
                     } else {
                         // delete or update vote: can not modify post of other person
-                        post_author_id == client_author_id
+                        post_author_id == user_by_token.id
                     };
                     if allowed {
                         client_request(conn, post_id, post_author_id, change_vote, a_post)
@@ -221,7 +214,7 @@ fn process_request_with_validation(
                             Status::Forbidden,
                             &format!(
                                 "User '{}' is not allowed to take action on post '{}' of user '{}'",
-                                client_author_id, post_id, post_author_id
+                                user_by_token.id, post_id, post_author_id
                             ),
                         )
                     }
@@ -236,6 +229,6 @@ fn process_request_with_validation(
                 ApiResponse::error(Status::Unauthorized, "Token not found!.")
             }
         }
-        Err(_) => ApiResponse::error(Status::BadRequest, "Invalid post_id"),
+        Err(_) => ApiResponse::error(Status::BadRequest, "Invalid id supplied"),
     }
 }

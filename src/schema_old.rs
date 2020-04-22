@@ -17,7 +17,7 @@ table! {
         content -> Mediumtext,
         authorid -> Unsigned<Integer>,
         created_at -> Nullable<Datetime>,
-        modified_at -> Nullable<Datetime>,
+        updated_at -> Nullable<Datetime>,
         nb_votes -> Unsigned<Integer>,
         parent_id -> Nullable<Unsigned<Integer>>,
     }
@@ -31,7 +31,7 @@ table! {
         post_type -> Varchar,
         authorid -> Unsigned<Integer>,
         created_at -> Nullable<Datetime>,
-        modified_at -> Nullable<Datetime>,
+        updated_at -> Nullable<Datetime>,
         nb_votes -> Unsigned<Integer>,
     }
 }

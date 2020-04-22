@@ -3,8 +3,8 @@
 //! Group the creation, update and deletion of roles
 
 use crate::auth::Auth;
-use crate::database::models::roles::{forms::UserRoleData, role::Role, user_role::RelUserRole};
-use crate::database::models::user::User;
+use crate::database::models::prelude::{RelUserRole, Role, User};
+use crate::database::models::roles::forms::UserRoleData;
 use crate::database::{DBConnection, Data};
 use crate::http::responders::api::ApiResponse;
 
@@ -24,7 +24,7 @@ pub fn assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiRe
     let capability = "user:manage_role";
 
     // manage capability
-    if !auth.has_capability(&conn, &capability) {
+    if !auth.has_capability(&*conn, &capability) {
         return ApiResponse::error(
             Status::Forbidden,
             &format!("The user do not have the capability {}", capability),
@@ -33,7 +33,7 @@ pub fn assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiRe
 
     let user_role_data = data.into_inner();
 
-    let user = match User::from(&*conn, &user_role_data.user_id) {
+    let user = match User::by_id(&*conn, &user_role_data.user_id) {
         Some(u) => u,
         None => {
             return ApiResponse::error(
@@ -57,8 +57,8 @@ pub fn assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiRe
         Data::Inserted(_) => ApiResponse::simple_success(Status::Ok),
         Data::Existing(_) => {
             ApiResponse::error(Status::Conflict, "This user do already have this role")
-        },
-        _ => panic!("unreachable code reched")
+        }
+        _ => panic!("unreachable code reched"),
     }
 }
 

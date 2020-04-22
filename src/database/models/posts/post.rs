@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
 use crate::database::schema::posts;
-use crate::database::Data;
+// use crate::database::Data;
 
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
@@ -14,10 +14,13 @@ pub struct Post {
     pub title: String,
     pub content: String,
     pub post_type: String,
-    pub authorid: u32,
-    pub created_at: Option<NaiveDateTime>,
-    pub modified_at: Option<NaiveDateTime>,
-    pub nb_votes: u32,
+    pub author_id: u32,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub deleted_at: Option<NaiveDateTime>,
+    pub hidden_at: Option<NaiveDateTime>,
+    pub locked_at: Option<NaiveDateTime>,
+    pub score: i32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Insertable)]
@@ -25,17 +28,17 @@ pub struct Post {
 pub struct PostMinima {
     pub title: String,
     pub content: String,
-    pub authorid: u32,
+    pub author_id: u32,
 }
 
 impl Post {
-    // get_all_posts :: (DBConnection) -> QueryResult<Vec<User>>
-    pub fn get_all_posts(conn: &MysqlConnection) -> QueryResult<Vec<Post>> {
-        posts::table.load::<Post>(conn.deref())
+    /// Get all posts
+    pub fn all(conn: &MysqlConnection) -> Vec<Post> {
+        posts::table.load::<Post>(conn.deref()).unwrap_or(vec![])
     }
 
-    /// Get a post object by `post_id`
-    pub fn get_post_by_id(conn: &MysqlConnection, post_id: u32) -> Option<Post> {
+    /// Get a post by its id
+    pub fn by_id(conn: &MysqlConnection, post_id: u32) -> Option<Post> {
         if let Ok(a_post) = posts::table.filter(posts::id.eq(post_id)).first(conn) {
             Some(a_post)
         } else {
@@ -47,7 +50,7 @@ impl Post {
     pub fn get_author_id_by_post_id(conn: &MysqlConnection, post_id: u32) -> Option<u32> {
         let author_id = posts::table
             .filter(posts::id.eq(post_id))
-            .select(posts::authorid)
+            .select(posts::author_id)
             .first(conn);
 
         if let Ok(id) = author_id {
@@ -88,17 +91,17 @@ impl Post {
         }
     }
 
-    pub fn upvote(conn: &MysqlConnection, post_id: u32, change_vote: u32) -> Option<u32> {
+    pub fn upvote(conn: &MysqlConnection, post_id: u32, change_vote: i32) -> Option<i32> {
         let target = posts::table.filter(posts::id.eq(post_id));
-        let nb_votes: Result<u32, _> = target.select(posts::nb_votes).first(conn);
+        let score: Result<i32, _> = target.select(posts::score).first(conn);
 
-        if let Ok(old_nb_votes) = nb_votes {
-            let new_nb_votes = old_nb_votes + change_vote;
+        if let Ok(old_score) = score {
+            let new_score = old_score + change_vote;
             diesel::update(target)
-                .set(posts::nb_votes.eq(new_nb_votes))
+                .set(posts::score.eq(new_score))
                 .execute(conn)
                 .unwrap();
-            Some(new_nb_votes)
+            Some(new_score)
         } else {
             None
         }

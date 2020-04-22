@@ -79,7 +79,7 @@ impl Capability {
 /// All the capabilities of the application
 pub const CAPABILITIES: [&str; 4] = [
     "role:manage",
-    "post:create",
-    "user:manage",
     "user:manage_role",
+    "tag:update",
+    "tag:delete",
 ];

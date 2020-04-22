@@ -37,7 +37,7 @@ fn assign_role_to_user() {
     };
     let role = match roles::role::Role::insert_minima(&conn, &role_minima) {
         Data::Inserted(r) => r,
-        Data::Existing(_) => panic!("The role already existed"),
+        _ => panic!("The role already existed"),
     };
 
     let data = format!("{{ \"user_id\": {}, \"role_id\" : {} }}", user.id, role.id);
@@ -78,7 +78,7 @@ fn assign_role_to_user_without_requested_capability() {
     };
     let role = match roles::role::Role::insert_minima(&conn, &role_minima) {
         Data::Inserted(r) => r,
-        Data::Existing(_) => panic!("The role already existed"),
+        _ => panic!("The role already existed"),
     };
 
     let data = format!("{{ \"user_id\": {}, \"role_id\" : {} }}", user.id, role.id);
@@ -118,7 +118,7 @@ fn assign_role_to_user_missing_user_id() {
     };
     let role = match roles::role::Role::insert_minima(&conn, &role_minima) {
         Data::Inserted(r) => r,
-        Data::Existing(_) => panic!("The role already existed"),
+        _ => panic!("The role already existed"),
     };
 
     let data = format!("{{ \"role_id\" : {} }}", role.id);
@@ -158,7 +158,7 @@ fn assign_role_to_user_missing_role_id() {
     };
     let role = match roles::role::Role::insert_minima(&conn, &role_minima) {
         Data::Inserted(r) => r,
-        Data::Existing(_) => panic!("The role already existed"),
+        _ => panic!("The role already existed"),
     };
 
     let data = format!("{{ \"user_id\": {} }}", user.id);

@@ -13,10 +13,5 @@ pub fn get(conn: DBConnection) -> ApiResponse {
     //TODO Update the json containing the specification of this api
     //TODO Do not send id information
     let tags = Tag::all(&conn);
-    ApiResponse::new(
-        Status::Ok,
-        json!({
-            "tags" : tags
-        }),
-    )
+    ApiResponse::new(Status::Ok, json!({ "tags": tags }))
 }

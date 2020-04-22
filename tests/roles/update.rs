@@ -42,7 +42,7 @@ fn update_everything() {
 
     let role_name = "myupdatedrole";
     let role_color = "#00ffff";
-    let role_capabilities = vec!["post:create", "role:manage", "user:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
@@ -114,7 +114,7 @@ fn update_same_name() {
 
     let role_name = "mynewrole";
     let role_color = "#00ffff";
-    let role_capabilities = vec!["post:create", "role:manage", "user:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
@@ -173,7 +173,7 @@ fn update_missing_id() {
 
     let role_name = "myupdatedrole";
     let role_color = "#00ffff";
-    let role_capabilities = vec!["post:create", "role:manage", "user:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
@@ -224,7 +224,7 @@ fn update_invalid_role_id() {
 
     let role_name = "myupdatedrole";
     let role_color = "#00ffff";
-    let role_capabilities = vec!["post:create", "role:manage", "user:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
@@ -281,7 +281,7 @@ fn update_no_color() {
     let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let role_name = "myupdatedrole";
-    let role_capabilities = vec!["post:create", "role:manage", "user:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
@@ -336,7 +336,7 @@ fn update_missing_role_name() {
     let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let role_color = "#00ffff";
-    let role_capabilities = vec!["post:create", "role:manage", "user:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
@@ -440,7 +440,7 @@ fn update_without_correct_capability() {
 
     let role_name = "myupdatedrole";
     let role_color = "#00ffff";
-    let role_capabilities = vec!["post:create", "role:manage", "user:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(

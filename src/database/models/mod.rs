@@ -10,7 +10,9 @@
 //! implement some database operations.
 
 pub mod address;
-pub mod roles;
-pub mod user;
+pub mod comments;
 pub mod posts;
+pub mod prelude;
+pub mod roles;
 pub mod tags;
+pub mod users;

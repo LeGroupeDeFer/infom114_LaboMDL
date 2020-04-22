@@ -2,8 +2,7 @@
 //!
 //! Every routes concerning the authentication process are grouped here.
 
-use crate::database::models::address::Address;
-use crate::database::models::user::User;
+use crate::database::models::prelude::{Address, User};
 use crate::database::{DBConnection, Data};
 use crate::http::responders::api::ApiResponse;
 
@@ -120,7 +119,7 @@ pub fn login(conn: DBConnection, state: State, data: Json<LoginData>) -> ApiResp
 #[post("/api/v1/auth/activate", format = "json", data = "<data>")]
 pub fn activate(conn: DBConnection, data: Json<ActivationData>) -> ApiResponse {
     let ActivationData { token, id } = data.into_inner();
-    if let Some(user) = User::from(&conn, &id) {
+    if let Some(user) = User::by_id(&conn, &id) {
         let activation = user.clone(); // FIXME - Remove clone
         if Some(true) == user.token.map(|account_token| account_token == token) && !user.active {
             activation.activate(&conn);

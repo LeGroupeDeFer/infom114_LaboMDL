@@ -1,8 +1,8 @@
-use crate::auth::Auth;
 use crate::auth::forms::{ActivationData, LoginData, RegisterData};
-use crate::database::models::tags::forms::TagData;
+use crate::auth::Auth;
 use crate::conf;
 use crate::database::models::roles::forms::{RoleData, UserRoleData};
+use crate::database::models::tags::forms::TagData;
 use crate::database::DBConnection;
 use crate::http::responders::api::ApiResponse;
 use rocket_contrib::json::Json;
@@ -34,7 +34,7 @@ pub fn collect() -> Vec<rocket::Route> {
     .concat()
 }
 
-/*************************** AUTH ********************************************/
+/************************************** AUTH ******************************************************/
 
 #[post("/api/auth/register", format = "json", data = "<data>")]
 pub fn auth_register(conn: DBConnection, data: Json<RegisterData>) -> ApiResponse {
@@ -51,7 +51,7 @@ pub fn auth_activate(conn: DBConnection, data: Json<ActivationData>) -> ApiRespo
     v1::auth::activate(conn, data)
 }
 
-/**************************** TAG MANAGEMENT *********************************/
+/*************************************** TAG MANAGEMENT *******************************************/
 
 #[get("/api/tags")]
 pub fn tags_get(conn: DBConnection) -> ApiResponse {
@@ -59,21 +59,26 @@ pub fn tags_get(conn: DBConnection) -> ApiResponse {
 }
 
 #[post("/api/tag/<tag_label>")]
-pub fn tag_post(conn: DBConnection, tag_label: String) -> ApiResponse {
-    v1::tag::post_tag(conn, tag_label)
+pub fn tag_post(conn: DBConnection, auth: Auth, tag_label: String) -> ApiResponse {
+    v1::tag::post_tag(conn, auth, tag_label)
 }
 
-#[put("/api/tag/<tag_label>", data="<data>")]
-pub fn tag_update(conn: DBConnection, tag_label: String, data: Json<TagData>) -> ApiResponse {
-    v1::tag::update_tag(conn, tag_label, data)
+#[put("/api/tag/<tag_label>", data = "<data>")]
+pub fn tag_update(
+    conn: DBConnection,
+    auth: Auth,
+    tag_label: String,
+    data: Json<TagData>,
+) -> ApiResponse {
+    v1::tag::update_tag(conn, auth, tag_label, data)
 }
 
 #[delete("/api/tag/<tag_label>")]
-pub fn tag_delete(conn: DBConnection, tag_label: String) -> ApiResponse {
-    v1::tag::delete_tag(conn, tag_label)
+pub fn tag_delete(conn: DBConnection, auth: Auth, tag_label: String) -> ApiResponse {
+    v1::tag::delete_tag(conn, auth, tag_label)
 }
 
-/*************************** ROLE MANAGEMENT *********************************/
+/************************************* ROLE MANAGEMENT ********************************************/
 
 #[get("/api/capabilities")]
 pub fn capabilities_get(conn: DBConnection, auth: Auth) -> ApiResponse {
@@ -114,3 +119,5 @@ pub fn user_role_assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>
 pub fn user_role_unassign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiResponse {
     v1::user::role::unassign(conn, auth, data)
 }
+
+/*********************************** POST MANAGEMENT **********************************************/

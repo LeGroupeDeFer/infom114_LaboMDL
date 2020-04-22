@@ -1,7 +1,7 @@
 use crate::database::models::roles::{
     capability, role, role_capability::RelRoleCapability, user_role::RelUserRole,
 };
-use crate::database::models::user;
+use crate::database::models::users::user;
 use crate::database::Data;
 use diesel::MysqlConnection;
 
@@ -21,7 +21,7 @@ pub fn seed_roles_and_capabilities(conn: &MysqlConnection) {
     let admin_role = match role::Role::insert_minima(&conn, &admin_minima) {
         Data::Existing(a) => a,
         Data::Inserted(a) => a,
-        _ => panic!("unreachable code reched")
+        _ => panic!("unreachable code reched"),
     };
 
     // add every capabilities in database & link them to the admin role
@@ -36,7 +36,7 @@ pub fn seed_roles_and_capabilities(conn: &MysqlConnection) {
         let capa = match capability::Capability::insert_minima(&conn, &capability_minima) {
             Data::Existing(c) => c,
             Data::Inserted(c) => c,
-            _ => panic!("unreachable code reched")
+            _ => panic!("unreachable code reched"),
         };
         RelRoleCapability::add_capability_for_role(&conn, &admin_role, &capa);
     }
@@ -55,7 +55,7 @@ pub fn seed_roles_and_capabilities(conn: &MysqlConnection) {
     ) {
         Data::Existing(a) => a,
         Data::Inserted(a) => a,
-        _ => panic!("unreachable code reched")
+        _ => panic!("unreachable code reched"),
     };
 
     // activate the admin

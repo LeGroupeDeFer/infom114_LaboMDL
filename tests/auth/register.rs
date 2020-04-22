@@ -9,10 +9,8 @@ use diesel::query_dsl::RunQueryDsl;
 
 use rocket::http::{ContentType, Status};
 
-use unanimitylibrary::database::models::address::Address;
-use unanimitylibrary::database::models::user::User;
-use unanimitylibrary::database::schema::addresses::dsl::addresses;
-use unanimitylibrary::database::schema::users::dsl::users;
+use unanimitylibrary::database::models::prelude::{Address, User};
+use unanimitylibrary::database::tables::{addresses_table, users_table};
 
 use super::super::init;
 
@@ -43,7 +41,7 @@ fn register_new_user() {
     assert_eq!(response.status(), Status::Ok);
 
     // load users present in database
-    let tab = users.load::<User>(&conn).unwrap();
+    let tab = users_table.load::<User>(&conn).unwrap();
 
     // check that there is only one user in database
     assert_eq!(tab.len(), 1);
@@ -51,7 +49,7 @@ fn register_new_user() {
     // check that this user is the one we just added
     assert_eq!(tab[0].email, "guillaume.latour@student.unamur.be");
     // and there is nothing in the address table
-    assert_eq!(addresses.load::<Address>(&conn).unwrap().len(), 0);
+    assert_eq!(addresses_table.load::<Address>(&conn).unwrap().len(), 0);
 }
 
 #[test]
@@ -85,7 +83,7 @@ fn register_full_address() {
     assert_eq!(response.status(), Status::Ok);
 
     // load users present in database
-    let tab_users = users.load::<User>(&conn).unwrap();
+    let tab_users = users_table.load::<User>(&conn).unwrap();
 
     // check that there is only one user in database
     assert_eq!(tab_users.len(), 1);
@@ -94,7 +92,7 @@ fn register_full_address() {
     assert_eq!(tab_users[0].email, "guillaume.latour@student.unamur.be");
 
     // load address present in database
-    let tab_address = addresses.load::<Address>(&conn).unwrap();
+    let tab_address = addresses_table.load::<Address>(&conn).unwrap();
 
     // check there is only one address in database
     assert_eq!(tab_address.len(), 1);
@@ -134,8 +132,8 @@ fn register_address_wrong_type() {
     assert_eq!(response.status(), Status::UnprocessableEntity);
 
     // check that there is no new user or address in database
-    assert_eq!(users.load::<User>(&conn).unwrap().len(), 0);
-    assert_eq!(addresses.load::<Address>(&conn).unwrap().len(), 0);
+    assert_eq!(users_table.load::<User>(&conn).unwrap().len(), 0);
+    assert_eq!(addresses_table.load::<Address>(&conn).unwrap().len(), 0);
 }
 
 #[test]
@@ -167,8 +165,8 @@ fn register_incomplete_address() {
     assert_eq!(response.status(), Status::UnprocessableEntity);
 
     // check that there is no new user or address in database
-    assert_eq!(users.load::<User>(&conn).unwrap().len(), 0);
-    assert_eq!(addresses.load::<Address>(&conn).unwrap().len(), 0);
+    assert_eq!(users_table.load::<User>(&conn).unwrap().len(), 0);
+    assert_eq!(addresses_table.load::<Address>(&conn).unwrap().len(), 0);
 }
 
 #[test]
@@ -194,7 +192,7 @@ fn register_with_existing_user() {
     assert_eq!(response.status(), Status::Ok);
 
     // load users present in database
-    let tab = users.load::<User>(&conn).unwrap();
+    let tab = users_table.load::<User>(&conn).unwrap();
 
     // check that there is only one user in database
     assert_eq!(tab.len(), 1);
@@ -202,7 +200,7 @@ fn register_with_existing_user() {
     // check that this user is the one we just added
     assert_eq!(tab[0].email, "guillaume.latour@student.unamur.be");
     // and there is nothing in the address table
-    assert_eq!(addresses.load::<Address>(&conn).unwrap().len(), 0);
+    assert_eq!(addresses_table.load::<Address>(&conn).unwrap().len(), 0);
 
     let req2 = client.post(ROUTE).header(ContentType::JSON).body(test_user);
     let response2 = req2.dispatch();
