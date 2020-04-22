@@ -28,10 +28,10 @@ function cast(value, type) {
 
 /**
  * [Control]{@link AutoForm.Control} custom validator. Receives a casted input value, returns **true** when said input is valid, **false** otherwise.
- * 
+ *
  * @callback Validator
  * @memberof AutoForm
- * 
+ *
  * @param { any } value The input value to validate.
  * @returns { boolean } The validation status.
  */
@@ -55,7 +55,7 @@ const defaultValidator = (validator, optional) => validator
 
 /**
  * Automatic [Bootstrap from]{@link https://react-bootstrap.github.io/components/forms/)} aggregation.
- * 
+ *
  * @memberof AutoForm
  * @param {ControlProps} props The control properties
  * @returns JSX.Element

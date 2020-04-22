@@ -13,7 +13,7 @@ use unanimitylibrary::database::schema::addresses::dsl::addresses;
 use unanimitylibrary::database::schema::users::dsl::users;
 
 use diesel::query_dsl::RunQueryDsl;
-use either::*;
+
 
 /// Truncate all the tables
 pub fn clean() {
@@ -102,6 +102,7 @@ pub fn get_user(active: bool) -> (User, String) {
         phone: None,
         activation_token: None,
         recovery_token: None,
+        refresh_token: None,
     };
 
     let user = User::insert_either(&conn, &u).unwrap();

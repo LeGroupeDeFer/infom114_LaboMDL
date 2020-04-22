@@ -1,14 +1,7 @@
 import React, { useRef, useState, useEffect, lazy, Suspense } from 'react';
 import { Route, Switch, useLocation } from 'react-router-dom';
-import {
-  faUserCircle,
-  faCogs,
-  faInfoCircle,
-  faStream,
-  faBell,
-  faPencilAlt
-} from '@fortawesome/free-solid-svg-icons';
 import Sidebar from './Sidebar';
+import layout from '../lib/layout';
 import { useAuth } from '../context/authContext';
 
 const Stream = lazy(() => import('../pages/Stream'));
@@ -21,44 +14,23 @@ const Logout = lazy(() => import('../pages/Logout'));
 const Register = lazy(() => import('../pages/Register'));
 const Create = lazy(() => import('../pages/Create'));
 const Activate = lazy(() => import('../pages/Activate'));
+const Recover = lazy(() => import('../pages/Recover'));
+const Restore = lazy(() => import('../pages/Restore'));
+
 
 // Content :: Object => Component
-const Content = _ => {
+const Content = () => {
   const location = useLocation();
   const { user } = useAuth();
-  const locationClass = location.pathname.split('/')[1];
 
-  const links = [
-    { name: 'stream', path: '/', icon: faStream, title: "Fil d'actualité" },
-    { name: 'about', path: '/about', icon: faInfoCircle, title: 'À propos' }
-  ];
-  if (user)
-    links.push(
-      {
-        name: 'profile',
-        path: '/profile',
-        icon: faUserCircle,
-        title: 'Profil'
-      },
-      {
-        name: 'notifications',
-        path: '/notifications',
-        icon: faBell,
-        title: 'Notifications'
-      }
-    );
-  links.push({
-    name: 'settings',
-    path: '/settings',
-    icon: faCogs,
-    title: 'Paramètres'
-  });
+  const layoutStyle = layout.layout(`/${location.pathname.split('/')[1]}`);
+  const links = layout.links(user);
 
   return (
     <>
       <Sidebar links={links} />
 
-      <div className={`offset ${locationClass}`}>
+      <div className={`offset ${layoutStyle}`}>
         <main role="main">
           <div className="content">
             <Suspense fallback={<h1>Loading...</h1>}>
@@ -102,6 +74,15 @@ const Content = _ => {
                 <Route path="/activate/:id?/:token?">
                   <Activate />
                 </Route>
+
+                <Route path="/restore">
+                  <Restore />
+                </Route>
+
+                <Route path="/recover/:id?/:token?">
+                  <Recover />
+                </Route>
+
               </Switch>
             </Suspense>
           </div>

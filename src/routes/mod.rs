@@ -22,7 +22,7 @@ pub fn collect() -> Vec<rocket::Route> {
     .concat()
 }
 
-const ALLOWED_ROUTES: [&str; 9] = [
+const ALLOWED_ROUTES: [&str; 10] = [
     "profile",
     "notifications",
     "settings",
@@ -30,7 +30,8 @@ const ALLOWED_ROUTES: [&str; 9] = [
     "login",
     "logout",
     "register",
-    "recovery",
+    "recover",
+    "restore",
     "activate",
 ];
 

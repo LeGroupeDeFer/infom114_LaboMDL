@@ -11,7 +11,7 @@ use rocket;
 use rocket_contrib::json::Json;
 
 pub fn collect() -> Vec<rocket::Route> {
-  routes!(register, login, logout, activate, restore, recovery, refresh)
+  routes!(register, login, logout, activate, restore, recover, refresh)
 }
 
 
@@ -23,16 +23,22 @@ fn register(conn: DBConnection, data: Json<RegisterData>) -> ApiResult<()> {
     let address = registration.clone().address.map(|address| {
         Address::insert_either(&conn, &address).map(|a| a.id)
     }).transpose()?;
-    let token = Token::create_default(&conn)?;
+
+    let activation_token = Token::create_default(&conn)?;
+
     let mut minima = UserMinima::from(&registration.clone());
     minima.address = address;
-    minima.activation_token = Some(token.id);
+    minima.activation_token = Some(activation_token.id);
 
     // Create the user
     let user = User::insert_new(&conn, &minima)?;
 
     // Send the activation link to the user
-    mail::send(&user, &format!("unanimity.be/activate/{}/{}", &user.id, &token.hash), &vec![])?;
+    mail::send(
+        &user,
+        &format!("unanimity.be/activate/{}/{}", &user.id, &activation_token.hash),
+        &vec![]
+    )?;
 
     OK()
 }
@@ -77,15 +83,16 @@ fn activate(conn: DBConnection, state: State, data: Json<ActivationData>) -> Api
         |v| Ok(v)
     )?;
 
-    activation_token.verify(&token)?;
-    activation_token.consume(&conn)?;
+    activation_token.vouch(&conn, &token)?;
 
+    let recovery_token = Token::create_default(&conn)?;
     let refresh_token = Token::create(
         &conn,
         Some(&state.access_lifetime),
         Some(&-1)
     )?;
 
+    user.recovery_token = Some(recovery_token.id);
     user.refresh_token = Some(refresh_token.id);
     user.active = true;
     user.update(&conn)?;
@@ -94,41 +101,39 @@ fn activate(conn: DBConnection, state: State, data: Json<ActivationData>) -> Api
 }
 
 #[post("/restore", format = "json", data = "<data>")]
-fn restore(conn: DBConnection, state: State, data: Json<RestoreData>) -> ApiResult<()> {
+fn restore(conn: DBConnection, data: Json<RestoreData>) -> ApiResult<()> {
     let email = data.into_inner().email;
 
     let mut user = User::by_email(&conn, &email)??;
-    if user.active {
-        return Err(AuthError::AlreadyActivated)?;
-    }
-
-    // Send the activation link to the user
-    let mut activation_token = user.activation_token(&conn)?.unwrap_or(
-        Token::create_default(&conn)?
-    );
-    activation_token.renew(&conn, Some(&state.refresh_lifetime), Some(&1))?;
-    user.activation_token = Some((&activation_token).id);
+    let mut recovery_token = user.recovery_token(&conn)?.map_or_else(
+        || Err(AuthError::InvalidToken),
+        |v| Ok(v)
+    )?;
+    recovery_token.renew(&conn, Some(&(3600)), Some(&1))?;
+    user.recovery_token = Some((&recovery_token).id);
     user.update(&conn)?;
 
     mail::send(
-        &user, &format!("unanimity.be/activate/{}/{}", &user.id, &activation_token.hash), &vec![]
+        &user, &format!("unanimity.be/recover/{}/{}", &user.id, &recovery_token.hash), &vec![]
     )?;
 
     OK()
 }
 
-#[post("/recovery", format = "json", data = "<data>")]
-fn recovery(conn: DBConnection, data: Json<RecoveryData>) -> ApiResult<()> {
-    let RecoveryData { email, password, token } = data.into_inner();
+#[post("/recover", format = "json", data = "<data>")]
+fn recover(conn: DBConnection, data: Json<RecoveryData>) -> ApiResult<()> {
+    let RecoveryData { id, password, token } = data.into_inner();
 
-    let user = User::by_email(&conn, &email)??;
-    if !user.verify(&password)? { Err(AuthError::InvalidIDs)?; }
-    let mut recovery_token = user.recovery_token(&conn)?.unwrap_or(
-        Err(AuthError::InvalidToken)?
-    );
+    let mut user = User::of(&conn, &id)??;
+    let mut recovery_token = user.recovery_token(&conn)?.map_or_else(
+        || Err(AuthError::InvalidToken),
+        |v| Ok(v)
+    )?;
 
-    recovery_token.verify(&token)?;
-    recovery_token.consume(&conn)?;
+    recovery_token.vouch(&conn, &token)?;
+
+    user.set_password(&password)?;
+    user.update(&conn)?;
 
     OK()
 }

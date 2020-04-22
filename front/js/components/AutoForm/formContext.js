@@ -6,11 +6,10 @@ const FormContext = createContext();
 const assertValidity = data =>
   Object.keys(data).reduce((acc, key) => acc && data[key].valid, true);
 
-export function FormProvider({ onSubmit, children }) {
+export function FormProvider({ onSubmit, validator, children }) {
 
   const [data, setData] = useState({});
   const [validity, setValidity] = useState(false);
-  const [error, setError] = useState(false);
   const [send, setSend] = useState(null);
 
   // TODO - Test double registers
@@ -56,24 +55,10 @@ export function FormProvider({ onSubmit, children }) {
     });
   }
 
-  useEffect(() => { setValidity(assertValidity(data)); }, [data]);
-
-  // Basically untestable
-  /* istanbul ignore next */
-  useEffect(() => {
-    if (!send || !send.promise)
-      return;
-    let isSubscribed = true;
-    send.promise.catch(error => {
-      if (isSubscribed) {
-        setError(error);
-      }
-    });
-    return () => isSubscribed = false;
-  }, [send]);
+  useEffect(() => setValidity(validator(data) && assertValidity(data)), [data]);
 
   return (
-    <FormContext.Provider value={{ register, onChange, submit, validity, error }}>
+    <FormContext.Provider value={{ register, onChange, submit, validity }}>
       {children}
     </FormContext.Provider>
   );

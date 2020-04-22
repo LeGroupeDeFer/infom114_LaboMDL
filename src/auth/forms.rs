@@ -51,6 +51,7 @@ impl From<&RegisterData> for UserMinima {
               phone: data.phone.clone(),
               activation_token: None,
               recovery_token: None,
+              refresh_token: None
         }
     }
 }
@@ -67,7 +68,7 @@ pub struct ActivationData {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RecoveryData {
-  pub email: String,
+  pub id: u32,
   pub password: String,
   pub token: String
 }

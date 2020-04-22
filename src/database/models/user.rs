@@ -73,7 +73,7 @@ impl Entity for User {
     }
 
     fn update(&self, conn: &MysqlConnection) -> Result<&Self> {
-        diesel::update(table).set(self).execute(conn).map(|_| self).map(Ok)?
+        diesel::update(self).set(self).execute(conn).map(|_| self).map(Ok)?
     }
 
     fn delete(self, conn: &MysqlConnection) -> Result<()> {
@@ -112,6 +112,12 @@ impl User {
     }
 
     /* --------------------------------------- DYNAMIC ---------------------------------------- */
+
+    pub fn set_password(&mut self, password: &str) -> Result<&Self> {
+        let hash = bcrypt::hash(&password, 8)?;
+        self.password = hash;
+        Ok(self)
+    }
 
     pub fn activation_token(&self, conn: &MysqlConnection) -> Result<Option<Token>> {
         self.activation_token.and_then(|id| Token::of(conn, &id).transpose()).transpose()
@@ -187,6 +193,7 @@ pub struct UserMinima {
     pub address: Option<u32>,
     pub phone: Option<String>,
     pub activation_token: Option<u32>,
+    pub refresh_token: Option<u32>,
     pub recovery_token: Option<u32>
 }
 
@@ -216,7 +223,8 @@ impl Clone for UserMinima {
             address: self.address.clone(),
             phone: self.phone.clone(),
             activation_token: self.activation_token.clone(),
-            recovery_token: self.recovery_token.clone()
+            recovery_token: self.recovery_token.clone(),
+            refresh_token: self.refresh_token.clone()
         }
     }
 }

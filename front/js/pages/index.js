@@ -8,6 +8,7 @@ import Profile from './Profile';
 import Register from './Register';
 import Settings from './Settings';
 import Stream from './Stream';
+import Restore from './Restore';
 
 export default {
   About,
@@ -18,6 +19,7 @@ export default {
   Notification,
   Profile,
   Register,
+  Restore,
   Settings,
   Stream
 };

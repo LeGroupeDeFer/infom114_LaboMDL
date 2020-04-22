@@ -7,6 +7,10 @@ use diesel::prelude::*;
 use diesel::MysqlConnection;
 use either::*;
 
+
+static DEFAULT_COUNTRY: &str = "BELGIUM";
+
+
 #[derive(Identifiable, Queryable, AsChangeset, Associations, Serialize, Deserialize, Clone, Debug)]
 #[table_name = "addresses"]
 pub struct Address {
@@ -32,12 +36,14 @@ impl Entity for Address {
     }
 
     fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Option<Self>> {
+        let country = &(minima.country).as_deref().unwrap_or(DEFAULT_COUNTRY);
+
         let condition =
             addresses::street.eq(&minima.street)
             .and(addresses::number.eq(&minima.number))
             .and(addresses::city.eq(&minima.city))
             .and(addresses::zipcode.eq(&minima.zipcode))
-            .and(addresses::country.eq(&minima.country));
+            .and(addresses::country.eq(country));
 
         match &minima.box_number {
             None => table.filter(
@@ -80,5 +86,5 @@ pub struct AddressMinima {
     pub box_number: Option<String>,
     pub city: String,
     pub zipcode: u32,
-    pub country: String,
+    pub country: Option<String>,
 }

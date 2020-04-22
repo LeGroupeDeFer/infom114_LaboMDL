@@ -53,6 +53,33 @@ const printerr = console.error.bind(console);
  */
 const trace = x => printerr(x) || x;
 
+let _id = 0;
+function Action(f) {
+  const eventReference = `action${_id++}`;
+
+  // Make a reference to the event source
+  const detail = { source: null };
+
+  // Create a fake event
+  const handle = new CustomEvent(eventReference, { detail });
+
+  // Withing the resulting promise, resolve when the fake event is triggered
+  const promise = new Promise((resolve, _) => {
+    document.addEventListener(
+      eventReference, e => resolve((f||identity)(e.detail.source))
+    );
+  });
+
+  // Give a handle to the caller
+  promise.onEvent = e => {
+    detail.source = e;
+    document.dispatchEvent(handle);
+  };
+
+  return promise;
+}
+
+Action.bind(Action);
 
 /* ------------------------------- DOM utils ------------------------------- */
 
@@ -158,7 +185,8 @@ delay.lazy = (fn, ms = 250) => lazy(() => delay(fn, ms));
 
 /* ------------------------------- Map utils ------------------------------- */
 
-// TODO - Transform tail recursion in stack-based logic, js does not support tail recursion
+// TODO - Transform tail recursion to stack-based logic, js does not support
+// tail recursion
 function recurse(thing, kfn = identity, vfn = identity) {
   if ([null, undefined].includes(thing))
     return thing;
@@ -189,10 +217,38 @@ const _snake = s => s.replace(
 
 const snake = thing => recurse(thing, _snake);
 
+/* ----------------------------- Control flow ------------------------------ */
+
+function iff(condition, value) {
+  return condition ? value : undefined;
+}
+
+function tee(f, g) {
+  return function(...params) {
+    f(...params);
+    return g(...params);
+  }
+}
+
+/* ----------------------------- Object utils ------------------------------ */
+
+function aggregate(o, key, props) {
+  const aggregation = {
+    [key]: props.reduce((a, k) => ({ ...a, [k]: o[k] }), {})
+  };
+  const others = Object.keys(o)
+    .filter(k => !props.includes(k))
+    .reduce((a, k) => ({ ...a, [k]: o[k] }), {});
+
+  return Object.assign({}, others, aggregation);
+}
+
+
 /* -------------------------------- Exports -------------------------------- */
 
 
 import api from './api';
+import layout from './layout';
 import * as dev from './dev';
 import * as validators from './validators';
 
@@ -201,6 +257,7 @@ export {
   identity,
 
   api,
+  layout,
   dev,
   validators,
 
@@ -210,14 +267,21 @@ export {
   println,
   printerr,
   trace,
+  Action,
 
   scrollbarWidth,
   capitalize,
   preview,
+
   debounce,
   delay,
 
   recurse,
   camel,
-  snake
+  snake,
+
+  iff,
+  tee,
+
+  aggregate
 };

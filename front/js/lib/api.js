@@ -5,6 +5,8 @@ import jwtDecode from 'jwt-decode';
 const root = '/api/v1';
 /* istanbul ignore next */
 const store = window.localStorage;
+/* istanbul ignore next */
+let currentAccessToken;
 
 /**
  * @memberof api
@@ -44,8 +46,8 @@ function api(endpoint, { body, ...providedConfig } = {}) {
   const token = store.getItem('__auth_token__');
   const headers = { 'content-type': 'application/json' };
 
-  if (token)
-    headers['Authorization'] = `Bearer ${token}`;
+  if (currentAccessToken)
+    headers['Authorization'] = `Bearer ${currentAccessToken}`;
 
   const config = {
     method: body ? 'POST' : 'GET',
@@ -76,94 +78,96 @@ function auth(endpoint, config) {
   return api(`/auth${endpoint}`, config);
 }
 
-/**
- * Attempts to login the user `email` with the given `password`. Succeeds with a [User]{@link api.User}, fails with a [Response]{@link api.Response}.
- * @memberof api
- *
- * @param {string} email
- * @param {string} password
- *
- * @returns {Promise<api.User|api.Response>}
- */
-function login(email, password) {
-  return api.auth('/login', {
-    body: { email, password }
-  }).then(({ user, accessToken, refreshToken }) => {
+Object.assign(auth, {
 
-    store.setItem('__refresh_token__', `${email}:${refreshToken}`);
-    return { accessToken, user };
-  });
+  clear() {
+    currentAccessToken = undefined;
+    store.removeItem('__refresh_token__');
+  },
 
-}
-
-/**
- * Attempts to logout the currently connected user.
- * @memberof api
- *
- * @returns {Promise<api.Response>}
- */
-function logout() {
-  const token = store.getItem('__refresh_token__');
-  const [email, refreshToken] = token.split(':');
-
-  if (refreshToken === null)
-    return Promise.reject({ reason: 'Not connected' });
-
-  return api.auth('/logout', { body: { email, refreshToken }})
-    .then(data => {
-      store.removeItem('__refresh_token__');
-      return data;
-    });
-
-}
-
-function refresh() {
-  const token = store.getItem('__refresh_token__');
-  const [email, refreshToken] = token.split(':');
-
-  return api.auth('/refresh', { body: { email, refreshToken } })
-    .then(({ refreshToken, ...others }) => {
+  /**
+   * Attempts to login the user `email` with the given `password`. Succeeds with a [User]{@link api.User}, fails with a [Response]{@link api.Response}.
+   *
+   * @param {string} email
+   * @param {string} password
+   *
+   * @returns {Promise<api.User|api.Response>}
+   */
+  login(email, password) {
+    return auth('/login', {
+      body: { email, password }
+    }).then(({ user, accessToken, refreshToken }) => {
+      currentAccessToken = accessToken;
       store.setItem('__refresh_token__', `${email}:${refreshToken}`);
-      return others;
-    })
-    .catch(({ code, reason }) => {
-      if (code == 403) // Token expired
-        store.clear();
-      return Promise.reject({ code, reason });
+      return { accessToken, user };
     });
-}
 
-/**
- * Creates an account with the given information.
- * @memberof api
- *
- * @param {User} user
- * @returns {Promise<api.Response>}
- */
-function register(user) {
-  if (!user.terms)
-    throw new Error('Must accept terms and conditions before to register');
-  return api.auth('/register', { body: user });
-}
+  },
 
-function activate(id, token) {
-  return api('/auth/activate', { body: { id: Number(id), token } });
-}
+  /**
+   * Attempts to logout the currently connected user.
+   *
+   * @returns {Promise<api.Response>}
+   */
+  logout() {
+    const token = store.getItem('__refresh_token__');
+    const [email, refreshToken] = token.split(':');
 
-function recover(id, token) {
-  return api('/auth/recover', { body: { id: Number(id), token } });
-}
+    if (refreshToken === null)
+      return Promise.reject({ code: 0, reason: 'Not connected' });
 
-function session() {
-  return store.getItem('__refresh_token__') !== null;
-}
+    return auth('/logout', { body: { email, refreshToken } })
+      .then(data => auth.clear() || data);
+  },
 
-api.auth = auth;
-api.auth.login = login;
-api.auth.logout = logout;
-api.auth.register = register;
-api.auth.activate = activate;
-api.auth.refresh = refresh;
-api.auth.session = session;
+  refresh() {
+    const token = store.getItem('__refresh_token__');
+    const [email, refreshToken] = token.split(':');
+
+    return auth('/refresh', { body: { email, refreshToken } })
+      .then(({ accessToken, refreshToken, user }) => {
+        currentAccessToken = accessToken;
+        store.setItem('__refresh_token__', `${email}:${refreshToken}`);
+        return { accessToken, user };
+      })
+      .catch(({ code, reason }) => {
+        if (code == 403) // Token expired
+          auth.clear();
+        return Promise.reject({ code, reason });
+      });
+  },
+
+  /**
+   * Creates an account with the given information.
+   *
+   * @param {User} user
+   * @returns {Promise<api.Response>}
+   */
+  register(user) {
+    if (!user.terms)
+      throw new Error('Must accept terms and conditions before to register');
+    return auth('/register', { body: user });
+  },
+
+  activate(id, token) {
+    return auth('/activate', { body: { id: Number(id), token } });
+  },
+
+  restore(email) {
+    return auth('/restore', { body: { email } });
+  },
+
+  recover(id, password, token) {
+    return auth('/recover', { body: { id: Number(id), password, token } });
+  },
+
+  session() {
+    return store.getItem('__refresh_token__') !== null;
+  },
+
+});
+
+Object.assign(api, { auth /*, ...otherAPIs */ });
+
 
 export default api;

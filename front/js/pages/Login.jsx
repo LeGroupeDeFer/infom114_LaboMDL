@@ -36,6 +36,7 @@ function Header(props) {
 
 }
 
+
 function LoginForm() {
 
   return (
@@ -74,17 +75,11 @@ function LoginForm() {
 
 }
 
-function Login(props) {
 
-  const { login, user } = useAuth();
+const Login = Unauthenticated(() => {
+
+  const { login } = useAuth();
   const history = useHistory();
-
-  if (user) {
-    history.push('/');
-    // Shouldn't get here except in testing
-    return <></>;
-  }
-  useEffect(() => user ? history.replace('/') : undefined, [user]);
 
   const handleSubmit = data =>
     login(data.email, data.password).then(_ => history.push('/'));
@@ -101,7 +96,7 @@ function Login(props) {
             <LoginForm />
             <hr />
 
-            <Link to="/recovery" className="d-block text-center text-light">
+            <Link to="/restore" className="d-block text-center text-light">
               Forgot your password?
             </Link>
           </AutoForm>
@@ -110,6 +105,7 @@ function Login(props) {
       </Row>
     </Container>
   );
-}
+});
+
 
 export default Login;

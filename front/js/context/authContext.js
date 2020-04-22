@@ -66,7 +66,7 @@ export function AuthProvider({ children }) {
         setUser(data.user) || setToken(jwtDecode(data.accessToken));
 
       else if ('logout' == type)
-        return setUser(null) || setToken(null);
+        setUser(null) || setToken(null);
 
       setRequest(null);
     });
@@ -83,7 +83,6 @@ export function AuthProvider({ children }) {
     let now = new Date();
     let timeout = expiration - now;
 
-    console.log(`Refresh in ${timeout}...`);
     setTimeout(() => {
       let promise = api.auth.refresh().catch(
         () => { setUser(null); setToken(null); }

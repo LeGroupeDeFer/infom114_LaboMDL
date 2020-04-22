@@ -27,7 +27,7 @@ fn activation_good_id_good_token() {
     let data = format!(
         "{{\"id\":{}, \"token\":\"{}\"}}",
         user.id,
-        user.token.unwrap()
+        user.activation_token(&connection).unwrap().unwrap()
     );
 
     let request = client.post(ROUTE).header(ContentType::JSON).body(data);
@@ -36,10 +36,11 @@ fn activation_good_id_good_token() {
 
     assert_eq!(response.status(), Status::Ok);
 
-    let activated_user = User::by_email(&connection, &user.email).unwrap();
+    let activated_user = User::by_email(&connection, &user.email).unwrap().unwrap();
+    let consumed_token = activated_user.activation_token(&connection).unwrap().unwrap();
 
     assert!(activated_user.active);
-    assert!(activated_user.token.is_none());
+    assert!(!consumed_token.valid());
 }
 
 #[test]
@@ -59,7 +60,7 @@ fn activation_wrong_id_good_token() {
     let data = format!(
         "{{\"id\":{}, \"token\":\"{}\"}}",
         fake_id,
-        user.token.unwrap()
+        user.activation_token(&connection).unwrap().unwrap()
     );
 
     let request = client.post(ROUTE).header(ContentType::JSON).body(data);
@@ -68,10 +69,11 @@ fn activation_wrong_id_good_token() {
 
     assert_eq!(response.status(), Status::Forbidden);
 
-    let not_so_activated_user = User::by_email(&connection, &user.email).unwrap();
+    let not_so_activated_user = User::by_email(&connection, &user.email).unwrap().unwrap();
+    let not_so_consumed_token = not_so_activated_user.activation_token(&connection).unwrap().unwrap();
 
     assert!(!not_so_activated_user.active);
-    assert!(not_so_activated_user.token.is_some());
+    assert!(!not_so_consumed_token.consumed);
 }
 
 #[test]
@@ -94,10 +96,11 @@ fn activation_good_id_wrong_token() {
 
     assert_eq!(response.status(), Status::Forbidden);
 
-    let not_so_activated_user = User::by_email(&connection, &user.email).unwrap();
+    let not_so_activated_user = User::by_email(&connection, &user.email).unwrap().unwrap();
+    let not_so_consumed_token = not_so_activated_user.activation_token(&connection).unwrap().unwrap();
 
     assert!(!not_so_activated_user.active);
-    assert!(not_so_activated_user.token.is_some());
+    assert!(!not_so_consumed_token.consumed);
 }
 
 #[test]

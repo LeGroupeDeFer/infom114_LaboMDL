@@ -11,6 +11,8 @@ use diesel::MysqlConnection;
 use either::*;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
+use std::fmt;
+
 
 #[derive(Identifiable, Queryable, AsChangeset, Serialize, Deserialize, Clone, Debug)]
 #[table_name = "tokens"]
@@ -210,6 +212,12 @@ impl Token {
 impl From<Token> for String {
     fn from(token: Token) -> String {
         token.hash
+    }
+}
+
+impl fmt::Display for Token {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.hash)
     }
 }
 
