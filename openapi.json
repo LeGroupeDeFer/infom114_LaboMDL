@@ -2903,8 +2903,8 @@
           "voteCount": {
             "type": "integer"
           },
-          "author_id": {
-            "type": "integer"
+          "author": {
+            "$ref": "#/components/schemas/User"
           },
           "tags": {
             "type": "array",
@@ -2912,7 +2912,13 @@
               "$ref": "#/components/schemas/Tag"
             }
           },
-          "vote": {
+          "comments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Comment"
+            }
+          },
+          "self_vote": {
             "type": "integer"
           }
         }
@@ -3026,13 +3032,13 @@
           "updated_at": {
             "type": "string"
           },
-          "nb_votes": {
+          "votes": {
             "type": "integer"
           },
           "score": {
             "type": "integer"
           },
-          "vote": {
+          "self_vote": {
             "type": "integer"
           },
           "replies": {
