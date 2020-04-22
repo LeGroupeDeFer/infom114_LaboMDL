@@ -26,7 +26,7 @@
 // update a locked post (admin)
 // update a locked post (author) -> error
 // update an hidden post (admin)
-// update an hidden post (autor) -> error
+// update an hidden post (author) -> error
 
 // delete a post (admin)
 // delete a post with appropriate author
@@ -36,4 +36,4 @@
 // delete a locked post (admin)
 // delete a locked post (author) -> error
 // delete an hidden post (admin)
-// delete an hidden post (autor) -> error
+// delete an hidden post (author) -> error
