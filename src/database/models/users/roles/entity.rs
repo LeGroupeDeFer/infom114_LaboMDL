@@ -3,12 +3,11 @@
 //! In this module we'll go through the models needed to fetch an insert data
 //! inside the `users_roles` table
 
-use crate::database::schema::roles;
-use crate::database::schema::users_roles;
+use crate::database::schema::{roles, users_roles};
 use crate::database::tables::{roles_table, users_roles_table};
 use crate::database::Data;
 
-use crate::database::models::prelude::{Role, User};
+use crate::database::models::prelude::{RoleEntity, UserEntity};
 
 use diesel::prelude::*;
 use diesel::MysqlConnection;
@@ -17,8 +16,8 @@ use diesel::MysqlConnection;
 /// `users_roles` table.
 #[derive(Identifiable, Queryable, Associations, Serialize, Deserialize, Clone, Debug)]
 #[table_name = "users_roles"]
-#[belongs_to(User, foreign_key = "user_id")]
-#[belongs_to(Role, foreign_key = "role_id")]
+#[belongs_to(UserEntity, foreign_key = "user_id")]
+#[belongs_to(RoleEntity, foreign_key = "role_id")]
 pub struct RelUserRoleEntity {
     pub id: u32,
     pub user_id: u32,
@@ -36,11 +35,11 @@ pub struct RelUserRoleMinima {
 
 impl RelUserRoleEntity {
     /// Helper to get the roles of a user
-    pub fn get_roles_from_user(conn: &MysqlConnection, user: &User) -> Vec<Role> {
-        let roles_id = RelUserRole::belonging_to(user).select(users_roles::role_id);
+    pub fn get_roles_from_user(conn: &MysqlConnection, user: &UserEntity) -> Vec<RoleEntity> {
+        let roles_id = Self::belonging_to(user).select(users_roles::role_id);
         roles_table
             .filter(roles::id.eq_any(roles_id))
-            .load::<Role>(conn)
+            .load::<RoleEntity>(conn)
             .expect("problem fetching roles from user")
     }
 
@@ -59,9 +58,9 @@ impl RelUserRoleEntity {
     /// Insert a new row inside the `users_roles` table.
     pub fn add_role_for_user(
         conn: &MysqlConnection,
-        user: &User,
-        role: &Role,
-    ) -> Data<RelUserRole> {
+        user: &UserEntity,
+        role: &RoleEntity,
+    ) -> Data<Self> {
         match Self::get(&conn, user.id, role.id) {
             Some(e) => Data::Existing(e),
             None => {

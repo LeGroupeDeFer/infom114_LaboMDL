@@ -5,16 +5,11 @@
 
 use crate::database::Data;
 
-use crate::database::models::roles::capability::Capability;
-use crate::database::models::roles::role_capability::RelRoleCapability;
+use crate::database::schema::{roles, roles_capabilities};
 
-use crate::database::schema::roles;
-use crate::database::schema::roles::dsl::roles as table;
+use crate::database::tables::{roles_capabilities_table, roles_table};
 
-use crate::database::schema::roles_capabilities::{
-    self, dsl::roles_capabilities as table_roles_capabilities,
-};
-
+use crate::database::models::prelude::{CapabilityEntity, RelRoleCapabilityEntity};
 use diesel::prelude::*;
 use diesel::MysqlConnection;
 
@@ -42,26 +37,29 @@ impl RoleEntity {
 
     /// Constructor based on the role id.
     pub fn by_id(conn: &MysqlConnection, id: &u32) -> Option<Self> {
-        table.find(id).first::<Self>(conn).ok()
+        roles_table.find(id).first::<Self>(conn).ok()
     }
 
     /// Get the Capability record that fits the role name given.
     pub fn by_name(conn: &MysqlConnection, name: &str) -> Option<Self> {
-        table.filter(roles::name.eq(name)).first::<Self>(conn).ok()
+        roles_table
+            .filter(roles::name.eq(name))
+            .first::<Self>(conn)
+            .ok()
     }
 
     /// Fetch and return all the roles present in database as a `Role` vector
     pub fn all(conn: &MysqlConnection) -> Vec<Self> {
-        table.load(conn).unwrap_or(vec![])
+        roles_table.load(conn).unwrap_or(vec![])
     }
 
     /// Insert data stored in the `RoleMinima` struct given in parameter inside the
-    /// database1
+    /// database
     pub fn insert_minima(conn: &MysqlConnection, minima: &RoleMinima) -> Data<Self> {
         if let Some(past) = Self::by_name(conn, &minima.name) {
             Data::Existing(past)
         } else {
-            diesel::insert_into(table)
+            diesel::insert_into(roles_table)
                 .values(minima)
                 .execute(conn)
                 .expect("Failed address insertion");
@@ -75,13 +73,13 @@ impl RoleEntity {
     /* ------------------------------- NOT SO STATIC ------------------------------ */
 
     /// Get the capabilities linked to a role
-    pub fn capabilities(&self, conn: &MysqlConnection) -> Vec<Capability> {
-        RelRoleCapability::get_capabilities_for_role(&conn, &self)
+    pub fn capabilities(&self, conn: &MysqlConnection) -> Vec<CapabilityEntity> {
+        RelRoleCapabilityEntity::get_capabilities_for_role(&conn, &self)
     }
 
     /// Clear the database stored capabilities linked to this role
     pub fn clear_capabilities(&self, conn: &MysqlConnection) {
-        diesel::delete(table_roles_capabilities.filter(roles_capabilities::role_id.eq(self.id)))
+        diesel::delete(roles_capabilities_table.filter(roles_capabilities::role_id.eq(self.id)))
             .execute(conn)
             .unwrap();
     }

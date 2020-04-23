@@ -3,8 +3,8 @@
 # force quit when fault
 set -eu
 
-# place ourselve in the app root directory
-cd /usr/src/app
+# place ourselves in the app root directory
+cd /usr/src/app || exit 2
 
 info()
 {

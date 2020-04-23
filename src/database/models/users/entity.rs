@@ -1,4 +1,4 @@
-use crate::database::models::prelude::Address;
+use crate::database::models::prelude::{Address, CapabilityEntity, RelUserRoleEntity, RoleEntity};
 use crate::database::models::roles;
 use crate::database::schema::users;
 use crate::database::tables::users_table as table;
@@ -46,7 +46,7 @@ impl UserEntity {
 
     /// Constructor of `User` struct.
     /// Fetch a user in database based on its email field.
-    pub fn by_email(conn: &MysqlConnection, email: &str) -> Option<User> {
+    pub fn by_email(conn: &MysqlConnection, email: &str) -> Option<Self> {
         if let Ok(user) = table.filter(users::email.eq(email)).first(conn) {
             Some(user)
         } else {
@@ -56,7 +56,7 @@ impl UserEntity {
 
     // is_available_email :: (MysqlConnection, String) -> Boolean
     pub fn is_available_email(conn: &MysqlConnection, email: &str) -> bool {
-        User::by_email(conn, email).is_none()
+        Self::by_email(conn, email).is_none()
     }
 
     // is_unamur_email :: String -> Boolean
@@ -69,13 +69,13 @@ impl UserEntity {
     pub fn select_minima(conn: &MysqlConnection, minima: &UserMinima) -> Option<Self> {
         table
             .filter(users::email.eq(minima.email.clone()))
-            .first::<User>(conn)
+            .first::<Self>(conn)
             .ok()
     }
 
     // insert_minima :: (MysqlConnection, UserMinima) -> Either<User, User>
     pub fn insert_minima(conn: &MysqlConnection, minima: &UserMinima) -> Data<Self> {
-        if let Some(past) = User::select_minima(conn, minima) {
+        if let Some(past) = Self::select_minima(conn, minima) {
             Data::Existing(past)
         } else {
             let mut inserted = minima.clone();
@@ -85,7 +85,7 @@ impl UserEntity {
                 .execute(conn)
                 .expect("Error inserting User");
             Data::Inserted(
-                User::select_minima(conn, minima)
+                Self::select_minima(conn, minima)
                     .expect("User insertion succeeded but could not be retreived"),
             )
         }
@@ -136,10 +136,10 @@ impl UserEntity {
 
     /// Get the roles of a user
     /// Return a vector of `models::roles::role::Role` struct
-    pub fn get_roles(&self, conn: &MysqlConnection) -> Vec<roles::role::Role> {
-        roles::user_role::RelUserRole::get_roles_from_user(&conn, &self)
+    pub fn get_roles(&self, conn: &MysqlConnection) -> Vec<RoleEntity> {
+        RelUserRoleEntity::get_roles_from_user(&conn, &self)
             .iter()
-            .map(|r| roles::role::Role::by_id(&conn, &r.id))
+            .map(|r| RoleEntity::by_id(&conn, &r.id))
             .filter(|r| r.is_some())
             .map(|r| r.unwrap())
             .collect::<_>()
@@ -147,8 +147,8 @@ impl UserEntity {
 
     /// Get the capabilities of a user
     /// Return a vector of `models::roles::capability::Capability` struct
-    pub fn get_capabilities(&self, conn: &MysqlConnection) -> Vec<roles::capability::Capability> {
-        let mut tab: Vec<roles::capability::Capability> = Vec::new();
+    pub fn get_capabilities(&self, conn: &MysqlConnection) -> Vec<CapabilityEntity> {
+        let mut tab: Vec<CapabilityEntity> = Vec::new();
         let roles = self.get_roles(&conn);
         for r in roles {
             for c in r.capabilities(&conn) {

@@ -70,7 +70,7 @@ impl CapabilityEntity {
                 .expect("Failed address insertion");
             Data::Inserted(
                 Self::select_minima(conn, minima)
-                    .expect("Address insertion succeeded but could not be retreived"),
+                    .expect("Address insertion succeeded but could not be retrieved"),
             )
         }
     }

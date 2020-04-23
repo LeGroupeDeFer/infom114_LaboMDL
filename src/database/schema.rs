@@ -135,18 +135,18 @@ table! {
 }
 
 table! {
-    votes_comments (comment_id, vote_authorid) {
+    votes_comments (comment_id, user_id) {
         comment_id -> Unsigned<Integer>,
-        vote_authorid -> Unsigned<Integer>,
+        user_id -> Unsigned<Integer>,
         voted_at -> Timestamp,
         vote_value -> Bool,
     }
 }
 
 table! {
-    votes_posts (post_id, vote_authorid) {
+    votes_posts (post_id, user_id) {
         post_id -> Unsigned<Integer>,
-        vote_authorid -> Unsigned<Integer>,
+        user_id -> Unsigned<Integer>,
         voted_at -> Timestamp,
         vote_value -> Bool,
     }
@@ -169,9 +169,9 @@ joinable!(users -> addresses (address));
 joinable!(users_roles -> roles (role_id));
 joinable!(users_roles -> users (user_id));
 joinable!(votes_comments -> comments (comment_id));
-joinable!(votes_comments -> users (vote_authorid));
+joinable!(votes_comments -> users (user_id));
 joinable!(votes_posts -> posts (post_id));
-joinable!(votes_posts -> users (vote_authorid));
+joinable!(votes_posts -> users (user_id));
 
 allow_tables_to_appear_in_same_query!(
     addresses,
