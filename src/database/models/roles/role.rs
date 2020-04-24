@@ -1,4 +1,4 @@
-use crate::database::models::prelude::{Capability, RelRoleCapabilityEntity, RoleEntity};
+use crate::database::models::prelude::{CapabilityEntity, RelRoleCapabilityEntity, RoleEntity};
 use diesel::MysqlConnection;
 
 /// This `RoleCapabilities` struct is not a real model because it's not a
@@ -15,7 +15,7 @@ pub struct Role {
     pub id: u32,
     pub name: String,
     pub color: String,
-    pub capabilities: Vec<Capability>,
+    pub capabilities: Vec<CapabilityEntity>,
 }
 
 impl Role {
@@ -36,7 +36,7 @@ impl Role {
     }
 
     /// Constructor of `RoleCapabilities` based on a `role::Role` object
-    fn by_role(conn: &MysqlConnection, r: &role::Role) -> Self {
+    fn by_role(conn: &MysqlConnection, r: &RoleEntity) -> Self {
         Self {
             id: r.id,
             name: r.name.to_string(),

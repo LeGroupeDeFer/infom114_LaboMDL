@@ -2,18 +2,18 @@
 //!
 //! Group the creation, update and deletion of roles
 
-use crate::auth::Auth;
-use crate::database::models::roles::{
-    capability::Capability,
-    forms::RoleData,
-    role::{Role, RoleMinima},
-    role_capability::RelRoleCapability,
+use crate::database::models::prelude::{
+    CapabilityEntity, RelRoleCapabilityEntity, RoleEntity, RoleMinima,
 };
 use crate::database::{DBConnection, Data};
+use crate::guards::auth::Auth;
 use crate::http::responders::api::ApiResponse;
+
+use std::ops::Deref;
 
 use rocket::http::Status;
 
+use crate::database::models::roles::forms::RoleData;
 use rocket_contrib::json::Json;
 
 /// Collect every routes that this module needs to share with the application
@@ -31,7 +31,7 @@ pub fn create(conn: DBConnection, auth: Auth, data: Json<RoleData>) -> ApiRespon
     let capability = "role:manage";
 
     // manage capability
-    if !auth.has_capability(&*conn, &capability) {
+    if !auth.has_capability(conn.deref(), &capability) {
         return ApiResponse::error(
             Status::Forbidden,
             &format!("The user do not have the capability {}", capability),
@@ -56,7 +56,7 @@ pub fn create(conn: DBConnection, auth: Auth, data: Json<RoleData>) -> ApiRespon
     };
 
     // insert the new role into database
-    let role = match Role::insert_minima(&*conn, &new_role) {
+    let role = match RoleEntity::insert_minima(conn.deref(), &new_role) {
         Data::Existing(_) => {
             return ApiResponse::error(Status::Conflict, "A role with this name already exist")
         }
@@ -66,8 +66,8 @@ pub fn create(conn: DBConnection, auth: Auth, data: Json<RoleData>) -> ApiRespon
 
     // for this new role, add every given capabilities
     for capability_data in role_data.capabilities.iter() {
-        if let Some(capability) = Capability::by_name(&*conn, &capability_data.name) {
-            RelRoleCapability::add_capability_for_role(&*conn, &role, &capability);
+        if let Some(capability) = CapabilityEntity::by_name(conn.deref(), &capability_data.name) {
+            RelRoleCapabilityEntity::add_capability_for_role(conn.deref(), &role, &capability);
         } else {
             // TODO : front-end sent an unexisting capability
         }
@@ -86,14 +86,14 @@ pub fn update(conn: DBConnection, auth: Auth, role_id: u32, data: Json<RoleData>
     let capability = "role:manage";
 
     // manage capability
-    if !auth.has_capability(&*conn, &capability) {
+    if !auth.has_capability(conn.deref(), &capability) {
         return ApiResponse::error(
             Status::Forbidden,
             &format!("The user do not have the capability {}", capability),
         );
     }
 
-    let opt_role = Role::by_id(&*conn, &role_id);
+    let opt_role = RoleEntity::by_id(conn.deref(), &role_id);
 
     // assert that the role_id given exist
     if opt_role.is_none() {
@@ -106,7 +106,7 @@ pub fn update(conn: DBConnection, auth: Auth, role_id: u32, data: Json<RoleData>
 
     // assert that the new name is not already used
     let role_data = data.into_inner();
-    if let Some(r) = Role::by_name(&*conn, &role_data.name) {
+    if let Some(r) = RoleEntity::by_name(conn.deref(), &role_data.name) {
         // we do not want to throw an error if the found role with the same
         // name is the one we are working on
         if r.id != role_id {
@@ -115,7 +115,7 @@ pub fn update(conn: DBConnection, auth: Auth, role_id: u32, data: Json<RoleData>
     }
 
     role.update(
-        &*conn,
+        conn.deref(),
         &RoleMinima {
             name: role_data.name.into(),
             color: role_data.color.into(),
@@ -123,12 +123,12 @@ pub fn update(conn: DBConnection, auth: Auth, role_id: u32, data: Json<RoleData>
     );
 
     // reset capabilities
-    role.clear_capabilities(&*conn);
+    role.clear_capabilities(conn.deref());
 
     // add every given capabilities
     for capability_data in role_data.capabilities.iter() {
-        if let Some(capability) = Capability::by_name(&*conn, &capability_data.name) {
-            RelRoleCapability::add_capability_for_role(&*conn, &role, &capability);
+        if let Some(capability) = CapabilityEntity::by_name(conn.deref(), &capability_data.name) {
+            RelRoleCapabilityEntity::add_capability_for_role(conn.deref(), &role, &capability);
         } else {
             // TODO : front-end sent an unexisting capability
         }
@@ -146,14 +146,14 @@ pub fn delete(conn: DBConnection, auth: Auth, role_id: u32) -> ApiResponse {
     let capability = "role:manage";
 
     // manage capability
-    if !auth.has_capability(&*conn, &capability) {
+    if !auth.has_capability(conn.deref(), &capability) {
         return ApiResponse::error(
             Status::Forbidden,
             &format!("The user do not have the capability {}", capability),
         );
     }
 
-    let opt_role = Role::by_id(&*conn, &role_id);
+    let opt_role = RoleEntity::by_id(conn.deref(), &role_id);
 
     // assert that the role_id given exist
     if opt_role.is_none() {
@@ -165,10 +165,10 @@ pub fn delete(conn: DBConnection, auth: Auth, role_id: u32) -> ApiResponse {
     let role = opt_role.unwrap();
 
     // reset capabilities
-    role.clear_capabilities(&*conn);
+    role.clear_capabilities(conn.deref());
 
     // delete role
-    role.delete(&*conn);
+    role.delete(conn.deref());
 
     ApiResponse::new(Status::Ok, json!({}))
 }

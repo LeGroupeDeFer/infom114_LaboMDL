@@ -1,4 +1,4 @@
-use crate::database::models::prelude::{User, UserMinima};
+use crate::database::models::prelude::{UserEntity, UserMinima};
 use crate::database::Data;
 use diesel::MysqlConnection;
 
@@ -16,7 +16,7 @@ pub fn seed_mock_users(conn: &MysqlConnection) {
             phone: None,
         };
 
-        let user = match User::insert_minima(&conn, &u) {
+        let user = match UserEntity::insert_minima(&conn, &u) {
             Data::Inserted(u) => u,
             _ => panic!("The user is supposed to be a new one"),
         };

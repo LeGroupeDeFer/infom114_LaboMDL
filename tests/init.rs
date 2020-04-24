@@ -9,7 +9,6 @@ use unanimitylibrary::conf::env_setting;
 
 use unanimitylibrary::database;
 use unanimitylibrary::database::models::prelude::*;
-use unanimitylibrary::database::models::users::user::UserMinima;
 
 use unanimitylibrary::database::tables::*;
 
@@ -45,44 +44,62 @@ pub fn clean() {
 
     // assert empty database
     assert_eq!(
-        users_roles_table.load::<RelUserRole>(&conn).unwrap().len(),
+        users_roles_table
+            .load::<RelUserRoleEntity>(&conn)
+            .unwrap()
+            .len(),
         0
     );
-    assert_eq!(posts_tags_table.load::<RelPostTag>(&conn).unwrap().len(), 0);
+    assert_eq!(
+        posts_tags_table
+            .load::<RelPostTagEntity>(&conn)
+            .unwrap()
+            .len(),
+        0
+    );
     assert_eq!(
         roles_capabilities_table
-            .load::<RelRoleCapability>(&conn)
+            .load::<RelRoleCapabilityEntity>(&conn)
             .unwrap()
             .len(),
         0
     );
     assert_eq!(
         votes_comments_table
-            .load::<RelCommentVote>(&conn)
+            .load::<RelCommentVoteEntity>(&conn)
             .unwrap()
             .len(),
         0
     );
     assert_eq!(
-        votes_posts_table.load::<RelPostVote>(&conn).unwrap().len(),
+        votes_posts_table
+            .load::<RelPostVoteEntity>(&conn)
+            .unwrap()
+            .len(),
         0
     );
     assert_eq!(
         tags_subscription_table
-            .load::<RelUserTag>(&conn)
+            .load::<RelUserTagEntity>(&conn)
             .unwrap()
             .len(),
         0
     );
-    assert_eq!(roles_table.load::<Role>(&conn).unwrap().len(), 0);
+    assert_eq!(roles_table.load::<RoleEntity>(&conn).unwrap().len(), 0);
     assert_eq!(
-        capabilities_table.load::<Capability>(&conn).unwrap().len(),
+        capabilities_table
+            .load::<CapabilityEntity>(&conn)
+            .unwrap()
+            .len(),
         0
     );
-    assert_eq!(users_table.load::<User>(&conn).unwrap().len(), 0);
-    assert_eq!(addresses_table.load::<Address>(&conn).unwrap().len(), 0);
-    assert_eq!(tags_table.load::<Tag>(&conn).unwrap().len(), 0);
-    assert_eq!(posts_table.load::<Post>(&conn).unwrap().len(), 0);
+    assert_eq!(users_table.load::<UserEntity>(&conn).unwrap().len(), 0);
+    assert_eq!(
+        addresses_table.load::<AddressEntity>(&conn).unwrap().len(),
+        0
+    );
+    assert_eq!(tags_table.load::<TagEntity>(&conn).unwrap().len(), 0);
+    assert_eq!(posts_table.load::<PostEntity>(&conn).unwrap().len(), 0);
 }
 
 /// Fill the database with some data that is needed for the application to run
@@ -178,10 +195,10 @@ pub fn ignite() -> rocket::Rocket {
 ///
 /// The activation of the user can already be managed from here.
 /// It returns the user and its password.
-pub fn get_user(do_activate: bool) -> (User, String) {
+pub fn get_user(do_activate: bool) -> (UserEntity, String) {
     let conn = database_connection();
 
-    let last_id = User::get_last_id(&conn) + 1;
+    let last_id = UserEntity::get_last_id(&conn) + 1;
 
     let u = UserMinima {
         email: format!("firstname.lastname.{}@student.unamur.be", &last_id),
@@ -192,7 +209,7 @@ pub fn get_user(do_activate: bool) -> (User, String) {
         phone: None,
     };
 
-    let user = match User::insert_minima(&conn, &u) {
+    let user = match UserEntity::insert_minima(&conn, &u) {
         Data::Inserted(u) => u,
         _ => panic!("The user is supposed to be a new one"),
     };
@@ -201,7 +218,7 @@ pub fn get_user(do_activate: bool) -> (User, String) {
         user.activate(&conn);
     }
 
-    (User::by_email(&conn, &u.email).unwrap(), u.password)
+    (UserEntity::by_email(&conn, &u.email).unwrap(), u.password)
 }
 
 /// Get the admin that is generated in the seeding process
@@ -213,8 +230,8 @@ pub fn get_user(do_activate: bool) -> (User, String) {
 /// Of course these attributes MUST be updated ASAP for real world application
 /// but for our testing purposes its perfect because we can use it to confirm
 /// that some routes are protected by auth & by capabilities
-pub fn get_admin() -> User {
-    User::by_email(&database_connection(), "admin@unamur.be").unwrap()
+pub fn get_admin() -> UserEntity {
+    UserEntity::by_email(&database_connection(), "admin@unamur.be").unwrap()
 }
 
 /// Perform the login operation for the given `email` & `password`
@@ -253,7 +270,7 @@ pub fn login<'a, 'b>(email: &'a str, password: &'a str) -> Header<'b> {
         "authorization",
         format!(
             "{}{}",
-            unanimitylibrary::auth::TOKEN_PREFIX,
+            unanimitylibrary::guards::auth::TOKEN_PREFIX,
             // ugly hack to have something working
             auth_token.replace("\"", "")
         ),

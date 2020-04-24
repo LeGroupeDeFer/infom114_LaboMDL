@@ -25,7 +25,7 @@ pub mod tags;
 pub mod users;
 
 use diesel::MysqlConnection;
-use either::Either::{self, Left, Right};
+use either::*;
 use result::*;
 
 pub trait Entity: Sized {

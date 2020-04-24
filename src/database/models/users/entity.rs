@@ -1,5 +1,4 @@
 use crate::database::models::prelude::{Address, CapabilityEntity, RelUserRoleEntity, RoleEntity};
-use crate::database::models::roles;
 use crate::database::schema::users;
 use crate::database::tables::users_table as table;
 use crate::database::Data;
@@ -169,7 +168,7 @@ impl UserEntity {
     /// # Examples
     ///
     /// ```
-    /// use unanimitylibrary::database::models::user::User;
+    /// use unanimitylibrary::database::models::prelude::UserEntity as User;
     ///
     /// // valid
     /// assert!(User::check_if_email_is_unamur("guillaume.latour@student.unamur.be"));

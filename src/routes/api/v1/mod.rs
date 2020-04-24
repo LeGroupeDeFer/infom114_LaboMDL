@@ -7,9 +7,10 @@
 //! functions SHOULD be called on the `v1::collectt` function to group every
 //! routes in each and every child module.
 
-use crate::auth::Auth;
+use crate::guards::auth::Auth;
 use crate::http::responders::api::ApiResponse;
 use rocket::http::Status;
+
 pub mod auth;
 pub mod capabilities;
 pub mod post;

@@ -18,7 +18,7 @@ const ROLES_ROUTE: &'static str = "/api/roles/";
 
 #[test]
 fn get_capabilities() {
-    use unanimitylibrary::database::models::roles::capability::Capability;
+    use unanimitylibrary::database::models::prelude::CapabilityEntity;
 
     // init
     let client = init::clean_client();
@@ -38,15 +38,15 @@ fn get_capabilities() {
 
     // assert those are the same capabilities as the one in database
     let data = response.body_string().unwrap();
-    let request_capabilities: Vec<Capability> = serde_json::from_str(&data).unwrap();
-    for c in Capability::all(&conn) {
+    let request_capabilities: Vec<CapabilityEntity> = serde_json::from_str(&data).unwrap();
+    for c in CapabilityEntity::all(&conn) {
         assert!(request_capabilities.contains(&c));
     }
 }
 
 #[test]
 fn get_roles() {
-    use unanimitylibrary::database::models::roles::RoleCapabilities;
+    use unanimitylibrary::database::models::prelude::Role;
 
     // init
     let client = init::clean_client();
@@ -68,8 +68,8 @@ fn get_roles() {
 
     // assert those are the same roles as the one in database
     let data = response.body_string().unwrap();
-    let request_roles: Vec<RoleCapabilities> = serde_json::from_str(&data).unwrap();
-    for c in RoleCapabilities::all(&conn) {
+    let request_roles: Vec<Role> = serde_json::from_str(&data).unwrap();
+    for c in Role::all(&conn) {
         assert!(request_roles.contains(&c));
     }
 }

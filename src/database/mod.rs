@@ -11,7 +11,6 @@ use crate::conf::env_setting;
 use crate::diesel::Connection;
 use diesel::MysqlConnection;
 use dotenv::dotenv;
-use either::Either::{self, Left, Right};
 use rocket::config::Value;
 use rocket_contrib::databases::diesel;
 use std::collections::HashMap;
@@ -20,6 +19,15 @@ use std::collections::HashMap;
 
 #[database("mariadb_pool")]
 pub struct DBConnection(diesel::MysqlConnection);
+
+// use std::ops::Deref;
+// impl Deref for DBConnection {
+//     type Target = MysqlConnection;
+//
+//     fn deref(&self) -> &Self::Target {
+//         &self.0
+//     }
+// }
 
 // --------------------- FUNCTIONS --------------------------------------------
 

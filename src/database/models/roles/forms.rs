@@ -6,6 +6,8 @@
 //!
 //! Of course those structs are related to some kind of role management
 
+use crate::database::models::capabilities::forms::CapabilityData;
+
 /// The `RoleData` struct is mainly used while checking if the JSON that
 /// the client send is correctly formatted and full.
 #[derive(Serialize, Deserialize, Debug)]

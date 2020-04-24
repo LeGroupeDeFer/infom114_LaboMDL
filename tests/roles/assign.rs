@@ -12,7 +12,7 @@ use super::super::init;
 
 const ROLE_ROUTE: &'static str = "/api/user/role/";
 
-use unanimitylibrary::database::models::roles;
+use unanimitylibrary::database::models::prelude::{RelUserRoleEntity, RoleEntity, RoleMinima};
 use unanimitylibrary::database::Data;
 
 /**************************** TESTS ******************************************/
@@ -31,11 +31,11 @@ fn assign_role_to_user() {
     let (user, _password) = init::get_user(true);
 
     // get a role
-    let role_minima = roles::role::RoleMinima {
+    let role_minima = RoleMinima {
         name: "newrole".to_string(),
         color: "#f0f0f0".to_string(),
     };
-    let role = match roles::role::Role::insert_minima(&conn, &role_minima) {
+    let role = match RoleEntity::insert_minima(&conn, &role_minima) {
         Data::Inserted(r) => r,
         _ => panic!("The role already existed"),
     };
@@ -54,7 +54,7 @@ fn assign_role_to_user() {
     assert_eq!(response.status(), Status::Ok);
 
     // assert the user is now assigned to the role
-    assert!(roles::user_role::RelUserRole::get(&conn, user.id, role.id).is_some());
+    assert!(RelUserRoleEntity::get(&conn, user.id, role.id).is_some());
 }
 
 #[test]
@@ -72,11 +72,11 @@ fn assign_role_to_user_without_requested_capability() {
     let (user, _password) = init::get_user(true);
 
     // get a role
-    let role_minima = roles::role::RoleMinima {
+    let role_minima = RoleMinima {
         name: "newrole".to_string(),
         color: "#f0f0f0".to_string(),
     };
-    let role = match roles::role::Role::insert_minima(&conn, &role_minima) {
+    let role = match RoleEntity::insert_minima(&conn, &role_minima) {
         Data::Inserted(r) => r,
         _ => panic!("The role already existed"),
     };
@@ -95,7 +95,7 @@ fn assign_role_to_user_without_requested_capability() {
     assert_eq!(response.status(), Status::Forbidden);
 
     // assert the user do not have the role
-    assert!(roles::user_role::RelUserRole::get(&conn, user.id, role.id).is_none());
+    assert!(RelUserRoleEntity::get(&conn, user.id, role.id).is_none());
 }
 
 #[test]
@@ -112,11 +112,11 @@ fn assign_role_to_user_missing_user_id() {
     let (user, _password) = init::get_user(true);
 
     // get a role
-    let role_minima = roles::role::RoleMinima {
+    let role_minima = RoleMinima {
         name: "newrole".to_string(),
         color: "#f0f0f0".to_string(),
     };
-    let role = match roles::role::Role::insert_minima(&conn, &role_minima) {
+    let role = match RoleEntity::insert_minima(&conn, &role_minima) {
         Data::Inserted(r) => r,
         _ => panic!("The role already existed"),
     };
@@ -135,7 +135,7 @@ fn assign_role_to_user_missing_user_id() {
     assert_eq!(response.status(), Status::UnprocessableEntity);
 
     // assert the user is now assigned to the role
-    assert!(roles::user_role::RelUserRole::get(&conn, user.id, role.id).is_none());
+    assert!(RelUserRoleEntity::get(&conn, user.id, role.id).is_none());
 }
 
 #[test]
@@ -152,11 +152,11 @@ fn assign_role_to_user_missing_role_id() {
     let (user, _password) = init::get_user(true);
 
     // get a role
-    let role_minima = roles::role::RoleMinima {
+    let role_minima = RoleMinima {
         name: "newrole".to_string(),
         color: "#f0f0f0".to_string(),
     };
-    let role = match roles::role::Role::insert_minima(&conn, &role_minima) {
+    let role = match RoleEntity::insert_minima(&conn, &role_minima) {
         Data::Inserted(r) => r,
         _ => panic!("The role already existed"),
     };
@@ -175,5 +175,5 @@ fn assign_role_to_user_missing_role_id() {
     assert_eq!(response.status(), Status::UnprocessableEntity);
 
     // assert the user is now assigned to the role
-    assert!(roles::user_role::RelUserRole::get(&conn, user.id, role.id).is_none());
+    assert!(RelUserRoleEntity::get(&conn, user.id, role.id).is_none());
 }

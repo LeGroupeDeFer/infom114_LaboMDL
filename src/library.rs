@@ -6,7 +6,7 @@
 //! The library crate allow us to perform some documentation tests.
 
 // unstable features used by rocket
-#![feature(proc_macro_hygiene, decl_macro, type_ascription)]
+#![feature(proc_macro_hygiene, decl_macro, type_ascription, try_trait)]
 
 /* --------------------------- Load Extern Crates -------------------------- */
 
@@ -26,9 +26,9 @@ use rocket_contrib::templates::Template;
 
 /* ----------------------------- Local modules ----------------------------- */
 
-pub mod auth;
 pub mod conf;
 pub mod database;
+pub mod guards;
 pub mod http;
 pub mod lib;
 pub mod routes;

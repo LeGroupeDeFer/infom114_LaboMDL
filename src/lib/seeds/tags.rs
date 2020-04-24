@@ -1,13 +1,13 @@
-use crate::database::models::tags::tag;
+use crate::database::models::prelude::{TagEntity, TagMinima};
 use diesel::MysqlConnection;
 
 pub fn seed_tags(conn: &MysqlConnection) {
     let labels = vec!["info", "eco", "droit", "pharma"];
 
     for label in labels {
-        tag::Tag::insert(
+        TagEntity::insert(
             &conn,
-            &tag::TagMinima {
+            &TagMinima {
                 label: label.to_string(),
             },
         );

@@ -2,14 +2,15 @@
 //!
 //! Group the creation, update and deletion of roles
 
-use crate::auth::Auth;
-use crate::database::models::prelude::{RelUserRole, Role, User};
-use crate::database::models::roles::forms::UserRoleData;
+use crate::database::models::prelude::{RelUserRoleEntity, RoleEntity, UserEntity};
+use crate::database::models::users::roles::forms::UserRoleData;
 use crate::database::{DBConnection, Data};
+use std::ops::Deref;
+
 use crate::http::responders::api::ApiResponse;
 
+use crate::guards::auth::Auth;
 use rocket::http::Status;
-
 use rocket_contrib::json::Json;
 
 /// Collect every routes that this module needs to share with the application
@@ -24,7 +25,7 @@ pub fn assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiRe
     let capability = "user:manage_role";
 
     // manage capability
-    if !auth.has_capability(&*conn, &capability) {
+    if !auth.has_capability(conn.deref(), &capability) {
         return ApiResponse::error(
             Status::Forbidden,
             &format!("The user do not have the capability {}", capability),
@@ -33,7 +34,7 @@ pub fn assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiRe
 
     let user_role_data = data.into_inner();
 
-    let user = match User::by_id(&*conn, &user_role_data.user_id) {
+    let user = match UserEntity::by_id(conn.deref(), &user_role_data.user_id) {
         Some(u) => u,
         None => {
             return ApiResponse::error(
@@ -43,7 +44,7 @@ pub fn assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiRe
         }
     };
 
-    let role = match Role::by_id(&*conn, &user_role_data.role_id) {
+    let role = match RoleEntity::by_id(conn.deref(), &user_role_data.role_id) {
         Some(u) => u,
         None => {
             return ApiResponse::error(
@@ -53,12 +54,12 @@ pub fn assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiRe
         }
     };
 
-    match RelUserRole::add_role_for_user(&*conn, &user, &role) {
+    match RelUserRoleEntity::add_role_for_user(conn.deref(), &user, &role) {
         Data::Inserted(_) => ApiResponse::simple_success(Status::Ok),
         Data::Existing(_) => {
             ApiResponse::error(Status::Conflict, "This user do already have this role")
         }
-        _ => panic!("unreachable code reched"),
+        _ => panic!("unreachable code reached"),
     }
 }
 
@@ -68,7 +69,7 @@ pub fn unassign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> Api
     let capability = "user:manage_role";
 
     // manage capability
-    if !auth.has_capability(&conn, &capability) {
+    if !auth.has_capability(conn.deref(), &capability) {
         return ApiResponse::error(
             Status::Forbidden,
             &format!("The user do not have the capability {}", capability),
@@ -77,18 +78,21 @@ pub fn unassign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> Api
 
     let user_role_data = data.into_inner();
 
-    let rel_user_role =
-        match RelUserRole::get(&*conn, user_role_data.user_id, user_role_data.role_id) {
-            Some(u_r) => u_r,
-            None => {
-                return ApiResponse::error(
-                    Status::UnprocessableEntity,
-                    "This user do not have this role",
-                )
-            }
-        };
+    let rel_user_role = match RelUserRoleEntity::get(
+        conn.deref(),
+        user_role_data.user_id,
+        user_role_data.role_id,
+    ) {
+        Some(u_r) => u_r,
+        None => {
+            return ApiResponse::error(
+                Status::UnprocessableEntity,
+                "This user do not have this role",
+            )
+        }
+    };
 
-    rel_user_role.delete(&*conn);
+    rel_user_role.delete(conn.deref());
 
     ApiResponse::simple_success(Status::Ok)
 }

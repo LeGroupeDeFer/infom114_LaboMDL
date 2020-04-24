@@ -1,4 +1,4 @@
-use crate::database::models::prelude::{Post, PostMinima, User};
+use crate::database::models::prelude::{PostEntity, PostMinima, UserEntity, UserMinima};
 use crate::database::Data;
 use crate::lib;
 use diesel::MysqlConnection;
@@ -30,7 +30,7 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
         };
         // TODO : link post to tag
 
-        Post::insert_minima(&conn, &post_minima);
+        PostEntity::insert_minima(&conn, &post_minima);
     }
 
     // create 1 deleted post
@@ -39,7 +39,7 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
         title: "Deleted post".to_string(),
         content: lib::lorem_ipsum(),
     };
-    let deleted_post = match Post::insert_minima(&conn, &deleted_minima) {
+    let deleted_post = match PostEntity::insert_minima(&conn, &deleted_minima) {
         Data::Inserted(p) => p,
         _ => panic!("This should be a new post"),
     };
@@ -51,7 +51,7 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
         title: "Hidden post".to_string(),
         content: lib::lorem_ipsum(),
     };
-    let hidden_post = match Post::insert_minima(&conn, &hidden_minima) {
+    let hidden_post = match PostEntity::insert_minima(&conn, &hidden_minima) {
         Data::Inserted(p) => p,
         _ => panic!("This should be a new post"),
     };
@@ -63,7 +63,7 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
         title: "Locked post".to_string(),
         content: lib::lorem_ipsum(),
     };
-    let locked_post = match Post::insert_minima(&conn, &locked_minima) {
+    let locked_post = match PostEntity::insert_minima(&conn, &locked_minima) {
         Data::Inserted(p) => p,
         _ => panic!("This should be a new post"),
     };
@@ -71,9 +71,7 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
 }
 
 /// Create an author for the posts
-fn init_author(conn: &MysqlConnection) -> User {
-    use crate::database::models::prelude::UserMinima;
-
+fn init_author(conn: &MysqlConnection) -> UserEntity {
     let email = "alan.smithee@unamur.be";
     let u = UserMinima {
         email: email.to_string(),
@@ -83,7 +81,7 @@ fn init_author(conn: &MysqlConnection) -> User {
         address: None,
         phone: None,
     };
-    let user = match User::insert_minima(&conn, &u) {
+    let user = match UserEntity::insert_minima(&conn, &u) {
         Data::Inserted(u) => u,
         Data::Existing(u) => u,
         _ => panic!("The user is supposed to be a new one"),
@@ -91,16 +89,16 @@ fn init_author(conn: &MysqlConnection) -> User {
     if !user.active {
         user.activate(&conn);
     }
-    User::by_email(&conn, email).unwrap()
+    UserEntity::by_email(&conn, email).unwrap()
 }
 
 fn init_tags(conn: &MysqlConnection) {
-    use crate::database::models::prelude::{Tag, TagMinima};
+    use crate::database::models::prelude::{TagEntity, TagMinima};
 
     let labels = vec!["even", "odd"];
 
     for label in labels {
-        Tag::insert(
+        TagEntity::insert(
             &conn,
             &TagMinima {
                 label: label.to_string(),

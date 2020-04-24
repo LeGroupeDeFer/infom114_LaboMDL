@@ -1,13 +1,14 @@
-use crate::auth::forms::{ActivationData, LoginData, RegisterData};
-use crate::auth::Auth;
 use crate::conf;
-use crate::database::models::roles::forms::{RoleData, UserRoleData};
+use crate::database::models::roles::forms::RoleData;
 use crate::database::models::tags::forms::TagData;
+use crate::database::models::users::roles::forms::UserRoleData;
 use crate::database::DBConnection;
-use crate::http::responders::api::ApiResponse;
-use rocket_contrib::json::Json;
+use crate::guards::auth::forms::{ActivationData, LoginData, RegisterData};
+use crate::guards::auth::Auth;
 
-use rocket;
+use crate::http::responders::api::ApiResponse;
+
+use rocket_contrib::json::Json;
 
 mod v1;
 

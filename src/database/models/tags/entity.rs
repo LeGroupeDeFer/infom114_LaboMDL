@@ -1,15 +1,12 @@
 use crate::database::Data;
 
-use crate::database::models::result::*;
-use crate::database::models::Entity;
 use crate::database::schema::tags;
 use crate::database::schema::tags::dsl::tags as table;
 use diesel::prelude::*;
 use diesel::MysqlConnection;
-use either::*;
 
 /* ---------------------------------- Tag ---------------------------------- */
-#[derive(Clone, Debug, Queryable, Identifiable, Serialize, Insertable)]
+#[derive(Clone, Debug, Associations, Queryable, Identifiable, Serialize, Insertable)]
 #[primary_key(id)]
 #[table_name = "tags"]
 pub struct TagEntity {
