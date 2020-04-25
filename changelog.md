@@ -7,6 +7,8 @@ Summary of implemented features classified by release (github tag)
 - add models structure for tags
 - refactor (add mod `prelude` & `tables` in database/models)
 - improve tag tests
+- complete refactor of models
+- implementation of PostGuard
 
 ## [0.2.3] - 2020-04-10
 

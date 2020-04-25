@@ -5,6 +5,7 @@ use crate::database::DBConnection;
 use crate::http::responders::api::ApiResponse;
 
 use crate::guards::auth::Auth;
+use crate::guards::post::PostGuard;
 use diesel::prelude::*;
 use rocket::http::Status;
 use rocket_contrib::json::Json;
@@ -14,9 +15,9 @@ pub fn collect() -> Vec<rocket::Route> {
     routes!(
         create_post,
         get_all_posts,
-        get_post_by_id,
-        delete_post_by_id,
-        update_post_by_id,
+        get_post,
+        delete_post,
+        update_post,
         updown_vote,
     )
 }
@@ -66,64 +67,63 @@ fn get_all_posts(conn: DBConnection) -> ApiResponse {
 }
 
 /// Get post by id (unauth)
-#[get("/post/<post_id>")]
-fn get_post_by_id(conn: DBConnection, post_id: String) -> ApiResponse {
-    match post_id.parse::<u32>() {
-        Ok(post_id) => match PostEntity::by_id(conn.deref(), post_id) {
-            Some(post) => ApiResponse::new(Status::Ok, json!(post)),
-            None => ApiResponse::error(Status::NotFound, "Post not found"),
-        },
-        Err(_) => ApiResponse::error(Status::BadRequest, "Invalid post_id"),
-    }
+#[get("/post/<_post_id>")]
+fn get_post(post_guard: PostGuard, _post_id: u32) -> ApiResponse {
+    ApiResponse::new(Status::Ok, json!(post_guard.post()))
 }
 
 /// Delete a post
-#[delete("/api/post/<post_id>")]
-fn delete_post_by_id(conn: DBConnection, auth: Auth, post_id: u32) -> ApiResponse {
+#[delete("/api/post/<_post_id>")]
+fn delete_post(
+    conn: DBConnection,
+    auth: Auth,
+    post_guard: PostGuard,
+    _post_id: u32,
+) -> ApiResponse {
     let capability = "post:delete";
 
-    // TODO : remove the unwrap() with the creation of a post guard
-    let post = PostEntity::by_id(conn.deref(), post_id).unwrap();
-    if !(auth.has_capability(conn.deref(), &capability) || post.author_id == auth.sub) {
+    if !(auth.has_capability(conn.deref(), &capability) || post_guard.post().author_id == auth.sub)
+    {
         // TODO : return right management error
     }
 
-    post.delete(conn.deref());
+    post_guard.post_clone().delete(conn.deref());
 
     ApiResponse::simple_success(Status::Ok)
 }
 
 /// Update a post (title/content)
-#[put("/api/post/<post_id>", format = "json", data = "<data>")]
-fn update_post_by_id(
+#[put("/api/post/<_post_id>", format = "json", data = "<data>")]
+fn update_post(
     conn: DBConnection,
     auth: Auth,
-    post_id: u32,
+    post_guard: PostGuard,
+    _post_id: u32,
     data: Json<NewPost>,
 ) -> ApiResponse {
     let capability = "post:update";
+    let a_post = data.into_inner();
 
-    // TODO : do not use unwrap() but use a post guard instead
-    let a_post = data.into_inner(); // TODO : remove me when guard is created
-    let post = PostEntity::by_id(conn.deref(), post_id).unwrap();
-    if !(auth.has_capability(conn.deref(), &capability) || post.author_id == auth.sub) {
+    if !(auth.has_capability(conn.deref(), &capability) || post_guard.post().author_id == auth.sub)
+    {
         // TODO : return right management error
     }
 
     let minima = PostMinima {
-        author_id: post.author_id,
+        author_id: post_guard.post().author_id,
         title: a_post.title,
         content: a_post.content,
     };
 
-    match post.update(conn.deref(), &minima) {
+    match post_guard.post().update(conn.deref(), &minima) {
         Some(_) => ApiResponse::new(
             Status::Ok,
             json!({
                 "msg":
                     &format!(
                         "Update a post '{}' of user '{}' successfully!",
-                        post_id, auth.sub
+                        post_guard.post().id,
+                        auth.sub
                     )
             }),
         ),
@@ -131,25 +131,25 @@ fn update_post_by_id(
     }
 }
 
-#[post("/api/post/<post_id>/upvote", format = "json", data = "<data>")]
+#[post("/api/post/<_post_id>/upvote", format = "json", data = "<data>")]
 fn updown_vote(
     conn: DBConnection,
     auth: Auth,
-    post_id: u32,
+    post_guard: PostGuard,
+    _post_id: u32,
     data: Json<ChangeVote>,
 ) -> ApiResponse {
     let vote_request = data.into_inner();
 
-    let post = PostEntity::by_id(conn.deref(), post_id).unwrap();
-
     match vote_request.vote {
         i if -1 <= i && i <= 1 => {
-            let _new_score = post.upvote(conn.deref(), auth.sub, i);
+            let _new_score = post_guard.post().upvote(conn.deref(), auth.sub, i);
             ApiResponse::success(
                 Status::Ok,
                 &format!(
                     "Change vote of post '{}' of user '{}' successfully!",
-                    post_id, auth.sub
+                    post_guard.post().id,
+                    auth.sub
                 ),
             )
         }

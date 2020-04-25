@@ -13,7 +13,7 @@ pub struct AppState {
 impl AppState {
     pub fn manage() -> AdHoc {
         AdHoc::on_attach("Application state", |rocket| {
-            // Using the env here as to paliate to "rocket" borrowing...
+            // Using the env here as to palliate to "rocket" borrowing...
             let secret = env_setting("JWT_SECRET");
             Ok(rocket.manage(AppState {
                 jwt_secret: secret.as_bytes().to_vec(),
