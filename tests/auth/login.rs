@@ -9,7 +9,7 @@ use rocket::http::{ContentType, Status};
 
 use super::super::init;
 
-const ROUTE: &'static str = "/api/auth/login/";
+const ROUTE: &'static str = "/api/v1/auth/login/";
 
 /**************************** TESTS ******************************************/
 

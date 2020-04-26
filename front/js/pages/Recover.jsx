@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Spinner } from 'react-bootstrap';
-import { useParams, useHistory, Link } from 'react-router-dom';
-import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+import React from 'react';
+import { Row, Col, Form } from 'react-bootstrap';
+import { useParams, Link } from 'react-router-dom';
 import { faUserLock } from '@fortawesome/free-solid-svg-icons';
 
-import { Dialog, Authenticated, AutoForm } from '../components';
-import { useAuth } from '../context/authContext';
-import { useRequest, useAction } from '../hooks';
+import { Dialog, AutoForm, Unauthenticated } from '../components';
+import { useAction } from '../hooks';
 import api from '../lib/api';
 
 

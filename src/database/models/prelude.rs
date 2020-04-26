@@ -8,5 +8,8 @@ pub use super::{
     token::TokenMinima,
     user::User,
     user::UserMinima,
-    user::PublicUser
+    user::PublicUser,
+    roles::capability::Capability,
+    roles::forms::{RoleData, UserRoleData},
+    tags::forms::TagData
 };

@@ -2,6 +2,36 @@
 
 Summary of implemented features classified by release (github tag)
 
+## [0.2.3] - 2019-04-10
+
+- add tests related to role creation
+- add documentation on routes and models related to role management
+- basic implementation of capability management
+- add tests related to role update
+- add tests related to role deletion
+- implement route for assigning and unassagning role to/from a user
+- add tests related to user-role assignation
+
+## [0.2.1] - 2019-04-01
+
+- update database helper scripts
+- refactor routes to counter issue <https://github.com/SergioBenitez/Rocket/issues/1262>
+- implement test helper for jwt token protected routes
+- begin tests for role management
+
+## [0.2.0] - 2019-03-25
+
+- add database migrations for role management
+- create structure for seeder
+- add GET /api/capabilities route
+- add GET /api/roles route
+- add structure for /api/role routes
+- update DB schemas (user, roles)
+- add DB schemas (capabilities, roles_capabilities)
+- move schema.rs to /database/
+- implement business logic for capability database model
+- begin to implement business logic for role database model
+
 ## [0.1.3] - 2019-03-24
 
 - add tags openapi specs

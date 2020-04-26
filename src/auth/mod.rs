@@ -2,14 +2,14 @@ use crate::conf::AppState;
 use crate::database::models::prelude::*;
 use diesel::MysqlConnection;
 use chrono::Utc;
-use jsonwebtoken as jwt;
-use jwt::Validation;
+use jsonwebtoken::{self as jwt, Validation};
+
 use rocket::http::Status;
 use rocket::request::{self, FromRequest, Request};
 use rocket::{Outcome, State};
 use serde::{Deserialize, Serialize};
 
-const TOKEN_PREFIX: &'static str = "Bearer ";
+pub const TOKEN_PREFIX: &'static str = "Bearer ";
 
 /* --------------------------- Exposed submodules -------------------------- */
 
@@ -23,22 +23,22 @@ pub struct Auth {
     pub iat: i64,    // Issued at (timestamp)
     pub exp: i64,    // Expire (timestamp)
     pub sub: u32,    // Subject (id)
-    pub cap: Vec<String>,
+    pub cap: Vec<Capability>,
 }
 
 /* ----------------------------- Implementation ---------------------------- */
 
 impl Auth {
 
-    pub fn new(user: &User, lifetime: &u32) -> Self {
+    pub fn create(conn: &MysqlConnection, user: &User, lifetime: &u32) -> Result<Self> {
         let now = Utc::now().timestamp();
-        Auth {
+        Ok(Auth {
             iss: "Unanimity".to_string(),
             iat: now,
             exp: now + (*lifetime as i64),
             sub: user.id,
-            cap: vec![], // TODO - User capabilites
-        }
+            cap: user.get_capabilities(&conn)?,
+        })
     }
 
     pub fn token(&self, secret: &[u8]) -> Result<String> {
@@ -47,6 +47,12 @@ impl Auth {
 
     // ---------------------------- LOGIN / LOGOUT ----------------------------
 
+    /// Perform the login operation :
+    /// check if the given email exists and is linked to a validated account
+    /// and that the given password is correct for that user
+    ///
+    /// If so, the authentication process is completed and an `Auth` object is returned
+    /// along with the `User` object
     pub fn login(
         conn: &MysqlConnection,
         email: &str,
@@ -73,7 +79,7 @@ impl Auth {
         user.update(conn)?;
 
         // We're good
-        Ok((Auth::new(&user, access_lifetime), refresh_token, user))
+        Ok((Auth::create(conn, &user, access_lifetime)?, refresh_token, user))
     }
 
     pub fn refresh(
@@ -91,7 +97,7 @@ impl Auth {
             token.renew(conn, Some(refresh_lifetime), Some(&-1))?;
         }
 
-        Ok((Auth::new(&user, access_lifetime), token, user))
+        Ok((Auth::create(conn, &user, access_lifetime)?, token, user))
     }
 
     pub fn logout(conn: &MysqlConnection, email: &str, hash: &str) -> Result<()> {
@@ -106,6 +112,15 @@ impl Auth {
         Ok(())
     }
 
+    /// Check if the authenticated user has the requested capability
+    pub fn has_capability(&self, conn: &MysqlConnection, capability: &str) -> bool {
+        if let Some(capa) = Capability::by_name(&conn, &capability).unwrap() {
+            self.cap.contains(&capa)
+        } else {
+            // TODO : panic or log an error since the given capability potientially do not exist
+            false
+        }
+    }
 }
 
 /* ------------------------- Traits implementations ------------------------ */

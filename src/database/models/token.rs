@@ -30,7 +30,7 @@ impl Entity for Token {
 
     type Minima = TokenMinima;
 
-    fn of(conn: &MysqlConnection, id: &u32) -> Result<Option<Self>> {
+    fn by_id(conn: &MysqlConnection, id: &u32) -> Result<Option<Self>> {
         table.find(id).first::<Self>(conn).optional().map(Ok)?
     }
 

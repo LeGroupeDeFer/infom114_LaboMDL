@@ -804,19 +804,6 @@
                 }
               }
             }
-          },
-          "400": {
-            "description": "Bad Request : the given format is incorrect",
-            "content": {
-              "json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Info"
-                },
-                "example": {
-                  "message": "json format is required"
-                }
-              }
-            }
           }
         },
         "security": [{
@@ -904,19 +891,6 @@
                 },
                 "example": {
                   "message": "The targeted tag does not exist"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request : the given format is incorrect",
-            "content": {
-              "json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Info"
-                },
-                "example": {
-                  "message": "json format is required"
                 }
               }
             }
@@ -1433,7 +1407,10 @@
       "Tag": {
         "type": "object",
         "properties": {
-          "name": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
             "type": "string"
           }
         }

@@ -1,14 +1,10 @@
 import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useState } from 'react';
-import Col from 'react-bootstrap/Col';
-import Container from 'react-bootstrap/Container';
-import Form from 'react-bootstrap/Form';
-import Row from 'react-bootstrap/Row';
+import { Container, Row, Col, Form } from 'react-bootstrap';
 import { Link, useHistory } from 'react-router-dom';
 import { useAuth } from '../context/authContext';
-import AutoForm from '../components/AutoForm';
-import Flexbox from '../components/Flexbox';
+import { AutoForm, Flexbox, Unauthenticated } from '../components';
 import { isUnamurEmail, isValidPassword } from '../lib/validators';
 
 

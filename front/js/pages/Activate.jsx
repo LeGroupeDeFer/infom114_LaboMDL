@@ -50,7 +50,7 @@ function ActivationStatus() {
 }
 
 
-const Activate() = Unauthenticated(() => {
+const Activate = Unauthenticated(() => {
   return (
     <Dialog icon={faMailBulk} title="Activation">
       <ActivationStatus />

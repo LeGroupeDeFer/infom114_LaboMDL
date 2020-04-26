@@ -13,3 +13,5 @@
 
 mod auth;
 mod init;
+mod roles;
+mod tags;

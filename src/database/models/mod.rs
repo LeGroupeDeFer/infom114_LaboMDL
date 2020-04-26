@@ -1,8 +1,21 @@
+//! # Models module
+//!
+//! A model object is a representation of a database row.
+//! So a model struct is the "class" of that object and do respect the table
+//! definition.
+//!
+//! Of course the struct can also implement some functionnalities that will
+//! help the developper to do the basic CRUD operations.
+//! In fact it's kinda of expected that the models behave like this and
+//! implement some database operations.
+
+pub mod prelude;
 pub mod address;
 pub mod result;
 pub mod token;
 pub mod user;
-pub mod prelude;
+pub mod roles;
+pub mod tags;
 
 use diesel::MysqlConnection;
 use either::*;
@@ -12,7 +25,7 @@ pub trait Entity: Sized {
 
     type Minima;
 
-    fn of(conn: &MysqlConnection, id: &u32) -> Result<Option<Self>>;
+    fn by_id(conn: &MysqlConnection, id: &u32) -> Result<Option<Self>>;
 
     fn all(conn: &MysqlConnection) -> Result<Vec<Self>>;
 
@@ -38,4 +51,5 @@ pub trait Entity: Sized {
     fn update(&self, conn: &MysqlConnection) -> Result<&Self>;
 
     fn delete(self, conn: &MysqlConnection) -> Result<()>;
+
 }

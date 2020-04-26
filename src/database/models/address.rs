@@ -19,7 +19,7 @@ pub struct Address {
     pub number: u32,
     pub box_number: Option<String>,
     pub city: String,
-    pub zipcode: u32,
+    pub zipcode: String,
     pub country: String,
 }
 
@@ -27,12 +27,23 @@ impl Entity for Address {
 
     type Minima = AddressMinima;
 
-    fn of(conn: &MysqlConnection, id: &u32) -> Result<Option<Self>> {
+    fn by_id(conn: &MysqlConnection, id: &u32) -> Result<Option<Self>> {
         table.find(id).first::<Address>(conn).optional().map(Ok)?
     }
 
     fn all(conn: &MysqlConnection) -> Result<Vec<Self>> {
         table.load(conn).map(Ok)?
+    }
+
+    fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Either<Self, Self>> {
+        let past = Self::select(conn, minima)?;
+        if past.is_some() {
+            Ok(Left(past.unwrap()))
+        } else {
+            diesel::insert_into(table).values(minima).execute(conn)?;
+            let future = Self::select(conn, minima)??;
+            Ok(Right(future))
+        }
     }
 
     fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Option<Self>> {
@@ -55,17 +66,6 @@ impl Entity for Address {
         }.map(Ok)?
     }
 
-    fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Either<Self, Self>> {
-        let past = Self::select(conn, minima)?;
-        if past.is_some() {
-            Ok(Left(past.unwrap()))
-        } else {
-            diesel::insert_into(table).values(minima).execute(conn)?;
-            let future = Self::select(conn, minima)??;
-            Ok(Right(future))
-        }
-    }
-
     fn update(&self, conn: &MysqlConnection) -> Result<&Self> {
         diesel::update(table).set(self).execute(conn).map(|_| self).map(Ok)?
     }
@@ -85,6 +85,6 @@ pub struct AddressMinima {
     pub number: u32,
     pub box_number: Option<String>,
     pub city: String,
-    pub zipcode: u32,
+    pub zipcode: String,
     pub country: Option<String>,
 }

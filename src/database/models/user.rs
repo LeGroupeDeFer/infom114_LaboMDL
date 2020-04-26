@@ -1,19 +1,26 @@
+use chrono::NaiveDateTime;
+use diesel::prelude::*;
+use diesel::MysqlConnection;
+use regex::Regex;
+use either::*;
+
 use super::Entity;
 use super::address::Address;
 use super::token::Token;
 use super::result::*;
+
 use crate::database::schema::users;
 use crate::database::schema::users::dsl::users as table;
+use crate::database::models::roles::{
+    user_role::RelUserRole,
+    role::Role,
+    capability::Capability
+};
 
-use chrono::NaiveDateTime;
-use diesel::prelude::*;
-use diesel::MysqlConnection;
-use either::*;
-use regex::Regex;
 
 // We can't have the `activation_token` and `recovery_token` fks in Diesel as these are 2 separate
 // foreign keys for the same table which is not supported by Diesel
-#[derive(Identifiable, Queryable, AsChangeset, Associations, Serialize, Deserialize, Clone, Debug)]
+#[derive(Identifiable, Queryable, AsChangeset, Associations, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[belongs_to(Address, foreign_key = "address")]
 pub struct User {
     pub id: u32,
@@ -39,7 +46,7 @@ impl Entity for User {
 
     type Minima = UserMinima;
 
-    fn of(conn: &MysqlConnection, id: &u32) -> Result<Option<Self>> {
+    fn by_id(conn: &MysqlConnection, id: &u32) -> Result<Option<Self>> {
         table.find(id).first::<Self>(conn).optional().map(Ok)?
     }
 
@@ -84,9 +91,11 @@ impl Entity for User {
 }
 
 impl User {
+
     /* ---------------------------------------- STATIC ---------------------------------------- */
 
-    // by_email :: (MysqlConnection, String) -> Option<User>
+    /// Constructor of `User` struct.
+    /// Fetch a user in database based on its email field.
     pub fn by_email(conn: &MysqlConnection, email: &str) -> Result<Option<Self>> {
         table
             .filter(users::email.eq(email))
@@ -105,12 +114,6 @@ impl User {
             })
     }
 
-    // is_unamur_email :: String -> Boolean
-    pub fn is_unamur_email(email: &str) -> bool {
-        let re: Regex = Regex::new(r"^(.*)@(student\.)?unamur\.be$").unwrap();
-        re.is_match(email)
-    }
-
     /* --------------------------------------- DYNAMIC ---------------------------------------- */
 
     pub fn set_password(&mut self, password: &str) -> Result<&Self> {
@@ -120,27 +123,50 @@ impl User {
     }
 
     pub fn activation_token(&self, conn: &MysqlConnection) -> Result<Option<Token>> {
-        self.activation_token.and_then(|id| Token::of(conn, &id).transpose()).transpose()
+        self.activation_token.and_then(|id| Token::by_id(conn, &id).transpose()).transpose()
     }
 
     pub fn recovery_token(&self, conn: &MysqlConnection) -> Result<Option<Token>> {
-        self.recovery_token.and_then(|id| Token::of(conn, &id).transpose()).transpose()
+        self.recovery_token.and_then(|id| Token::by_id(conn, &id).transpose()).transpose()
     }
 
     pub fn refresh_token(&self, conn: &MysqlConnection) -> Result<Option<Token>> {
-        self.refresh_token.and_then(|id| Token::of(conn, &id).transpose()).transpose()
+        self.refresh_token.and_then(|id| Token::by_id(conn, &id).transpose()).transpose()
+    }
+
+    pub fn get_last_id(conn: &MysqlConnection) -> Result<u32> {
+        use crate::database::schema::users::dsl::*;
+        let found = table
+            .select(id)
+            .order(id.desc())
+            .first::<u32>(conn)
+            .optional()?;
+        Ok(found.unwrap_or(0u32))
     }
 
     pub fn verify(&self, password: &str) -> Result<bool> {
         bcrypt::verify(password, &self.password).map(Ok)?
     }
 
-    pub fn activate(&self, conn: &MysqlConnection) -> Result<&Self> {
-        use crate::database::schema::users::dsl::*;
-        diesel::update(users.filter(id.eq(self.id)))
-            .set(activation_token.eq(None: Option<u32>))
-            .execute(conn)
-            .map(|_| Ok(self))?
+    pub fn activate(&mut self, conn: &MysqlConnection) -> Result<&Self> {
+        let mut token = self.activation_token(conn)??;
+        token.verify(&token.hash)?;
+        token.consume(conn)?;
+        if self.recovery_token.is_none() {
+            let recovery_token = Token::create_default(&*conn)?;
+            self.recovery_token = Some(recovery_token.id);
+        }
+        if self.refresh_token.is_none() {
+            let refresh_token = Token::create(
+                &*conn,
+                Some(&1209600),
+                Some(&-1)
+            )?;
+            self.refresh_token = Some(refresh_token.id);
+        }
+        self.active = true;
+        self.update(conn)?;
+        Ok(self)
     }
 
     pub fn data(&self) -> PublicUser {
@@ -155,6 +181,36 @@ impl User {
             last_connection: self.last_connection,
             active: self.active
         }
+    }
+
+    /// Get the roles of a user
+    /// Return a vector of `Role` struct
+    pub fn get_roles(&self, conn: &MysqlConnection) -> Result<Vec<Role>> {
+        let raw: Vec<Result<Option<Role>>> =
+            RelUserRole::get_roles_from_user(&conn, &self)?
+                .iter()
+                .map(|r| Role::by_id(&conn, &r.id)) // FIXME - N query, ought to be 1 query instead
+                .collect();
+        let roles = raw
+            .into_iter().collect::<Result<Vec<Option<Role>>>>()?
+            .into_iter().collect::<Option<Vec<Role>>>()?;
+        Ok(roles)
+    }
+
+    /// Get the capabilities of a user
+    /// Return a vector of `models::roles::capability::Capability` struct
+    pub fn get_capabilities(&self, conn: &MysqlConnection) -> Result<Vec<Capability>> {
+        let mut tab: Vec<Capability> = Vec::new();
+        let roles = self.get_roles(&conn)?;
+        for r in roles {
+            for c in r.capabilities(&conn)? {
+                if !tab.contains(&c) {
+                    tab.push(c);
+                }
+            }
+        }
+
+        Ok(tab)
     }
 
     /// Validate the fact that the email given

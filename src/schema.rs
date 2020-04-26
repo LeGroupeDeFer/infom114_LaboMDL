@@ -14,6 +14,7 @@ table! {
     roles (id) {
         id -> Unsigned<Integer>,
         name -> Nullable<Varchar>,
+        color -> Varchar,
     }
 }
 
@@ -47,15 +48,16 @@ table! {
 }
 
 table! {
-    users_roles (user, role) {
-        user -> Unsigned<Integer>,
-        role -> Unsigned<Integer>,
+    users_roles (id) {
+        id -> Unsigned<Integer>,
+        user_id -> Unsigned<Integer>,
+        role_id -> Unsigned<Integer>,
     }
 }
 
 joinable!(users -> addresses (address));
-joinable!(users_roles -> roles (role));
-joinable!(users_roles -> users (user));
+joinable!(users_roles -> roles (role_id));
+joinable!(users_roles -> users (user_id));
 
 allow_tables_to_appear_in_same_query!(
     addresses,

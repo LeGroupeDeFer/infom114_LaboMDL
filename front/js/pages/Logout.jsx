@@ -5,7 +5,7 @@ import { useHistory } from 'react-router-dom';
 import { Authenticated } from '../components';
 
 // Not a real component, just logout the user before to redirect to "/".
-const Logout = Authenticated((props) {
+const Logout = Authenticated(() => {
   const { logout } = useAuth();
   const history = useHistory();
 

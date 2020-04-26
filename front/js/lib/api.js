@@ -43,7 +43,6 @@ let currentAccessToken;
  */
 function api(endpoint, { body, ...providedConfig } = {}) {
 
-  const token = store.getItem('__auth_token__');
   const headers = { 'content-type': 'application/json' };
 
   if (currentAccessToken)

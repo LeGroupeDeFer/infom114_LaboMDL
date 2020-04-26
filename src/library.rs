@@ -30,9 +30,8 @@ pub mod auth;
 pub mod conf;
 pub mod database;
 pub mod http;
-mod lib;
-mod routes;
-pub mod schema;
+pub mod lib;
+pub mod routes;
 
 /* ----------------------------- Ignite Rocket ----------------------------- */
 

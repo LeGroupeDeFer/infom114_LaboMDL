@@ -16,7 +16,7 @@ use unanimitylibrary::database::schema::users::dsl::users;
 
 use super::super::init;
 
-const ROUTE: &'static str = "/api/auth/register/";
+const ROUTE: &'static str = "/api/v1/auth/register/";
 
 /**************************** TESTS ******************************************/
 
@@ -72,7 +72,7 @@ fn register_full_address() {
             \"street\":\"rue grandganage\",
             \"number\":21,
             \"city\":\"Namur\",
-            \"zipcode\":5000,
+            \"zipcode\":\"5000\",
             \"country\":\"Belgique\"
         }
      }";
@@ -119,9 +119,9 @@ fn register_address_wrong_type() {
         \"phone\":\"+32 471 85 85 85\",
         \"address\":{
             \"street\":\"rue grandganage\",
-            \"number\":21,
+            \"number\":\"twenty-one\",
             \"city\":\"Namur\",
-            \"zipcode\":\"cinq mille\",
+            \"zipcode\": 5000,
             \"country\":\"Belgique\"
         }
      }";
@@ -130,7 +130,7 @@ fn register_address_wrong_type() {
     let req = client.post(ROUTE).header(ContentType::JSON).body(test_user);
     let response = req.dispatch();
 
-    // check that the response is OK
+    // check that the response is not OK
     assert_eq!(response.status(), Status::UnprocessableEntity);
 
     // check that there is no new user or address in database

@@ -174,7 +174,7 @@ function RegisterForm() {
               id="zipcode"
               name="zipcode"
               min="0"
-              type="number"
+              type="text"
               className="flex-grow-1"
               validator={isValidNatural}
             />
