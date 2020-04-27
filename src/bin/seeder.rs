@@ -10,4 +10,5 @@ use unanimitylibrary::lib::seeds;
 fn main() {
     let conn = database::connection(&database::url());
     seeds::roles::seed_roles_and_capabilities(&conn);
+    seeds::tags::seed_tags(&conn);
 }

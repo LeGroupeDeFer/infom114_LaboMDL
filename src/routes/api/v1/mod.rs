@@ -7,12 +7,13 @@
 //! functions SHOULD be called on the `v1::collectt` function to group every
 //! routes in each and every child module.
 
-use crate::auth::Auth;
+use crate::guards::auth::Auth;
 use crate::http::responders::ApiResult;
 use rocket_contrib::json::Json;
 
 pub mod auth;
 pub mod capabilities;
+pub mod post;
 pub mod role;
 pub mod roles;
 pub mod tag;
@@ -29,6 +30,7 @@ pub fn collect() -> Vec<rocket::Route> {
     let tag_routes = tag::collect();
     let tags_routes = tags::collect();
     let user_routes = user::collect();
+    let post_routes = post::collect();
     [
         &routes!(version)[..],
         auth_routes.as_ref(),
@@ -38,6 +40,7 @@ pub fn collect() -> Vec<rocket::Route> {
         tags_routes.as_ref(),
         tag_routes.as_ref(),
         user_routes.as_ref(),
+        post_routes.as_ref(),
     ]
     .concat()
 }

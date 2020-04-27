@@ -7,7 +7,7 @@
 
 use rocket::http::{ContentType, Status};
 
-use unanimitylibrary::database::models::user::User;
+use unanimitylibrary::database::models::prelude::User;
 
 use super::super::init;
 
@@ -154,6 +154,7 @@ fn double_activation() {
     let response = request.dispatch();
 
     assert_eq!(response.status(), Status::Ok);
+
 
     let activated_user = User::by_email(&connection, &user.email).unwrap().unwrap();
     let consumed_token = activated_user.activation_token(&connection).unwrap().unwrap();

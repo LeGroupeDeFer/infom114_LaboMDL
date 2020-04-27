@@ -1,9 +1,4 @@
 extern crate rand;
-use super::result::*;
-use super::result::token::Error as TokenError;
-use super::Entity;
-use crate::database::schema::tokens;
-use crate::database::schema::tokens::dsl::tokens as table;
 use std::convert::TryFrom;
 use chrono::{Duration, NaiveDateTime, Utc};
 use diesel::prelude::*;
@@ -12,6 +7,11 @@ use either::*;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use std::fmt;
+
+use super::result::*;
+use super::Entity;
+use crate::database::schema::tokens;
+use crate::database::schema::tokens::dsl::tokens as table;
 
 
 #[derive(Identifiable, Queryable, AsChangeset, Serialize, Deserialize, Clone, Debug)]
@@ -26,6 +26,7 @@ pub struct Token {
     pub consumed: bool,
 }
 
+
 impl Entity for Token {
 
     type Minima = TokenMinima;
@@ -38,14 +39,6 @@ impl Entity for Token {
         table.load(conn).map(Ok)?
     }
 
-    fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Option<Self>> {
-        table
-            .filter(tokens::hash.eq(minima.hash.clone()))
-            .first::<Self>(conn)
-            .optional()
-            .map(Ok)?
-    }
-
     fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Either<Self, Self>> {
         let past = Self::select(conn, minima)?;
         if past.is_some() {
@@ -55,6 +48,14 @@ impl Entity for Token {
             let future = Self::select(conn, minima)??;
             Ok(Right(future))
         }
+    }
+
+    fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Option<Self>> {
+        table
+            .filter(tokens::hash.eq(minima.hash.clone()))
+            .first::<Self>(conn)
+            .optional()
+            .map(Ok)?
     }
 
     fn update(&self, conn: &MysqlConnection) -> Result<&Self> {

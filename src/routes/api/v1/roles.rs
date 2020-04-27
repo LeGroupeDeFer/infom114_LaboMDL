@@ -2,11 +2,11 @@
 //!
 //! Route related to the fetching of roles
 
-use crate::database::models::roles::RoleCapabilities;
+use crate::database::models::prelude::*;
 use crate::database::DBConnection;
 use crate::http::responders::api::ApiResponse;
 
-use crate::auth::Auth;
+use crate::guards::auth::Auth;
 
 use rocket::http::Status;
 
@@ -16,8 +16,8 @@ pub fn collect() -> Vec<rocket::Route> {
     routes!(get)
 }
 
-/// Return every roles (and their capabilities) in database as a json array.
+/// Return every roles (and their capability) in database as a json array.
 #[get("/api/v1/roles")]
 pub fn get(conn: DBConnection, _auth: Auth) -> ApiResponse {
-    ApiResponse::new(Status::Ok, json!(RoleCapabilities::all(&conn).unwrap()))
+    ApiResponse::new(Status::Ok, json!(RelRoleCapability::all(&conn).unwrap()))
 }

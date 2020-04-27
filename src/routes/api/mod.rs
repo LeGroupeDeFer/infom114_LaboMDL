@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-
 use regex::Regex;
 use rocket::response::Redirect;
 use rocket;
@@ -37,14 +36,14 @@ pub fn api(path: PathBuf) -> Result<Redirect> {
     Ok(Redirect::temporary(uri))
 }
 
-#[get("/api/<path..>", format="json", rank=6)]
+#[get("/api/<path..>", format="json", rank=2)]
 pub fn api_get(path: PathBuf) -> Result<Redirect> { api(path) }
 
-#[post("/api/<path..>", format="json", rank=6)]
+#[post("/api/<path..>", format="json", rank=2)]
 pub fn api_post(path: PathBuf) -> Result<Redirect> { api(path) }
 
-#[put("/api/<path..>", format="json", rank=6)]
+#[put("/api/<path..>", format="json", rank=2)]
 pub fn api_put(path: PathBuf) -> Result<Redirect> { api(path) }
 
-#[delete("/api/<path..>", format="json", rank=6)]
+#[delete("/api/<path..>", format="json", rank=2)]
 pub fn api_delete(path: PathBuf) -> Result<Redirect> { api(path) }

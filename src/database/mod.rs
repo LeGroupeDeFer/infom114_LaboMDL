@@ -3,6 +3,7 @@
 //! This module aims to group everything that is related to the database.
 pub mod models;
 pub mod schema;
+pub mod tables;
 
 // ---------------- REQUIRES --------------------------------------------------
 
@@ -18,6 +19,15 @@ use std::collections::HashMap;
 
 #[database("mariadb_pool")]
 pub struct DBConnection(diesel::MysqlConnection);
+
+// use std::ops::Deref;
+// impl Deref for DBConnection {
+//     type Target = MysqlConnection;
+//
+//     fn deref(&self) -> &Self::Target {
+//         &self.0
+//     }
+// }
 
 // --------------------- FUNCTIONS --------------------------------------------
 

@@ -8,12 +8,11 @@
 use rocket::http::ContentType;
 use rocket::http::Status;
 
+use unanimitylibrary::database::models::prelude::*;
 use super::super::init;
 
-const ROLE_ROUTE: &'static str = "/api/v1/role/";
 
-use unanimitylibrary::database::models::{prelude::*, roles};
-use unanimitylibrary::database::Data;
+const ROLE_ROUTE: &'static str = "/api/v1/role/";
 
 /**************************** TESTS ******************************************/
 
@@ -25,18 +24,18 @@ fn delete_correctly() {
     let conn = init::database_connection();
 
     // first we'll add a role
-    let role_minima = roles::role::RoleMinima {
+    let role_minima = RoleMinima {
         name: "mynewrole".to_string(),
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match roles::role::Role::insert_new(&conn, &role_minima) {
+    let existing_role = match Role::insert_new(&conn, &role_minima) {
         Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
         Ok(r) => r,
         _ => panic!("Internal error")
     };
     // assert the role is correctly added in database
-    assert!(roles::role::Role::by_name(&conn, &role_minima.name).unwrap().is_some());
+    assert!(Role::by_name(&conn, &role_minima.name).unwrap().is_some());
 
     // login
     let auth_token_header = init::login("admin@unamur.be", "admin");
@@ -52,7 +51,7 @@ fn delete_correctly() {
     assert_eq!(response.status(), Status::Ok);
 
     // assert the role has correctly been deleted
-    assert!(roles::role::Role::by_name(&conn, &role_minima.name).unwrap().is_none());
+    assert!(Role::by_name(&conn, &role_minima.name).unwrap().is_none());
 }
 
 #[test]
@@ -84,7 +83,7 @@ fn delete_invalid_role_id() {
 
     // first we'll find an unexisting role id
     let mut fake_id = 11;
-    while let Some(_) = roles::role::Role::by_id(&conn, &fake_id).unwrap() {
+    while let Some(_) = Role::by_id(&conn, &fake_id).unwrap() {
         fake_id += 11;
     }
 
@@ -110,18 +109,18 @@ fn delete_missing_capability() {
     let conn = init::database_connection();
 
     // first we'll add a role
-    let role_minima = roles::role::RoleMinima {
+    let role_minima = RoleMinima {
         name: "mynewrole".to_string(),
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match roles::role::Role::insert_new(&conn, &role_minima) {
+    let existing_role = match Role::insert_new(&conn, &role_minima) {
         Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
         Ok(r) => r,
         _ => panic!("Internal error")
     };
     // assert the role is correctly added in database
-    assert!(roles::role::Role::by_name(&conn, &role_minima.name).unwrap().is_some());
+    assert!(Role::by_name(&conn, &role_minima.name).unwrap().is_some());
 
     // login
     let (user, passwd) = init::get_user(true);
@@ -138,5 +137,5 @@ fn delete_missing_capability() {
     assert_eq!(response.status(), Status::Forbidden);
 
     // assert the role has not been deleted
-    assert!(roles::role::Role::by_name(&conn, &role_minima.name).unwrap().is_some());
+    assert!(Role::by_name(&conn, &role_minima.name).unwrap().is_some());
 }

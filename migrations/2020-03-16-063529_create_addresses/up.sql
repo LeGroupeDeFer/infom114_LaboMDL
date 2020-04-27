@@ -1,7 +1,6 @@
 -- Your SQL goes here
 CREATE TABLE addresses (
   id                INT UNSIGNED    NOT NULL    AUTO_INCREMENT,
-
   street            VARCHAR(150)    NOT NULL,
   number            INT UNSIGNED    NOT NULL,
   box_number        VARCHAR(16),

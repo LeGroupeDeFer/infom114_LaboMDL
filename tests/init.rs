@@ -1,35 +1,16 @@
 //! # Test init
 //!
-//! Initialisations and helpers to ease the developpment of automated tests.
+//! Initialisations and helpers to ease the development of automated tests.
 //!
-//! the test database MUST be availlable
+//! the test database MUST be available
 //! the migrations MUST have been applied to the test database
 
 use unanimitylibrary::conf::env_setting;
 
 use unanimitylibrary::database;
-
-use unanimitylibrary::database::models::{
-    Entity,
-    address::Address,
-    roles::{capability::Capability, role::Role, role_capability::RelRoleCapability},
-    user::{User, UserMinima},
-};
-
 use unanimitylibrary::database::models::prelude::*;
-use unanimitylibrary::database::schema::addresses::dsl::addresses;
-use unanimitylibrary::database::schema::users::dsl::users;
+use unanimitylibrary::database::tables::*;
 
-use unanimitylibrary::database::schema::addresses::dsl::addresses as addresses_table;
-use unanimitylibrary::database::schema::capabilities::dsl::capabilities as capabilities_table;
-use unanimitylibrary::database::schema::roles::dsl::roles as roles_table;
-use unanimitylibrary::database::schema::roles_capabilities::dsl::roles_capabilities as roles_capabilities_table;
-use unanimitylibrary::database::schema::tags::dsl::tags as tags_table;
-use unanimitylibrary::database::schema::users::dsl::users as users_table;
-use unanimitylibrary::database::schema::users_roles::dsl::users_roles as users_roles_table;
-use unanimitylibrary::database::schema::tokens::dsl::tokens as tokens_table;
-
-use unanimitylibrary::database::Data;
 use unanimitylibrary::lib::seeds;
 
 use diesel::query_dsl::RunQueryDsl;
@@ -44,16 +25,33 @@ pub fn clean() {
     diesel::delete(roles_capabilities_table).execute(&conn).unwrap();
     diesel::delete(capabilities_table).execute(&conn).unwrap();
     diesel::delete(users_roles_table).execute(&conn).unwrap();
+    diesel::delete(posts_tags_table).execute(&conn).unwrap();
+    diesel::delete(votes_comments_table).execute(&conn).unwrap();
+    diesel::delete(votes_posts_table).execute(&conn).unwrap();
+    diesel::delete(tags_subscription_table).execute(&conn).unwrap();
     diesel::delete(roles_table).execute(&conn).unwrap();
     diesel::delete(tags_table).execute(&conn).unwrap();
     diesel::delete(users_table).execute(&conn).unwrap();
     diesel::delete(addresses_table).execute(&conn).unwrap();
     diesel::delete(tokens_table).execute(&conn).unwrap();
+    diesel::delete(capabilities_table).execute(&conn).unwrap();
+    diesel::delete(posts_table).execute(&conn).unwrap();
 
     // assert empty database
-    assert_eq!(users_table.load::<User>(&conn).unwrap().len(), 0);
-    assert_eq!(addresses_table.load::<Address>(&conn).unwrap().len(), 0);
-    assert_eq!(roles_table.load::<Role>(&conn).unwrap().len(), 0);
+    assert_eq!(
+        users_roles_table
+            .load::<RelUserRole>(&conn)
+            .unwrap()
+            .len(),
+        0
+    );
+    assert_eq!(
+        posts_tags_table
+            .load::<RelPostTag>(&conn)
+            .unwrap()
+            .len(),
+        0
+    );
     assert_eq!(
         roles_capabilities_table
             .load::<RelRoleCapability>(&conn)
@@ -62,10 +60,41 @@ pub fn clean() {
         0
     );
     assert_eq!(
-        capabilities_table.load::<Capability>(&conn).unwrap().len(),
+        votes_comments_table
+            .load::<RelCommentVote>(&conn)
+            .unwrap()
+            .len(),
         0
     );
-    // assert_eq!(users_roles.load::<>(&conn).unwrap().len(), 0);
+    assert_eq!(
+        votes_posts_table
+            .load::<RelPostVote>(&conn)
+            .unwrap()
+            .len(),
+        0
+    );
+    assert_eq!(
+        tags_subscription_table
+            .load::<RelUserTag>(&conn)
+            .unwrap()
+            .len(),
+        0
+    );
+    assert_eq!(roles_table.load::<Role>(&conn).unwrap().len(), 0);
+    assert_eq!(
+        capabilities_table
+            .load::<Capability>(&conn)
+            .unwrap()
+            .len(),
+        0
+    );
+    assert_eq!(users_table.load::<User>(&conn).unwrap().len(), 0);
+    assert_eq!(
+        addresses_table.load::<Address>(&conn).unwrap().len(),
+        0
+    );
+    assert_eq!(tags_table.load::<Tag>(&conn).unwrap().len(), 0);
+    assert_eq!(posts_table.load::<Post>(&conn).unwrap().len(), 0);
 }
 
 /// Fill the database with some data that is needed for the application to run
@@ -79,7 +108,7 @@ pub fn seed() {
 
 /// Return a MysqlConnection
 /// Since we use a different database for the test environment, this function
-/// MUST be used while developping tests.
+/// MUST be used while developing tests.
 pub fn database_connection() -> diesel::MysqlConnection {
     database::connection(&database_url())
 }
@@ -107,7 +136,7 @@ pub fn clean_client() -> rocket::local::Client {
 /// Warning : the database will be reset before each test so do
 /// not use your regular database.
 ///
-/// The needed informations are
+/// The needed information are
 ///
 /// - TEST_DB_HOST
 /// - TEST_DB_PORT
@@ -196,7 +225,7 @@ pub fn get_user(do_activate: bool) -> (User, String) {
 ///
 /// Of course these attributes MUST be updated ASAP for real world application
 /// but for our testing purposes its perfect because we can use it to confirm
-/// that some routes are protected by auth & by capabilities
+/// that some routes are protected by auth & by capability
 pub fn get_admin() -> User {
     User::by_email(&database_connection(), "admin@unamur.be").unwrap().unwrap()
 }
@@ -237,7 +266,7 @@ pub fn login<'a, 'b>(email: &'a str, password: &'a str) -> Header<'b> {
         "authorization",
         format!(
             "{}{}",
-            unanimitylibrary::auth::TOKEN_PREFIX,
+            unanimitylibrary::guards::auth::TOKEN_PREFIX,
             // ugly hack to have something working
             auth_token.replace("\"", "")
         ),

@@ -2,7 +2,7 @@
 //!
 //! Everything that is related to roles :
 //!
-//! - capabilities
+//! - capability
 //! - role CRUD
 //! - add capability to role
 //! - assign role to user

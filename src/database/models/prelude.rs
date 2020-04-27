@@ -1,15 +1,28 @@
-
 pub use super::{
+    result::{
+        Result,
+
+        StdError,
+        NoneError,
+        DieselError,
+        BcryptError,
+        JWTError,
+
+        EntityError,
+        TokenError,
+        UserError,
+        AuthError,
+        Error
+    },
     Entity,
-    result::{Error, Result, EntityError, TokenError, UserError, AuthError},
-    address::Address,
-    address::AddressMinima,
-    token::Token,
-    token::TokenMinima,
-    user::User,
-    user::UserMinima,
-    user::PublicUser,
-    roles::capability::Capability,
-    roles::forms::{RoleData, UserRoleData},
-    tags::forms::TagData
+
+    address::{Address, AddressMinima},
+    capability::{Capability, CapabilityMinima, CapabilityData, CAPABILITIES},
+    comment::{Comment, CommentMinima, RelCommentVote},
+    post::{Post, PostMinima, RelPostTag, NewPost, ChangeVote},
+    role::{Role, RoleMinima, RelRoleCapability, RoleData},
+    tag::{Tag, TagMinima, TagData},
+    token::{Token, TokenMinima},
+    user::{User, UserMinima, PublicUser, RelUserRole, RelUserRoleMinima, RelUserTag, UserRoleData},
 };
+

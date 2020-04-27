@@ -9,11 +9,11 @@ use rocket::http::ContentType;
 use rocket::http::Status;
 
 use super::super::init;
+use unanimitylibrary::database::models::prelude::*;
+
 
 const ROLE_ROUTE: &'static str = "/api/v1/user/role/";
 
-use unanimitylibrary::database::models::{prelude::*, roles};
-use unanimitylibrary::database::Data;
 
 /**************************** TESTS ******************************************/
 
@@ -31,11 +31,11 @@ fn assign_role_to_user() {
     let (user, _password) = init::get_user(true);
 
     // get a role
-    let role_minima = roles::role::RoleMinima {
+    let role_minima = RoleMinima {
         name: "newrole".to_string(),
         color: "#f0f0f0".to_string(),
     };
-    let role = match roles::role::Role::insert_new(&conn, &role_minima) {
+    let role = match Role::insert_new(&conn, &role_minima) {
         Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
         Ok(r) => r,
         _ => panic!("Internal error")
@@ -55,7 +55,7 @@ fn assign_role_to_user() {
     assert_eq!(response.status(), Status::Ok);
 
     // assert the user is now assigned to the role
-    assert!(roles::user_role::RelUserRole::get(&conn, user.id, role.id).unwrap().is_some());
+    assert!(RelUserRole::get(&conn, user.id, role.id).unwrap().is_some());
 }
 
 #[test]
@@ -73,11 +73,12 @@ fn assign_role_to_user_without_requested_capability() {
     let (user, _password) = init::get_user(true);
 
     // get a role
-    let role_minima = roles::role::RoleMinima {
+    let role_minima = RoleMinima {
         name: "newrole".to_string(),
         color: "#f0f0f0".to_string(),
     };
-    let role = match roles::role::Role::insert_new(&conn, &role_minima) {
+
+    let role = match Role::insert_new(&conn, &role_minima) {
         Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
         Ok(r) => r,
         _ => panic!("Internal error")
@@ -97,7 +98,8 @@ fn assign_role_to_user_without_requested_capability() {
     assert_eq!(response.status(), Status::Forbidden);
 
     // assert the user do not have the role
-    assert!(roles::user_role::RelUserRole::get(&conn, user.id, role.id).unwrap().is_none());
+
+    assert!(RelUserRole::get(&conn, user.id, role.id).unwrap().is_none());
 }
 
 #[test]
@@ -114,11 +116,11 @@ fn assign_role_to_user_missing_user_id() {
     let (user, _password) = init::get_user(true);
 
     // get a role
-    let role_minima = roles::role::RoleMinima {
+    let role_minima = RoleMinima {
         name: "newrole".to_string(),
         color: "#f0f0f0".to_string(),
     };
-    let role = match roles::role::Role::insert_new(&conn, &role_minima) {
+    let role = match Role::insert_new(&conn, &role_minima) {
         Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
         Ok(r) => r,
         _ => panic!("Internal error")
@@ -138,7 +140,7 @@ fn assign_role_to_user_missing_user_id() {
     assert_eq!(response.status(), Status::UnprocessableEntity);
 
     // assert the user is now assigned to the role
-    assert!(roles::user_role::RelUserRole::get(&conn, user.id, role.id).unwrap().is_none());
+    assert!(RelUserRole::get(&conn, user.id, role.id).unwrap().is_none());
 }
 
 #[test]
@@ -155,11 +157,11 @@ fn assign_role_to_user_missing_role_id() {
     let (user, _password) = init::get_user(true);
 
     // get a role
-    let role_minima = roles::role::RoleMinima {
+    let role_minima = RoleMinima {
         name: "newrole".to_string(),
         color: "#f0f0f0".to_string(),
     };
-    let role = match roles::role::Role::insert_new(&conn, &role_minima) {
+    let role = match Role::insert_new(&conn, &role_minima) {
         Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
         Ok(r) => r,
         _ => panic!("Internal error")
@@ -179,5 +181,5 @@ fn assign_role_to_user_missing_role_id() {
     assert_eq!(response.status(), Status::UnprocessableEntity);
 
     // assert the user is now assigned to the role
-    assert!(roles::user_role::RelUserRole::get(&conn, user.id, role.id).unwrap().is_none());
+    assert!(RelUserRole::get(&conn, user.id, role.id).unwrap().is_none());
 }

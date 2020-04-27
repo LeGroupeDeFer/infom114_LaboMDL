@@ -2,21 +2,22 @@
 //!
 //! Group the creation, update and deletion of roles
 
-use crate::auth::Auth;
-use crate::database::models::roles::{forms::UserRoleData, role::Role, user_role::RelUserRole};
+use rocket::http::Status;
+use rocket_contrib::json::Json;
+
+use crate::guards::auth::Auth;
 use crate::database::models::prelude::*;
 use crate::database::{DBConnection, Data};
+
 use crate::http::responders::api::ApiResponse;
 
-use rocket::http::Status;
-
-use rocket_contrib::json::Json;
 
 /// Collect every routes that this module needs to share with the application
 /// The name `collect` is a project convention
 pub fn collect() -> Vec<rocket::Route> {
     routes!(assign, unassign)
 }
+
 
 /// Assign a role to a user
 #[post("/api/v1/user/role", format = "json", data = "<data>")]
@@ -57,8 +58,8 @@ pub fn assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiRe
         Data::Inserted(_) => ApiResponse::simple_success(Status::Ok),
         Data::Existing(_) => {
             ApiResponse::error(Status::Conflict, "This user do already have this role")
-        },
-        _ => panic!("unreachable code reched")
+        }
+        _ => panic!("unreachable code reached"),
     }
 }
 
@@ -76,6 +77,7 @@ pub fn unassign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> Api
     }
 
     let user_role_data = data.into_inner();
+
 
     let rel_user_role =
         match RelUserRole::get(&*conn, user_role_data.user_id, user_role_data.role_id).unwrap() {

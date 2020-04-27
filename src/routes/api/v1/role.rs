@@ -2,20 +2,17 @@
 //!
 //! Group the creation, update and deletion of roles
 
-use crate::auth::Auth;
+
+use crate::guards::auth::Auth;
 use crate::database::models::prelude::*;
-use crate::database::models::roles::{
-    capability::Capability,
-    forms::RoleData,
-    role::{Role, RoleMinima},
-    role_capability::RelRoleCapability,
-};
 use crate::database::DBConnection;
 use crate::http::responders::api::ApiResponse;
 
 use rocket::http::Status;
 
+use crate::database::models::role::forms::RoleData;
 use rocket_contrib::json::Json;
+
 
 /// Collect every routes that this module needs to share with the application
 /// The name `collect` is a project convention
@@ -32,6 +29,7 @@ pub fn create(conn: DBConnection, auth: Auth, data: Json<RoleData>) -> ApiRespon
     let capability = "role:manage";
 
     // manage capability
+
     if !auth.has_capability(&*conn, &capability) {
         return ApiResponse::error(
             Status::Forbidden,
@@ -64,7 +62,7 @@ pub fn create(conn: DBConnection, auth: Auth, data: Json<RoleData>) -> ApiRespon
         _ => panic!("unreachable code reached")
     };
 
-    // for this new role, add every given capabilities
+    // for this new role, add every given capability
     for capability_data in role_data.capabilities.iter() {
         if let Some(capability) = Capability::by_name(&*conn, &capability_data.name).unwrap() {
             RelRoleCapability::add_capability_for_role(&*conn, &role, &capability);
@@ -94,7 +92,6 @@ pub fn update(conn: DBConnection, auth: Auth, role_id: u32, data: Json<RoleData>
     }
 
     let opt_role = Role::by_id(&*conn, &role_id).unwrap();
-
     // assert that the role_id given exist
     if opt_role.is_none() {
         return ApiResponse::error(
@@ -102,7 +99,7 @@ pub fn update(conn: DBConnection, auth: Auth, role_id: u32, data: Json<RoleData>
             "The targeted role does not exist",
         );
     }
-    let role = opt_role.unwrap();
+    let mut role = opt_role.unwrap();
 
     // assert that the new name is not already used
     let role_data = data.into_inner();
@@ -114,18 +111,14 @@ pub fn update(conn: DBConnection, auth: Auth, role_id: u32, data: Json<RoleData>
         }
     }
 
-    role.update(
-        &*conn,
-        &RoleMinima {
-            name: role_data.name.into(),
-            color: role_data.color.into(),
-        },
-    );
+    role.name = role_data.name.into();
+    role.color = role_data.color.into();
+    role.update(&*conn);
 
-    // reset capabilities
+    // reset capability
     role.clear_capabilities(&*conn);
 
-    // add every given capabilities
+    // add every given capability
     for capability_data in role_data.capabilities.iter() {
         if let Some(capability) = Capability::by_name(&*conn, &capability_data.name).unwrap() {
             RelRoleCapability::add_capability_for_role(&*conn, &role, &capability);
@@ -139,7 +132,7 @@ pub fn update(conn: DBConnection, auth: Auth, role_id: u32, data: Json<RoleData>
 
 /// Delete an existing role
 ///
-/// This will first remove every capabilities linked to this role
+/// This will first remove every capability linked to this role
 /// then it will remove the role.
 #[delete("/api/v1/role/<role_id>")]
 pub fn delete(conn: DBConnection, auth: Auth, role_id: u32) -> ApiResponse {
@@ -164,7 +157,7 @@ pub fn delete(conn: DBConnection, auth: Auth, role_id: u32) -> ApiResponse {
     }
     let role = opt_role.unwrap();
 
-    // reset capabilities
+    // reset capability
     role.clear_capabilities(&*conn);
 
     // delete role

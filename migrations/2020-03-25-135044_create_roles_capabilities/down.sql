@@ -1,2 +1,2 @@
 -- This file should undo anything in `up.sql`
-DROP TABLE roles_capabilities;
+DROP TABLE IF EXISTS roles_capabilities;

@@ -8,3 +8,4 @@ use rocket_contrib::json::Json;
 pub type ApiResult<T> = Result<Json<T>>;
 
 pub fn OK() -> ApiResult<()> { Ok(Json(())) }
+

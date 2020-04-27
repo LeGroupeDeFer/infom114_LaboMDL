@@ -12,15 +12,14 @@ use rocket::http::Status;
 use unanimitylibrary::database::models::prelude::*;
 use super::super::init;
 
-const CAPABILITIES_ROUTE: &'static str = "/api/v1/capabilities/";
+
+const CAPABILITIES_ROUTE: &'static str = "/api/v1/capability/";
 const ROLES_ROUTE: &'static str = "/api/v1/roles/";
 
 /**************************** TESTS ******************************************/
 
 #[test]
 fn get_capabilities() {
-    use unanimitylibrary::database::models::roles::capability::Capability;
-
     // init
     let client = init::clean_client();
     init::seed();
@@ -37,7 +36,7 @@ fn get_capabilities() {
     // validate status
     assert_eq!(response.status(), Status::Ok);
 
-    // assert those are the same capabilities as the one in database
+    // assert those are the same capability as the one in database
     let data = response.body_string().unwrap();
     let request_capabilities: Vec<Capability> = serde_json::from_str(&data).unwrap();
     for c in Capability::all(&conn).unwrap() {
@@ -47,8 +46,6 @@ fn get_capabilities() {
 
 #[test]
 fn get_roles() {
-    use unanimitylibrary::database::models::roles::RoleCapabilities;
-
     // init
     let client = init::clean_client();
     init::seed();

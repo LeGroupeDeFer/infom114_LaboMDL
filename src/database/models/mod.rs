@@ -4,18 +4,26 @@
 //! So a model struct is the "class" of that object and do respect the table
 //! definition.
 //!
-//! Of course the struct can also implement some functionnalities that will
-//! help the developper to do the basic CRUD operations.
-//! In fact it's kinda of expected that the models behave like this and
-//! implement some database operations.
+//! Every model module is structured like so :
+//!     - `entity.rs` contains the ORM needed struct and this struct MUST
+//!         implement the `Entity` trait.
+//!     - `name.rs` contains a struct that is meant to be used across the
+//!         application
+//!     - `form.rs` (optional) contains all data structs needed
+//!     - a child model module (optional)    
+//!
+//! The prelude module groups all structs that are not "forms"
 
 pub mod prelude;
 pub mod address;
+pub mod capability;
+pub mod comment;
+pub mod post;
 pub mod result;
-pub mod token;
+pub mod role;
+pub mod tag;
 pub mod user;
-pub mod roles;
-pub mod tags;
+pub mod token;
 
 use diesel::MysqlConnection;
 use either::*;

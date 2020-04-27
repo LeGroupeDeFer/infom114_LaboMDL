@@ -1,17 +1,16 @@
 //! # Auth controller
 //!
 //! Every routes concerning the authentication process are grouped here.
-use crate::auth::Auth;
-use crate::conf::State;
-use crate::auth::forms::*;
-use crate::database::models::prelude::*;
+use rocket;
+use rocket_contrib::json::Json;
 
+use crate::guards::*;
+use crate::conf::State;
+use crate::database::models::prelude::*;
 use crate::database::DBConnection;
 use crate::http::responders::{ApiResult, OK};
 use crate::lib::mail;
 
-use rocket;
-use rocket_contrib::json::Json;
 
 /// Collect every routes that this module needs to share with the application
 /// The name `collect` is a project convention

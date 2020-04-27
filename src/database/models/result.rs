@@ -1,135 +1,111 @@
-use std::fmt::{Display as FmtDisplay, Result as FmtResult, Formatter as FmtFormatter};
-use std::result::Result as StdResult;
+pub use std::fmt::{Display as FmtDisplay, Result as FmtResult, Formatter as FmtFormatter};
+pub use std::result::Result as StdResult;
 pub use diesel::result::Error as DieselError;
 pub use std::error::Error as StdError;
 pub use std::option::NoneError;
 pub use bcrypt::BcryptError;
 pub use jsonwebtoken::errors::{Error as JWTError, ErrorKind as JWTErrorKind};
 
-pub type Result<T> = StdResult<T, Error>;
 
-pub type EntityError = entity::Error;
-pub type TokenError = token::Error;
-pub type UserError = user::Error;
-pub type AuthError = auth::Error;
+pub type Result<T> = StdResult<T, Error>;
 
 // ----------------------------------------------------------------------------------- USER ERRORS
 
-pub mod entity {
-    use std::fmt::{Display as FmtDisplay, Result as FmtResult, Formatter as FmtFormatter};
-    use std::error::Error as StdError;
+#[derive(Debug)]
+pub enum EntityError {
+    Duplicate,
+}
 
-    #[derive(Debug)]
-    pub enum Error {
-        Duplicate,
-    }
-
-    impl FmtDisplay for Error {
-        fn fmt(&self, f: &mut FmtFormatter) -> FmtResult {
-            match self {
-                Error::Duplicate => write!(f, "Entity already exist"),
-            }
+impl FmtDisplay for EntityError {
+    fn fmt(&self, f: &mut FmtFormatter) -> FmtResult {
+        match self {
+            EntityError::Duplicate => write!(f, "Entity already exist"),
         }
     }
+}
 
-    impl StdError for Error {
-        fn source(&self) -> Option<&(dyn StdError + 'static)> {
-            None
-        }
+impl StdError for EntityError {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        None
     }
 }
 
 // ---------------------------------------------------------------------------------- TOKEN ERRORS
 
-pub mod token {
-    use std::fmt::{Display as FmtDisplay, Result as FmtResult, Formatter as FmtFormatter};
-    use std::error::Error as StdError;
+#[derive(Debug)]
+pub enum TokenError {
+    Consumed,
+    Expired,
+    Collision, // This error type should not happen often
+    InvalidHash,
+}
 
-    #[derive(Debug)]
-    pub enum Error {
-        Consumed,
-        Expired,
-        Collision, // This error type should not happen often
-        InvalidHash
-    }
-
-    impl FmtDisplay for Error {
-        fn fmt(&self, f: &mut FmtFormatter) -> FmtResult {
-            match self {
-                Error::Consumed => write!(f, "This token has already been consumed"),
-                Error::Expired => write!(f, "This token has expired"),
-                Error::Collision => write!(f, "Token hash collision occured"),
-                Error::InvalidHash => write!(f, "Invalid token hash")
-            }
+impl FmtDisplay for TokenError {
+    fn fmt(&self, f: &mut FmtFormatter) -> FmtResult {
+        match self {
+            TokenError::Consumed => write!(f, "This token has already been consumed"),
+            TokenError::Expired => write!(f, "This token has expired"),
+            TokenError::Collision => write!(f, "Token hash collision occured"),
+            TokenError::InvalidHash => write!(f, "Invalid token hash"),
         }
     }
+}
 
-    impl StdError for Error {
-        fn source(&self) -> Option<&(dyn StdError + 'static)> {
-            None
-        }
+impl StdError for TokenError {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        None
     }
 }
 
 // ----------------------------------------------------------------------------------- USER ERRORS
 
-pub mod user {
-    use std::fmt::{Display as FmtDisplay, Result as FmtResult, Formatter as FmtFormatter};
-    use std::error::Error as StdError;
+#[derive(Debug)]
+pub enum UserError {
+    InvalidEmail,
+}
 
-    #[derive(Debug)]
-    pub enum Error {
-        InvalidEmail,
-    }
-
-    impl FmtDisplay for Error {
-        fn fmt(&self, f: &mut FmtFormatter) -> FmtResult {
-            match self {
-                Error::InvalidEmail => write!(f, "Only UNamur staff/students may register"),
-            }
+impl FmtDisplay for UserError {
+    fn fmt(&self, f: &mut FmtFormatter) -> FmtResult {
+        match self {
+            UserError::InvalidEmail => write!(f, "Only UNamur staff/students may register"),
         }
     }
+}
 
-    impl StdError for Error {
-        fn source(&self) -> Option<&(dyn StdError + 'static)> {
-            None
-        }
+impl StdError for UserError {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        None
     }
 }
 
 // ----------------------------------------------------------------------------------- AUTH ERRORS
 
-pub mod auth {
-    use std::fmt::{Display as FmtDisplay, Result as FmtResult, Formatter as FmtFormatter};
-    use std::error::Error as StdError;
+#[derive(Debug)]
+pub enum AuthError {
+    InvalidIDs,
+    Inactive,
+    AlreadyActivated,
+    InvalidToken,
+    MissingHeader,
+    InvalidHeader,
+}
 
-    #[derive(Debug)]
-    pub enum Error {
-        InvalidIDs,
-        Inactive,
-        AlreadyActivated,
-        InvalidToken,
-        MissingHeader,
-        InvalidHeader
-    }
-
-    impl FmtDisplay for Error {
-        fn fmt(&self, f: &mut FmtFormatter) -> FmtResult {
-            match self {
-                Error::InvalidIDs => write!(f, "Unable to login with this email/password"),
-                Error::Inactive => write!(f, "Account needs activation"),
-                Error::AlreadyActivated => write!(f, "Account was already activated"),
-                Error::InvalidToken => write!(f, "Invalid token"),
-                Error::MissingHeader => write!(f, "Missing header"),
-                Error::InvalidHeader => write!(f, "Invalid header"),
-            }
+impl FmtDisplay for AuthError {
+    fn fmt(&self, f: &mut FmtFormatter) -> FmtResult {
+        match self {
+            AuthError::InvalidIDs => write!(f, "Unable to login with this email/password"),
+            AuthError::Inactive => write!(f, "Account needs activation"),
+            AuthError::AlreadyActivated => write!(f, "Account was already activated"),
+            AuthError::InvalidToken => write!(f, "Invalid token"),
+            AuthError::MissingHeader => write!(f, "Missing header"),
+            AuthError::InvalidHeader => write!(f, "Invalid header"),
         }
     }
+}
 
-    impl StdError for Error {
-        fn source(&self) -> Option<&(dyn StdError + 'static)> {
-            None
-        }
+impl StdError for AuthError {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        None
     }
 }
 
@@ -144,7 +120,7 @@ pub enum Error {
     JWTError(JWTError),
     UserError(UserError),
     EntityError(EntityError),
-    AuthError(AuthError)
+    AuthError(AuthError),
 }
 
 impl FmtDisplay for Error {
@@ -172,7 +148,7 @@ impl StdError for Error {
             Error::UserError(ref e) => Some(e),
             Error::EntityError(ref e) => Some(e),
             Error::AuthError(ref e) => Some(e),
-            _ => None
+            _ => None,
         }
     }
 }

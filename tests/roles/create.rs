@@ -8,11 +8,12 @@
 use rocket::http::ContentType;
 use rocket::http::Status;
 
+use unanimitylibrary::database::models::prelude::*;
 use super::super::init;
+
 
 const ROLE_ROUTE: &'static str = "/api/v1/role/";
 
-use unanimitylibrary::database::models::roles;
 
 /**************************** TESTS ******************************************/
 
@@ -28,14 +29,14 @@ fn create_correct_role() {
 
     let role_name = "mynewrole";
     let role_color = "#ff0000";
-    let role_capabilities = vec!["post:create", "role:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
         "{{
         \"name\": \"{}\",
         \"color\": \"{}\",
-        \"capabilities\": [{}]
+        \"capability\": [{}]
     }}",
         role_name,
         role_color,
@@ -47,7 +48,7 @@ fn create_correct_role() {
     );
 
     // assert no role with this name already exists
-    assert!(roles::role::Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -61,14 +62,14 @@ fn create_correct_role() {
     assert_eq!(response.status(), Status::Ok);
 
     // assert there is a role with this new name in database
-    let role_option = roles::role::Role::by_name(&conn, role_name).unwrap();
+    let role_option = Role::by_name(&conn, role_name).unwrap();
     assert!(role_option.is_some());
     let role = role_option.unwrap();
 
     assert_eq!(role_name, role.name);
     assert_eq!(role_color, role.color);
     // if it panics, the test cannot pass !
-    let role_capa = roles::RoleCapabilities::by_role_name(&conn, &role.name).unwrap().unwrap();
+    let role_capa = Role::by_role_name(&conn, &role.name).unwrap().unwrap();
     assert_eq!(role_capa.capabilities.len(), role_capabilities.len());
     for capability in role_capa.capabilities {
         assert!(role_capabilities.contains(&&capability.name[..]));
@@ -93,7 +94,7 @@ fn create_role_missing_name() {
     let data = format!(
         "{{
         \"color\": \"{}\",
-        \"capabilities\": [{}]
+        \"capability\": [{}]
     }}",
         role_color,
         role_capabilities
@@ -104,7 +105,7 @@ fn create_role_missing_name() {
     );
 
     // assert no role with this name already exists
-    assert!(roles::role::Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -130,14 +131,14 @@ fn create_role_empty_name() {
 
     let role_name = "mynewrole";
     let role_color = "#ff0000";
-    let role_capabilities = vec!["post:create", "role:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
         "{{
         \"name\": \"\",
         \"color\": \"{}\",
-        \"capabilities\": [{}]
+        \"capability\": [{}]
     }}",
         role_color,
         role_capabilities
@@ -148,7 +149,7 @@ fn create_role_empty_name() {
     );
 
     // assert no role with this name already exists
-    assert!(roles::role::Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -173,13 +174,13 @@ fn create_role_missing_color() {
     let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let role_name = "mynewrole";
-    let role_capabilities = vec!["post:create", "role:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
         "{{
         \"name\": \"{}\",
-        \"capabilities\": [{}]
+        \"capability\": [{}]
     }}",
         role_name,
         role_capabilities
@@ -190,7 +191,7 @@ fn create_role_missing_color() {
     );
 
     // assert no role with this name already exists
-    assert!(roles::role::Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -227,7 +228,7 @@ fn create_role_missing_capabilities() {
     );
 
     // assert no role with this name already exists
-    assert!(roles::role::Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -253,14 +254,18 @@ fn create_role_unexistant_capability() {
 
     let role_name = "mynewrole";
     let role_color = "#ff0000";
-    let role_capabilities = vec!["thiscapability:donotexist", "post:create", "role:manage"];
+    let role_capabilities = vec![
+        "thiscapability:donotexist",
+        "user:manage_role",
+        "role:manage",
+    ];
 
     // craft body
     let data = format!(
         "{{
         \"name\": \"{}\",
         \"color\": \"{}\",
-        \"capabilities\": [{}]
+        \"capability\": [{}]
     }}",
         role_name,
         role_color,
@@ -272,7 +277,7 @@ fn create_role_unexistant_capability() {
     );
 
     // assert no role with this name already exists
-    assert!(roles::role::Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -298,14 +303,14 @@ fn create_existing_role() {
 
     let role_name = "admin"; // the admin role is created at the `init::seed()` step
     let role_color = "#ff0000";
-    let role_capabilities = vec!["post:create", "role:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
         "{{
         \"name\": \"{}\",
         \"color\": \"{}\",
-        \"capabilities\": [{}]
+        \"capability\": [{}]
     }}",
         role_name,
         role_color,
@@ -317,7 +322,7 @@ fn create_existing_role() {
     );
 
     // assert a role with this name already exists
-    assert!(roles::role::Role::by_name(&conn, role_name).unwrap().is_some());
+    assert!(Role::by_name(&conn, role_name).unwrap().is_some());
 
     // request
     let request = client
@@ -346,14 +351,14 @@ fn create_correct_role_missing_capability() {
 
     let role_name = "mynewrole";
     let role_color = "#ff0000";
-    let role_capabilities = vec!["post:create", "role:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
         "{{
         \"name\": \"{}\",
         \"color\": \"{}\",
-        \"capabilities\": [{}]
+        \"capability\": [{}]
     }}",
         role_name,
         role_color,
@@ -365,7 +370,7 @@ fn create_correct_role_missing_capability() {
     );
 
     // assert no role with this name already exists
-    assert!(roles::role::Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
