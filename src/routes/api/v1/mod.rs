@@ -19,6 +19,7 @@ pub mod roles;
 pub mod tag;
 pub mod tags;
 pub mod user;
+pub mod users;
 
 /// Collect every routes that this module needs to share with the application
 /// The name `collect` is a project convention
@@ -30,6 +31,7 @@ pub fn collect() -> Vec<rocket::Route> {
     let tag_routes = tag::collect();
     let tags_routes = tags::collect();
     let user_routes = user::collect();
+    let users_routes = users::collect();
     let post_routes = post::collect();
     [
         &routes!(version)[..],
@@ -40,6 +42,7 @@ pub fn collect() -> Vec<rocket::Route> {
         tags_routes.as_ref(),
         tag_routes.as_ref(),
         user_routes.as_ref(),
+        users_routes.as_ref(),
         post_routes.as_ref(),
     ]
     .concat()
@@ -47,7 +50,7 @@ pub fn collect() -> Vec<rocket::Route> {
 
 #[derive(Serialize, Deserialize)]
 pub struct ApiVersion {
-    version: u32
+    version: u32,
 }
 
 #[get("/api/v1")]
