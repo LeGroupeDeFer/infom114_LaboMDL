@@ -1,7 +1,5 @@
 use crate::conf::AppState;
-use crate::database::models::roles::capability::Capability;
-use crate::database::models::user::User;
-use crate::database::DBConnection;
+use crate::database::models::prelude::{CapabilityEntity, UserEntity};
 
 use chrono::{Duration, Utc};
 use diesel::MysqlConnection;
@@ -27,13 +25,13 @@ pub struct Auth {
     pub iat: i64,    // Issued at (timestamp)
     pub exp: i64,    // Expire (timestamp)
     pub sub: u32,    // Subject (id)
-    pub cap: Vec<Capability>,
+    pub cap: Vec<CapabilityEntity>,
 }
 
 /* ----------------------------- Implementation ---------------------------- */
 
 impl Auth {
-    pub fn new(conn: &MysqlConnection, user: &User, length: i64) -> Self {
+    pub fn new(conn: &MysqlConnection, user: &UserEntity, length: i64) -> Self {
         let now = Utc::now().timestamp();
         Auth {
             iss: "Unanimity".to_string(),
@@ -54,11 +52,15 @@ impl Auth {
     ///
     /// If so, the authentication process is completed and an `Auth` object is returned
     /// along with the `User` object
-    pub fn login(conn: &DBConnection, email: &str, password: &str) -> Option<(Auth, User)> {
+    pub fn login(
+        conn: &MysqlConnection,
+        email: &str,
+        password: &str,
+    ) -> Option<(Auth, UserEntity)> {
         let validity = Duration::weeks(2).num_seconds();
-        if let Some(user) = User::by_email(conn, email) {
+        if let Some(user) = UserEntity::by_email(conn, email) {
             if user.verify(password) {
-                return Some((Auth::new(&*conn, &user, validity), user));
+                return Some((Auth::new(&conn, &user, validity), user));
             }
         }
         None
@@ -66,10 +68,10 @@ impl Auth {
 
     /// Check if the authenticated user has the requested capability
     pub fn has_capability(&self, conn: &MysqlConnection, capability: &str) -> bool {
-        if let Some(capa) = Capability::by_name(&conn, &capability) {
+        if let Some(capa) = CapabilityEntity::by_name(&conn, &capability) {
             self.cap.contains(&capa)
         } else {
-            // TODO : panic or log an error since the given capability potientially do not exist
+            // TODO : panic or log an error since the given capability potentially do not exist
             false
         }
     }
@@ -81,7 +83,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for Auth {
     type Error = String;
 
     // from_request :: Request -> Outcome<Auth, Error>
-    fn from_request(request: &'a Request<'r>) -> request::Outcome<Auth, Self::Error> {
+    fn from_request(request: &'a Request<'r>) -> request::Outcome<Self, Self::Error> {
         let state: State<AppState> = request.guard().unwrap();
         match request_auth(request, &state.jwt_secret) {
             Ok(auth) => Outcome::Success(auth),

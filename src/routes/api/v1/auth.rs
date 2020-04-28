@@ -2,17 +2,17 @@
 //!
 //! Every routes concerning the authentication process are grouped here.
 
-use crate::database::models::address::Address;
-use crate::database::models::user::User;
+use crate::database::models::prelude::{AddressEntity, UserEntity};
 use crate::database::{DBConnection, Data};
 use crate::http::responders::api::ApiResponse;
 
-use crate::auth::forms::{ActivationData, LoginData, RegisterData};
-use crate::auth::Auth;
 use crate::conf::State;
+use crate::guards::auth::forms::{ActivationData, LoginData, RegisterData};
+use crate::guards::auth::Auth;
 use crate::lib::mail;
 
-use rocket;
+use std::ops::Deref;
+
 use rocket::http::Status;
 use rocket_contrib::json::Json;
 use std::convert::identity;
@@ -38,7 +38,7 @@ pub fn collect() -> Vec<rocket::Route> {
 #[post("/api/v1/auth/register", format = "json", data = "<data>")]
 pub fn register(conn: DBConnection, data: Json<RegisterData>) -> ApiResponse {
     let registration = data.into_inner();
-    if !User::is_unamur_email(&registration.email) {
+    if !UserEntity::is_unamur_email(&registration.email) {
         return ApiResponse::error(
             Status::Unauthorized,
             "Only UNamur staff/students may register.",
@@ -48,13 +48,14 @@ pub fn register(conn: DBConnection, data: Json<RegisterData>) -> ApiResponse {
     let mut address_id = None;
     if let Some(address) = &registration.address {
         address_id =
-            Some(Address::insert_minima(&conn, &address).either(identity, identity)).map(|a| a.id);
+            Some(AddressEntity::insert_minima(conn.deref(), &address).either(identity, identity))
+                .map(|a| a.id);
     }
 
     let mut new_user = registration.user();
     new_user.address = address_id;
 
-    match User::insert_minima(&conn, &new_user) {
+    match UserEntity::insert_minima(conn.deref(), &new_user) {
         Data::Existing(_) => ApiResponse::error(Status::Conflict, "Account already exist"),
         Data::Inserted(user) => {
             // TODO, put this email in a dedicated function
@@ -70,7 +71,7 @@ pub fn register(conn: DBConnection, data: Json<RegisterData>) -> ApiResponse {
             );
             ApiResponse::new(Status::Ok, json!({}))
         }
-        _ => panic!("unreachable code reched"),
+        _ => panic!("unreachable code reached"),
     }
 }
 
@@ -85,7 +86,7 @@ pub fn register(conn: DBConnection, data: Json<RegisterData>) -> ApiResponse {
 #[post("/api/v1/auth/login", format = "json", data = "<data>")]
 pub fn login(conn: DBConnection, state: State, data: Json<LoginData>) -> ApiResponse {
     let info = data.into_inner();
-    let authentication = Auth::login(&conn, &info.email, &info.password);
+    let authentication = Auth::login(conn.deref(), &info.email, &info.password);
 
     if let Some((auth, user)) = authentication {
         if !user.active {
@@ -120,10 +121,10 @@ pub fn login(conn: DBConnection, state: State, data: Json<LoginData>) -> ApiResp
 #[post("/api/v1/auth/activate", format = "json", data = "<data>")]
 pub fn activate(conn: DBConnection, data: Json<ActivationData>) -> ApiResponse {
     let ActivationData { token, id } = data.into_inner();
-    if let Some(user) = User::from(&conn, &id) {
+    if let Some(user) = UserEntity::by_id(conn.deref(), id) {
         let activation = user.clone(); // FIXME - Remove clone
         if Some(true) == user.token.map(|account_token| account_token == token) && !user.active {
-            activation.activate(&conn);
+            activation.activate(conn.deref());
             return ApiResponse::new(Status::Ok, json!({}));
         }
     }

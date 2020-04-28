@@ -12,7 +12,7 @@ use super::super::init;
 
 const ROLE_ROUTE: &'static str = "/api/role/";
 
-use unanimitylibrary::database::models::roles;
+use unanimitylibrary::database::models::prelude::{Role, RoleEntity, RoleMinima};
 use unanimitylibrary::database::Data;
 
 /**************************** TESTS ******************************************/
@@ -25,24 +25,24 @@ fn update_everything() {
     let conn = init::database_connection();
 
     // first we'll add a role
-    let role_minima = roles::role::RoleMinima {
+    let role_minima = RoleMinima {
         name: "mynewrole".to_string(),
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match roles::role::Role::insert_minima(&conn, &role_minima) {
+    let existing_role = match RoleEntity::insert_minima(&conn, &role_minima) {
         Data::Inserted(r) => r,
         _ => panic!("should be a new role"),
     };
     // assert the role is correctly added in database
-    assert!(roles::role::Role::by_name(&conn, &role_minima.name).is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name).is_some());
 
     // login
     let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let role_name = "myupdatedrole";
     let role_color = "#00ffff";
-    let role_capabilities = vec!["post:create", "role:manage", "user:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
@@ -61,7 +61,7 @@ fn update_everything() {
     );
 
     // assert no role with this name already exists
-    assert!(roles::role::Role::by_name(&conn, role_name).is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).is_none());
 
     // request
     let request = client
@@ -75,14 +75,14 @@ fn update_everything() {
     assert_eq!(response.status(), Status::Ok);
 
     // assert there is a role with this new name in database
-    let role_option = roles::role::Role::by_name(&conn, role_name);
+    let role_option = RoleEntity::by_name(&conn, role_name);
     assert!(role_option.is_some());
     let role = role_option.unwrap();
 
     assert_eq!(role_name, role.name);
     assert_eq!(role_color, role.color);
     // if it panics, the test cannot pass !
-    let role_capa = roles::RoleCapabilities::by_role_name(&conn, &role.name).unwrap();
+    let role_capa = Role::by_role_name(&conn, &role.name).unwrap();
     assert_eq!(role_capa.capabilities.len(), role_capabilities.len());
     for capability in role_capa.capabilities {
         assert!(role_capabilities.contains(&&capability.name[..]));
@@ -97,24 +97,24 @@ fn update_same_name() {
     let conn = init::database_connection();
 
     // first we'll add a role
-    let role_minima = roles::role::RoleMinima {
+    let role_minima = RoleMinima {
         name: "mynewrole".to_string(),
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match roles::role::Role::insert_minima(&conn, &role_minima) {
+    let existing_role = match RoleEntity::insert_minima(&conn, &role_minima) {
         Data::Inserted(r) => r,
         _ => panic!("should be a new role"),
     };
     // assert the role exists
-    assert!(roles::role::Role::by_name(&conn, &role_minima.name).is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name).is_some());
 
     // login
     let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let role_name = "mynewrole";
     let role_color = "#00ffff";
-    let role_capabilities = vec!["post:create", "role:manage", "user:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
@@ -133,7 +133,7 @@ fn update_same_name() {
     );
 
     // assert no role with this name already exists (since its the same name)
-    assert!(roles::role::Role::by_name(&conn, role_name).is_some());
+    assert!(RoleEntity::by_name(&conn, role_name).is_some());
 
     // request
     let request = client
@@ -147,14 +147,14 @@ fn update_same_name() {
     assert_eq!(response.status(), Status::Ok);
 
     // assert there is a role with this new name in database
-    let role_option = roles::role::Role::by_name(&conn, role_name);
+    let role_option = RoleEntity::by_name(&conn, role_name);
     assert!(role_option.is_some());
     let role = role_option.unwrap();
 
     assert_eq!(role_name, role.name);
     assert_eq!(role_color, role.color);
     // if it panics, the test cannot pass !
-    let role_capa = roles::RoleCapabilities::by_role_name(&conn, &role.name).unwrap();
+    let role_capa = Role::by_role_name(&conn, &role.name).unwrap();
     assert_eq!(role_capa.capabilities.len(), role_capabilities.len());
     for capability in role_capa.capabilities {
         assert!(role_capabilities.contains(&&capability.name[..]));
@@ -173,7 +173,7 @@ fn update_missing_id() {
 
     let role_name = "myupdatedrole";
     let role_color = "#00ffff";
-    let role_capabilities = vec!["post:create", "role:manage", "user:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
@@ -192,7 +192,7 @@ fn update_missing_id() {
     );
 
     // assert no role with this name already exists
-    assert!(roles::role::Role::by_name(&conn, role_name).is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).is_none());
 
     // request
     let request = client
@@ -215,7 +215,7 @@ fn update_invalid_role_id() {
 
     // first we'll find an unexisting role id
     let mut fake_id = 11;
-    while let Some(_) = roles::role::Role::by_id(&conn, &fake_id) {
+    while let Some(_) = RoleEntity::by_id(&conn, &fake_id) {
         fake_id += 11;
     }
 
@@ -224,7 +224,7 @@ fn update_invalid_role_id() {
 
     let role_name = "myupdatedrole";
     let role_color = "#00ffff";
-    let role_capabilities = vec!["post:create", "role:manage", "user:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
@@ -243,7 +243,7 @@ fn update_invalid_role_id() {
     );
 
     // assert no role with this name already exists
-    assert!(roles::role::Role::by_name(&conn, role_name).is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).is_none());
 
     // request
     let request = client
@@ -265,23 +265,23 @@ fn update_no_color() {
     let conn = init::database_connection();
 
     // first we'll add a role
-    let role_minima = roles::role::RoleMinima {
+    let role_minima = RoleMinima {
         name: "mynewrole".to_string(),
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match roles::role::Role::insert_minima(&conn, &role_minima) {
+    let existing_role = match RoleEntity::insert_minima(&conn, &role_minima) {
         Data::Inserted(r) => r,
         _ => panic!("should be a new role"),
     };
     // assert the role is correctly added in database
-    assert!(roles::role::Role::by_name(&conn, &role_minima.name).is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name).is_some());
 
     // login
     let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let role_name = "myupdatedrole";
-    let role_capabilities = vec!["post:create", "role:manage", "user:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
@@ -298,7 +298,7 @@ fn update_no_color() {
     );
 
     // assert no role with this name already exists
-    assert!(roles::role::Role::by_name(&conn, role_name).is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).is_none());
 
     // request
     let request = client
@@ -320,23 +320,23 @@ fn update_missing_role_name() {
     let conn = init::database_connection();
 
     // first we'll add a role
-    let role_minima = roles::role::RoleMinima {
+    let role_minima = RoleMinima {
         name: "mynewrole".to_string(),
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match roles::role::Role::insert_minima(&conn, &role_minima) {
+    let existing_role = match RoleEntity::insert_minima(&conn, &role_minima) {
         Data::Inserted(r) => r,
         _ => panic!("should be a new role"),
     };
     // assert the role is correctly added in database
-    assert!(roles::role::Role::by_name(&conn, &role_minima.name).is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name).is_some());
 
     // login
     let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let role_color = "#00ffff";
-    let role_capabilities = vec!["post:create", "role:manage", "user:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
@@ -372,17 +372,17 @@ fn update_missing_role_capabilities() {
     let conn = init::database_connection();
 
     // first we'll add a role
-    let role_minima = roles::role::RoleMinima {
+    let role_minima = RoleMinima {
         name: "mynewrole".to_string(),
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match roles::role::Role::insert_minima(&conn, &role_minima) {
+    let existing_role = match RoleEntity::insert_minima(&conn, &role_minima) {
         Data::Inserted(r) => r,
         _ => panic!("should be a new role"),
     };
     // assert the role is correctly added in database
-    assert!(roles::role::Role::by_name(&conn, &role_minima.name).is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name).is_some());
 
     // login
     let auth_token_header = init::login("admin@unamur.be", "admin");
@@ -400,7 +400,7 @@ fn update_missing_role_capabilities() {
     );
 
     // assert no role with this name already exists
-    assert!(roles::role::Role::by_name(&conn, role_name).is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).is_none());
 
     // request
     let request = client
@@ -422,17 +422,17 @@ fn update_without_correct_capability() {
     let conn = init::database_connection();
 
     // first we'll add a role
-    let role_minima = roles::role::RoleMinima {
+    let role_minima = RoleMinima {
         name: "mynewrole".to_string(),
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match roles::role::Role::insert_minima(&conn, &role_minima) {
+    let existing_role = match RoleEntity::insert_minima(&conn, &role_minima) {
         Data::Inserted(r) => r,
         _ => panic!("should be a new role"),
     };
     // assert the role is correctly added in database
-    assert!(roles::role::Role::by_name(&conn, &role_minima.name).is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name).is_some());
 
     // login
     let (user, passwd) = init::get_user(true);
@@ -440,7 +440,7 @@ fn update_without_correct_capability() {
 
     let role_name = "myupdatedrole";
     let role_color = "#00ffff";
-    let role_capabilities = vec!["post:create", "role:manage", "user:manage"];
+    let role_capabilities = vec!["user:manage_role", "role:manage"];
 
     // craft body
     let data = format!(
@@ -459,7 +459,7 @@ fn update_without_correct_capability() {
     );
 
     // assert no role with this name already exists
-    assert!(roles::role::Role::by_name(&conn, role_name).is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).is_none());
 
     // request
     let request = client

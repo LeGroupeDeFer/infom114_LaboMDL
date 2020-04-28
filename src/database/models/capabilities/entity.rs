@@ -9,7 +9,7 @@
 //! You can also find the list of the available capabilities
 
 use crate::database::schema::capabilities;
-use crate::database::schema::capabilities::dsl::capabilities as table;
+use crate::database::tables::capabilities_table as table;
 use crate::database::Data;
 use diesel::prelude::*;
 use diesel::MysqlConnection;
@@ -17,7 +17,7 @@ use diesel::MysqlConnection;
 /// The `Capability` struct is the usable type for what's in the database
 #[derive(Identifiable, Queryable, Associations, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[table_name = "capabilities"]
-pub struct Capability {
+pub struct CapabilityEntity {
     pub id: u32,
     pub name: String,
 }
@@ -30,7 +30,7 @@ pub struct CapabilityMinima {
     pub name: String,
 }
 
-impl Capability {
+impl CapabilityEntity {
     /// Constructor of `Capability` from a role id
     pub fn by_id(conn: &MysqlConnection, id: &u32) -> Option<Self> {
         table.find(id).first::<Self>(conn).ok()
@@ -70,16 +70,8 @@ impl Capability {
                 .expect("Failed address insertion");
             Data::Inserted(
                 Self::select_minima(conn, minima)
-                    .expect("Address insertion succeeded but could not be retreived"),
+                    .expect("Address insertion succeeded but could not be retrieved"),
             )
         }
     }
 }
-
-/// All the capabilities of the application
-pub const CAPABILITIES: [&str; 4] = [
-    "role:manage",
-    "post:create",
-    "user:manage",
-    "user:manage_role",
-];

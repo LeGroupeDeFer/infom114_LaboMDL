@@ -6,6 +6,8 @@
 //!
 //! Of course those structs are related to some kind of role management
 
+use crate::database::models::capabilities::forms::CapabilityData;
+
 /// The `RoleData` struct is mainly used while checking if the JSON that
 /// the client send is correctly formatted and full.
 #[derive(Serialize, Deserialize, Debug)]
@@ -13,21 +15,4 @@ pub struct RoleData {
     pub name: String,
     pub color: String,
     pub capabilities: Vec<CapabilityData>,
-}
-
-/// The `CapabilityData` struct is only used here above and could be
-/// replaced with the stuct `roles::capability::CapabilityMinima`
-/// its kept that way because here we are independent of what could
-/// happend in the other mod and we do not need to import the namespace
-#[derive(Serialize, Deserialize, Debug)]
-pub struct CapabilityData {
-    pub name: String,
-}
-
-/// The `UserRoleData` struct is used when a role needs to be assigned to
-/// a user, or when the decision to unassign the role from the user is taken.
-#[derive(Serialize, Deserialize, Debug)]
-pub struct UserRoleData {
-    pub user_id: u32,
-    pub role_id: u32,
 }

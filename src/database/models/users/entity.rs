@@ -1,7 +1,6 @@
-use super::address::Address;
-use crate::database::models::roles;
+use crate::database::models::prelude::{Address, CapabilityEntity, RelUserRoleEntity, RoleEntity};
 use crate::database::schema::users;
-use crate::database::schema::users::dsl::users as table;
+use crate::database::tables::users_table as table;
 use crate::database::Data;
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
@@ -13,7 +12,8 @@ use rocket_contrib::json::JsonValue;
 
 #[derive(Identifiable, Queryable, Associations, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[belongs_to(Address, foreign_key = "address")]
-pub struct User {
+#[table_name = "users"]
+pub struct UserEntity {
     pub id: u32,
     pub email: String,
     pub password: String,
@@ -30,11 +30,11 @@ pub struct User {
     pub active: bool,
 }
 
-impl User {
+impl UserEntity {
     /* ------------------------------- STATIC ------------------------------ */
 
-    // from :: (DBConnection, Integer) -> Option<User>
-    pub fn from(conn: &MysqlConnection, id: &u32) -> Option<Self> {
+    /// Get a post by its id
+    pub fn by_id(conn: &MysqlConnection, id: u32) -> Option<Self> {
         table.find(id).first::<Self>(conn).ok()
     }
 
@@ -45,7 +45,7 @@ impl User {
 
     /// Constructor of `User` struct.
     /// Fetch a user in database based on its email field.
-    pub fn by_email(conn: &MysqlConnection, email: &str) -> Option<User> {
+    pub fn by_email(conn: &MysqlConnection, email: &str) -> Option<Self> {
         if let Ok(user) = table.filter(users::email.eq(email)).first(conn) {
             Some(user)
         } else {
@@ -55,7 +55,7 @@ impl User {
 
     // is_available_email :: (MysqlConnection, String) -> Boolean
     pub fn is_available_email(conn: &MysqlConnection, email: &str) -> bool {
-        User::by_email(conn, email).is_none()
+        Self::by_email(conn, email).is_none()
     }
 
     // is_unamur_email :: String -> Boolean
@@ -68,13 +68,13 @@ impl User {
     pub fn select_minima(conn: &MysqlConnection, minima: &UserMinima) -> Option<Self> {
         table
             .filter(users::email.eq(minima.email.clone()))
-            .first::<User>(conn)
+            .first::<Self>(conn)
             .ok()
     }
 
     // insert_minima :: (MysqlConnection, UserMinima) -> Either<User, User>
     pub fn insert_minima(conn: &MysqlConnection, minima: &UserMinima) -> Data<Self> {
-        if let Some(past) = User::select_minima(conn, minima) {
+        if let Some(past) = Self::select_minima(conn, minima) {
             Data::Existing(past)
         } else {
             let mut inserted = minima.clone();
@@ -82,9 +82,9 @@ impl User {
             diesel::insert_into(table)
                 .values(inserted)
                 .execute(conn)
-                .expect("Error inserting address");
+                .expect("Error inserting User");
             Data::Inserted(
-                User::select_minima(conn, minima)
+                Self::select_minima(conn, minima)
                     .expect("User insertion succeeded but could not be retreived"),
             )
         }
@@ -98,6 +98,10 @@ impl User {
             .first::<u32>(conn)
             .ok()
             .unwrap_or(0u32)
+    }
+
+    pub fn by_token(conn: &MysqlConnection, token: &str) -> Option<Self> {
+        table.filter(users::token.eq(token)).first(conn).ok()
     }
 
     /* ------------------------------ DYNAMIC ------------------------------ */
@@ -131,10 +135,10 @@ impl User {
 
     /// Get the roles of a user
     /// Return a vector of `models::roles::role::Role` struct
-    pub fn get_roles(&self, conn: &MysqlConnection) -> Vec<roles::role::Role> {
-        roles::user_role::RelUserRole::get_roles_from_user(&conn, &self)
+    pub fn get_roles(&self, conn: &MysqlConnection) -> Vec<RoleEntity> {
+        RelUserRoleEntity::get_roles_by_user(&conn, &self)
             .iter()
-            .map(|r| roles::role::Role::by_id(&conn, &r.id))
+            .map(|r| RoleEntity::by_id(&conn, &r.id))
             .filter(|r| r.is_some())
             .map(|r| r.unwrap())
             .collect::<_>()
@@ -142,8 +146,8 @@ impl User {
 
     /// Get the capabilities of a user
     /// Return a vector of `models::roles::capability::Capability` struct
-    pub fn get_capabilities(&self, conn: &MysqlConnection) -> Vec<roles::capability::Capability> {
-        let mut tab: Vec<roles::capability::Capability> = Vec::new();
+    pub fn get_capabilities(&self, conn: &MysqlConnection) -> Vec<CapabilityEntity> {
+        let mut tab: Vec<CapabilityEntity> = Vec::new();
         let roles = self.get_roles(&conn);
         for r in roles {
             for c in r.capabilities(&conn) {
@@ -164,7 +168,7 @@ impl User {
     /// # Examples
     ///
     /// ```
-    /// use unanimitylibrary::database::models::user::User;
+    /// use unanimitylibrary::database::models::prelude::UserEntity as User;
     ///
     /// // valid
     /// assert!(User::check_if_email_is_unamur("guillaume.latour@student.unamur.be"));

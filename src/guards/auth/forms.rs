@@ -1,5 +1,4 @@
-use crate::database::models::address::AddressMinima;
-use crate::database::models::user::UserMinima;
+use crate::database::models::prelude::{AddressMinima, UserMinima};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct LoginData {
