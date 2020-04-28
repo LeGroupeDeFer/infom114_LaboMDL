@@ -1,18 +1,19 @@
+@use '../themes'as *;
+
 #comment-editor-guest {
-    padding-bottom: 4px;
+  padding-bottom: 4px;
 }
 
-
 .comment-editor .btn {
-    padding: 0.25rem 0.5rem;
+  padding: 0.25rem 0.5rem;
 }
 
 .comment-editor span {
-    font-size: 1.01rem;
-    color: gray;
-    font-weight: bold;
+  font-size: 1.01rem;
+  color: gray;
+  font-weight: bold;
 }
 
 .comment-editor textarea {
-    border: 1px solid #ced4da !important;
+  border: 1px solid #ced4da !important;
 }

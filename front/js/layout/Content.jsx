@@ -6,7 +6,7 @@ import {
   faInfoCircle,
   faStream,
   faBell,
-  faPencilAlt
+  faPencilAlt,
 } from '@fortawesome/free-solid-svg-icons';
 import Sidebar from './Sidebar';
 import { useAuth } from '../context/authContext';
@@ -24,14 +24,14 @@ const CreatePost = lazy(() => import('../pages/CreatePost'));
 const Post = lazy(() => import('../pages/Post'));
 
 // Content :: Object => Component
-const Content = _ => {
+const Content = (_) => {
   const location = useLocation();
   const { user } = useAuth();
   const locationClass = location.pathname.split('/')[1];
 
   const links = [
     { name: 'stream', path: '/', icon: faStream, title: "Fil d'actualité" },
-    { name: 'about', path: '/about', icon: faInfoCircle, title: 'À propos' }
+    { name: 'about', path: '/about', icon: faInfoCircle, title: 'À propos' },
   ];
   if (user)
     links.push(
@@ -39,20 +39,20 @@ const Content = _ => {
         name: 'profile',
         path: '/profile',
         icon: faUserCircle,
-        title: 'Profil'
+        title: 'Profil',
       },
       {
         name: 'notifications',
         path: '/notifications',
         icon: faBell,
-        title: 'Notifications'
+        title: 'Notifications',
       }
     );
   links.push({
     name: 'settings',
     path: '/settings',
     icon: faCogs,
-    title: 'Paramètres'
+    title: 'Paramètres',
   });
 
   return (
@@ -117,7 +117,7 @@ const Content = _ => {
 };
 
 Content.defaultProps = {
-  links: []
+  links: [],
 };
 
 export default Content;

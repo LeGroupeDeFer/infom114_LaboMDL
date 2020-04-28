@@ -7,6 +7,7 @@ import { useLocation } from 'react-router-dom';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { useAuth } from '../context/authContext';
+import { Link } from 'react-router-dom';
 
 function Sidebar({ open, links }) {
   const location = useLocation();
@@ -17,14 +18,15 @@ function Sidebar({ open, links }) {
   return (
     <nav className="sidebar p-2">
       {/* Logo */}
-      <div className="sidebar-logo">
-        <img
-          src="https://www.freelogodesign.org/file/app/client/thumb/93b27fc8-6653-43ea-a4c4-3f22893f93dd_200x200.png?1585111496240"
-          alt="logo"
-          height="53"
-        />
-      </div>
-
+      <NavLink to="/">
+        <div className="sidebar-logo">
+          <img
+            src="https://www.freelogodesign.org/file/app/client/thumb/93b27fc8-6653-43ea-a4c4-3f22893f93dd_200x200.png?1585111496240"
+            alt="logo"
+            height="53"
+          />
+        </div>
+      </NavLink>
       {/* Menu */}
       <ListGroup variant="flush" className="sidebar-nav w-100 text-center">
         {links.map(({ name, path, icon, title }, i) => (
@@ -54,7 +56,7 @@ function Sidebar({ open, links }) {
 }
 
 Sidebar.defaultProps = {
-  links: []
+  links: [],
 };
 
 export default Sidebar;

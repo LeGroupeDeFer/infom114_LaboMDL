@@ -203,14 +203,16 @@ const Stream = () => {
             <SearchBar handle_change={handleChange} tags={tags} />
           </Col>
           <Col xs={2} sm={1}>
-            <OverlayTrigger
-              placement="bottom"
-              overlay={<Tooltip>Créer un post</Tooltip>}
-            >
-              <Button variant="primary">
-                <FaEdit />
-              </Button>
-            </OverlayTrigger>
+            <Link to="/about">
+              <OverlayTrigger
+                placement="bottom"
+                overlay={<Tooltip>Créer un post</Tooltip>}
+              >
+                <Button variant="primary">
+                  <FaEdit />
+                </Button>
+              </OverlayTrigger>
+            </Link>
           </Col>
         </Row>
         <br />

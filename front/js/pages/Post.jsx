@@ -22,25 +22,25 @@ const Post = () => {
                 id: 3,
                 text: 'Another example comment text.',
                 author: 'user4',
-                children: []
-              }
-            ]
-          }
-        ]
+                children: [],
+              },
+            ],
+          },
+        ],
       },
       {
         id: 4,
         text: 'Example comment here 2.',
         author: 'user5',
-        children: []
-      }
-    ]
+        children: [],
+      },
+    ],
   };
 
   return (
     <>
       <h1>Post {id}</h1>
-      {commentData.comments.map(comment => {
+      {commentData.comments.map((comment) => {
         return <Comment key={comment.id} comment={comment} />;
       })}
     </>
