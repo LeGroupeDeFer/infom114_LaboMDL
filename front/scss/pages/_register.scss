@@ -7,10 +7,6 @@
     padding-bottom: 5rem;
 }
 
-.register {
-    @include layout-secondary;
-}
-
 @include media-breakpoint-down("sm") {
     .form-header {
         font-size: .7em;

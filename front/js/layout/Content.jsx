@@ -9,6 +9,7 @@ import {
   faPencilAlt,
 } from '@fortawesome/free-solid-svg-icons';
 import Sidebar from './Sidebar';
+import layout from '../lib/layout';
 import { useAuth } from '../context/authContext';
 
 const Stream = lazy(() => import('../pages/Stream'));
@@ -22,6 +23,8 @@ const Register = lazy(() => import('../pages/Register'));
 const Activate = lazy(() => import('../pages/Activate'));
 const CreatePost = lazy(() => import('../pages/CreatePost'));
 const Post = lazy(() => import('../pages/Post'));
+const Recover = lazy(() => import('../pages/Recover'));
+const Restore = lazy(() => import('../pages/Restore'));
 
 // Content :: Object => Component
 const Content = (_) => {
@@ -29,37 +32,14 @@ const Content = (_) => {
   const { user } = useAuth();
   const locationClass = location.pathname.split('/')[1];
 
-  const links = [
-    { name: 'stream', path: '/', icon: faStream, title: "Fil d'actualité" },
-    { name: 'about', path: '/about', icon: faInfoCircle, title: 'À propos' },
-  ];
-  if (user)
-    links.push(
-      {
-        name: 'profile',
-        path: '/profile',
-        icon: faUserCircle,
-        title: 'Profil',
-      },
-      {
-        name: 'notifications',
-        path: '/notifications',
-        icon: faBell,
-        title: 'Notifications',
-      }
-    );
-  links.push({
-    name: 'settings',
-    path: '/settings',
-    icon: faCogs,
-    title: 'Paramètres',
-  });
+  const layoutStyle = layout.layout(`/${location.pathname.split('/')[1]}`);
+  const links = layout.links(user);
 
   return (
     <>
       <Sidebar links={links} />
 
-      <div className={`offset ${locationClass}`}>
+      <div className={`offset ${layoutStyle}`}>
         <main role="main">
           <div className="content">
             <Suspense fallback={<h1>Loading...</h1>}>
@@ -106,6 +86,13 @@ const Content = (_) => {
 
                 <Route path="/post/create">
                   <CreatePost />
+                </Route>
+                <Route path="/restore">
+                  <Restore />
+                </Route>
+
+                <Route path="/recover/:id?/:token?">
+                  <Recover />
                 </Route>
               </Switch>
             </Suspense>

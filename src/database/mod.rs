@@ -3,6 +3,7 @@
 //! This module aims to group everything that is related to the database.
 pub mod models;
 pub mod schema;
+pub mod tables;
 
 // ---------------- REQUIRES --------------------------------------------------
 
@@ -41,9 +42,9 @@ pub fn url() -> String {
     dotenv().ok();
 
     // DB settings
+    let db_adapter = "mysql"; // imposed by the use of MysqlConnection type
     let db_host = env_setting("DB_HOST");
     let db_port = env_setting("DB_PORT");
-    let db_adapter = env_setting("DB_ADAPTER");
     let db_user = env_setting("DB_USER");
     let db_password = env_setting("DB_PASSWORD");
     let db_database = env_setting("DB_DATABASE");
@@ -63,4 +64,14 @@ pub fn url() -> String {
 pub fn connection(database_url: &str) -> MysqlConnection {
     MysqlConnection::establish(&database_url)
         .expect(&format!("Error connecting to {}", database_url))
+}
+
+/// Data
+///
+/// This is a sementic wrapper so a caller is able to know the new database
+/// state simply by retreiving data wrapped inside it
+pub enum Data<T> {
+    Existing(T),
+    Inserted(T),
+    Updated(T),
 }

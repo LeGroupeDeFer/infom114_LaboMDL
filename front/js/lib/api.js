@@ -1,6 +1,12 @@
+import { snake, camel } from './index';
+import jwtDecode from 'jwt-decode';
 
 /* istanbul ignore next */
 const root = '/api/v1';
+/* istanbul ignore next */
+const store = window.localStorage;
+/* istanbul ignore next */
+let currentAccessToken;
 
 /**
  * @memberof api
@@ -27,9 +33,9 @@ const root = '/api/v1';
 
 /**
  * Fetch asynchronously the given api resource with the provided config.
- * 
+ *
  * @namespace api
- * 
+ *
  * @param { string } endpoint The api endpoint requested. **Do not** include `/api(/v[0-9])?` in it as it is already included.
  * @param { object } config The request configuration.
  * @param { body }   [config.body=null] The request payload, the request defaults to a `GET` method when this argument is null, to `POST` otherwise.
@@ -37,11 +43,10 @@ const root = '/api/v1';
  */
 function api(endpoint, { body, ...providedConfig } = {}) {
 
-  const token = window.localStorage.getItem('__auth_token__');
   const headers = { 'content-type': 'application/json' };
 
-  if (token)
-    headers['Authorization'] = `Bearer ${token}`;
+  if (currentAccessToken)
+    headers['Authorization'] = `Bearer ${currentAccessToken}`;
 
   const config = {
     method: body ? 'POST' : 'GET',
@@ -53,7 +58,7 @@ function api(endpoint, { body, ...providedConfig } = {}) {
   };
 
   if (body)
-    config.body = JSON.stringify(body);
+    config.body = JSON.stringify(snake(body));
 
   return window
     .fetch(`${root}${endpoint}`, config)
@@ -63,7 +68,7 @@ function api(endpoint, { body, ...providedConfig } = {}) {
     .then(([status, data]) => {
       if (status < 200 || status >= 300)
         throw { ...data, code: status };
-      return data;
+      return camel(data);
     });
 
 }
@@ -72,63 +77,96 @@ function auth(endpoint, config) {
   return api(`/auth${endpoint}`, config);
 }
 
-/**
- * Attempts to login the user `email` with the given `password`. Succeeds with a [User]{@link api.User}, fails with a [Response]{@link api.Response}.
- * @memberof api
- * 
- * @param {string} email 
- * @param {string} password 
- * 
- * @returns {Promise<api.User|api.Response>}
- */
-function login(email, password) {
-  return api.auth('/login', {
-    body: { email, password }
-  }).then(({ user, token }) => {
-    window.localStorage.setItem('__auth_token__', token);
-    return { user, token };
-  });
-}
+Object.assign(auth, {
 
-/**
- * Attempts to logout the currently connected user.
- * @memberof api
- * 
- * @returns {Promise<api.Response>}
- */
-function logout() {
-  const currentToken = window.localStorage.getItem('__auth_token__');
-  if (currentToken !== null)
-    window.localStorage.removeItem('__auth_token__')
-  return Promise.resolve();
-}
+  clear() {
+    currentAccessToken = undefined;
+    store.removeItem('__refresh_token__');
+  },
 
-/**
- * Creates an account with the given information.
- * @memberof api
- * 
- * @param {User} user
- * @returns {Promise<api.Response>}
- */
-function register(user) {
-  if (!user.terms)
-    throw new Error('Must accept terms and conditions before to register');
-  return api.auth('/register', { body: user });
-}
+  /**
+   * Attempts to login the user `email` with the given `password`. Succeeds with a [User]{@link api.User}, fails with a [Response]{@link api.Response}.
+   *
+   * @param {string} email
+   * @param {string} password
+   *
+   * @returns {Promise<api.User|api.Response>}
+   */
+  login(email, password) {
+    return auth('/login', {
+      body: { email, password }
+    }).then(({ user, accessToken, refreshToken }) => {
+      currentAccessToken = accessToken;
+      store.setItem('__refresh_token__', `${email}:${refreshToken}`);
+      return { accessToken, user };
+    });
 
-function activate(id, token) {
-  return api('/auth/activate', { body: { id: Number(id), token } });
-}
+  },
 
-function recover(id, token) {
-  return api('/auth/recover', { body: { id: Number(id), token } });
-}
+  /**
+   * Attempts to logout the currently connected user.
+   *
+   * @returns {Promise<api.Response>}
+   */
+  logout() {
+    const token = store.getItem('__refresh_token__');
+    const [email, refreshToken] = token.split(':');
 
+    if (refreshToken === null)
+      return Promise.reject({ code: 0, reason: 'Not connected' });
 
-api.auth = auth;
-api.login = login;
-api.logout = logout;
-api.register = register;
-api.activate = activate;
+    return auth('/logout', { body: { email, refreshToken } })
+      .then(data => auth.clear() || data);
+  },
+
+  refresh() {
+    const token = store.getItem('__refresh_token__');
+    const [email, refreshToken] = token.split(':');
+
+    return auth('/refresh', { body: { email, refreshToken } })
+      .then(({ accessToken, refreshToken, user }) => {
+        currentAccessToken = accessToken;
+        store.setItem('__refresh_token__', `${email}:${refreshToken}`);
+        return { accessToken, user };
+      })
+      .catch(({ code, reason }) => {
+        if (code == 403) // Token expired
+          auth.clear();
+        return Promise.reject({ code, reason });
+      });
+  },
+
+  /**
+   * Creates an account with the given information.
+   *
+   * @param {User} user
+   * @returns {Promise<api.Response>}
+   */
+  register(user) {
+    if (!user.terms)
+      throw new Error('Must accept terms and conditions before to register');
+    return auth('/register', { body: user });
+  },
+
+  activate(id, token) {
+    return auth('/activate', { body: { id: Number(id), token } });
+  },
+
+  restore(email) {
+    return auth('/restore', { body: { email } });
+  },
+
+  recover(id, password, token) {
+    return auth('/recover', { body: { id: Number(id), password, token } });
+  },
+
+  session() {
+    return store.getItem('__refresh_token__') !== null;
+  },
+
+});
+
+Object.assign(api, { auth /*, ...otherAPIs */ });
+
 
 export default api;

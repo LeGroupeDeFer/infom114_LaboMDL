@@ -2,21 +2,19 @@ import React from 'react';
 import { useAuth } from '../context/authContext';
 import { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
+import { Authenticated } from '../components';
 
 // Not a real component, just logout the user before to redirect to "/".
-function Logout(props) {
-  const { logout, user } = useAuth();
+const Logout = Authenticated(() => {
+  const { logout } = useAuth();
   const history = useHistory();
 
   useEffect(() => {
-    if (user)
-      logout().then(_ => history.replace('/'));
-    else
-      history.replace('/');
-  });
+    logout().then(_ => history.push('/'));
+  }, []);
 
   return <></>;
-}
+});
 
 
 export default Logout;

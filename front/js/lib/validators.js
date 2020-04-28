@@ -18,7 +18,7 @@ export function isUnamurEmail(email) {
 /**
  * Check if the given password matches UNanimity passwords format.
  * @memberof lib.validators
- * 
+ *
  * @param {string} password The password to verify
  * @returns boolean
  */
@@ -29,11 +29,16 @@ export function isValidPassword(password) {
 /**
  * Check if the given number is a natural or can be casted as one.
  * @memberof lib.validators
- * 
- * @param {string | number} number 
+ *
+ * @param {string | number} number
  * @returns boolean
  */
 export function isValidNatural(number) {
     const n = Number(number);
     return n >= 0 && n % 1 === 0;
+}
+
+export function isValidPhoneNumber(phoneNumber) {
+  const fmt = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
+  return fmt.test(phoneNumber);
 }

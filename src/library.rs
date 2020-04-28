@@ -6,7 +6,7 @@
 //! The library crate allow us to perform some documentation tests.
 
 // unstable features used by rocket
-#![feature(proc_macro_hygiene, decl_macro, type_ascription)]
+#![feature(proc_macro_hygiene, decl_macro, type_ascription, try_trait)]
 
 /* --------------------------- Load Extern Crates -------------------------- */
 
@@ -26,28 +26,27 @@ use rocket_contrib::templates::Template;
 
 /* ----------------------------- Local modules ----------------------------- */
 
-pub mod auth;
 pub mod conf;
 pub mod database;
+pub mod guards;
 pub mod http;
-mod lib;
-mod routes;
-pub mod schema;
+pub mod lib;
+pub mod routes;
 
 /* ----------------------------- Ignite Rocket ----------------------------- */
 
 /// Prepare the Rocket app
 pub fn rocket(ignited: Rocket) -> Rocket {
-    ignited
-        .attach(conf::AppState::manage())
-        .attach(database::DBConnection::fairing())
-        .attach(Template::fairing())
-        .register(http::errors::catchers::collect())
-        .mount("/", routes::collect())
+  ignited
+    .attach(conf::AppState::manage())
+    .attach(database::DBConnection::fairing())
+    .attach(Template::fairing())
+    .register(http::errors::catchers::collect())
+    .mount("/", routes::collect())
 }
 
 /// Load the configuration from the `.env` file
 /// Returns a basic `Rocket` object
 pub fn ignite() -> Rocket {
-    rocket::custom(conf::from_env())
+  rocket::custom(conf::from_env())
 }

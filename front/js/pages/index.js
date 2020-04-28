@@ -10,6 +10,7 @@ import Settings from './Settings';
 import Stream from './Stream';
 import Post from './Post';
 import CreatePost from './CreatePost';
+import Restore from './Restore';
 
 export default {
   About,
@@ -20,8 +21,9 @@ export default {
   Notification,
   Profile,
   Register,
+  Restore,
   Settings,
   Stream,
   Post,
-  CreatePost
+  CreatePost,
 };

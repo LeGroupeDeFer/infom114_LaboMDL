@@ -9,7 +9,6 @@
 //! This is needed since the front is managed by React.
 
 mod api;
-use crate::lib::extend_routes;
 use rocket::response::NamedFile;
 use rocket_contrib::templates::Template;
 use std::path::{Path, PathBuf};
@@ -17,12 +16,12 @@ use std::path::{Path, PathBuf};
 pub fn collect() -> Vec<rocket::Route> {
     [
         &routes!(index, dynamic_routing, files, activate, recover)[..],
-        &extend_routes("/api", api::collect())[..],
+        &api::collect()[..],
     ]
     .concat()
 }
 
-const ALLOWED_ROUTES: [&str; 9] = [
+const ALLOWED_ROUTES: [&str; 12] = [
     "profile",
     "notifications",
     "settings",
@@ -30,8 +29,11 @@ const ALLOWED_ROUTES: [&str; 9] = [
     "login",
     "logout",
     "register",
-    "recovery",
+    "recover",
+    "restore",
     "activate",
+    "post",
+    "post/create",
 ];
 
 // /api/<...subpath> => /api/v<version>/<...subpath>

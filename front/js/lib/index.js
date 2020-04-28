@@ -1,5 +1,7 @@
 import { lazy } from 'react';
 
+const identity = x => x;
+
 /* ------------------------------ App consts ------------------------------- */
 
 // bootstrapVariants :: Array<String>
@@ -45,12 +47,39 @@ const printerr = console.error.bind(console);
 /**
  * Debugging utility. Outputs the given value to console.err and returns the value.
  * @memberof lib
- * 
+ *
  * @param { any } thing The traced object.
  * @return { any } The given value
  */
 const trace = x => printerr(x) || x;
 
+let _id = 0;
+function Action(f) {
+  const eventReference = `action${_id++}`;
+
+  // Make a reference to the event source
+  const detail = { source: null };
+
+  // Create a fake event
+  const handle = new CustomEvent(eventReference, { detail });
+
+  // Withing the resulting promise, resolve when the fake event is triggered
+  const promise = new Promise((resolve, _) => {
+    document.addEventListener(
+      eventReference, e => resolve((f||identity)(e.detail.source))
+    );
+  });
+
+  // Give a handle to the caller
+  promise.onEvent = e => {
+    detail.source = e;
+    document.dispatchEvent(handle);
+  };
+
+  return promise;
+}
+
+Action.bind(Action);
 
 /* ------------------------------- DOM utils ------------------------------- */
 
@@ -58,7 +87,7 @@ const trace = x => printerr(x) || x;
 /**
  * Query the document scrollbar width.
  * @memberof lib
- * 
+ *
  * @returns { int } The scrollbar width.
  */
 const scrollbarWidth = () =>
@@ -89,7 +118,7 @@ const queryAll = (selector, parent = document) =>
 /**
  * Returns a copy of the given string with the first letter uppercased, if any.
  * @memberof lib
- * 
+ *
  * @param { string } str The string to capitalize.
  * @returns { string } The capitalized string.
  */
@@ -103,7 +132,7 @@ const capitalize = str => (
 /**
  * Trims the given string to max `length` characters and suffix the result with three ellipsis. If the given string was shorther than `length`, it is returned as is.
  * @memberof lib
- * 
+ *
  * @param { string } text The string to trim.
  * @param { number } [length=200] The max length.
  * @returns { string } The trimmed string
@@ -116,7 +145,7 @@ const preview = (text, length = 200) =>
 // debounce<...Ts> :: (Callable<...Ts>, Integer?) => Callable<...Ts>
 /**
  * @memberof lib
- * 
+ *
  * @param { function } fn
  * @param { int } [ms=250]
  * @returns { function }
@@ -154,24 +183,105 @@ function delay(fn, ms = 250) {
  */
 delay.lazy = (fn, ms = 250) => lazy(() => delay(fn, ms));
 
+/* ------------------------------- Map utils ------------------------------- */
+
+// TODO - Transform tail recursion to stack-based logic, js does not support
+// tail recursion
+function recurse(thing, kfn = identity, vfn = identity) {
+  if ([null, undefined].includes(thing))
+    return thing;
+
+  if (Array.isArray(thing))
+    return thing.map(x => recurse(x, kfn, vfn));
+
+  if (thing.constructor === Object)
+    return Object.keys(thing).reduce(
+      (acc, key) => ({...acc, [kfn(key)]: recurse(thing[key], kfn, vfn) }),
+      {}
+    );
+
+  return vfn(thing);
+}
+
+const _camel = s => s.replace(
+  /([-_][a-z])/ig,
+  (match) => match.toUpperCase().replace('-', '').replace('_', '')
+);
+
+const camel = thing => recurse(thing, _camel);
+
+const _snake = s => s.replace(
+  /\.?([A-Z]+)/g,
+  (_, match) => `_${match.toLowerCase()}`
+).replace(/^_/, '');
+
+const snake = thing => recurse(thing, _snake);
+
+/* ----------------------------- Control flow ------------------------------ */
+
+function iff(condition, value) {
+  return condition ? value : undefined;
+}
+
+function tee(f, g) {
+  return function(...params) {
+    f(...params);
+    return g(...params);
+  }
+}
+
+/* ----------------------------- Object utils ------------------------------ */
+
+function aggregate(o, key, props) {
+  const aggregation = {
+    [key]: props.reduce((a, k) => ({ ...a, [k]: o[k] }), {})
+  };
+  const others = Object.keys(o)
+    .filter(k => !props.includes(k))
+    .reduce((a, k) => ({ ...a, [k]: o[k] }), {});
+
+  return Object.assign({}, others, aggregation);
+}
+
+
+/* -------------------------------- Exports -------------------------------- */
+
+
 import api from './api';
+import layout from './layout';
 import * as dev from './dev';
 import * as validators from './validators';
 
 /** @namespace lib */
 export {
+  identity,
+
   api,
+  layout,
   dev,
   validators,
 
   colorVariants,
   breakpoints,
+
   println,
   printerr,
   trace,
+  Action,
+
   scrollbarWidth,
   capitalize,
   preview,
+
   debounce,
-  delay
+  delay,
+
+  recurse,
+  camel,
+  snake,
+
+  iff,
+  tee,
+
+  aggregate
 };

@@ -7,11 +7,11 @@
 
 use rocket::http::{ContentType, Status};
 
-use unanimitylibrary::database::models::user::User;
+use unanimitylibrary::database::models::prelude::UserEntity;
 
 use super::super::init;
 
-const ROUTE: &'static str = "/api/auth/activate/";
+const ROUTE: &'static str = "/api/v1/auth/activate/";
 
 /**************************** TESTS ******************************************/
 
@@ -27,7 +27,7 @@ fn activation_good_id_good_token() {
     let data = format!(
         "{{\"id\":{}, \"token\":\"{}\"}}",
         user.id,
-        user.token.unwrap()
+        user.activation_token(&connection).unwrap().unwrap()
     );
 
     let request = client.post(ROUTE).header(ContentType::JSON).body(data);
@@ -36,10 +36,11 @@ fn activation_good_id_good_token() {
 
     assert_eq!(response.status(), Status::Ok);
 
-    let activated_user = User::by_email(&connection, &user.email).unwrap();
+    let activated_user = UserEntity::by_email(&connection, &user.email).unwrap().unwrap();
+    let consumed_token = activated_user.activation_token(&connection).unwrap().unwrap();
 
     assert!(activated_user.active);
-    assert!(activated_user.token.is_none());
+    assert!(!consumed_token.valid());
 }
 
 #[test]
@@ -59,19 +60,20 @@ fn activation_wrong_id_good_token() {
     let data = format!(
         "{{\"id\":{}, \"token\":\"{}\"}}",
         fake_id,
-        user.token.unwrap()
+        user.activation_token(&connection).unwrap().unwrap()
     );
 
     let request = client.post(ROUTE).header(ContentType::JSON).body(data);
 
     let response = request.dispatch();
 
-    assert_eq!(response.status(), Status::Forbidden);
+    assert_eq!(response.status(), Status::Unauthorized);
 
-    let not_so_activated_user = User::by_email(&connection, &user.email).unwrap();
+    let not_so_activated_user = UserEntity::by_email(&connection, &user.email).unwrap().unwrap();
+    let not_so_consumed_token = not_so_activated_user.activation_token(&connection).unwrap().unwrap();
 
     assert!(!not_so_activated_user.active);
-    assert!(not_so_activated_user.token.is_some());
+    assert!(!not_so_consumed_token.consumed);
 }
 
 #[test]
@@ -92,12 +94,13 @@ fn activation_good_id_wrong_token() {
 
     let response = request.dispatch();
 
-    assert_eq!(response.status(), Status::Forbidden);
+    assert_eq!(response.status(), Status::Unauthorized);
 
-    let not_so_activated_user = User::by_email(&connection, &user.email).unwrap();
+    let not_so_activated_user = UserEntity::by_email(&connection, &user.email).unwrap().unwrap();
+    let not_so_consumed_token = not_so_activated_user.activation_token(&connection).unwrap().unwrap();
 
     assert!(!not_so_activated_user.active);
-    assert!(not_so_activated_user.token.is_some());
+    assert!(!not_so_consumed_token.consumed);
 }
 
 #[test]
@@ -120,15 +123,15 @@ fn activation_wrong_id_wrong_token() {
     );
 
     let request = client.post(ROUTE).header(ContentType::JSON).body(data);
-
     let response = request.dispatch();
 
-    assert_eq!(response.status(), Status::Forbidden);
+    assert_eq!(response.status(), Status::Unauthorized);
 
-    let not_so_activated_user = User::by_email(&connection, &user.email).unwrap();
+    let not_so_activated_user = UserEntity::by_email(&connection, &user.email).unwrap().unwrap();
+    let not_so_consumed_token =  not_so_activated_user.activation_token(&connection).unwrap().unwrap();
 
     assert!(!not_so_activated_user.active);
-    assert!(not_so_activated_user.token.is_some());
+    assert!(!not_so_consumed_token.consumed);
 }
 
 #[test]
@@ -136,6 +139,7 @@ fn double_activation() {
     let client = init::clean_client();
     let (user, _passwd) = init::get_user(false);
     let connection = init::database_connection();
+    let token = user.activation_token(&connection).unwrap().unwrap();
 
     // assert the user is inactive
     assert!(!user.active);
@@ -143,7 +147,7 @@ fn double_activation() {
     let data = format!(
         "{{\"id\":{}, \"token\":\"{}\"}}",
         user.id,
-        user.token.unwrap()
+        token.hash
     );
 
     let request = client.post(ROUTE).header(ContentType::JSON).body(&data);
@@ -151,17 +155,19 @@ fn double_activation() {
 
     assert_eq!(response.status(), Status::Ok);
 
-    let activated_user = User::by_email(&connection, &user.email).unwrap();
+
+    let activated_user = UserEntity::by_email(&connection, &user.email).unwrap().unwrap();
+    let consumed_token = activated_user.activation_token(&connection).unwrap().unwrap();
 
     assert!(activated_user.active);
-    assert!(activated_user.token.is_none());
+    assert!(consumed_token.consumed);
 
     let request_bis = client.post(ROUTE).header(ContentType::JSON).body(&data);
     let response_bis = request_bis.dispatch();
 
-    assert_eq!(response_bis.status(), Status::Forbidden);
+    assert_eq!(response_bis.status(), Status::Unauthorized);
 
     // the request failed, but the user is still activated
     assert!(activated_user.active);
-    assert!(activated_user.token.is_none());
+    assert!(consumed_token.consumed);
 }

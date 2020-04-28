@@ -1,2 +1,3 @@
-pub mod templates;
 pub mod catchers;
+pub mod templates;
+
