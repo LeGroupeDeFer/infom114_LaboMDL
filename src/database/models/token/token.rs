@@ -8,72 +8,20 @@ use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use std::fmt;
 
-use super::result::*;
-use super::Entity;
+use crate::lib::consequence::*;
+use crate::database::models::prelude::*;
+use crate::database::models::Entity;
+
 use crate::database::schema::tokens;
-use crate::database::schema::tokens::dsl::tokens as table;
+use crate::database::schema::tokens::dsl::{self, tokens as table};
+use super::entity::*;
 
 
-#[derive(Identifiable, Queryable, AsChangeset, Serialize, Deserialize, Clone, Debug)]
-#[table_name = "tokens"]
-#[changeset_options(treat_none_as_null = "true")]
-pub struct Token {
-    pub id: u32,
-    pub hash: String,
-    pub creation_date: NaiveDateTime,
-    pub expiration_date: Option<NaiveDateTime>,
-    pub count: i32,
-    pub consumed: bool,
-}
-
-
-impl Entity for Token {
-
-    type Minima = TokenMinima;
-
-    fn by_id(conn: &MysqlConnection, id: &u32) -> Result<Option<Self>> {
-        table.find(id).first::<Self>(conn).optional().map(Ok)?
-    }
-
-    fn all(conn: &MysqlConnection) -> Result<Vec<Self>> {
-        table.load(conn).map(Ok)?
-    }
-
-    fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Either<Self, Self>> {
-        let past = Self::select(conn, minima)?;
-        if past.is_some() {
-            Ok(Left(past.unwrap()))
-        } else {
-            diesel::insert_into(table).values(minima).execute(conn)?;
-            let future = Self::select(conn, minima)??;
-            Ok(Right(future))
-        }
-    }
-
-    fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Option<Self>> {
-        table
-            .filter(tokens::hash.eq(minima.hash.clone()))
-            .first::<Self>(conn)
-            .optional()
-            .map(Ok)?
-    }
-
-    fn update(&self, conn: &MysqlConnection) -> Result<&Self> {
-        diesel::update(self).set(self).execute(conn).map(|_| self).map(Ok)?
-    }
-
-    fn delete(self, conn: &MysqlConnection) -> Result<()> {
-        use crate::database::schema::tokens::dsl::id;
-        diesel::delete(table.filter(id.eq(self.id))).execute(conn).map(|_| ()).map(Ok)?
-    }
-
-}
-
-impl Token {
+impl TokenEntity {
 
     /* ---------------------------------------- STATIC ---------------------------------------- */
 
-    pub fn by_hash(conn: &MysqlConnection, hash: &str) -> Result<Option<Self>> {
+    pub fn by_hash(conn: &MysqlConnection, hash: &str) -> Consequence<Option<Self>> {
         table
             .filter(tokens::hash.eq(hash))
             .first::<Self>(conn)
@@ -85,7 +33,7 @@ impl Token {
         conn: &MysqlConnection,
         lifetime: Option<&u32>,
         count: Option<&i32>
-    ) -> Result<Self> {
+    ) -> Consequence<Self> {
         let hash: String = thread_rng().sample_iter(&Alphanumeric).take(32).collect();
         let creation_date = Utc::now().naive_local();
         let expiration_date = lifetime
@@ -107,7 +55,7 @@ impl Token {
         })
     }
 
-    pub fn create_default(conn: &MysqlConnection) -> Result<Self> {
+    pub fn create_default(conn: &MysqlConnection) -> Consequence<Self> {
         Self::create(conn, None, None)
     }
 
@@ -118,11 +66,11 @@ impl Token {
         conn: &MysqlConnection,
         lifetime: Option<&u32>,
         count: Option<&i32>,
-    ) -> Result<&Self> {
+    ) -> Consequence<&Self> {
         let hash = thread_rng().sample_iter(&Alphanumeric).take(32).collect();
         let creation_date = Utc::now().naive_local();
 
-        let expiration_date = self.expiration_date.map(|expiration: NaiveDateTime| -> Result<NaiveDateTime> {
+        let expiration_date = self.expiration_date.map(|expiration: NaiveDateTime| -> Consequence<NaiveDateTime> {
             let new_lifetime = lifetime.map(|v| *v as i64).unwrap_or(
                 expiration.timestamp() - self.creation_date.timestamp()
             );
@@ -139,7 +87,7 @@ impl Token {
         Ok(self)
     }
 
-    pub fn revoke(&mut self, conn: &MysqlConnection) -> Result<&Self> {
+    pub fn revoke(&mut self, conn: &MysqlConnection) -> Consequence<&Self> {
         self.count = 0;
         self.consumed = true;
         self.expiration_date = Some(Utc::now().naive_local());
@@ -160,7 +108,7 @@ impl Token {
         }
     }
 
-    pub fn consume(&mut self, conn: &MysqlConnection) -> Result<&Self> {
+    pub fn consume(&mut self, conn: &MysqlConnection) -> Consequence<&Self> {
         if self.consumed {
             Err(Error::from(TokenError::Consumed))
         } else if self.expired() {
@@ -176,7 +124,7 @@ impl Token {
         }
     }
 
-    pub fn verify(&self, hash: &str) -> Result<&Self> {
+    pub fn verify(&self, hash: &str) -> Consequence<&Self> {
         if self.expired() {
             Err(TokenError::Expired)?
         } else if self.consumed {
@@ -188,7 +136,7 @@ impl Token {
         }
     }
 
-    pub fn vouch(&mut self, conn: &MysqlConnection, hash: &str) -> Result<&Self> {
+    pub fn vouch(&mut self, conn: &MysqlConnection, hash: &str) -> Consequence<&Self> {
         self.verify(hash)?;
         self.consume(conn)
     }
@@ -208,25 +156,4 @@ impl Token {
             u32::try_from(expires.timestamp() - now.timestamp()).unwrap()
         }).unwrap_or(u32::max_value())
     }
-}
-
-impl From<Token> for String {
-    fn from(token: Token) -> String {
-        token.hash
-    }
-}
-
-impl fmt::Display for Token {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.hash)
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, Insertable)]
-#[table_name = "tokens"]
-pub struct TokenMinima {
-    pub hash: String,
-    pub creation_date: NaiveDateTime,
-    pub expiration_date: Option<NaiveDateTime>,
-    pub count: i32,
 }

@@ -1,18 +1,18 @@
-use crate::database::models::prelude::{Tag, User};
+use crate::database::models::prelude::{TagEntity, UserEntity};
 use crate::database::schema::tags_subscription;
 use diesel::MysqlConnection;
 
 #[derive(Identifiable, Queryable, Serialize, Associations, Deserialize, Clone, Debug, PartialEq)]
 #[table_name = "tags_subscription"]
-#[belongs_to(User, foreign_key = "user_id")]
-#[belongs_to(Tag, foreign_key = "tag_id")]
-pub struct RelUserTag {
+#[belongs_to(UserEntity, foreign_key = "user_id")]
+#[belongs_to(TagEntity, foreign_key = "tag_id")]
+pub struct RelUserTagEntity {
     pub id: u32,
     pub user_id: u32,
     pub tag_id: u32,
 }
 
-impl RelUserTag {
+impl RelUserTagEntity {
     pub fn all(_conn: &MysqlConnection) -> Vec<Self> {
         unimplemented!()
     }

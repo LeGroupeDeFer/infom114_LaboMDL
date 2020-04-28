@@ -34,7 +34,7 @@ pub fn assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiRe
 
     let user_role_data = data.into_inner();
 
-    let user = match User::by_id(&*conn, &user_role_data.user_id).unwrap() {
+    let user = match UserEntity::by_id(&*conn, &user_role_data.user_id).unwrap() {
         Some(u) => u,
         None => {
             return ApiResponse::error(
@@ -44,7 +44,7 @@ pub fn assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiRe
         }
     };
 
-    let role = match Role::by_id(&*conn, &user_role_data.role_id).unwrap() {
+    let role = match RoleEntity::by_id(&*conn, &user_role_data.role_id).unwrap() {
         Some(u) => u,
         None => {
             return ApiResponse::error(
@@ -54,7 +54,7 @@ pub fn assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiRe
         }
     };
 
-    match RelUserRole::add_role_for_user(&*conn, &user, &role).unwrap() {
+    match RelUserRoleEntity::add_role_for_user(&*conn, &user, &role).unwrap() {
         Data::Inserted(_) => ApiResponse::simple_success(Status::Ok),
         Data::Existing(_) => {
             ApiResponse::error(Status::Conflict, "This user do already have this role")
@@ -80,7 +80,7 @@ pub fn unassign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> Api
 
 
     let rel_user_role =
-        match RelUserRole::get(&*conn, user_role_data.user_id, user_role_data.role_id).unwrap() {
+        match RelUserRoleEntity::get(&*conn, user_role_data.user_id, user_role_data.role_id).unwrap() {
             Some(u_r) => u_r,
             None => {
                 return ApiResponse::error(

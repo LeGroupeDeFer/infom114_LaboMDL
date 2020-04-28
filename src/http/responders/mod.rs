@@ -2,10 +2,10 @@ pub mod api;
 pub mod catcher;
 pub mod error;
 
-use crate::database::models::prelude::Result;
 use rocket_contrib::json::Json;
+use crate::lib::Consequence;
 
-pub type ApiResult<T> = Result<Json<T>>;
+pub type ApiResult<T> = Consequence<Json<T>>;
 
 pub fn OK() -> ApiResult<()> { Ok(Json(())) }
 

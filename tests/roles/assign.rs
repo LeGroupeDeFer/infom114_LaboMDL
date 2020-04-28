@@ -35,7 +35,7 @@ fn assign_role_to_user() {
         name: "newrole".to_string(),
         color: "#f0f0f0".to_string(),
     };
-    let role = match Role::insert_new(&conn, &role_minima) {
+    let role = match RoleEntity::insert_new(&conn, &role_minima) {
         Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
         Ok(r) => r,
         _ => panic!("Internal error")
@@ -55,7 +55,7 @@ fn assign_role_to_user() {
     assert_eq!(response.status(), Status::Ok);
 
     // assert the user is now assigned to the role
-    assert!(RelUserRole::get(&conn, user.id, role.id).unwrap().is_some());
+    assert!(RelUserRoleEntity::get(&conn, user.id, role.id).unwrap().is_some());
 }
 
 #[test]
@@ -78,7 +78,7 @@ fn assign_role_to_user_without_requested_capability() {
         color: "#f0f0f0".to_string(),
     };
 
-    let role = match Role::insert_new(&conn, &role_minima) {
+    let role = match RoleEntity::insert_new(&conn, &role_minima) {
         Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
         Ok(r) => r,
         _ => panic!("Internal error")
@@ -99,7 +99,7 @@ fn assign_role_to_user_without_requested_capability() {
 
     // assert the user do not have the role
 
-    assert!(RelUserRole::get(&conn, user.id, role.id).unwrap().is_none());
+    assert!(RelUserRoleEntity::get(&conn, user.id, role.id).unwrap().is_none());
 }
 
 #[test]
@@ -120,7 +120,7 @@ fn assign_role_to_user_missing_user_id() {
         name: "newrole".to_string(),
         color: "#f0f0f0".to_string(),
     };
-    let role = match Role::insert_new(&conn, &role_minima) {
+    let role = match RoleEntity::insert_new(&conn, &role_minima) {
         Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
         Ok(r) => r,
         _ => panic!("Internal error")
@@ -140,7 +140,7 @@ fn assign_role_to_user_missing_user_id() {
     assert_eq!(response.status(), Status::UnprocessableEntity);
 
     // assert the user is now assigned to the role
-    assert!(RelUserRole::get(&conn, user.id, role.id).unwrap().is_none());
+    assert!(RelUserRoleEntity::get(&conn, user.id, role.id).unwrap().is_none());
 }
 
 #[test]
@@ -161,7 +161,7 @@ fn assign_role_to_user_missing_role_id() {
         name: "newrole".to_string(),
         color: "#f0f0f0".to_string(),
     };
-    let role = match Role::insert_new(&conn, &role_minima) {
+    let role = match RoleEntity::insert_new(&conn, &role_minima) {
         Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
         Ok(r) => r,
         _ => panic!("Internal error")
@@ -181,5 +181,5 @@ fn assign_role_to_user_missing_role_id() {
     assert_eq!(response.status(), Status::UnprocessableEntity);
 
     // assert the user is now assigned to the role
-    assert!(RelUserRole::get(&conn, user.id, role.id).unwrap().is_none());
+    assert!(RelUserRoleEntity::get(&conn, user.id, role.id).unwrap().is_none());
 }

@@ -4,6 +4,7 @@
 
 
 use crate::guards::auth::Auth;
+use crate::lib::consequence::*;
 use crate::database::models::prelude::*;
 use crate::database::DBConnection;
 use crate::http::responders::api::ApiResponse;
@@ -55,7 +56,7 @@ pub fn create(conn: DBConnection, auth: Auth, data: Json<RoleData>) -> ApiRespon
     };
 
     // insert the new role into database
-    let role = match Role::insert_new(&*conn, &new_role) {
+    let role = match RoleEntity::insert_new(&*conn, &new_role) {
         Err(Error::EntityError(EntityError::Duplicate)) =>
             return ApiResponse::error(Status::Conflict, "A role with this name already exist"),
         Ok(r) => r,
@@ -64,8 +65,8 @@ pub fn create(conn: DBConnection, auth: Auth, data: Json<RoleData>) -> ApiRespon
 
     // for this new role, add every given capability
     for capability_data in role_data.capabilities.iter() {
-        if let Some(capability) = Capability::by_name(&*conn, &capability_data.name).unwrap() {
-            RelRoleCapability::add_capability_for_role(&*conn, &role, &capability);
+        if let Some(capability) = CapabilityEntity::by_name(&*conn, &capability_data.name).unwrap() {
+            RelRoleCapabilityEntity::add_capability_for_role(&*conn, &role, &capability);
         } else {
             // TODO : front-end sent an unexisting capability
         }
@@ -91,7 +92,7 @@ pub fn update(conn: DBConnection, auth: Auth, role_id: u32, data: Json<RoleData>
         );
     }
 
-    let opt_role = Role::by_id(&*conn, &role_id).unwrap();
+    let opt_role = RoleEntity::by_id(&*conn, &role_id).unwrap();
     // assert that the role_id given exist
     if opt_role.is_none() {
         return ApiResponse::error(
@@ -103,7 +104,7 @@ pub fn update(conn: DBConnection, auth: Auth, role_id: u32, data: Json<RoleData>
 
     // assert that the new name is not already used
     let role_data = data.into_inner();
-    if let Some(r) = Role::by_name(&*conn, &role_data.name).unwrap() {
+    if let Some(r) = RoleEntity::by_name(&*conn, &role_data.name).unwrap() {
         // we do not want to throw an error if the found role with the same
         // name is the one we are working on
         if r.id != role_id {
@@ -120,8 +121,8 @@ pub fn update(conn: DBConnection, auth: Auth, role_id: u32, data: Json<RoleData>
 
     // add every given capability
     for capability_data in role_data.capabilities.iter() {
-        if let Some(capability) = Capability::by_name(&*conn, &capability_data.name).unwrap() {
-            RelRoleCapability::add_capability_for_role(&*conn, &role, &capability);
+        if let Some(capability) = CapabilityEntity::by_name(&*conn, &capability_data.name).unwrap() {
+            RelRoleCapabilityEntity::add_capability_for_role(&*conn, &role, &capability);
         } else {
             // TODO : front-end sent an unexisting capability
         }
@@ -146,7 +147,7 @@ pub fn delete(conn: DBConnection, auth: Auth, role_id: u32) -> ApiResponse {
         );
     }
 
-    let opt_role = Role::by_id(&*conn, &role_id).unwrap();
+    let opt_role = RoleEntity::by_id(&*conn, &role_id).unwrap();
 
     // assert that the role_id given exist
     if opt_role.is_none() {

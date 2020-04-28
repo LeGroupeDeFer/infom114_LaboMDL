@@ -6,6 +6,7 @@ use rocket_contrib::json::Json;
 
 use crate::guards::*;
 use crate::conf::State;
+use crate::lib::consequence::*;
 use crate::database::models::prelude::*;
 use crate::database::DBConnection;
 use crate::http::responders::{ApiResult, OK};
@@ -36,17 +37,17 @@ fn register(conn: DBConnection, data: Json<RegisterData>) -> ApiResult<()> {
 
     // Get the necessary data
     let address = registration.clone().address.map(|address| {
-        Address::insert_either(&*conn, &address).map(|a| a.id)
+        AddressEntity::insert_either(&*conn, &address).map(|a| a.id)
     }).transpose()?;
 
-    let activation_token = Token::create_default(&*conn)?;
+    let activation_token = TokenEntity::create_default(&*conn)?;
 
     let mut minima = UserMinima::from(&registration.clone());
     minima.address = address;
     minima.activation_token = Some(activation_token.id);
 
     // Create the user
-    let user = User::insert_new(&*conn, &minima)?;
+    let user = UserEntity::insert_new(&*conn, &minima)?;
 
     // Send the activation link to the user
     mail::send(
@@ -103,7 +104,7 @@ fn logout(conn: DBConnection, data: Json<LogoutData>) -> ApiResult<()> {
 fn activate(conn: DBConnection, state: State, data: Json<ActivationData>) -> ApiResult<()> {
     let ActivationData { id, token } = data.into_inner();
 
-    let mut user: User = User::by_id(&*conn, &id)?.map_or_else(
+    let mut user: UserEntity = UserEntity::by_id(&*conn, &id)?.map_or_else(
         || Err(AuthError::InvalidIDs),
         |v| Ok(v)
     )?;
@@ -118,8 +119,8 @@ fn activate(conn: DBConnection, state: State, data: Json<ActivationData>) -> Api
 
     activation_token.vouch(&conn, &token)?;
 
-    let recovery_token = Token::create_default(&*conn)?;
-    let refresh_token = Token::create(
+    let recovery_token = TokenEntity::create_default(&*conn)?;
+    let refresh_token = TokenEntity::create(
         &*conn,
         Some(&state.access_lifetime),
         Some(&-1)
@@ -137,7 +138,7 @@ fn activate(conn: DBConnection, state: State, data: Json<ActivationData>) -> Api
 fn restore(conn: DBConnection, data: Json<RestoreData>) -> ApiResult<()> {
     let email = data.into_inner().email;
 
-    let mut user = User::by_email(&*conn, &email)??;
+    let mut user = UserEntity::by_email(&*conn, &email)??;
     let mut recovery_token = user.recovery_token(&*conn)?.map_or_else(
         || Err(AuthError::InvalidToken),
         |v| Ok(v)
@@ -157,7 +158,7 @@ fn restore(conn: DBConnection, data: Json<RestoreData>) -> ApiResult<()> {
 fn recover(conn: DBConnection, data: Json<RecoveryData>) -> ApiResult<()> {
     let RecoveryData { id, password, token } = data.into_inner();
 
-    let mut user = User::by_id(&*conn, &id)??;
+    let mut user = UserEntity::by_id(&*conn, &id)??;
     let mut recovery_token = user.recovery_token(&*conn)?.map_or_else(
         || Err(AuthError::InvalidToken),
         |v| Ok(v)

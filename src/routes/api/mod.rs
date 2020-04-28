@@ -3,7 +3,9 @@ use regex::Regex;
 use rocket::response::Redirect;
 use rocket;
 
+use crate::lib::consequence::*;
 use crate::database::models::prelude::*;
+
 
 mod v1;
 
@@ -15,7 +17,7 @@ pub fn collect() -> Vec<rocket::Route> {
     .concat()
 }
 
-pub fn api(path: PathBuf) -> Result<Redirect> {
+pub fn api(path: PathBuf) -> Consequence<Redirect> {
     let components: Vec<&str> = path.as_path()
         .components()
         .map(|c| c.as_os_str().to_str().unwrap()) // FIXME - Remove unwrap
@@ -37,13 +39,13 @@ pub fn api(path: PathBuf) -> Result<Redirect> {
 }
 
 #[get("/api/<path..>", format="json", rank=2)]
-pub fn api_get(path: PathBuf) -> Result<Redirect> { api(path) }
+pub fn api_get(path: PathBuf) -> Consequence<Redirect> { api(path) }
 
 #[post("/api/<path..>", format="json", rank=2)]
-pub fn api_post(path: PathBuf) -> Result<Redirect> { api(path) }
+pub fn api_post(path: PathBuf) -> Consequence<Redirect> { api(path) }
 
 #[put("/api/<path..>", format="json", rank=2)]
-pub fn api_put(path: PathBuf) -> Result<Redirect> { api(path) }
+pub fn api_put(path: PathBuf) -> Consequence<Redirect> { api(path) }
 
 #[delete("/api/<path..>", format="json", rank=2)]
-pub fn api_delete(path: PathBuf) -> Result<Redirect> { api(path) }
+pub fn api_delete(path: PathBuf) -> Consequence<Redirect> { api(path) }

@@ -10,15 +10,16 @@ use crate::database::models::Entity;
 use crate::database::schema::users;
 use crate::database::schema::users::dsl::{self, users as table};
 
-use crate::database::models::address::Address;
+use crate::database::models::address::AddressEntity;
+use crate::lib::consequence::*;
 
 
 // We can't have the `activation_token` and `recovery_token` fks in Diesel as these are 2 separate
 // foreign keys for the same table which is not supported by Diesel
 #[derive(Identifiable, Queryable, AsChangeset, Associations, Serialize, Deserialize, Clone, Debug, PartialEq)]
-#[belongs_to(Address, foreign_key = "address")]
+#[belongs_to(AddressEntity, foreign_key = "address")]
 #[table_name = "users"]
-pub struct User {
+pub struct UserEntity {
     pub id: u32,
     pub email: String,
     pub password: String,
@@ -54,19 +55,19 @@ pub struct UserMinima {
 }
 
 
-impl Entity for User {
+impl Entity for UserEntity {
 
     type Minima = UserMinima;
 
-    fn by_id(conn: &MysqlConnection, id: &u32) -> Result<Option<Self>> {
+    fn by_id(conn: &MysqlConnection, id: &u32) -> Consequence<Option<Self>> {
         table.find(id).first::<Self>(conn).optional().map(Ok)?
     }
 
-    fn all(conn: &MysqlConnection) -> Result<Vec<Self>> {
+    fn all(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
         table.load(conn).map(Ok)?
     }
 
-    fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Either<Self, Self>> {
+    fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Either<Self, Self>> {
         if !is_valid_email(&minima.email) {
             return Err(UserError::InvalidEmail)?;
         }
@@ -83,7 +84,7 @@ impl Entity for User {
         }
     }
 
-    fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Option<Self>> {
+    fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Option<Self>> {
         table
             .filter(dsl::email.eq(minima.email.clone()))
             .first::<Self>(conn)
@@ -91,11 +92,11 @@ impl Entity for User {
             .map(Ok)?
     }
 
-    fn update(&self, conn: &MysqlConnection) -> Result<&Self> {
+    fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {
         diesel::update(self).set(self).execute(conn).map(|_| self).map(Ok)?
     }
 
-    fn delete(self, conn: &MysqlConnection) -> Result<()> {
+    fn delete(self, conn: &MysqlConnection) -> Consequence<()> {
         use crate::database::schema::users::dsl::id;
         diesel::delete(table.filter(id.eq(self.id))).execute(conn).map(|_| ()).map(Ok)?
     }

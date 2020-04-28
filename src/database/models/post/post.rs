@@ -4,8 +4,8 @@ use diesel::expression::functions::date_and_time::now;
 use diesel::MysqlConnection;
 
 use crate::database::schema::posts::dsl::{self, posts as table};
-use crate::database::models::post::RelPostVote;
-use super::entity::Post;
+use crate::database::models::post::RelPostVoteEntity;
+use super::entity::PostEntity;
 
 
 //#[derive(Debug, Serialize, Deserialize)]
@@ -26,7 +26,7 @@ use super::entity::Post;
 //}
 
 
-impl Post {
+impl PostEntity {
 
     /// Get `author_id` from a `post_id`
     pub fn get_author_id_by_post_id(conn: &MysqlConnection, post_id: u32) -> Option<u32> {
@@ -46,10 +46,10 @@ impl Post {
         // update rel score
         match vote {
             i if i == -1 || i == 1 => {
-                RelPostVote::update(&conn, self.id, user_id, i as i16);
+                RelPostVoteEntity::update(&conn, self.id, user_id, i as i16);
             }
             0 => {
-                RelPostVote::delete(&conn, self.id, user_id);
+                RelPostVoteEntity::delete(&conn, self.id, user_id);
             }
             _ => panic!("TODO : improve this error management"), // TODO
         }
@@ -66,7 +66,7 @@ impl Post {
     }
 
     pub fn calculate_score(&self, conn: &MysqlConnection) -> i64 {
-        RelPostVote::sum_by_post_id(&conn, self.id)
+        RelPostVoteEntity::sum_by_post_id(&conn, self.id)
     }
 
     pub fn toggle_visibility(&self, conn: &MysqlConnection) {

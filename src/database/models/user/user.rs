@@ -7,22 +7,23 @@ use crate::database::models::Entity;
 
 use crate::database::schema::users::dsl::{self, users as table};
 
-use crate::database::models::capability::Capability;
-use crate::database::models::role::Role;
-use crate::database::models::token::Token;
-use super::roles::RelUserRole;
+use crate::lib::consequence::*;
+use crate::database::models::capability::CapabilityEntity;
+use crate::database::models::role::RoleEntity;
+use crate::database::models::token::TokenEntity;
+use super::roles::RelUserRoleEntity;
 
-use super::entity::User;
+use super::entity::UserEntity;
 use super::forms::PublicUser;
 
 
-impl User {
+impl UserEntity {
 
     /* ---------------------------------------- STATIC ---------------------------------------- */
 
     /// Constructor of `User` struct.
     /// Fetch a user in database based on its email field.
-    pub fn by_email(conn: &MysqlConnection, email: &str) -> Result<Option<Self>> {
+    pub fn by_email(conn: &MysqlConnection, email: &str) -> Consequence<Option<Self>> {
         table
             .filter(dsl::email.eq(email))
             .first::<Self>(conn)
@@ -31,8 +32,8 @@ impl User {
     }
 
     // is_available_email :: (MysqlConnection, String) -> Boolean
-    pub fn is_available_email(conn: &MysqlConnection, email: &str) -> Result<bool> {
-        User::by_email(conn, email) // Result<User>
+    pub fn is_available_email(conn: &MysqlConnection, email: &str) -> Consequence<bool> {
+        UserEntity::by_email(conn, email) // Result<User>
             .map(|_| true)          // Result<bool>
             .or_else(|e| match e {
                 Error::NotFound => Ok(true),
@@ -42,25 +43,25 @@ impl User {
 
     /* --------------------------------------- DYNAMIC ---------------------------------------- */
 
-    pub fn set_password(&mut self, password: &str) -> Result<&Self> {
+    pub fn set_password(&mut self, password: &str) -> Consequence<&Self> {
         let hash = bcrypt::hash(&password, 8)?;
         self.password = hash;
         Ok(self)
     }
 
-    pub fn activation_token(&self, conn: &MysqlConnection) -> Result<Option<Token>> {
-        self.activation_token.and_then(|id| Token::by_id(conn, &id).transpose()).transpose()
+    pub fn activation_token(&self, conn: &MysqlConnection) -> Consequence<Option<TokenEntity>> {
+        self.activation_token.and_then(|id| TokenEntity::by_id(conn, &id).transpose()).transpose()
     }
 
-    pub fn recovery_token(&self, conn: &MysqlConnection) -> Result<Option<Token>> {
-        self.recovery_token.and_then(|id| Token::by_id(conn, &id).transpose()).transpose()
+    pub fn recovery_token(&self, conn: &MysqlConnection) -> Consequence<Option<TokenEntity>> {
+        self.recovery_token.and_then(|id| TokenEntity::by_id(conn, &id).transpose()).transpose()
     }
 
-    pub fn refresh_token(&self, conn: &MysqlConnection) -> Result<Option<Token>> {
-        self.refresh_token.and_then(|id| Token::by_id(conn, &id).transpose()).transpose()
+    pub fn refresh_token(&self, conn: &MysqlConnection) -> Consequence<Option<TokenEntity>> {
+        self.refresh_token.and_then(|id| TokenEntity::by_id(conn, &id).transpose()).transpose()
     }
 
-    pub fn get_last_id(conn: &MysqlConnection) -> Result<u32> {
+    pub fn get_last_id(conn: &MysqlConnection) -> Consequence<u32> {
         let found = table
             .select(dsl::id)
             .order(dsl::id.desc())
@@ -69,20 +70,20 @@ impl User {
         Ok(found.unwrap_or(0u32))
     }
 
-    pub fn verify(&self, password: &str) -> Result<bool> {
+    pub fn verify(&self, password: &str) -> Consequence<bool> {
         bcrypt::verify(password, &self.password).map(Ok)?
     }
 
-    pub fn activate(&mut self, conn: &MysqlConnection) -> Result<&Self> {
+    pub fn activate(&mut self, conn: &MysqlConnection) -> Consequence<&Self> {
         let mut token = self.activation_token(conn)??;
         token.verify(&token.hash)?;
         token.consume(conn)?;
         if self.recovery_token.is_none() {
-            let recovery_token = Token::create_default(&*conn)?;
+            let recovery_token = TokenEntity::create_default(&*conn)?;
             self.recovery_token = Some(recovery_token.id);
         }
         if self.refresh_token.is_none() {
-            let refresh_token = Token::create(
+            let refresh_token = TokenEntity::create(
                 &*conn,
                 Some(&1209600),
                 Some(&-1)
@@ -109,22 +110,22 @@ impl User {
     }
 
     /// Return a vector of `Role` struct
-    pub fn get_roles(&self, conn: &MysqlConnection) -> Result<Vec<Role>> {
-        let raw: Vec<Result<Option<Role>>> =
-            RelUserRole::get_roles_from_user(&conn, &self)?
+    pub fn get_roles(&self, conn: &MysqlConnection) -> Consequence<Vec<RoleEntity>> {
+        let raw: Vec<Consequence<Option<RoleEntity>>> =
+            RelUserRoleEntity::get_roles_from_user(&conn, &self)?
                 .iter()
-                .map(|r| Role::by_id(&conn, &r.id)) // FIXME - N query, ought to be 1 query instead
+                .map(|r| RoleEntity::by_id(&conn, &r.id)) // FIXME - N query, ought to be 1 query instead
                 .collect();
         let roles = raw
-            .into_iter().collect::<Result<Vec<Option<Role>>>>()?
-            .into_iter().collect::<Option<Vec<Role>>>()?;
+            .into_iter().collect::<Consequence<Vec<Option<RoleEntity>>>>()?
+            .into_iter().collect::<Option<Vec<RoleEntity>>>()?;
         Ok(roles)
     }
 
     /// Get the capability of a user
     /// Return a vector of `models::roles::capability::Capability` struct
-    pub fn get_capabilities(&self, conn: &MysqlConnection) -> Result<Vec<Capability>> {
-        let mut tab: Vec<Capability> = Vec::new();
+    pub fn get_capabilities(&self, conn: &MysqlConnection) -> Consequence<Vec<CapabilityEntity>> {
+        let mut tab: Vec<CapabilityEntity> = Vec::new();
         let roles = self.get_roles(&conn)?;
         for r in roles {
             for c in r.capabilities(&conn)? {
@@ -145,15 +146,15 @@ impl User {
     /// # Examples
     ///
     /// ```
-    /// use unanimitylibrary::database::models::prelude::User as User;
+    /// use unanimitylibrary::database::models::prelude::UserEntity as User;
     ///
     /// // valid
-    /// assert!(User::check_if_email_is_unamur("guillaume.latour@student.unamur.be"));
-    /// assert!(User::check_if_email_is_unamur("user.member@unamur.be"));
+    /// assert!(UserEntity::check_if_email_is_unamur("guillaume.latour@student.unamur.be"));
+    /// assert!(UserEntity::check_if_email_is_unamur("user.member@unamur.be"));
     ///
     /// // invalid
-    /// assert!(!User::check_if_email_is_unamur("guillaume.latour.student.unamur.be"));
-    /// assert!(!User::check_if_email_is_unamur("unamur@be"));
+    /// assert!(!UserEntity::check_if_email_is_unamur("guillaume.latour.student.unamur.be"));
+    /// assert!(!UserEntity::check_if_email_is_unamur("unamur@be"));
     /// ```
     pub fn check_if_email_is_unamur(email_address: &str) -> bool {
         let re = Regex::new(r"^(.*)@(student\.)?unamur\.be$").unwrap();

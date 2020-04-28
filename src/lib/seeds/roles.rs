@@ -16,8 +16,8 @@ pub fn seed_roles_and_capabilities(conn: &MysqlConnection) {
     };
 
     // insert those roles in database
-    Role::insert(&conn, &user_minima);
-    let admin_role = Role::insert_either(&conn, &admin_minima).unwrap();
+    RoleEntity::insert(&conn, &user_minima);
+    let admin_role = RoleEntity::insert_either(&conn, &admin_minima).unwrap();
 
     // add every capability in database & link them to the admin role
     for capability_minima in CAPABILITIES
@@ -28,12 +28,12 @@ pub fn seed_roles_and_capabilities(conn: &MysqlConnection) {
         .collect::<Vec<CapabilityMinima>>()
         .iter()
     {
-        let cap = Capability::insert_either(&conn, &capability_minima).unwrap();
-        RelRoleCapability::add_capability_for_role(&conn, &admin_role, &cap);
+        let cap = CapabilityEntity::insert_either(&conn, &capability_minima).unwrap();
+        RelRoleCapabilityEntity::add_capability_for_role(&conn, &admin_role, &cap);
     }
 
     // create the admin user
-    let mut admin_user = User::insert_either(
+    let mut admin_user = UserEntity::insert_either(
         &conn,
         &UserMinima {
             email: "admin@unamur.be".to_string(),
@@ -42,9 +42,9 @@ pub fn seed_roles_and_capabilities(conn: &MysqlConnection) {
             lastname: "doe".to_string(),
             address: None,
             phone: None,
-            activation_token: Some(Token::create_default(&conn).unwrap().id),
-            refresh_token: Some(Token::create_default(&conn).unwrap().id),
-            recovery_token: Some(Token::create_default(&conn).unwrap().id),
+            activation_token: Some(TokenEntity::create_default(&conn).unwrap().id),
+            refresh_token: Some(TokenEntity::create_default(&conn).unwrap().id),
+            recovery_token: Some(TokenEntity::create_default(&conn).unwrap().id),
         },
     ).unwrap();
 
@@ -52,5 +52,5 @@ pub fn seed_roles_and_capabilities(conn: &MysqlConnection) {
     admin_user.activate(&conn);
 
     // assign the role admin to the admin user
-    RelUserRole::add_role_for_user(&conn, &admin_user, &admin_role);
+    RelUserRoleEntity::add_role_for_user(&conn, &admin_user, &admin_role);
 }

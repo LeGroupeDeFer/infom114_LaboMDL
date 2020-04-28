@@ -5,7 +5,7 @@ use diesel::MysqlConnection;
 use either::*;
 
 use crate::database::models::Entity;
-use crate::database::models::result::*;
+use crate::lib::consequence::*;
 
 use crate::database::schema::posts;
 use crate::database::schema::posts::dsl::{self, posts as table};
@@ -13,7 +13,7 @@ use crate::database::schema::posts::dsl::{self, posts as table};
 
 #[derive(Identifiable, Queryable, AsChangeset, Associations, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[table_name = "posts"]
-pub struct Post {
+pub struct PostEntity {
     pub id: u32,
     pub title: String,
     pub content: String,
@@ -38,19 +38,19 @@ pub struct PostMinima {
 }
 
 
-impl Entity for Post {
+impl Entity for PostEntity {
 
     type Minima = PostMinima;
 
-    fn by_id(conn: &MysqlConnection, id: &u32) -> Result<Option<Self>> {
-        table.find(id).first::<Post>(conn).optional().map(Ok)?
+    fn by_id(conn: &MysqlConnection, id: &u32) -> Consequence<Option<Self>> {
+        table.find(id).first::<PostEntity>(conn).optional().map(Ok)?
     }
 
-    fn all(conn: &MysqlConnection) -> Result<Vec<Self>> {
+    fn all(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
         table.load(conn).map(Ok)?
     }
 
-    fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Either<Self, Self>> {
+    fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Either<Self, Self>> {
         let past = Self::select(conn, minima)?;
         if past.is_some() {
             Ok(Left(past.unwrap()))
@@ -63,7 +63,7 @@ impl Entity for Post {
         }
     }
 
-    fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Option<Self>> {
+    fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Option<Self>> {
         table
             .filter(
                 dsl::title
@@ -75,11 +75,11 @@ impl Entity for Post {
             .map(Ok)?
     }
 
-    fn update(&self, conn: &MysqlConnection) -> Result<&Self> {
+    fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {
         diesel::update(self).set(self).execute(conn).map(|_| self).map(Ok)?
     }
 
-    fn delete(self, conn: &MysqlConnection) -> Result<()> {
+    fn delete(self, conn: &MysqlConnection) -> Consequence<()> {
         diesel::update(&self)
             .set(dsl::deleted_at.eq(now))
             .execute(conn)

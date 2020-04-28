@@ -29,13 +29,13 @@ fn delete_correctly() {
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match Role::insert_new(&conn, &role_minima) {
+    let existing_role = match RoleEntity::insert_new(&conn, &role_minima) {
         Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
         Ok(r) => r,
         _ => panic!("Internal error")
     };
     // assert the role is correctly added in database
-    assert!(Role::by_name(&conn, &role_minima.name).unwrap().is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name).unwrap().is_some());
 
     // login
     let auth_token_header = init::login("admin@unamur.be", "admin");
@@ -51,7 +51,7 @@ fn delete_correctly() {
     assert_eq!(response.status(), Status::Ok);
 
     // assert the role has correctly been deleted
-    assert!(Role::by_name(&conn, &role_minima.name).unwrap().is_none());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name).unwrap().is_none());
 }
 
 #[test]
@@ -83,7 +83,7 @@ fn delete_invalid_role_id() {
 
     // first we'll find an unexisting role id
     let mut fake_id = 11;
-    while let Some(_) = Role::by_id(&conn, &fake_id).unwrap() {
+    while let Some(_) = RoleEntity::by_id(&conn, &fake_id).unwrap() {
         fake_id += 11;
     }
 
@@ -114,13 +114,13 @@ fn delete_missing_capability() {
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match Role::insert_new(&conn, &role_minima) {
+    let existing_role = match RoleEntity::insert_new(&conn, &role_minima) {
         Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
         Ok(r) => r,
         _ => panic!("Internal error")
     };
     // assert the role is correctly added in database
-    assert!(Role::by_name(&conn, &role_minima.name).unwrap().is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name).unwrap().is_some());
 
     // login
     let (user, passwd) = init::get_user(true);
@@ -137,5 +137,5 @@ fn delete_missing_capability() {
     assert_eq!(response.status(), Status::Forbidden);
 
     // assert the role has not been deleted
-    assert!(Role::by_name(&conn, &role_minima.name).unwrap().is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name).unwrap().is_some());
 }

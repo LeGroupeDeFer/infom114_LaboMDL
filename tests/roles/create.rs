@@ -48,7 +48,7 @@ fn create_correct_role() {
     );
 
     // assert no role with this name already exists
-    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -62,14 +62,14 @@ fn create_correct_role() {
     assert_eq!(response.status(), Status::Ok);
 
     // assert there is a role with this new name in database
-    let role_option = Role::by_name(&conn, role_name).unwrap();
+    let role_option = RoleEntity::by_name(&conn, role_name).unwrap();
     assert!(role_option.is_some());
     let role = role_option.unwrap();
 
     assert_eq!(role_name, role.name);
     assert_eq!(role_color, role.color);
     // if it panics, the test cannot pass !
-    let role_capa = Role::by_role_name(&conn, &role.name).unwrap().unwrap();
+    let role_capa = RoleEntity::by_role_name(&conn, &role.name).unwrap().unwrap();
     assert_eq!(role_capa.capabilities.len(), role_capabilities.len());
     for capability in role_capa.capabilities {
         assert!(role_capabilities.contains(&&capability.name[..]));
@@ -105,7 +105,7 @@ fn create_role_missing_name() {
     );
 
     // assert no role with this name already exists
-    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -149,7 +149,7 @@ fn create_role_empty_name() {
     );
 
     // assert no role with this name already exists
-    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -191,7 +191,7 @@ fn create_role_missing_color() {
     );
 
     // assert no role with this name already exists
-    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -228,7 +228,7 @@ fn create_role_missing_capabilities() {
     );
 
     // assert no role with this name already exists
-    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -277,7 +277,7 @@ fn create_role_unexistant_capability() {
     );
 
     // assert no role with this name already exists
-    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -322,7 +322,7 @@ fn create_existing_role() {
     );
 
     // assert a role with this name already exists
-    assert!(Role::by_name(&conn, role_name).unwrap().is_some());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_some());
 
     // request
     let request = client
@@ -370,7 +370,7 @@ fn create_correct_role_missing_capability() {
     );
 
     // assert no role with this name already exists
-    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client

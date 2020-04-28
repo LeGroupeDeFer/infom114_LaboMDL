@@ -7,7 +7,7 @@
 
 use rocket::http::{ContentType, Status};
 
-use unanimitylibrary::database::models::prelude::User;
+use unanimitylibrary::database::models::prelude::UserEntity;
 
 use super::super::init;
 
@@ -36,7 +36,7 @@ fn activation_good_id_good_token() {
 
     assert_eq!(response.status(), Status::Ok);
 
-    let activated_user = User::by_email(&connection, &user.email).unwrap().unwrap();
+    let activated_user = UserEntity::by_email(&connection, &user.email).unwrap().unwrap();
     let consumed_token = activated_user.activation_token(&connection).unwrap().unwrap();
 
     assert!(activated_user.active);
@@ -69,7 +69,7 @@ fn activation_wrong_id_good_token() {
 
     assert_eq!(response.status(), Status::Unauthorized);
 
-    let not_so_activated_user = User::by_email(&connection, &user.email).unwrap().unwrap();
+    let not_so_activated_user = UserEntity::by_email(&connection, &user.email).unwrap().unwrap();
     let not_so_consumed_token = not_so_activated_user.activation_token(&connection).unwrap().unwrap();
 
     assert!(!not_so_activated_user.active);
@@ -96,7 +96,7 @@ fn activation_good_id_wrong_token() {
 
     assert_eq!(response.status(), Status::Unauthorized);
 
-    let not_so_activated_user = User::by_email(&connection, &user.email).unwrap().unwrap();
+    let not_so_activated_user = UserEntity::by_email(&connection, &user.email).unwrap().unwrap();
     let not_so_consumed_token = not_so_activated_user.activation_token(&connection).unwrap().unwrap();
 
     assert!(!not_so_activated_user.active);
@@ -127,7 +127,7 @@ fn activation_wrong_id_wrong_token() {
 
     assert_eq!(response.status(), Status::Unauthorized);
 
-    let not_so_activated_user = User::by_email(&connection, &user.email).unwrap().unwrap();
+    let not_so_activated_user = UserEntity::by_email(&connection, &user.email).unwrap().unwrap();
     let not_so_consumed_token =  not_so_activated_user.activation_token(&connection).unwrap().unwrap();
 
     assert!(!not_so_activated_user.active);
@@ -156,7 +156,7 @@ fn double_activation() {
     assert_eq!(response.status(), Status::Ok);
 
 
-    let activated_user = User::by_email(&connection, &user.email).unwrap().unwrap();
+    let activated_user = UserEntity::by_email(&connection, &user.email).unwrap().unwrap();
     let consumed_token = activated_user.activation_token(&connection).unwrap().unwrap();
 
     assert!(activated_user.active);

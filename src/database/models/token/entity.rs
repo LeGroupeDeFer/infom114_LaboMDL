@@ -1,55 +1,56 @@
-//! # Role module
-//!
-//! Here will be grouped every structs that allows the representation of the
-//! table `roles` and what is needed by rust to insert data in it.
-
+extern crate rand;
+use std::convert::TryFrom;
+use chrono::{Duration, NaiveDateTime, Utc};
 use diesel::prelude::*;
 use diesel::MysqlConnection;
 use either::*;
+use rand::distributions::Alphanumeric;
+use rand::{thread_rng, Rng};
+use std::fmt;
 
 use crate::lib::consequence::*;
 use crate::database::models::prelude::*;
 use crate::database::models::Entity;
 
-use crate::database::schema::roles;
-use crate::database::schema::roles::dsl::{self, roles as table};
+use crate::database::schema::tokens;
+use crate::database::schema::tokens::dsl::{self, tokens as table};
 
 
-/// The struct `Role` is the perfect representation of the data that can be hold
-/// in the `roles` table.
-#[derive(Identifiable, Queryable, AsChangeset, Associations, Serialize, Deserialize, Clone, Debug)]
-#[table_name = "roles"]
-pub struct RoleEntity {
+#[derive(Identifiable, Queryable, AsChangeset, Serialize, Deserialize, Clone, Debug)]
+#[table_name = "tokens"]
+#[changeset_options(treat_none_as_null = "true")]
+pub struct TokenEntity {
     pub id: u32,
-    pub name: String,
-    pub color: String,
+    pub hash: String,
+    pub creation_date: NaiveDateTime,
+    pub expiration_date: Option<NaiveDateTime>,
+    pub count: i32,
+    pub consumed: bool,
 }
 
-/// The struct `Roleminima` is needed by rust to perform an insert in the database
-/// because the role id is auto incremented, we do not know it before inserting data.
+
 #[derive(Serialize, Deserialize, Debug, Insertable)]
-#[table_name = "roles"]
-pub struct RoleMinima {
-    pub name: String,
-    pub color: String,
+#[table_name = "tokens"]
+pub struct TokenMinima {
+    pub hash: String,
+    pub creation_date: NaiveDateTime,
+    pub expiration_date: Option<NaiveDateTime>,
+    pub count: i32,
 }
 
-impl Entity for RoleEntity {
 
-    type Minima = RoleMinima;
+impl Entity for TokenEntity {
 
-    /// Constructor based on the role id.
+    type Minima = TokenMinima;
+
     fn by_id(conn: &MysqlConnection, id: &u32) -> Consequence<Option<Self>> {
         table.find(id).first::<Self>(conn).optional().map(Ok)?
     }
 
-    /// Fetch and return all the roles present in database as a `Role` vector
     fn all(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
         table.load(conn).map(Ok)?
     }
 
-    /// Insert data stored in the `RoleMinima` struct given in parameter inside the
-    /// database1
     fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Either<Self, Self>> {
         let past = Self::select(conn, minima)?;
         if past.is_some() {
@@ -63,7 +64,7 @@ impl Entity for RoleEntity {
 
     fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Option<Self>> {
         table
-            .filter(roles::name.eq(minima.name.clone()))
+            .filter(tokens::hash.eq(minima.hash.clone()))
             .first::<Self>(conn)
             .optional()
             .map(Ok)?
@@ -74,9 +75,22 @@ impl Entity for RoleEntity {
     }
 
     fn delete(self, conn: &MysqlConnection) -> Consequence<()> {
-        diesel::delete(table.filter(dsl::id.eq(self.id)))
-            .execute(conn)
-            .map(|_| ())
-            .map(Ok)?
+        use crate::database::schema::tokens::dsl::id;
+        diesel::delete(table.filter(id.eq(self.id))).execute(conn).map(|_| ()).map(Ok)?
+    }
+
+}
+
+
+
+impl From<TokenEntity> for String {
+    fn from(token: TokenEntity) -> String {
+        token.hash
+    }
+}
+
+impl fmt::Display for TokenEntity {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.hash)
     }
 }

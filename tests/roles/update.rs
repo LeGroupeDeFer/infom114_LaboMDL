@@ -29,13 +29,13 @@ fn update_everything() {
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match Role::insert_new(&conn, &role_minima) {
+    let existing_role = match RoleEntity::insert_new(&conn, &role_minima) {
         Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
         Ok(r) => r,
         _ => panic!("Internal error")
     };
     // assert the role is correctly added in database
-    assert!(Role::by_name(&conn, &role_minima.name).unwrap().is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name).unwrap().is_some());
 
     // login
     let auth_token_header = init::login("admin@unamur.be", "admin");
@@ -61,7 +61,7 @@ fn update_everything() {
     );
 
     // assert no role with this name already exists
-    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -75,7 +75,7 @@ fn update_everything() {
     assert_eq!(response.status(), Status::Ok);
 
     // assert there is a role with this new name in database
-    let role_option = Role::by_name(&conn, role_name).unwrap();
+    let role_option = RoleEntity::by_name(&conn, role_name).unwrap();
     assert!(role_option.is_some());
     let role = role_option.unwrap();
 
@@ -103,13 +103,13 @@ fn update_same_name() {
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match Role::insert_new(&conn, &role_minima) {
+    let existing_role = match RoleEntity::insert_new(&conn, &role_minima) {
         Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
         Ok(r) => r,
         _ => panic!("Internal error")
     };
     // assert the role exists
-    assert!(Role::by_name(&conn, &role_minima.name).unwrap().is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name).unwrap().is_some());
 
     // login
     let auth_token_header = init::login("admin@unamur.be", "admin");
@@ -135,7 +135,7 @@ fn update_same_name() {
     );
 
     // assert no role with this name already exists (since its the same name)
-    assert!(Role::by_name(&conn, role_name).unwrap().is_some());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_some());
 
     // request
     let request = client
@@ -149,7 +149,7 @@ fn update_same_name() {
     assert_eq!(response.status(), Status::Ok);
 
     // assert there is a role with this new name in database
-    let role_option = Role::by_name(&conn, role_name).unwrap();
+    let role_option = RoleEntity::by_name(&conn, role_name).unwrap();
     assert!(role_option.is_some());
     let role = role_option.unwrap();
 
@@ -195,7 +195,7 @@ fn update_missing_id() {
     );
 
     // assert no role with this name already exists
-    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -218,7 +218,7 @@ fn update_invalid_role_id() {
 
     // first we'll find an unexisting role id
     let mut fake_id = 11;
-    while let Some(_) = Role::by_id(&conn, &fake_id).unwrap() {
+    while let Some(_) = RoleEntity::by_id(&conn, &fake_id).unwrap() {
         fake_id += 11;
     }
 
@@ -246,7 +246,7 @@ fn update_invalid_role_id() {
     );
 
     // assert no role with this name already exists
-    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -273,13 +273,13 @@ fn update_no_color() {
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match Role::insert_new(&conn, &role_minima) {
+    let existing_role = match RoleEntity::insert_new(&conn, &role_minima) {
         Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
         Ok(r) => r,
         _ => panic!("Internal error")
     };
     // assert the role is correctly added in database
-    assert!(Role::by_name(&conn, &role_minima.name).unwrap().is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name).unwrap().is_some());
 
     // login
     let auth_token_header = init::login("admin@unamur.be", "admin");
@@ -302,7 +302,7 @@ fn update_no_color() {
     );
 
     // assert no role with this name already exists
-    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -329,13 +329,13 @@ fn update_missing_role_name() {
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match Role::insert_new(&conn, &role_minima) {
+    let existing_role = match RoleEntity::insert_new(&conn, &role_minima) {
         Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
         Ok(r) => r,
         _ => panic!("Internal error")
     };
     // assert the role is correctly added in database
-    assert!(Role::by_name(&conn, &role_minima.name).unwrap().is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name).unwrap().is_some());
 
     // login
     let auth_token_header = init::login("admin@unamur.be", "admin");
@@ -382,13 +382,13 @@ fn update_missing_role_capabilities() {
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match Role::insert_new(&conn, &role_minima) {
+    let existing_role = match RoleEntity::insert_new(&conn, &role_minima) {
         Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
         Ok(r) => r,
         _ => panic!("Internal error")
     };
     // assert the role is correctly added in database
-    assert!(Role::by_name(&conn, &role_minima.name).unwrap().is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name).unwrap().is_some());
 
     // login
     let auth_token_header = init::login("admin@unamur.be", "admin");
@@ -406,7 +406,7 @@ fn update_missing_role_capabilities() {
     );
 
     // assert no role with this name already exists
-    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -433,13 +433,13 @@ fn update_without_correct_capability() {
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match Role::insert_new(&conn, &role_minima) {
+    let existing_role = match RoleEntity::insert_new(&conn, &role_minima) {
         Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
         Ok(r) => r,
         _ => panic!("Internal error")
     };
     // assert the role is correctly added in database
-    assert!(Role::by_name(&conn, &role_minima.name).unwrap().is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name).unwrap().is_some());
 
     // login
     let (user, passwd) = init::get_user(true);
@@ -466,7 +466,7 @@ fn update_without_correct_capability() {
     );
 
     // assert no role with this name already exists
-    assert!(Role::by_name(&conn, role_name).unwrap().is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client

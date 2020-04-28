@@ -6,23 +6,23 @@
 use diesel::prelude::*;
 use diesel::MysqlConnection;
 
-use crate::database::models::result::Result;
-use crate::database::models::prelude::{Capability};
+use crate::lib::consequence::Consequence;
+use crate::database::models::prelude::{CapabilityEntity};
 
-use super::entity::Role;
-use crate::database::models::role::RelRoleCapability;
+use super::entity::RoleEntity;
+use crate::database::models::role::RelRoleCapabilityEntity;
 use crate::database::schema::roles::dsl::{self, roles as table};
 use crate::database::schema::roles_capabilities::dsl::{
     self as rc_dsl,
     roles_capabilities as rc_table
 };
 
-impl Role {
+impl RoleEntity {
 
     /* ------------------------------- STATIC ------------------------------ */
 
     /// Get the Capability record that fits the role name given.
-    pub fn by_name(conn: &MysqlConnection, name: &str) -> Result<Option<Self>> {
+    pub fn by_name(conn: &MysqlConnection, name: &str) -> Consequence<Option<Self>> {
         table
             .filter(dsl::name.eq(name))
             .first::<Self>(conn)
@@ -33,8 +33,8 @@ impl Role {
     /* ------------------------------- NOT SO STATIC ------------------------------ */
 
     /// Get the capability linked to a role
-    pub fn capabilities(&self, conn: &MysqlConnection) -> Result<Vec<Capability>> {
-        Ok(RelRoleCapability::get_capabilities_for_role(&conn, &self)?)
+    pub fn capabilities(&self, conn: &MysqlConnection) -> Consequence<Vec<CapabilityEntity>> {
+        Ok(RelRoleCapabilityEntity::get_capabilities_for_role(&conn, &self)?)
     }
 
     /// Clear the database stored capabilities linked to this role
@@ -46,20 +46,20 @@ impl Role {
 
     /// Return all the roles with the corresponding capability as an array
     /// of `RoleCapabilities`
-    pub fn all(conn: &MysqlConnection) -> Result<Vec<Self>> {
-        Ok(Role::all(conn)?
+    pub fn all(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
+        Ok(RoleEntity::all(conn)?
             .iter()
             .map(|r| Self::by_role(conn, &r))
             .collect::<Vec<Self>>())
     }
 
     /// Constructor of `RoleCapabilities` based on a role name
-    pub fn by_role_name(conn: &MysqlConnection, name: &str) -> Result<Option<Self>> {
-        Ok(Role::by_name(conn, name)?.map(|r| Self::by_role(conn, &r)))
+    pub fn by_role_name(conn: &MysqlConnection, name: &str) -> Consequence<Option<Self>> {
+        Ok(RoleEntity::by_name(conn, name)?.map(|r| Self::by_role(conn, &r)))
     }
 
     /// Constructor of `RoleCapabilities` based on a `role::Role` object
-    fn by_role(conn: &MysqlConnection, r: &Role) -> Self {
+    pub fn by_role(conn: &MysqlConnection, r: &RoleEntity) -> Self {
         Self {
             id: r.id,
             name: r.name.to_string(),

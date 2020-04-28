@@ -1,7 +1,3 @@
-use crate::conf::AppState;
-use crate::database::models::prelude::*;
-use crate::database::models::prelude::{Capability, User};
-
 use diesel::MysqlConnection;
 use chrono::Utc;
 use jsonwebtoken::{self as jwt, Validation};
@@ -10,6 +6,11 @@ use rocket::http::Status;
 use rocket::request::{self, FromRequest, Request};
 use rocket::{Outcome, State};
 use serde::{Deserialize, Serialize};
+
+use crate::conf::AppState;
+use crate::database::models::prelude::*;
+use crate::lib::consequence::*;
+
 
 pub const TOKEN_PREFIX: &'static str = "Bearer ";
 
@@ -26,14 +27,14 @@ pub struct Auth {
     pub iat: i64,    // Issued at (timestamp)
     pub exp: i64,    // Expire (timestamp)
     pub sub: u32,    // Subject (id)
-    pub cap: Vec<Capability>,
+    pub cap: Vec<CapabilityEntity>,
 }
 
 /* ----------------------------- Implementation ---------------------------- */
 
 impl Auth {
 
-    pub fn create(conn: &MysqlConnection, user: &User, lifetime: &u32) -> Result<Self> {
+    pub fn create(conn: &MysqlConnection, user: &UserEntity, lifetime: &u32) -> Consequence<Self> {
         let now = Utc::now().timestamp();
         Ok(Auth {
             iss: "Unanimity".to_string(),
@@ -44,7 +45,7 @@ impl Auth {
         })
     }
 
-    pub fn token(&self, secret: &[u8]) -> Result<String> {
+    pub fn token(&self, secret: &[u8]) -> Consequence<String> {
         jwt::encode(&jwt::Header::default(), self, secret).map(Ok)?
     }
 
@@ -62,10 +63,10 @@ impl Auth {
         password: &str,
         access_lifetime: &u32,
         refresh_lifetime: &u32
-    ) -> Result<(Auth, Token, User)> {
+    ) -> Consequence<(Auth, TokenEntity, UserEntity)> {
 
         // Get user info
-        let mut user = User::by_email(conn, email)??;
+        let mut user = UserEntity::by_email(conn, email)??;
         let verification = user.verify(password)?;
 
         // Check the info
@@ -91,8 +92,8 @@ impl Auth {
         hash: &str,
         access_lifetime: &u32,
         refresh_lifetime: &u32
-    ) -> Result<(Auth, Token, User)> {
-        let user = User::by_email(conn, email)??;
+    ) -> Consequence<(Auth, TokenEntity, UserEntity)> {
+        let user = UserEntity::by_email(conn, email)??;
         let mut token = user.refresh_token(conn)??;
 
         token.verify(hash)?;
@@ -103,8 +104,8 @@ impl Auth {
         Ok((Auth::create(conn, &user, access_lifetime)?, token, user))
     }
 
-    pub fn logout(conn: &MysqlConnection, email: &str, hash: &str) -> Result<()> {
-        let user = User::by_email(conn, email)??;
+    pub fn logout(conn: &MysqlConnection, email: &str, hash: &str) -> Consequence<()> {
+        let user = UserEntity::by_email(conn, email)??;
         let mut token = user.refresh_token(conn)?.map_or_else(
             || Err(AuthError::InvalidToken),
             |v| Ok(v)
@@ -117,7 +118,7 @@ impl Auth {
 
     /// Check if the authenticated user has the requested capability
     pub fn has_capability(&self, conn: &MysqlConnection, capability: &str) -> bool {
-        if let Some(capa) = Capability::by_name(&conn, &capability).unwrap() {
+        if let Some(capa) = CapabilityEntity::by_name(&conn, &capability).unwrap() {
             self.cap.contains(&capa)
         } else {
             // TODO : panic or log an error since the given capability potentially do not exist
@@ -143,20 +144,20 @@ impl<'a, 'r> FromRequest<'a, 'r> for Auth {
 
 /* ------------------------------- Functions ------------------------------- */
 
-fn token_decode(token: &str, secret: &[u8]) -> Result<Auth> {
+fn token_decode(token: &str, secret: &[u8]) -> Consequence<Auth> {
     jwt::decode(token, secret, &Validation::default())
         .map(|data| data.claims)
         .map(Ok)?
 }
 
-fn token_header(header: &str) -> Result<&str> {
+fn token_header(header: &str) -> Consequence<&str> {
     if !header.starts_with(TOKEN_PREFIX) {
         Err(AuthError::InvalidHeader)?;
     }
     Ok(&header[TOKEN_PREFIX.len()..])
 }
 
-fn request_auth(request: &Request, secret: &[u8]) -> Result<Auth> {
+fn request_auth(request: &Request, secret: &[u8]) -> Consequence<Auth> {
     if let Some(header) = request.headers().get_one("authorization") {
         let token = token_header(header);
         token.and_then(|token| token_decode(token, secret))

@@ -62,7 +62,7 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiRespon
 #[get("/api/posts")]
 fn get_all_posts(conn: DBConnection) -> ApiResponse {
     // TODO: Get all related comments
-    ApiResponse::new(Status::Ok, json!(Post::all(&conn).unwrap()))
+    ApiResponse::new(Status::Ok, json!(PostEntity::all(&conn).unwrap()))
 }
 
 /// Get post by id (unauth)

@@ -13,7 +13,7 @@ use diesel::MysqlConnection;
 use either::*;
 
 use crate::database::models::Entity;
-use crate::database::models::result::Result;
+use crate::lib::consequence::Consequence;
 use crate::database::schema::capabilities;
 use crate::database::schema::capabilities::dsl::{self, capabilities as table};
 
@@ -21,7 +21,7 @@ use crate::database::schema::capabilities::dsl::{self, capabilities as table};
 /// The `Capability` struct is the usable type for what's in the database
 #[derive(Identifiable, Queryable, AsChangeset, Associations, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[table_name = "capabilities"]
-pub struct Capability {
+pub struct CapabilityEntity {
     pub id: u32,
     pub name: String,
 }
@@ -36,17 +36,17 @@ pub struct CapabilityMinima {
 }
 
 
-impl Entity for Capability {
+impl Entity for CapabilityEntity {
 
     type Minima = CapabilityMinima;
 
     /// Constructor of `Capability` from a role id
-    fn by_id(conn: &MysqlConnection, id: &u32) ->Result<Option<Self>> {
+    fn by_id(conn: &MysqlConnection, id: &u32) -> Consequence<Option<Self>> {
         table.find(id).first::<Self>(conn).optional().map(Ok)?
     }
 
     /// Get all the capability in the database in an array of `Capability`
-    fn all(conn: &MysqlConnection) -> Result<Vec<Self>> {
+    fn all(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
         table.load(conn).map(Ok)?
     }
 
@@ -56,7 +56,7 @@ impl Entity for Capability {
     /// mechanism for the application because the capability will be
     /// hardcoded to check each and every feature's access, so it makes no
     /// sense if one can add capability dynamically.
-    fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Either<Self, Self>> {
+    fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Either<Self, Self>> {
         let past = Self::select(conn, minima)?;
         if past.is_some() {
             Ok(Left(past.unwrap()))
@@ -68,7 +68,7 @@ impl Entity for Capability {
     }
 
     /// Constructor of `Capability` that fits the `minima` given.
-    fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Option<Self>> {
+    fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Option<Self>> {
         table
             .filter(dsl::name.eq(&minima.name))
             .first::<Self>(conn)
@@ -76,11 +76,11 @@ impl Entity for Capability {
             .map(Ok)?
     }
 
-    fn update(&self, conn: &MysqlConnection) -> Result<&Self> {
+    fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {
         diesel::update(self).set(self).execute(conn).map(|_| self).map(Ok)?
     }
 
-    fn delete(self, conn: &MysqlConnection) -> Result<()> {
+    fn delete(self, conn: &MysqlConnection) -> Consequence<()> {
         diesel::delete(table.filter(dsl::id.eq(self.id)))
             .execute(conn)
             .map(|_| ())

@@ -1,7 +1,9 @@
+use crate::lib::consequence::*;
 use crate::database::models::prelude::*;
 
+
 // This function is a mock of a true mailing function while a better API is developped
-pub fn send(to: &User, message: &str, cc: &Vec<&User>) -> Result<bool>{
+pub fn send(to: &UserEntity, message: &str, cc: &Vec<&UserEntity>) -> Consequence<bool>{
     let others = cc
         .iter()
         .fold(String::new(), |acc, user| format!("{} {}", &acc, &user.email));

@@ -38,8 +38,8 @@ fn get_capabilities() {
 
     // assert those are the same capability as the one in database
     let data = response.body_string().unwrap();
-    let request_capabilities: Vec<Capability> = serde_json::from_str(&data).unwrap();
-    for c in Capability::all(&conn).unwrap() {
+    let request_capabilities: Vec<CapabilityEntity> = serde_json::from_str(&data).unwrap();
+    for c in CapabilityEntity::all(&conn).unwrap() {
         assert!(request_capabilities.contains(&c));
     }
 }

@@ -19,7 +19,6 @@ pub mod address;
 pub mod capability;
 pub mod comment;
 pub mod post;
-pub mod result;
 pub mod role;
 pub mod tag;
 pub mod user;
@@ -27,22 +26,24 @@ pub mod token;
 
 use diesel::MysqlConnection;
 use either::*;
-use result::*;
+
+use crate::lib::consequence::*;
+
 
 pub trait Entity: Sized {
 
     type Minima;
 
-    fn by_id(conn: &MysqlConnection, id: &u32) -> Result<Option<Self>>;
+    fn by_id(conn: &MysqlConnection, id: &u32) -> Consequence<Option<Self>>;
 
-    fn all(conn: &MysqlConnection) -> Result<Vec<Self>>;
+    fn all(conn: &MysqlConnection) -> Consequence<Vec<Self>>;
 
-    fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Either<Self, Self>>;
+    fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Either<Self, Self>>;
 
-    fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Option<Self>>;
+    fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Option<Self>>;
 
     // Synonym to add but errors if the record was already present
-    fn insert_new(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Self> {
+    fn insert_new(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Self> {
         let addition = Self::insert(conn, minima)?;
         if let Right(record) = addition {
             Ok(record)
@@ -52,12 +53,12 @@ pub trait Entity: Sized {
     }
 
     // Synonym to add but does not differentiate whether the input was present or not
-    fn insert_either(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Self> {
+    fn insert_either(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Self> {
         Self::insert(conn, minima).map(|insertion| insertion.into_inner())
     }
 
-    fn update(&self, conn: &MysqlConnection) -> Result<&Self>;
+    fn update(&self, conn: &MysqlConnection) -> Consequence<&Self>;
 
-    fn delete(self, conn: &MysqlConnection) -> Result<()>;
+    fn delete(self, conn: &MysqlConnection) -> Consequence<()>;
 
 }

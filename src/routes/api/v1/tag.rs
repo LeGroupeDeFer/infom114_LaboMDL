@@ -17,7 +17,7 @@ pub fn post_tag(conn: DBConnection, _auth: Auth, tag_label: String) -> ApiRespon
     let new_tag = TagMinima { label: tag_label };
 
     //TODO Update the json containing the specifications, it is not correct (see error 400)
-    Tag::insert_new(&*conn, &new_tag).unwrap();
+    TagEntity::insert_new(&*conn, &new_tag).unwrap();
     return ApiResponse::new(Status::Ok, json!({}));
 }
 
@@ -40,7 +40,7 @@ pub fn update_tag(
 
     let tag_data = data.into_inner();
 
-    if let Some(mut tag) = Tag::by_label(conn.deref(), &tag_label) {
+    if let Some(mut tag) = TagEntity::by_label(conn.deref(), &tag_label) {
         tag.label = tag_data.label;
         tag.update(&*conn).unwrap();
         ApiResponse::new(Status::Ok, json!({}))
@@ -64,7 +64,7 @@ pub fn delete_tag(conn: DBConnection, auth: Auth, tag_label: String) -> ApiRespo
         );
     }
 
-    if let Some(tag) = Tag::by_label(conn.deref(), &tag_label) {
+    if let Some(tag) = TagEntity::by_label(conn.deref(), &tag_label) {
         tag.delete(conn.deref());
         ApiResponse::new(Status::Ok, json!({}))
     } else {

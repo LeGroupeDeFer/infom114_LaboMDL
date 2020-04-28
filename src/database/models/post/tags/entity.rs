@@ -1,45 +1,45 @@
 use diesel::MysqlConnection;
 use either::*;
 
-use crate::database::models::prelude::{Entity, Post, Tag};
+use crate::database::models::prelude::{Entity, PostEntity, TagEntity};
 use crate::database::schema::posts_tags;
-use crate::database::models::result::*;
+use crate::lib::consequence::*;
 
 
 #[derive(Queryable, Serialize, Associations, Deserialize, Clone, Debug, PartialEq)]
 #[table_name = "posts_tags"]
-#[belongs_to(Post, foreign_key = "post_id")]
-#[belongs_to(Tag, foreign_key = "tag_id")]
-pub struct RelPostTag {
+#[belongs_to(PostEntity, foreign_key = "post_id")]
+#[belongs_to(TagEntity, foreign_key = "tag_id")]
+pub struct RelPostTagEntity {
     post_id: u32,
     tag_id: u32,
 }
 
 
-impl Entity for RelPostTag {
+impl Entity for RelPostTagEntity {
     type Minima = ();
 
-    fn by_id(conn: &MysqlConnection, id: &u32) -> Result<Option<Self>> {
+    fn by_id(conn: &MysqlConnection, id: &u32) -> Consequence<Option<Self>> {
         unimplemented!()
     }
 
-    fn all(conn: &MysqlConnection) -> Result<Vec<Self>> {
+    fn all(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
         unimplemented!()
     }
 
-    fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Either<Self, Self>> {
+    fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Either<Self, Self>> {
         unimplemented!()
     }
 
-    fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Result<Option<Self>> {
+    fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Option<Self>> {
         unimplemented!()
     }
 
-    fn update(&self, conn: &MysqlConnection) -> Result<&Self> {
+    fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {
         unimplemented!()
     }
 
-    fn delete(self, conn: &MysqlConnection) -> Result<()> {
+    fn delete(self, conn: &MysqlConnection) -> Consequence<()> {
         unimplemented!()
     }
 }

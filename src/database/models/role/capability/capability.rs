@@ -3,24 +3,25 @@
 //! In this module we'll go through the models needed to fetch an insert data
 //! inside the `roles_capabilities` table
 
-use crate::database::models::prelude::{Result, Capability, Role};
+use crate::database::models::prelude::{CapabilityEntity, RoleEntity};
 use crate::database::schema::{capabilities, roles_capabilities};
 use crate::database::tables::{capabilities_table, roles_capabilities_table};
 use crate::database::Data;
 
 use diesel::prelude::*;
 use diesel::MysqlConnection;
-use super::entity::{RelRoleCapability, RelRoleCapabilityMinima};
+use super::entity::{RelRoleCapabilityEntity, RelRoleCapabilityMinima};
+use crate::lib::Consequence;
 
 
-impl RelRoleCapability {
+impl RelRoleCapabilityEntity {
 
     /// Helper to get the capability of a role
-    pub fn get_capabilities_for_role(conn: &MysqlConnection, role: &Role) -> Result<Vec<Capability>> {
+    pub fn get_capabilities_for_role(conn: &MysqlConnection, role: &RoleEntity) -> Consequence<Vec<CapabilityEntity>> {
         let capabilities_id = Self::belonging_to(role).select(roles_capabilities::capability_id);
         capabilities_table
             .filter(capabilities::id.eq_any(capabilities_id))
-            .load::<Capability>(conn)
+            .load::<CapabilityEntity>(conn)
             .map(Ok)?
     }
 
@@ -39,8 +40,8 @@ impl RelRoleCapability {
     /// Insert a new row inside the `roles_capabilities` table.
     pub fn add_capability_for_role(
         conn: &MysqlConnection,
-        role: &Role,
-        capability: &Capability,
+        role: &RoleEntity,
+        capability: &CapabilityEntity,
     ) -> Data<Self> {
         match Self::get(&conn, role.id, capability.id) {
             Some(e) => Data::Existing(e),

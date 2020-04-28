@@ -4,7 +4,7 @@ use rocket::request::Request;
 use rocket::http::{Status, ContentType};
 use std::io::Cursor;
 
-use crate::database::models::result::{
+use crate::lib::consequence::{
     Error, EntityError, UserError, TokenError, JWTErrorKind, AuthError
 };
 

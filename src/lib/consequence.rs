@@ -7,7 +7,7 @@ pub use bcrypt::BcryptError;
 pub use jsonwebtoken::errors::{Error as JWTError, ErrorKind as JWTErrorKind};
 
 
-pub type Result<T> = StdResult<T, Error>;
+pub type Consequence<T> = StdResult<T, Error>;
 
 // ----------------------------------------------------------------------------------- USER ERRORS
 

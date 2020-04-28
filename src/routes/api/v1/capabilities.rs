@@ -23,5 +23,5 @@ pub fn collect() -> Vec<Route> {
 /// All the capability stored in database are responded into the json format
 #[get("/api/v1/capability")]
 pub fn get(conn: DBConnection, _auth: Auth) -> ApiResponse {
-    ApiResponse::new(Status::Ok, json!(Capability::all(&conn).unwrap()))
+    ApiResponse::new(Status::Ok, json!(CapabilityEntity::all(&conn).unwrap()))
 }

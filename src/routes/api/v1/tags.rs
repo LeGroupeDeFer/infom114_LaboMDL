@@ -12,7 +12,7 @@ pub fn collect() -> Vec<rocket::Route> {
 pub fn get(conn: DBConnection) -> ApiResponse {
     //TODO Update the json containing the specification of this api
     //TODO Do not send id information
-    let tags = Tag::all(&*conn).unwrap();
+    let tags = TagEntity::all(&*conn).unwrap();
     ApiResponse::new(
         Status::Ok,
         json!({

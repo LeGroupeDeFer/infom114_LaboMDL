@@ -1,15 +1,16 @@
-use crate::database::models::prelude::{Entity, Token, Result};
-use crate::database::models::user::{User, UserMinima};
+use crate::database::models::prelude::*;
 use diesel::MysqlConnection;
+use crate::lib::Consequence;
 
-pub fn seed_mock_users(conn: &MysqlConnection) -> Result<()>{
+
+pub fn seed_mock_users(conn: &MysqlConnection) -> Consequence<()>{
     let x = 5;
 
     // lets create x users
     for i in 1..=x {
-        let activation_token = Token::create_default(conn)?;
-        let recovery_token = Token::create_default(conn)?;
-        let refresh_token = Token::create_default(conn)?;
+        let activation_token = TokenEntity::create_default(conn)?;
+        let recovery_token = TokenEntity::create_default(conn)?;
+        let refresh_token = TokenEntity::create_default(conn)?;
 
         let u = UserMinima {
             email: format!("firstname.lastname.{}@student.unamur.be", i),
@@ -23,7 +24,7 @@ pub fn seed_mock_users(conn: &MysqlConnection) -> Result<()>{
             refresh_token: Some(refresh_token.id)
         };
 
-        let mut user = User::insert_new(&conn, &u).unwrap();
+        let mut user = UserEntity::insert_new(&conn, &u).unwrap();
 
         user.activate(&conn);
     }

@@ -29,7 +29,7 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
         };
         // TODO : link post to tag
 
-        Post::insert(&conn, &post_minima);
+        PostEntity::insert(&conn, &post_minima);
     }
 
     // create 1 deleted post
@@ -38,7 +38,7 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
         title: "Deleted post".to_string(),
         content: lib::lorem_ipsum(),
     };
-    let deleted_post = Post::insert_new(&conn, &deleted_minima).unwrap();
+    let deleted_post = PostEntity::insert_new(&conn, &deleted_minima).unwrap();
     deleted_post.delete(&conn);
 
     // create 1 hidden post
@@ -47,7 +47,7 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
         title: "Hidden post".to_string(),
         content: lib::lorem_ipsum(),
     };
-    let hidden_post = Post::insert_new(&conn, &hidden_minima).unwrap();
+    let hidden_post = PostEntity::insert_new(&conn, &hidden_minima).unwrap();
     hidden_post.toggle_visibility(&conn);
 
     // create 1 locked post
@@ -56,16 +56,16 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
         title: "Locked post".to_string(),
         content: lib::lorem_ipsum(),
     };
-    let locked_post = Post::insert_new(&conn, &locked_minima).unwrap();
+    let locked_post = PostEntity::insert_new(&conn, &locked_minima).unwrap();
     locked_post.toggle_lock(&conn);
 }
 
 /// Create an author for the posts
-fn init_author(conn: &MysqlConnection) -> User {
+fn init_author(conn: &MysqlConnection) -> UserEntity {
     let email = "alan.smithee@unamur.be";
-    let activation_token = Token::create_default(conn).unwrap();
-    let recovery_token = Token::create_default(conn).unwrap();
-    let refresh_token = Token::create_default(conn).unwrap();
+    let activation_token = TokenEntity::create_default(conn).unwrap();
+    let recovery_token = TokenEntity::create_default(conn).unwrap();
+    let refresh_token = TokenEntity::create_default(conn).unwrap();
     let u = UserMinima {
         email: email.to_string(),
         password: "author".to_string(),
@@ -77,18 +77,18 @@ fn init_author(conn: &MysqlConnection) -> User {
         recovery_token: Some(recovery_token.id),
         refresh_token: Some(refresh_token.id),
     };
-    let mut user = User::insert_either(&conn, &u).unwrap();
+    let mut user = UserEntity::insert_either(&conn, &u).unwrap();
     if !user.active {
         user.activate(&conn);
     }
-    User::by_email(&conn, email).unwrap().unwrap()
+    UserEntity::by_email(&conn, email).unwrap().unwrap()
 }
 
 fn init_tags(conn: &MysqlConnection) {
     let labels = vec!["even", "odd"];
 
     for label in labels {
-        Tag::insert(
+        TagEntity::insert(
             &conn,
             &TagMinima {
                 label: label.to_string(),

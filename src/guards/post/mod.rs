@@ -7,15 +7,15 @@ use rocket::{request::Outcome, Request};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PostGuard {
-    entity: Post,
+    entity: PostEntity,
 }
 
 impl PostGuard {
-    pub fn post(&self) -> &Post {
+    pub fn post(&self) -> &PostEntity {
         &self.entity
     }
 
-    pub fn post_clone(self) -> Post {
+    pub fn post_clone(self) -> PostEntity {
         self.entity
     }
 }
@@ -49,7 +49,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for PostGuard {
             }
         }
         match post_id {
-            Some(id) => match Post::by_id(&conn, &id).unwrap() {
+            Some(id) => match PostEntity::by_id(&conn, &id).unwrap() {
                 Some(post) => Outcome::Success(Self { entity: post }),
                 None => Outcome::Failure((Status::BadRequest, "Invalid ID supplied".to_string())),
             },

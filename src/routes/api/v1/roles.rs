@@ -19,5 +19,5 @@ pub fn collect() -> Vec<rocket::Route> {
 /// Return every roles (and their capability) in database as a json array.
 #[get("/api/v1/roles")]
 pub fn get(conn: DBConnection, _auth: Auth) -> ApiResponse {
-    ApiResponse::new(Status::Ok, json!(RelRoleCapability::all(&conn).unwrap()))
+    ApiResponse::new(Status::Ok, json!(RelRoleCapabilityEntity::all(&conn).unwrap()))
 }
