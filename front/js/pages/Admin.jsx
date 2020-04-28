@@ -8,7 +8,6 @@ import Row from 'react-bootstrap/Row';
 import Tag from '../components/Tags/Tag';
 import AddForm from '../components/Tags/AddForm';
 
-
 import api from '../lib/api';
 import 'regenerator-runtime';
 
@@ -135,6 +134,8 @@ const TagsPage = () => {
 
   return (
       <div>
+      <AddForm addTag={addTag}/>
+      <hr/>
       {tags.length 
       ? tags.map((tag, i) => {
         return (
@@ -145,7 +146,6 @@ const TagsPage = () => {
       })
       : <h1>No tags</h1>
       }
-      <AddForm addTag={addTag}/>
       </div>
   );
 }

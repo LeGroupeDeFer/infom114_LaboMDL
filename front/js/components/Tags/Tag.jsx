@@ -2,15 +2,18 @@ import React, { useState } from "react";
 
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
+import Card from 'react-bootstrap/Card';
 
 const Tag = ({label, deleteTag}) => {
   
     return (
       <>
-      <p>{label}</p>
-      <Button className="btn btn-danger ml-3" value={label} onClick={deleteTag}>
-        Supprimer
-      </Button>
+      <Card style={{ width: '100vw' }}>
+        <Card.Body>
+          <Card.Title>{label}</Card.Title>
+          <Button variant="danger" value={label} onClick={deleteTag}>Delete</Button>
+        </Card.Body>
+      </Card>
       </>
     );
   }

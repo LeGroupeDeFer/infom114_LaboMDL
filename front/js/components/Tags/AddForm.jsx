@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 
-
+import InputGroup from 'react-bootstrap/InputGroup';
+import Button from 'react-bootstrap/Button';
+import FormControl from 'react-bootstrap/FormControl';
+import Form from 'react-bootstrap/Form';
 // Add tag Form
 const AddForm = ({addTag}) => {
 
@@ -19,13 +22,22 @@ const AddForm = ({addTag}) => {
     }
   
     return (
-      <form onSubmit={handleSubmit}>
-      <label>
-        Entrer un tag :
-        <input className="input" type="text" value={value} onChange={e => setValue(e.target.value)} />
-      </label>
-      <input type="submit" value="Envoyer" />
-    </form>
+
+      <InputGroup>
+      <FormControl
+        placeholder="Ajouter un tag"
+        value={value} 
+        onChange={e => setValue(e.target.value)}
+      />
+
+      <Form onSubmit={handleSubmit}>
+        <InputGroup.Append>
+          <Button variant="outline-secondary" type="submit">Ajouter</Button>
+        </InputGroup.Append>
+      </Form>
+
+      </ InputGroup>
+
     );
   } 
 
