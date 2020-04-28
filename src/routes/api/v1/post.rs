@@ -1,5 +1,5 @@
 use crate::database::models::posts::forms::{ChangeVote, NewPost};
-use crate::database::models::prelude::{PostEntity, PostMinima};
+use crate::database::models::prelude::{Post, PostMinima};
 use crate::database::schema::posts;
 use crate::database::DBConnection;
 use crate::http::responders::api::ApiResponse;
@@ -60,10 +60,22 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiRespon
     }
 }
 
-#[get("/api/posts")]
+#[get("/api/posts", rank = 1)]
+fn get_all_posts_authenticated(conn: DBConnection, auth: Auth) -> ApiResponse {
+    let posts = Post::all(conn.deref())
+        .drain(..)
+        .map(|mut p| {
+            Post::set_user_vote(&mut p, conn.deref(), auth.sub);
+            p
+        })
+        .collect::<Vec<Post>>();
+    ApiResponse::new(Status::Ok, json!(posts))
+}
+
+#[get("/api/posts", rank = 2)]
 fn get_all_posts(conn: DBConnection) -> ApiResponse {
     // TODO: Get all related comments
-    ApiResponse::new(Status::Ok, json!(PostEntity::all(&conn)))
+    ApiResponse::new(Status::Ok, json!(Post::all(&conn)))
 }
 
 /// Get post by id (unauth)

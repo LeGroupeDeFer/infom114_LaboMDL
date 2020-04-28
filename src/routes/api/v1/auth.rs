@@ -121,7 +121,7 @@ pub fn login(conn: DBConnection, state: State, data: Json<LoginData>) -> ApiResp
 #[post("/api/v1/auth/activate", format = "json", data = "<data>")]
 pub fn activate(conn: DBConnection, data: Json<ActivationData>) -> ApiResponse {
     let ActivationData { token, id } = data.into_inner();
-    if let Some(user) = UserEntity::by_id(conn.deref(), &id) {
+    if let Some(user) = UserEntity::by_id(conn.deref(), id) {
         let activation = user.clone(); // FIXME - Remove clone
         if Some(true) == user.token.map(|account_token| account_token == token) && !user.active {
             activation.activate(conn.deref());

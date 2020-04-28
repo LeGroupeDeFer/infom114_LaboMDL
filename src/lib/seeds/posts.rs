@@ -1,4 +1,6 @@
-use crate::database::models::prelude::{PostEntity, PostMinima, UserEntity, UserMinima};
+use crate::database::models::prelude::{
+    PostEntity, PostMinima, TagEntity, TagMinima, UserEntity, UserMinima,
+};
 use crate::database::Data;
 use crate::lib;
 use diesel::MysqlConnection;
@@ -14,7 +16,6 @@ use diesel::MysqlConnection;
 ///     * one hidden post (title = `Hidden post`)
 ///     * one locked post (title = `Locked post`)
 ///
-/// TODO : implement tag (even & odd)
 pub fn seed_test_posts(conn: &MysqlConnection) {
     let author = init_author(&conn);
     init_tags(&conn);
@@ -28,9 +29,17 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
             title: format!("Valid post #{}", i),
             content: lib::lorem_ipsum(),
         };
-        // TODO : link post to tag
 
-        PostEntity::insert_minima(&conn, &post_minima);
+        let p = match PostEntity::insert_minima(&conn, &post_minima) {
+            Data::Inserted(post) => post,
+            _ => panic!("supposed to be new post"),
+        };
+
+        if i % 2 == 0 {
+            p.add_tag(&conn, TagEntity::by_label(&conn, "even").unwrap().id);
+        } else {
+            p.add_tag(&conn, TagEntity::by_label(&conn, "odd").unwrap().id);
+        }
     }
 
     // create 1 deleted post
@@ -93,8 +102,6 @@ fn init_author(conn: &MysqlConnection) -> UserEntity {
 }
 
 fn init_tags(conn: &MysqlConnection) {
-    use crate::database::models::prelude::{TagEntity, TagMinima};
-
     let labels = vec!["even", "odd"];
 
     for label in labels {

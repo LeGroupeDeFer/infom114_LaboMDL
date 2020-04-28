@@ -35,7 +35,7 @@ pub struct RelUserRoleMinima {
 
 impl RelUserRoleEntity {
     /// Helper to get the roles of a user
-    pub fn get_roles_from_user(conn: &MysqlConnection, user: &UserEntity) -> Vec<RoleEntity> {
+    pub fn get_roles_by_user(conn: &MysqlConnection, user: &UserEntity) -> Vec<RoleEntity> {
         let roles_id = Self::belonging_to(user).select(users_roles::role_id);
         roles_table
             .filter(roles::id.eq_any(roles_id))

@@ -3,6 +3,7 @@ use std::ops::Deref;
 use crate::database::schema::posts;
 use crate::database::Data;
 
+use crate::database::models::posts::tags::entity::RelPostTagEntity;
 use crate::database::models::posts::votes::entity::RelPostVoteEntity;
 use chrono::NaiveDateTime;
 use diesel::expression::functions::date_and_time::now;
@@ -37,7 +38,10 @@ pub struct PostMinima {
 impl PostEntity {
     /// Get all posts
     pub fn all(conn: &MysqlConnection) -> Vec<Self> {
-        posts::table.load::<Self>(conn.deref()).unwrap_or(vec![])
+        posts::table
+            .filter(posts::deleted_at.eq(None as Option<NaiveDateTime>))
+            .load::<Self>(conn.deref())
+            .unwrap_or(vec![])
     }
 
     /// Get a post by its id
@@ -125,6 +129,10 @@ impl PostEntity {
             .execute(conn)
             .unwrap();
         Some(new_score)
+    }
+
+    pub fn add_tag(&self, conn: &MysqlConnection, tag_id: u32) -> bool {
+        RelPostTagEntity::insert(conn, self.id, tag_id)
     }
 
     pub fn calculate_score(&self, conn: &MysqlConnection) -> i64 {

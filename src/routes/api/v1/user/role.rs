@@ -34,7 +34,7 @@ pub fn assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiRe
 
     let user_role_data = data.into_inner();
 
-    let user = match UserEntity::by_id(conn.deref(), &user_role_data.user_id) {
+    let user = match UserEntity::by_id(conn.deref(), user_role_data.user_id) {
         Some(u) => u,
         None => {
             return ApiResponse::error(

@@ -41,4 +41,15 @@ impl CommentEntity {
     pub fn all(conn: &MysqlConnection) -> Vec<Self> {
         table.load(conn).unwrap_or(vec![])
     }
+
+    pub fn by_id(conn: &MysqlConnection, id: u32) -> Option<Self> {
+        table.find(id).first(conn).ok()
+    }
+
+    pub fn by_post(conn: &MysqlConnection, post_id: u32) -> Vec<Self> {
+        table
+            .filter(comments::post_id.eq(post_id))
+            .load(conn)
+            .unwrap_or(vec![])
+    }
 }

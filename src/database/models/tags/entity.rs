@@ -26,6 +26,10 @@ impl TagEntity {
         table.load(conn).unwrap_or(vec![])
     }
 
+    pub fn by_id(conn: &MysqlConnection, tag_id: u32) -> Option<Self> {
+        table.find(tag_id).first(conn).ok()
+    }
+
     // by_label :: (MysqlConnection) -> Option<Tag>
     pub fn by_label(conn: &MysqlConnection, label: &str) -> Option<Self> {
         table.filter(tags::label.eq(label)).first(conn).ok()

@@ -1,4 +1,5 @@
-use crate::database::models::prelude::{CapabilityEntity, RelRoleCapabilityEntity, RoleEntity};
+use crate::database;
+use crate::database::models::prelude::{Capability, RelRoleCapabilityEntity, RoleEntity};
 use diesel::MysqlConnection;
 
 /// This `RoleCapabilities` struct is not a real model because it's not a
@@ -15,33 +16,36 @@ pub struct Role {
     pub id: u32,
     pub name: String,
     pub color: String,
-    pub capabilities: Vec<CapabilityEntity>,
+    pub capabilities: Vec<Capability>,
 }
 
 impl Role {
     /// Return all the roles with the corresponding capabilities as an array
     /// of `RoleCapabilities`
     pub fn all(conn: &MysqlConnection) -> Vec<Self> {
-        let roles = RoleEntity::all(conn);
-
-        roles
-            .iter()
-            .map(|r| Self::by_role(conn, &r))
+        RoleEntity::all(conn)
+            .drain(..)
+            .map(|r| Self::from(r))
             .collect::<Vec<Self>>()
     }
 
     /// Constructor of `RoleCapabilities` based on a role name
     pub fn by_role_name(conn: &MysqlConnection, name: &str) -> Option<Self> {
-        RoleEntity::by_name(conn, name).map(|r| Self::by_role(conn, &r))
+        RoleEntity::by_name(conn, name).map(|r| Self::from(r))
     }
+}
 
-    /// Constructor of `RoleCapabilities` based on a `role::Role` object
-    fn by_role(conn: &MysqlConnection, r: &RoleEntity) -> Self {
+impl From<RoleEntity> for Role {
+    fn from(re: RoleEntity) -> Self {
+        let conn = database::connection(&database::url());
         Self {
-            id: r.id,
-            name: r.name.to_string(),
-            color: r.color.to_string(),
-            capabilities: RelRoleCapabilityEntity::get_capabilities_for_role(&conn, &r),
+            id: re.id,
+            name: re.name.to_string(),
+            color: re.color.to_string(),
+            capabilities: RelRoleCapabilityEntity::get_capabilities_for_role(&conn, &re)
+                .drain(..)
+                .map(|capability_entity| Capability::from(capability_entity))
+                .collect::<Vec<Capability>>(),
         }
     }
 }

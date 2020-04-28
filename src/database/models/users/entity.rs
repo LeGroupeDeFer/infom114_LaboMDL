@@ -34,7 +34,7 @@ impl UserEntity {
     /* ------------------------------- STATIC ------------------------------ */
 
     /// Get a post by its id
-    pub fn by_id(conn: &MysqlConnection, id: &u32) -> Option<Self> {
+    pub fn by_id(conn: &MysqlConnection, id: u32) -> Option<Self> {
         table.find(id).first::<Self>(conn).ok()
     }
 
@@ -136,7 +136,7 @@ impl UserEntity {
     /// Get the roles of a user
     /// Return a vector of `models::roles::role::Role` struct
     pub fn get_roles(&self, conn: &MysqlConnection) -> Vec<RoleEntity> {
-        RelUserRoleEntity::get_roles_from_user(&conn, &self)
+        RelUserRoleEntity::get_roles_by_user(&conn, &self)
             .iter()
             .map(|r| RoleEntity::by_id(&conn, &r.id))
             .filter(|r| r.is_some())
