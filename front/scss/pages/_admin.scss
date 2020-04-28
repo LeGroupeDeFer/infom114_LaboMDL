@@ -1,0 +1,11 @@
+@use '../themes' as *;
+
+@use '../abstract/mixins' as *;
+
+
+input.tag-input {
+    &[disabled] {
+        border: none;
+        background: transparent;  
+    }
+}

@@ -136,6 +136,10 @@ function removeTag(label) {
   return api(`/tag/${label}`, {method: "DELETE"})
 }
 
+function roles() {
+  return api('/roles');
+}
+
 api.auth = auth;
 api.login = login;
 api.logout = logout;
@@ -145,6 +149,7 @@ api.tags = tags;
 api.tags.add = addTag;
 api.tags.remove = removeTag;
 api.tag = tags;
+api.roles = roles
 
 
 export default api;

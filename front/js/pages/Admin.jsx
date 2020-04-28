@@ -4,11 +4,32 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Row from 'react-bootstrap/Row';
-import Modal from 'react-bootstrap/Modal';
+
+import Tag from '../components/Tags/Tag';
+import AddForm from '../components/Tags/AddForm';
+
 
 import api from '../lib/api';
 import 'regenerator-runtime';
 
+function Admin(props) {
+
+  const [menu, setMenu] = useState('tag');
+  const Page = () =>  menu == 'tag' ? <TagsPage /> : <RolesPage />;
+
+  return (
+    <Container>
+      <br />
+      <Row className='justify-content-md-center'>
+        <MenuBar onClick={setMenu} currentMenu={menu} />
+      </Row>
+
+      <br />
+      <Page />
+
+    </Container>
+  );
+}
 
 const MenuBar = ({ currentMenu, onClick }) => {
 
@@ -83,7 +104,7 @@ const TagsPage = () => {
     
     //handle tag already exists
     if (tags.some(tag => tag.label === label)) {
-      alert("Tag already exists")
+      alert("Ce tag existe déjà !")
       return;
     }
     //adding new tag to hook tags
@@ -106,7 +127,6 @@ const TagsPage = () => {
     let newTags = tags.filter( tag => tag.label !== e.target.value);
     
     setTags(newTags);
-
   }
 
   const handleEdit = (e) => {
@@ -119,7 +139,7 @@ const TagsPage = () => {
       ? tags.map((tag, i) => {
         return (
           <Row key={i} className="mb-3">
-            <Tag label={tag.label} deleteTag={handleDelete} editTag={handleEdit}></Tag>
+            <Tag label={tag.label} deleteTag={handleDelete}></Tag>
           </Row>
         )
       })
@@ -127,69 +147,6 @@ const TagsPage = () => {
       }
       <AddForm addTag={addTag}/>
       </div>
-  );
-}
-
-const Tag = ({label, deleteTag, editTag}) => {
-  
-  return (
-    <>
-    <p><span id={label}>{label}</span></p>
-    <Button className="btn btn-danger ml-3" value={label} onClick={deleteTag}>
-      Supprimer
-    </Button>
-    <Button className="btn btn-primary ml-3" value={label} onClick={editTag}>
-      Editer
-    </Button>
-    </>
-  );
-}
-
-// Add tag Form
-const AddForm = ({addTag}) => {
-
-  const [value, setValue] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!value)
-      return; 
-    
-    addTag(value);
-
-    setValue("");
-    
-  }
-
-  return (
-    <form onSubmit={handleSubmit}>
-    <label>
-      Entrer un tag :
-      <input className="input" type="text" value={value} onChange={e => setValue(e.target.value)} />
-    </label>
-    <input type="submit" value="Envoyer" />
-  </form>
-  );
-} 
-
-
-function Admin(props) {
-
-  const [menu, setMenu] = useState('tag');
-  const Page = () =>  menu == 'tag' ? <TagsPage /> : <RolesPage />;
-
-  return (
-    <Container>
-      <br />
-      <Row className='justify-content-md-center'>
-        <MenuBar onClick={setMenu} currentMenu={menu} />
-      </Row>
-
-      <br />
-      <Page />
-
-    </Container>
   );
 }
 
