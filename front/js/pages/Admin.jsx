@@ -128,8 +128,13 @@ const TagsPage = () => {
     setTags(newTags);
   }
 
-  const handleEdit = (e) => {
-    console.log(e.target.value);
+  const handleEdit = (newLabel, oldLabel) => {
+
+    console.log(newLabel);
+    console.log(oldLabel);
+
+    //TODO
+
   }
 
   return (
@@ -140,7 +145,7 @@ const TagsPage = () => {
       ? tags.map((tag, i) => {
         return (
           <Row key={i} className="mb-3">
-            <Tag label={tag.label} deleteTag={handleDelete}></Tag>
+            <Tag label={tag.label} deleteTag={handleDelete} updateTag={handleEdit} ></Tag>
           </Row>
         )
       })

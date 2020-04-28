@@ -136,6 +136,10 @@ function removeTag(label) {
   return api(`/tag/${label}`, {method: "DELETE"})
 }
 
+function editTag(label) {
+  return api(`/tag/${label}`, {method: "PUT", body: { label: String(label) } })
+}
+
 function roles() {
   return api('/roles');
 }
@@ -148,6 +152,7 @@ api.activate = activate;
 api.tags = tags;
 api.tags.add = addTag;
 api.tags.remove = removeTag;
+api.tags.edit = editTag;
 api.tag = tags;
 api.roles = roles
 
