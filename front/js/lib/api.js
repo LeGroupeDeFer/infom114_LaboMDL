@@ -144,6 +144,14 @@ function roles() {
   return api('/roles');
 }
 
+function capabilities() {
+  return api('/capabilities');
+}
+
+function users() {
+  return api('/users');
+}
+
 api.auth = auth;
 api.login = login;
 api.logout = logout;
@@ -154,7 +162,10 @@ api.tags.add = addTag;
 api.tags.remove = removeTag;
 api.tags.edit = editTag;
 api.tag = tags;
-api.roles = roles
+api.roles = roles;
+api.capabilities = capabilities;
+api.users = users;
+
 
 
 export default api;
