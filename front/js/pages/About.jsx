@@ -5,6 +5,7 @@ import Card from 'react-bootstrap/Card';
 import Select from 'react-select';
 import Button from 'react-bootstrap/Button';
 import { TiDelete } from 'react-icons/ti';
+import { FaPlusSquare, FaTag } from 'react-icons/fa';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 
@@ -30,10 +31,37 @@ const About = () => {
 function CreateForm() {
   const [category, setCategory] = useState(null);
 
-  const options = [
+  const cats = [
     { value: 'idea', label: 'Idée' },
     { value: 'info', label: 'Information' },
     { value: 'poll', label: 'Vote' },
+  ];
+
+  const tags = [
+    {
+      value: 'FacInfo',
+      label: (
+        <span>
+          <FaTag /> FacInfo
+        </span>
+      ),
+    },
+    {
+      value: 'FacEco',
+      label: (
+        <span>
+          <FaTag /> FacEco
+        </span>
+      ),
+    },
+    {
+      value: 'Arsenal',
+      label: (
+        <span>
+          <FaTag /> Arsenal
+        </span>
+      ),
+    },
   ];
 
   const primary = '#A0C55F';
@@ -64,8 +92,7 @@ function CreateForm() {
           <Row>
             <Col>
               <Select
-                options={options}
-                // defaultValue={options[0]}
+                options={cats}
                 placeholder={'Sélectionner une catégorie'}
                 styles={customStyles}
                 onChange={handleCategoryChange}
@@ -76,8 +103,15 @@ function CreateForm() {
             </Col>
           </Row>
           <br />
+          <Select
+            options={tags}
+            isMulti
+            placeholder={'Sélectionner un ou plusieurs tags'}
+            styles={customStyles}
+          />
+          <br />
           <Form.Group>
-            <Form.Control as="textarea" rows="5" placeholder="Text" />
+            <Form.Control as="textarea" rows="5" placeholder="Text.." />
           </Form.Group>
           {category == 'poll' && <PoolSection />}
 
@@ -107,7 +141,7 @@ function PoolSection() {
             {i > 2 ? (
               <>
                 <Form.Control type="text" placeholder={'Option ' + i} />
-                <TiDelete onClick={removePoolOption} />
+                <TiDelete size={20} onClick={removePoolOption} />
               </>
             ) : (
               <Form.Control type="text" placeholder={'Option ' + i} />
@@ -118,9 +152,10 @@ function PoolSection() {
         ))}
 
         {pollOptions.length < 5 && (
-          <Button variant="link" onClick={addPoolOption}>
+          <a href="#" onClick={addPoolOption}>
+            <FaPlusSquare className="mr-1" size={20} />
             Ajouter une option
-          </Button>
+          </a>
         )}
       </Form.Group>
     </>
