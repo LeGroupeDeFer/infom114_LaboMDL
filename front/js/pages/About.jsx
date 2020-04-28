@@ -5,6 +5,8 @@ import Card from 'react-bootstrap/Card';
 import Select from 'react-select';
 import Button from 'react-bootstrap/Button';
 import { TiDelete } from 'react-icons/ti';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 
 // export default function About(props) {
 //   return (
@@ -59,21 +61,21 @@ function CreateForm() {
     <Card>
       <Card.Body>
         <Form>
-          <Form.Group>
-            <Select
-              options={options}
-              // defaultValue={options[0]}
-              placeholder={'Sélectionner une catégorie'}
-              styles={customStyles}
-              onChange={handleCategoryChange}
-            />
-          </Form.Group>
+          <Row>
+            <Col>
+              <Select
+                options={options}
+                // defaultValue={options[0]}
+                placeholder={'Sélectionner une catégorie'}
+                styles={customStyles}
+                onChange={handleCategoryChange}
+              />
+            </Col>
+            <Col>
+              <Form.Control type="text" placeholder="Titre du post" />
+            </Col>
+          </Row>
           <br />
-          <Form.Group>
-            <Form.Control type="text" placeholder="Titre du post" />
-          </Form.Group>
-          <br />
-
           <Form.Group>
             <Form.Control as="textarea" rows="5" placeholder="Text" />
           </Form.Group>
