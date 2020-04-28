@@ -1,24 +1,19 @@
 extern crate rand;
-use std::convert::TryFrom;
 use chrono::{Duration, NaiveDateTime, Utc};
 use diesel::prelude::*;
 use diesel::MysqlConnection;
-use either::*;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
-use std::fmt;
+use std::convert::TryFrom;
 
-use crate::lib::consequence::*;
-use crate::database::models::prelude::*;
 use crate::database::models::Entity;
+use crate::lib::consequence::*;
 
-use crate::database::schema::tokens;
-use crate::database::schema::tokens::dsl::{self, tokens as table};
 use super::entity::*;
-
+use crate::database::schema::tokens;
+use crate::database::schema::tokens::dsl::tokens as table;
 
 impl TokenEntity {
-
     /* ---------------------------------------- STATIC ---------------------------------------- */
 
     pub fn by_hash(conn: &MysqlConnection, hash: &str) -> Consequence<Option<Self>> {
@@ -32,7 +27,7 @@ impl TokenEntity {
     pub fn create(
         conn: &MysqlConnection,
         lifetime: Option<&u32>,
-        count: Option<&i32>
+        count: Option<&i32>,
     ) -> Consequence<Self> {
         let hash: String = thread_rng().sample_iter(&Alphanumeric).take(32).collect();
         let creation_date = Utc::now().naive_local();
@@ -50,7 +45,7 @@ impl TokenEntity {
         Self::insert(conn, &minima).and_then(|insertion| {
             insertion.either(
                 |_| Err(Error::from(TokenError::Collision)),
-                |right| Ok(right)
+                |right| Ok(right),
             )
         })
     }
@@ -70,12 +65,17 @@ impl TokenEntity {
         let hash = thread_rng().sample_iter(&Alphanumeric).take(32).collect();
         let creation_date = Utc::now().naive_local();
 
-        let expiration_date = self.expiration_date.map(|expiration: NaiveDateTime| -> Consequence<NaiveDateTime> {
-            let new_lifetime = lifetime.map(|v| *v as i64).unwrap_or(
-                expiration.timestamp() - self.creation_date.timestamp()
-            );
-            creation_date.checked_add_signed(Duration::seconds(new_lifetime)).map(Ok)?
-        }).transpose()?;
+        let expiration_date = self
+            .expiration_date
+            .map(|expiration: NaiveDateTime| -> Consequence<NaiveDateTime> {
+                let new_lifetime = lifetime
+                    .map(|v| *v as i64)
+                    .unwrap_or(expiration.timestamp() - self.creation_date.timestamp());
+                creation_date
+                    .checked_add_signed(Duration::seconds(new_lifetime))
+                    .map(Ok)?
+            })
+            .transpose()?;
 
         self.hash = hash;
         self.creation_date = creation_date;
@@ -116,7 +116,11 @@ impl TokenEntity {
         } else if self.count == -1 {
             Ok(self)
         } else {
-            self.count = if self.count > 0 { self.count - 1 } else { self.count };
+            self.count = if self.count > 0 {
+                self.count - 1
+            } else {
+                self.count
+            };
             self.consumed = self.count == 0;
 
             self.update(conn)?;
@@ -142,18 +146,22 @@ impl TokenEntity {
     }
 
     pub fn lifespan(&self) -> u32 {
-        self.expiration_date.map(|expires| {
-            // The duration for a token creation is a u32 which implies that expiration - creation
-            // can't overflow a u32, hence the unwrap()
-            u32::try_from(expires.timestamp() - self.creation_date.timestamp()).unwrap()
-        }).unwrap_or(u32::max_value())
+        self.expiration_date
+            .map(|expires| {
+                // The duration for a token creation is a u32 which implies that expiration - creation
+                // can't overflow a u32, hence the unwrap()
+                u32::try_from(expires.timestamp() - self.creation_date.timestamp()).unwrap()
+            })
+            .unwrap_or(u32::max_value())
     }
 
     pub fn ttl(&self) -> u32 {
         let now = Utc::now().naive_local();
-        self.expiration_date.map(|expires| {
-            // Same logic as in lifespan for the unwrap
-            u32::try_from(expires.timestamp() - now.timestamp()).unwrap()
-        }).unwrap_or(u32::max_value())
+        self.expiration_date
+            .map(|expires| {
+                // Same logic as in lifespan for the unwrap
+                u32::try_from(expires.timestamp() - now.timestamp()).unwrap()
+            })
+            .unwrap_or(u32::max_value())
     }
 }

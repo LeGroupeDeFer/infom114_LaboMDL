@@ -7,17 +7,17 @@ use diesel::prelude::*;
 use diesel::MysqlConnection;
 use either::*;
 
-use crate::lib::consequence::*;
 use crate::database::models::prelude::*;
-use crate::database::models::Entity;
+use crate::lib::consequence::*;
 
 use crate::database::schema::roles;
 use crate::database::schema::roles::dsl::{self, roles as table};
 
-
 /// The struct `Role` is the perfect representation of the data that can be hold
 /// in the `roles` table.
-#[derive(Identifiable, Queryable, AsChangeset, Associations, Serialize, Deserialize, Clone, Debug)]
+#[derive(
+    Identifiable, Queryable, AsChangeset, Associations, Serialize, Deserialize, Clone, Debug,
+)]
 #[table_name = "roles"]
 pub struct RoleEntity {
     pub id: u32,
@@ -35,7 +35,6 @@ pub struct RoleMinima {
 }
 
 impl Entity for RoleEntity {
-
     type Minima = RoleMinima;
 
     /// Constructor based on the role id.
@@ -70,7 +69,11 @@ impl Entity for RoleEntity {
     }
 
     fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {
-        diesel::update(self).set(self).execute(conn).map(|_| self).map(Ok)?
+        diesel::update(self)
+            .set(self)
+            .execute(conn)
+            .map(|_| self)
+            .map(Ok)?
     }
 
     fn delete(self, conn: &MysqlConnection) -> Consequence<()> {

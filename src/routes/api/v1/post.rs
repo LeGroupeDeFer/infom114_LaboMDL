@@ -5,10 +5,11 @@ use crate::http::responders::api::ApiResponse;
 
 use crate::guards::auth::Auth;
 use crate::guards::post::PostGuard;
+use crate::http::responders::{ApiResult, OK};
+use crate::lib::AuthError;
 use diesel::prelude::*;
 use rocket::http::Status;
 use rocket_contrib::json::Json;
-use std::ops::Deref;
 
 pub fn collect() -> Vec<rocket::Route> {
     routes!(
@@ -40,7 +41,7 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiRespon
 
     let insert_result = diesel::insert_into(posts::dsl::posts)
         .values(&new_post)
-        .execute(conn.deref());
+        .execute(&*conn);
 
     if insert_result.is_ok() {
         ApiResponse::new(
@@ -59,10 +60,21 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiRespon
     }
 }
 
-#[get("/api/posts")]
+#[get("/api/posts", rank = 1)]
+fn get_all_posts_authenticated(conn: DBConnection, auth: Auth) -> ApiResponse {
+    let posts = Post::all(&*conn)
+        .drain(..)
+        .map(|mut p| {
+            Post::set_user_vote(&mut p, &*conn, auth.sub);
+            p
+        })
+        .collect::<Vec<Post>>();
+    ApiResponse::new(Status::Ok, json!(posts))
+}
+
+#[get("/api/posts", rank = 2)]
 fn get_all_posts(conn: DBConnection) -> ApiResponse {
-    // TODO: Get all related comments
-    ApiResponse::new(Status::Ok, json!(PostEntity::all(&conn).unwrap()))
+    ApiResponse::new(Status::Ok, json!(Post::all(&conn)))
 }
 
 /// Get post by id (unauth)
@@ -81,12 +93,11 @@ fn delete_post(
 ) -> ApiResponse {
     let capability = "post:delete";
 
-    if !(auth.has_capability(conn.deref(), &capability) || post_guard.post().author_id == auth.sub)
-    {
+    if !(auth.has_capability(&*conn, &capability) || post_guard.post().author_id == auth.sub) {
         // TODO : return right management error
     }
 
-    post_guard.post_clone().delete(conn.deref());
+    post_guard.post_clone().delete(&*conn);
 
     ApiResponse::simple_success(Status::Ok)
 }
@@ -99,36 +110,21 @@ fn update_post(
     post_guard: PostGuard,
     _post_id: u32,
     data: Json<NewPost>,
-) -> ApiResponse {
+) -> ApiResult<()> {
     let capability = "post:update";
     let a_post = data.into_inner();
 
-    if !(auth.has_capability(conn.deref(), &capability) || post_guard.post().author_id == auth.sub)
-    {
-        // TODO : return right management error
+    if !(auth.has_capability(&*conn, &capability) || post_guard.post().author_id == auth.sub) {
+        Err(AuthError::MissingCapability)?;
     }
 
-    let minima = PostMinima {
-        author_id: post_guard.post().author_id,
-        title: a_post.title,
-        content: a_post.content,
-    };
+    let mut post = post_guard.post_clone();
+    post.title = a_post.title;
+    post.content = a_post.content;
 
-//    match post_guard.post().update(conn.deref(), &minima) {
-    //Some(_) => ApiResponse::new(
-//            Status::Ok,
-//            json!({
-//                "msg":
-//                    &format!(
-//                        "Update a post '{}' of user '{}' successfully!",
-//                        post_guard.post().id,
-//                        auth.sub
-//                    )
-//            }),
-//        ),
-//        None => ApiResponse::error(Status::NotFound, "TODO Server error"),
-//    }
-    ApiResponse::simple_success(Status::Ok)
+    post.update(&*conn)?;
+
+    OK()
 }
 
 #[post("/api/post/<_post_id>/upvote", format = "json", data = "<data>")]
@@ -143,7 +139,7 @@ fn updown_vote(
 
     match vote_request.vote {
         i if -1 <= i && i <= 1 => {
-            let _new_score = post_guard.post().upvote(conn.deref(), auth.sub, i);
+            let _new_score = post_guard.post().upvote(&*conn, auth.sub, i);
             ApiResponse::success(
                 Status::Ok,
                 &format!(

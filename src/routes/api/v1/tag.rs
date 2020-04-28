@@ -1,11 +1,8 @@
-use crate::guards::auth::Auth;
-use crate::database::DBConnection;
 use crate::database::models::prelude::*;
-use crate::http::responders::api::ApiResponse;
+use crate::database::DBConnection;
+use crate::guards::auth::Auth;
 
-use std::ops::Deref;
-
-use rocket::http::Status;
+use crate::http::responders::{ApiResult, OK};
 use rocket_contrib::json::Json;
 
 pub fn collect() -> Vec<rocket::Route> {
@@ -13,12 +10,11 @@ pub fn collect() -> Vec<rocket::Route> {
 }
 
 #[post("/api/v1/tag/<tag_label>", format = "json")]
-pub fn post_tag(conn: DBConnection, _auth: Auth, tag_label: String) -> ApiResponse {
+pub fn post_tag(conn: DBConnection, _auth: Auth, tag_label: String) -> ApiResult<()> {
     let new_tag = TagMinima { label: tag_label };
 
-    //TODO Update the json containing the specifications, it is not correct (see error 400)
-    TagEntity::insert_new(&*conn, &new_tag).unwrap();
-    return ApiResponse::new(Status::Ok, json!({}));
+    TagEntity::insert_new(&*conn, &new_tag)?;
+    OK()
 }
 
 #[put("/api/v1/tag/<tag_label>", format = "json", data = "<data>")]
@@ -27,50 +23,30 @@ pub fn update_tag(
     auth: Auth,
     tag_label: String,
     data: Json<TagData>,
-) -> ApiResponse {
+) -> ApiResult<()> {
     let capability = "tag:update";
 
     // manage capability
-    if !auth.has_capability(conn.deref(), &capability) {
-        return ApiResponse::error(
-            Status::Forbidden,
-            &format!("The user do not have the capability {}", capability),
-        );
-    }
+    auth.check_capability(&*conn, &capability)?;
 
     let tag_data = data.into_inner();
 
-    if let Some(mut tag) = TagEntity::by_label(conn.deref(), &tag_label) {
-        tag.label = tag_data.label;
-        tag.update(&*conn).unwrap();
-        ApiResponse::new(Status::Ok, json!({}))
-    } else {
-        ApiResponse::error(
-            Status::UnprocessableEntity,
-            "The targeted tag does not exist",
-        )
-    }
+    let mut tag = TagEntity::by_label(&*conn, &tag_label)??;
+    tag.label = tag_data.label;
+    tag.update(&*conn)?;
+
+    OK()
 }
 
 #[delete("/api/v1/tag/<tag_label>")]
-pub fn delete_tag(conn: DBConnection, auth: Auth, tag_label: String) -> ApiResponse {
+pub fn delete_tag(conn: DBConnection, auth: Auth, tag_label: String) -> ApiResult<()> {
     let capability = "tag:update";
 
     // manage capability
-    if !auth.has_capability(conn.deref(), &capability) {
-        return ApiResponse::error(
-            Status::Forbidden,
-            &format!("The user do not have the capability {}", capability),
-        );
-    }
+    auth.check_capability(&*conn, &capability)?;
 
-    if let Some(tag) = TagEntity::by_label(conn.deref(), &tag_label) {
-        tag.delete(conn.deref());
-        ApiResponse::new(Status::Ok, json!({}))
-    } else {
-        ApiResponse::error(
-            Status::UnprocessableEntity,
-            "The targeted tag does not exist",
-        )
-    }
+    let tag = TagEntity::by_label(&*conn, &tag_label)??;
+    tag.delete(&*conn)?;
+
+    OK()
 }

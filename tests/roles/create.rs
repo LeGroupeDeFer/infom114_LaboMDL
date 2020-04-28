@@ -8,12 +8,10 @@
 use rocket::http::ContentType;
 use rocket::http::Status;
 
-use unanimitylibrary::database::models::prelude::*;
 use super::super::init;
-
+use unanimitylibrary::database::models::prelude::*;
 
 const ROLE_ROUTE: &'static str = "/api/v1/role/";
-
 
 /**************************** TESTS ******************************************/
 
@@ -69,7 +67,7 @@ fn create_correct_role() {
     assert_eq!(role_name, role.name);
     assert_eq!(role_color, role.color);
     // if it panics, the test cannot pass !
-    let role_capa = RoleEntity::by_role_name(&conn, &role.name).unwrap().unwrap();
+    let role_capa = Role::by_role_name(&conn, &role.name).unwrap().unwrap();
     assert_eq!(role_capa.capabilities.len(), role_capabilities.len());
     for capability in role_capa.capabilities {
         assert!(role_capabilities.contains(&&capability.name[..]));

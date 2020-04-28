@@ -3,7 +3,7 @@ use rocket::http::Status;
 use super::super::init;
 use super::utils;
 
-use unanimitylibrary::database::models::prelude::{FrontPost, Post};
+use unanimitylibrary::database::models::prelude::Post;
 use unanimitylibrary::lib::seeds::posts::seed_test_posts;
 
 #[test]
@@ -30,7 +30,8 @@ fn read_all_posts() {
 
     // check the answer data is what we wanted
     let data = response.body_string().unwrap();
-    let posts: Vec<FrontPost> = serde_json::from_str(&data).unwrap();
+    let posts: Vec<Post> = serde_json::from_str(&data).unwrap();
+    let bite = "coucou";
     // we want a total of 6 post, the 5 normals & the locked one
 }
 

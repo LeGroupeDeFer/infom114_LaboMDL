@@ -1,20 +1,15 @@
 extern crate rand;
-use std::convert::TryFrom;
-use chrono::{Duration, NaiveDateTime, Utc};
+use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::MysqlConnection;
 use either::*;
-use rand::distributions::Alphanumeric;
-use rand::{thread_rng, Rng};
 use std::fmt;
 
-use crate::lib::consequence::*;
-use crate::database::models::prelude::*;
 use crate::database::models::Entity;
+use crate::lib::consequence::*;
 
 use crate::database::schema::tokens;
-use crate::database::schema::tokens::dsl::{self, tokens as table};
-
+use crate::database::schema::tokens::dsl::tokens as table;
 
 #[derive(Identifiable, Queryable, AsChangeset, Serialize, Deserialize, Clone, Debug)]
 #[table_name = "tokens"]
@@ -28,7 +23,6 @@ pub struct TokenEntity {
     pub consumed: bool,
 }
 
-
 #[derive(Serialize, Deserialize, Debug, Insertable)]
 #[table_name = "tokens"]
 pub struct TokenMinima {
@@ -38,9 +32,7 @@ pub struct TokenMinima {
     pub count: i32,
 }
 
-
 impl Entity for TokenEntity {
-
     type Minima = TokenMinima;
 
     fn by_id(conn: &MysqlConnection, id: &u32) -> Consequence<Option<Self>> {
@@ -71,17 +63,21 @@ impl Entity for TokenEntity {
     }
 
     fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {
-        diesel::update(self).set(self).execute(conn).map(|_| self).map(Ok)?
+        diesel::update(self)
+            .set(self)
+            .execute(conn)
+            .map(|_| self)
+            .map(Ok)?
     }
 
     fn delete(self, conn: &MysqlConnection) -> Consequence<()> {
         use crate::database::schema::tokens::dsl::id;
-        diesel::delete(table.filter(id.eq(self.id))).execute(conn).map(|_| ()).map(Ok)?
+        diesel::delete(table.filter(id.eq(self.id)))
+            .execute(conn)
+            .map(|_| ())
+            .map(Ok)?
     }
-
 }
-
-
 
 impl From<TokenEntity> for String {
     fn from(token: TokenEntity) -> String {

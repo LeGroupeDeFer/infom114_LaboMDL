@@ -1,6 +1,7 @@
 use crate::database::models::prelude::*;
 use crate::lib;
 use diesel::MysqlConnection;
+use either::Either;
 
 /// This seeder will create a user and some post on the database
 ///
@@ -13,7 +14,6 @@ use diesel::MysqlConnection;
 ///     * one hidden post (title = `Hidden post`)
 ///     * one locked post (title = `Locked post`)
 ///
-/// TODO : implement tag (even & odd)
 pub fn seed_test_posts(conn: &MysqlConnection) {
     let author = init_author(&conn);
     init_tags(&conn);
@@ -27,9 +27,23 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
             title: format!("Valid post #{}", i),
             content: lib::lorem_ipsum(),
         };
-        // TODO : link post to tag
 
-        PostEntity::insert(&conn, &post_minima);
+        let p = match PostEntity::insert(&conn, &post_minima).unwrap() {
+            Either::Left(post) => post,
+            Either::Right(post) => post,
+        };
+
+        if i % 2 == 0 {
+            p.add_tag(
+                &conn,
+                &TagEntity::by_label(&conn, "even").unwrap().unwrap().id,
+            );
+        } else {
+            p.add_tag(
+                &conn,
+                &TagEntity::by_label(&conn, "odd").unwrap().unwrap().id,
+            );
+        }
     }
 
     // create 1 deleted post

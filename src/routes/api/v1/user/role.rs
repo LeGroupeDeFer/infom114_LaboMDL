@@ -2,15 +2,15 @@
 //!
 //! Group the creation, update and deletion of roles
 
-use rocket::http::Status;
 use rocket_contrib::json::Json;
 
-use crate::guards::auth::Auth;
 use crate::database::models::prelude::*;
-use crate::database::{DBConnection, Data};
+use crate::database::DBConnection;
+use crate::guards::auth::Auth;
 
-use crate::http::responders::api::ApiResponse;
-
+use crate::http::responders::{ApiResult, OK};
+use crate::lib::EntityError;
+use either::Either;
 
 /// Collect every routes that this module needs to share with the application
 /// The name `collect` is a project convention
@@ -18,79 +18,37 @@ pub fn collect() -> Vec<rocket::Route> {
     routes!(assign, unassign)
 }
 
-
 /// Assign a role to a user
 #[post("/api/v1/user/role", format = "json", data = "<data>")]
-pub fn assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiResponse {
+pub fn assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiResult<()> {
     let capability = "user:manage_role";
 
     // manage capability
-    if !auth.has_capability(&*conn, &capability) {
-        return ApiResponse::error(
-            Status::Forbidden,
-            &format!("The user do not have the capability {}", capability),
-        );
-    }
+    auth.check_capability(&*conn, &capability)?;
 
     let user_role_data = data.into_inner();
 
-    let user = match UserEntity::by_id(&*conn, &user_role_data.user_id).unwrap() {
-        Some(u) => u,
-        None => {
-            return ApiResponse::error(
-                Status::UnprocessableEntity,
-                "The targeted user does not exist",
-            )
-        }
-    };
+    let user = UserEntity::by_id(&*conn, &user_role_data.user_id)??;
 
-    let role = match RoleEntity::by_id(&*conn, &user_role_data.role_id).unwrap() {
-        Some(u) => u,
-        None => {
-            return ApiResponse::error(
-                Status::UnprocessableEntity,
-                "The targeted role does not exist",
-            )
-        }
-    };
+    let role = RoleEntity::by_id(&*conn, &user_role_data.role_id)??;
 
-    match RelUserRoleEntity::add_role_for_user(&*conn, &user, &role).unwrap() {
-        Data::Inserted(_) => ApiResponse::simple_success(Status::Ok),
-        Data::Existing(_) => {
-            ApiResponse::error(Status::Conflict, "This user do already have this role")
-        }
-        _ => panic!("unreachable code reached"),
+    match RelUserRoleEntity::add_role_for_user(&*conn, &user, &role)? {
+        Either::Right(_) => OK(),
+        Either::Left(_) => Err(EntityError::Duplicate)?,
     }
 }
 
 /// Unassign a role from a user
 #[delete("/api/v1/user/role", format = "json", data = "<data>")]
-pub fn unassign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiResponse {
+pub fn unassign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiResult<()> {
     let capability = "user:manage_role";
 
     // manage capability
-    if !auth.has_capability(&*conn, &capability) {
-        return ApiResponse::error(
-            Status::Forbidden,
-            &format!("The user do not have the capability {}", capability),
-        );
-    }
+    auth.check_capability(&*conn, &capability)?;
 
     let user_role_data = data.into_inner();
 
+    RelUserRoleEntity::get(&*conn, user_role_data.user_id, user_role_data.role_id)??.delete(&*conn);
 
-    let rel_user_role =
-        match RelUserRoleEntity::get(&*conn, user_role_data.user_id, user_role_data.role_id).unwrap() {
-            Some(u_r) => u_r,
-            None => {
-                return ApiResponse::error(
-                    Status::UnprocessableEntity,
-                    "This user do not have this role",
-                )
-            }
-        };
-
-    rel_user_role.delete(&*conn);
-
-    ApiResponse::simple_success(Status::Ok)
+    OK()
 }

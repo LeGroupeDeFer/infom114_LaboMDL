@@ -14,24 +14,22 @@
 //!
 //! The prelude module groups all structs that are not "forms"
 
-pub mod prelude;
 pub mod address;
 pub mod capability;
 pub mod comment;
 pub mod post;
+pub mod prelude;
 pub mod role;
 pub mod tag;
-pub mod user;
 pub mod token;
+pub mod user;
 
 use diesel::MysqlConnection;
 use either::*;
 
 use crate::lib::consequence::*;
 
-
 pub trait Entity: Sized {
-
     type Minima;
 
     fn by_id(conn: &MysqlConnection, id: &u32) -> Consequence<Option<Self>>;
@@ -60,5 +58,4 @@ pub trait Entity: Sized {
     fn update(&self, conn: &MysqlConnection) -> Consequence<&Self>;
 
     fn delete(self, conn: &MysqlConnection) -> Consequence<()>;
-
 }

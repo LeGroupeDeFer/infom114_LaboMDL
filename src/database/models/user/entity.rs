@@ -1,11 +1,10 @@
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::MysqlConnection;
-use regex::Regex;
 use either::*;
+use regex::Regex;
 
 use crate::database::models::prelude::*;
-use crate::database::models::Entity;
 
 use crate::database::schema::users;
 use crate::database::schema::users::dsl::{self, users as table};
@@ -13,10 +12,19 @@ use crate::database::schema::users::dsl::{self, users as table};
 use crate::database::models::address::AddressEntity;
 use crate::lib::consequence::*;
 
-
 // We can't have the `activation_token` and `recovery_token` fks in Diesel as these are 2 separate
 // foreign keys for the same table which is not supported by Diesel
-#[derive(Identifiable, Queryable, AsChangeset, Associations, Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(
+    Identifiable,
+    Queryable,
+    AsChangeset,
+    Associations,
+    Serialize,
+    Deserialize,
+    Clone,
+    Debug,
+    PartialEq,
+)]
 #[belongs_to(AddressEntity, foreign_key = "address")]
 #[table_name = "users"]
 pub struct UserEntity {
@@ -39,7 +47,6 @@ pub struct UserEntity {
     pub active: bool,
 }
 
-
 #[derive(Serialize, Deserialize, Debug, Insertable)]
 #[table_name = "users"]
 pub struct UserMinima {
@@ -51,12 +58,10 @@ pub struct UserMinima {
     pub phone: Option<String>,
     pub activation_token: Option<u32>,
     pub refresh_token: Option<u32>,
-    pub recovery_token: Option<u32>
+    pub recovery_token: Option<u32>,
 }
 
-
 impl Entity for UserEntity {
-
     type Minima = UserMinima;
 
     fn by_id(conn: &MysqlConnection, id: &u32) -> Consequence<Option<Self>> {
@@ -93,16 +98,21 @@ impl Entity for UserEntity {
     }
 
     fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {
-        diesel::update(self).set(self).execute(conn).map(|_| self).map(Ok)?
+        diesel::update(self)
+            .set(self)
+            .execute(conn)
+            .map(|_| self)
+            .map(Ok)?
     }
 
     fn delete(self, conn: &MysqlConnection) -> Consequence<()> {
         use crate::database::schema::users::dsl::id;
-        diesel::delete(table.filter(id.eq(self.id))).execute(conn).map(|_| ()).map(Ok)?
+        diesel::delete(table.filter(id.eq(self.id)))
+            .execute(conn)
+            .map(|_| ())
+            .map(Ok)?
     }
-
 }
-
 
 impl Clone for UserMinima {
     fn clone(&self) -> UserMinima {
@@ -115,7 +125,7 @@ impl Clone for UserMinima {
             phone: self.phone.clone(),
             activation_token: self.activation_token.clone(),
             recovery_token: self.recovery_token.clone(),
-            refresh_token: self.refresh_token.clone()
+            refresh_token: self.refresh_token.clone(),
         }
     }
 }

@@ -22,13 +22,17 @@ pub fn clean() {
     let conn = database_connection();
 
     // truncate all tables
-    diesel::delete(roles_capabilities_table).execute(&conn).unwrap();
+    diesel::delete(roles_capabilities_table)
+        .execute(&conn)
+        .unwrap();
     diesel::delete(capabilities_table).execute(&conn).unwrap();
     diesel::delete(users_roles_table).execute(&conn).unwrap();
     diesel::delete(posts_tags_table).execute(&conn).unwrap();
     diesel::delete(votes_comments_table).execute(&conn).unwrap();
     diesel::delete(votes_posts_table).execute(&conn).unwrap();
-    diesel::delete(tags_subscription_table).execute(&conn).unwrap();
+    diesel::delete(tags_subscription_table)
+        .execute(&conn)
+        .unwrap();
     diesel::delete(roles_table).execute(&conn).unwrap();
     diesel::delete(tags_table).execute(&conn).unwrap();
     diesel::delete(users_table).execute(&conn).unwrap();
@@ -68,7 +72,7 @@ pub fn clean() {
     );
     assert_eq!(
         votes_posts_table
-            .load::<RelPostVote>(&conn)
+            .load::<RelPostVoteEntity>(&conn)
             .unwrap()
             .len(),
         0
@@ -211,7 +215,7 @@ pub fn get_user(do_activate: bool) -> (UserEntity, String) {
 
     let mut user = UserEntity::insert_either(&conn, &u).unwrap();
     if do_activate {
-        user.activate(&conn);
+        user.activate(&conn).unwrap();
     }
 
     (user, password)
@@ -227,7 +231,9 @@ pub fn get_user(do_activate: bool) -> (UserEntity, String) {
 /// but for our testing purposes its perfect because we can use it to confirm
 /// that some routes are protected by auth & by capability
 pub fn get_admin() -> UserEntity {
-    UserEntity::by_email(&database_connection(), "admin@unamur.be").unwrap().unwrap()
+    UserEntity::by_email(&database_connection(), "admin@unamur.be")
+        .unwrap()
+        .unwrap()
 }
 
 /// Perform the login operation for the given `email` & `password`

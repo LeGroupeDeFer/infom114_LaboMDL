@@ -1,5 +1,5 @@
-use diesel::MysqlConnection;
 use chrono::Utc;
+use diesel::MysqlConnection;
 use jsonwebtoken::{self as jwt, Validation};
 
 use rocket::http::Status;
@@ -10,7 +10,6 @@ use serde::{Deserialize, Serialize};
 use crate::conf::AppState;
 use crate::database::models::prelude::*;
 use crate::lib::consequence::*;
-
 
 pub const TOKEN_PREFIX: &'static str = "Bearer ";
 
@@ -33,7 +32,6 @@ pub struct Auth {
 /* ----------------------------- Implementation ---------------------------- */
 
 impl Auth {
-
     pub fn create(conn: &MysqlConnection, user: &UserEntity, lifetime: &u32) -> Consequence<Self> {
         let now = Utc::now().timestamp();
         Ok(Auth {
@@ -62,9 +60,8 @@ impl Auth {
         email: &str,
         password: &str,
         access_lifetime: &u32,
-        refresh_lifetime: &u32
+        refresh_lifetime: &u32,
     ) -> Consequence<(Auth, TokenEntity, UserEntity)> {
-
         // Get user info
         let mut user = UserEntity::by_email(conn, email)??;
         let verification = user.verify(password)?;
@@ -83,7 +80,11 @@ impl Auth {
         user.update(conn)?;
 
         // We're good
-        Ok((Auth::create(conn, &user, access_lifetime)?, refresh_token, user))
+        Ok((
+            Auth::create(conn, &user, access_lifetime)?,
+            refresh_token,
+            user,
+        ))
     }
 
     pub fn refresh(
@@ -91,7 +92,7 @@ impl Auth {
         email: &str,
         hash: &str,
         access_lifetime: &u32,
-        refresh_lifetime: &u32
+        refresh_lifetime: &u32,
     ) -> Consequence<(Auth, TokenEntity, UserEntity)> {
         let user = UserEntity::by_email(conn, email)??;
         let mut token = user.refresh_token(conn)??;
@@ -106,10 +107,9 @@ impl Auth {
 
     pub fn logout(conn: &MysqlConnection, email: &str, hash: &str) -> Consequence<()> {
         let user = UserEntity::by_email(conn, email)??;
-        let mut token = user.refresh_token(conn)?.map_or_else(
-            || Err(AuthError::InvalidToken),
-            |v| Ok(v)
-        )?;
+        let mut token = user
+            .refresh_token(conn)?
+            .map_or_else(|| Err(AuthError::InvalidToken), |v| Ok(v))?;
         token.verify(hash)?;
         token.revoke(conn)?;
 
@@ -123,6 +123,14 @@ impl Auth {
         } else {
             // TODO : panic or log an error since the given capability potentially do not exist
             false
+        }
+    }
+
+    pub fn check_capability(&self, conn: &MysqlConnection, capability: &str) -> Consequence<()> {
+        if !self.has_capability(conn, capability) {
+            Err(AuthError::MissingCapability)?
+        } else {
+            Ok(())
         }
     }
 }

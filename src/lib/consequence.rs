@@ -1,11 +1,10 @@
-pub use std::fmt::{Display as FmtDisplay, Result as FmtResult, Formatter as FmtFormatter};
-pub use std::result::Result as StdResult;
-pub use diesel::result::Error as DieselError;
-pub use std::error::Error as StdError;
-pub use std::option::NoneError;
 pub use bcrypt::BcryptError;
+pub use diesel::result::Error as DieselError;
 pub use jsonwebtoken::errors::{Error as JWTError, ErrorKind as JWTErrorKind};
-
+pub use std::error::Error as StdError;
+pub use std::fmt::{Display as FmtDisplay, Formatter as FmtFormatter, Result as FmtResult};
+pub use std::option::NoneError;
+pub use std::result::Result as StdResult;
 
 pub type Consequence<T> = StdResult<T, Error>;
 
@@ -14,12 +13,14 @@ pub type Consequence<T> = StdResult<T, Error>;
 #[derive(Debug)]
 pub enum EntityError {
     Duplicate,
+    NotIdentifiable,
 }
 
 impl FmtDisplay for EntityError {
     fn fmt(&self, f: &mut FmtFormatter) -> FmtResult {
         match self {
             EntityError::Duplicate => write!(f, "Entity already exist"),
+            EntityError::NotIdentifiable => write!(f, "The entity do not have an ID"),
         }
     }
 }
@@ -88,6 +89,7 @@ pub enum AuthError {
     InvalidToken,
     MissingHeader,
     InvalidHeader,
+    MissingCapability,
 }
 
 impl FmtDisplay for AuthError {
@@ -99,6 +101,7 @@ impl FmtDisplay for AuthError {
             AuthError::InvalidToken => write!(f, "Invalid token"),
             AuthError::MissingHeader => write!(f, "Missing header"),
             AuthError::InvalidHeader => write!(f, "Invalid header"),
+            AuthError::MissingCapability => write!(f, "Missing capability"),
         }
     }
 }

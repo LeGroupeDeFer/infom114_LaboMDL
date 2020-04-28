@@ -9,9 +9,8 @@
 use rocket::http::Status;
 // use rocket::http::{ContentType, Status};
 
-use unanimitylibrary::database::models::prelude::*;
 use super::super::init;
-
+use unanimitylibrary::database::models::prelude::*;
 
 const CAPABILITIES_ROUTE: &'static str = "/api/v1/capability/";
 const ROLES_ROUTE: &'static str = "/api/v1/roles/";
@@ -66,8 +65,8 @@ fn get_roles() {
 
     // assert those are the same roles as the one in database
     let data = response.body_string().unwrap();
-    let request_roles: Vec<RoleCapabilities> = serde_json::from_str(&data).unwrap();
-    for c in RoleCapabilities::all(&conn).unwrap() {
+    let request_roles: Vec<Role> = serde_json::from_str(&data).unwrap();
+    for c in Role::all(&conn).unwrap() {
         assert!(request_roles.contains(&c));
     }
 }
