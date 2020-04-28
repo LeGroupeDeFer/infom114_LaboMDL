@@ -1,5 +1,13 @@
 import React, { useRef, useState, useEffect, lazy, Suspense } from 'react';
 import { Route, Switch, useLocation } from 'react-router-dom';
+import {
+  faUserCircle,
+  faCogs,
+  faInfoCircle,
+  faStream,
+  faBell,
+  faPencilAlt,
+} from '@fortawesome/free-solid-svg-icons';
 import Sidebar from './Sidebar';
 import layout from '../lib/layout';
 import { useAuth } from '../context/authContext';
@@ -12,16 +20,17 @@ const Notifications = lazy(() => import('../pages/Notifications'));
 const Login = lazy(() => import('../pages/Login'));
 const Logout = lazy(() => import('../pages/Logout'));
 const Register = lazy(() => import('../pages/Register'));
-const Create = lazy(() => import('../pages/Create'));
 const Activate = lazy(() => import('../pages/Activate'));
+const CreatePost = lazy(() => import('../pages/CreatePost'));
+const Post = lazy(() => import('../pages/Post'));
 const Recover = lazy(() => import('../pages/Recover'));
 const Restore = lazy(() => import('../pages/Restore'));
 
-
 // Content :: Object => Component
-const Content = () => {
+const Content = (_) => {
   const location = useLocation();
   const { user } = useAuth();
+  const locationClass = location.pathname.split('/')[1];
 
   const layoutStyle = layout.layout(`/${location.pathname.split('/')[1]}`);
   const links = layout.links(user);
@@ -37,10 +46,6 @@ const Content = () => {
               <Switch>
                 <Route exact path="/">
                   <Stream />
-                </Route>
-
-                <Route path="/create">
-                  <Create />
                 </Route>
 
                 <Route path="/profile">
@@ -75,6 +80,13 @@ const Content = () => {
                   <Activate />
                 </Route>
 
+                <Route path="/post/:id">
+                  <Post />
+                </Route>
+
+                <Route path="/post/create">
+                  <CreatePost />
+                </Route>
                 <Route path="/restore">
                   <Restore />
                 </Route>
@@ -82,7 +94,6 @@ const Content = () => {
                 <Route path="/recover/:id?/:token?">
                   <Recover />
                 </Route>
-
               </Switch>
             </Suspense>
           </div>
@@ -93,7 +104,7 @@ const Content = () => {
 };
 
 Content.defaultProps = {
-  links: []
+  links: [],
 };
 
 export default Content;

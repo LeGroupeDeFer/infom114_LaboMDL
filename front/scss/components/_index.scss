@@ -1,8 +1,15 @@
-@use '../themes' as *;
+@use '../themes'as *;
+
+@forward './postPreview';
 
 @forward './post';
 
 @forward './form';
+
+@forward './comment';
+
+
+@forward './commentEditor';
 
 @forward './image';
 
@@ -50,4 +57,8 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+
+.hidden {
+    display: none;
 }
