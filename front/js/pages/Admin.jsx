@@ -8,6 +8,7 @@ import Row from 'react-bootstrap/Row';
 import Tag from '../components/Tags/Tag';
 import AddForm from '../components/Tags/AddForm';
 
+
 import api from '../lib/api';
 import 'regenerator-runtime';
 
@@ -53,8 +54,43 @@ const MenuBar = ({ currentMenu, onClick }) => {
 
 }
 
+const RolesPage = () => {
 
-const RolesPage = () => <h3>roles</h3>;
+  const [roles, setRoles] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [capabilities, setCapabilities] = useState([]);
+
+  useEffect(() => {
+
+    const fetchRoles = async () => {
+      let roles = await api.roles();
+      setRoles(roles);
+    }
+
+    const fetchCapabilities = async () => {
+      let capabilities = await api.capabilities();
+      setCapabilities(capabilities);
+    }
+
+    const fetchUsers = async () => {
+      let users = await api.users();
+      setUsers(users);
+    }
+
+    fetchUsers();
+    fetchRoles();
+    fetchCapabilities();
+  }, [])
+
+  return (
+    <>
+    {roles.map((role, i) => {
+      return <Row key={i}>{role.name}</Row>;
+    })
+    }
+    </>
+  );
+};
 
 
 
@@ -134,8 +170,6 @@ const TagsPage = () => {
 
   return (
       <div>
-      <AddForm addTag={addTag}/>
-      <hr/>
       {tags.length 
       ? tags.map((tag, i) => {
         return (
@@ -146,6 +180,7 @@ const TagsPage = () => {
       })
       : <h1>No tags</h1>
       }
+      <AddForm addTag={addTag}/>
       </div>
   );
 }
