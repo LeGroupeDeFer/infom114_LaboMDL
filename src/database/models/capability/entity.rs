@@ -12,20 +12,29 @@ use diesel::prelude::*;
 use diesel::MysqlConnection;
 use either::*;
 
+use crate::database::models::prelude::CapabilityData;
 use crate::database::models::Entity;
-use crate::lib::consequence::Consequence;
 use crate::database::schema::capabilities;
 use crate::database::schema::capabilities::dsl::{self, capabilities as table};
-
+use crate::lib::consequence::Consequence;
 
 /// The `Capability` struct is the usable type for what's in the database
-#[derive(Identifiable, Queryable, AsChangeset, Associations, Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(
+    Identifiable,
+    Queryable,
+    AsChangeset,
+    Associations,
+    Serialize,
+    Deserialize,
+    Clone,
+    Debug,
+    PartialEq,
+)]
 #[table_name = "capabilities"]
 pub struct CapabilityEntity {
     pub id: u32,
     pub name: String,
 }
-
 
 /// The `CapabilityMinima` struct is only used while inserting a new capability
 /// in the database
@@ -35,9 +44,15 @@ pub struct CapabilityMinima {
     pub name: String,
 }
 
+impl From<&CapabilityData> for CapabilityMinima {
+    fn from(capability: &CapabilityData) -> Self {
+        Self {
+            name: capability.name.to_string(),
+        }
+    }
+}
 
 impl Entity for CapabilityEntity {
-
     type Minima = CapabilityMinima;
 
     /// Constructor of `Capability` from a role id
@@ -77,7 +92,11 @@ impl Entity for CapabilityEntity {
     }
 
     fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {
-        diesel::update(self).set(self).execute(conn).map(|_| self).map(Ok)?
+        diesel::update(self)
+            .set(self)
+            .execute(conn)
+            .map(|_| self)
+            .map(Ok)?
     }
 
     fn delete(self, conn: &MysqlConnection) -> Consequence<()> {
@@ -86,5 +105,4 @@ impl Entity for CapabilityEntity {
             .map(|_| ())
             .map(Ok)?
     }
-
 }

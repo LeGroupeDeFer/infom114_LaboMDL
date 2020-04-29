@@ -33,6 +33,10 @@ pub fn create(conn: DBConnection, auth: Auth, data: Json<RoleData>) -> ApiResult
     // convert data into a usable type
     let role_data = data.into_inner();
 
+    if &role_data.name == "" {
+        Err(EntityError::EmptyAttribute)?;
+    }
+
     // create a new role minima object
     let new_role = RoleMinima {
         name: role_data.name.into(),
@@ -71,6 +75,9 @@ pub fn update(conn: DBConnection, auth: Auth, role_id: u32, data: Json<RoleData>
     }
 
     role.name = role_data.name.into();
+    if &role.name == "" {
+        Err(EntityError::EmptyAttribute)?;
+    }
     role.color = role_data.color.into();
     role.update(&*conn)?;
 

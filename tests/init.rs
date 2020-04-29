@@ -35,11 +35,11 @@ pub fn clean() {
         .unwrap();
     diesel::delete(roles_table).execute(&conn).unwrap();
     diesel::delete(tags_table).execute(&conn).unwrap();
-    diesel::delete(users_table).execute(&conn).unwrap();
-    diesel::delete(addresses_table).execute(&conn).unwrap();
-    diesel::delete(tokens_table).execute(&conn).unwrap();
     diesel::delete(capabilities_table).execute(&conn).unwrap();
     diesel::delete(posts_table).execute(&conn).unwrap();
+    diesel::delete(users_table).execute(&conn).unwrap();
+    diesel::delete(tokens_table).execute(&conn).unwrap();
+    diesel::delete(addresses_table).execute(&conn).unwrap();
 
     // assert empty database
     assert_eq!(

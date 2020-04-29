@@ -34,7 +34,7 @@ fn create_correct_role() {
         "{{
         \"name\": \"{}\",
         \"color\": \"{}\",
-        \"capability\": [{}]
+        \"capabilities\": [{}]
     }}",
         role_name,
         role_color,
@@ -92,7 +92,7 @@ fn create_role_missing_name() {
     let data = format!(
         "{{
         \"color\": \"{}\",
-        \"capability\": [{}]
+        \"capabilities\": [{}]
     }}",
         role_color,
         role_capabilities
@@ -136,7 +136,7 @@ fn create_role_empty_name() {
         "{{
         \"name\": \"\",
         \"color\": \"{}\",
-        \"capability\": [{}]
+        \"capabilities\": [{}]
     }}",
         role_color,
         role_capabilities
@@ -178,7 +178,7 @@ fn create_role_missing_color() {
     let data = format!(
         "{{
         \"name\": \"{}\",
-        \"capability\": [{}]
+        \"capabilities\": [{}]
     }}",
         role_name,
         role_capabilities
@@ -263,7 +263,7 @@ fn create_role_unexistant_capability() {
         "{{
         \"name\": \"{}\",
         \"color\": \"{}\",
-        \"capability\": [{}]
+        \"capabilities\": [{}]
     }}",
         role_name,
         role_color,
@@ -308,7 +308,7 @@ fn create_existing_role() {
         "{{
         \"name\": \"{}\",
         \"color\": \"{}\",
-        \"capability\": [{}]
+        \"capabilities\": [{}]
     }}",
         role_name,
         role_color,
@@ -356,7 +356,7 @@ fn create_correct_role_missing_capability() {
         "{{
         \"name\": \"{}\",
         \"color\": \"{}\",
-        \"capability\": [{}]
+        \"capabilities\": [{}]
     }}",
         role_name,
         role_color,

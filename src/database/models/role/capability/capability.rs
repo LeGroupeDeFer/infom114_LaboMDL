@@ -32,15 +32,15 @@ impl RelRoleCapabilityEntity {
         role_id: u32,
         capability_id: u32,
     ) -> Consequence<Option<Self>> {
-        Ok(Some(
-            roles_capabilities_table
-                .filter(
-                    roles_capabilities::role_id
-                        .eq(role_id)
-                        .and(roles_capabilities::capability_id.eq(capability_id)),
-                )
-                .first(conn)?,
-        ))
+        roles_capabilities_table
+            .filter(
+                roles_capabilities::role_id
+                    .eq(role_id)
+                    .and(roles_capabilities::capability_id.eq(capability_id)),
+            )
+            .first(conn)
+            .optional()
+            .map(Ok)?
     }
 
     /// Insert a new row inside the `roles_capabilities` table.

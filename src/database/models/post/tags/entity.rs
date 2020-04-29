@@ -40,7 +40,15 @@ impl Entity for RelPostTagEntity {
     }
 
     fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Option<Self>> {
-        unimplemented!()
+        Ok(Some(
+            table
+                .filter(
+                    posts_tags::post_id
+                        .eq(minima.post_id)
+                        .and(posts_tags::tag_id.eq(minima.tag_id)),
+                )
+                .first(conn)?,
+        ))
     }
 
     fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {

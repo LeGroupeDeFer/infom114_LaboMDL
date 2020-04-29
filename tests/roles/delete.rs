@@ -102,7 +102,7 @@ fn delete_invalid_role_id() {
     let response = request.dispatch();
 
     // validate status
-    assert_eq!(response.status(), Status::UnprocessableEntity);
+    assert_eq!(response.status(), Status::BadRequest);
 }
 
 #[test]

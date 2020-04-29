@@ -14,6 +14,8 @@ pub type Consequence<T> = StdResult<T, Error>;
 pub enum EntityError {
     Duplicate,
     NotIdentifiable,
+    EmptyAttribute,
+    InvalidID,
 }
 
 impl FmtDisplay for EntityError {
@@ -21,6 +23,10 @@ impl FmtDisplay for EntityError {
         match self {
             EntityError::Duplicate => write!(f, "Entity already exist"),
             EntityError::NotIdentifiable => write!(f, "The entity do not have an ID"),
+            EntityError::EmptyAttribute => {
+                write!(f, "At least one of the entity's attributes is empty")
+            }
+            EntityError::InvalidID => write!(f, "The given ID does not correspond to any entity"),
         }
     }
 }
