@@ -1,8 +1,9 @@
-use rocket::http::Status;
+use rocket::http::{ContentType, Status};
 
 use super::super::init;
 
 use unanimitylibrary::database::models::prelude::*;
+const TAG_ROUTE: &'static str = "/api/v1/tag";
 
 /************************************** TEST ***************************************/
 
@@ -22,7 +23,7 @@ fn add_new_tag() {
 
     // create a tag
     let req = client
-        .post(format!("/api/tag/{}", &tag))
+        .post(format!("{}/{}", TAG_ROUTE, &tag))
         .header(auth_token_header);
     let response = req.dispatch();
 
@@ -50,7 +51,7 @@ fn insert_already_existing_tag() {
     assert!(TagEntity::by_label(&conn, &tag).unwrap().is_some());
 
     let req = client
-        .post(format!("/api/tag/{}", &tag))
+        .post(format!("{}/{}", TAG_ROUTE, &tag))
         .header(auth_token_header);
     let response = req.dispatch();
 
@@ -70,7 +71,7 @@ fn insert_tag_without_login() {
     assert_eq!(TagEntity::all(&conn).unwrap().len(), 0);
 
     // create a tag
-    let req = client.post("/api/tag/test");
+    let req = client.post(format!("{}/test", TAG_ROUTE));
     let response = req.dispatch();
 
     //check the answer is forbidden
@@ -94,7 +95,7 @@ fn delete_tag() {
     let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let req = client
-        .delete(format!("/api/tag/{}", &tag))
+        .delete(format!("{}/{}", TAG_ROUTE, &tag))
         .header(auth_token_header);
     let response = req.dispatch();
 
@@ -119,12 +120,12 @@ fn delete_non_existing_tag() {
     let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let req = client
-        .delete(format!("/api/tag/{}", &tag))
+        .delete(format!("{}/{}", TAG_ROUTE, &tag))
         .header(auth_token_header);
     let response = req.dispatch();
 
     //check the answer is UnprocessableEntity
-    assert_eq!(response.status(), Status::UnprocessableEntity);
+    assert_eq!(response.status(), Status::BadRequest);
 
     //check it is still not present in the db
     assert!(TagEntity::by_label(&conn, &tag).unwrap().is_none());
@@ -146,7 +147,7 @@ fn delete_tag_without_capability() {
     let auth_token_header = init::login(&user.email, &password);
 
     let req = client
-        .delete(format!("/api/tag/{}", &tag))
+        .delete(format!("{}/{}", TAG_ROUTE, &tag))
         .header(auth_token_header);
     let response = req.dispatch();
 
@@ -176,8 +177,9 @@ fn update_tag() {
     let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let req = client
-        .put(format!("/api/tag/{}", existing_tag_label))
+        .put(format!("{}/{}", TAG_ROUTE, existing_tag_label))
         .header(auth_token_header)
+        .header(ContentType::JSON)
         .body(new_tag_json);
     let response = req.dispatch();
 
@@ -215,13 +217,14 @@ fn update_non_existing_tag() {
     let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let req = client
-        .put(format!("/api/tag/{}", existing_tag_label))
+        .put(format!("{}/{}", TAG_ROUTE, existing_tag_label))
         .header(auth_token_header)
+        .header(ContentType::JSON)
         .body(new_tag_json);
     let response = req.dispatch();
 
     //check is the answer is UnprocessableEntity
-    assert_eq!(response.status(), Status::UnprocessableEntity);
+    assert_eq!(response.status(), Status::BadRequest);
 
     // check the `existing_tag_label` still do not exist
     assert!(TagEntity::by_label(&conn, &existing_tag_label)
@@ -254,8 +257,9 @@ fn update_tag_with_already_existing_label() {
     let auth_token_header = init::login("admin@unamur.be", "admin");
 
     let req = client
-        .put(format!("/api/tag/{}", existing_tag_label))
+        .put(format!("{}/{}", TAG_ROUTE, existing_tag_label))
         .header(auth_token_header)
+        .header(ContentType::JSON)
         .body(another_tag_json);
     let response = req.dispatch();
 
@@ -299,8 +303,9 @@ fn update_tag_without_capability() {
     let auth_token_header = init::login(&user.email, &password);
 
     let req = client
-        .put(format!("/api/tag/{}", existing_tag_label))
+        .put(format!("{}/{}", TAG_ROUTE, existing_tag_label))
         .header(auth_token_header)
+        .header(ContentType::JSON)
         .body(new_tag_json);
     let response = req.dispatch();
 
@@ -337,8 +342,9 @@ fn update_tag_with_malformed_json() {
     let data = "{ \"Malformed\": \"Json\" }";
 
     let req = client
-        .put(format!("/api/tag/{}", tag_label))
+        .put(format!("{}/{}", TAG_ROUTE, tag_label))
         .body(data)
+        .header(ContentType::JSON)
         .header(auth_token_header);
     let response = req.dispatch();
 

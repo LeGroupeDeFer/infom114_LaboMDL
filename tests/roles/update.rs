@@ -29,11 +29,14 @@ fn update_everything() {
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match RoleEntity::insert_new(&conn, &role_minima) {
-        Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
-        Ok(r) => r,
-        _ => panic!("Internal error"),
-    };
+    // assert the role is not already in database
+    assert!(RoleEntity::by_name(&conn, &role_minima.name)
+        .unwrap()
+        .is_none());
+
+    // insert the role
+    let existing_role = RoleEntity::insert_new(&conn, &role_minima).unwrap();
+
     // assert the role is correctly added in database
     assert!(RoleEntity::by_name(&conn, &role_minima.name)
         .unwrap()
@@ -51,7 +54,7 @@ fn update_everything() {
         "{{
         \"name\": \"{}\",
         \"color\": \"{}\",
-        \"capability\": [{}]
+        \"capabilities\": [{}]
     }}",
         role_name,
         role_color,
@@ -127,7 +130,7 @@ fn update_same_name() {
         "{{
         \"name\": \"{}\",
         \"color\": \"{}\",
-        \"capability\": [{}]
+        \"capabilities\": [{}]
     }}",
         role_name,
         role_color,
@@ -187,7 +190,7 @@ fn update_missing_id() {
         "{{
         \"name\": \"{}\",
         \"color\": \"{}\",
-        \"capability\": [{}]
+        \"capabilities\": [{}]
     }}",
         role_name,
         role_color,
@@ -238,7 +241,7 @@ fn update_invalid_role_id() {
         "{{
         \"name\": \"{}\",
         \"color\": \"{}\",
-        \"capability\": [{}]
+        \"capabilities\": [{}]
     }}",
         role_name,
         role_color,
@@ -261,7 +264,7 @@ fn update_invalid_role_id() {
     let response = request.dispatch();
 
     // validate status
-    assert_eq!(response.status(), Status::UnprocessableEntity);
+    assert_eq!(response.status(), Status::BadRequest);
 }
 
 #[test]
@@ -297,7 +300,7 @@ fn update_no_color() {
     let data = format!(
         "{{
         \"name\": \"{}\",
-        \"capability\": [{}]
+        \"capabilities\": [{}]
     }}",
         role_name,
         role_capabilities
@@ -355,7 +358,7 @@ fn update_missing_role_name() {
     let data = format!(
         "{{
         \"color\": \"{}\",
-        \"capability\": [{}]
+        \"capabilities\": [{}]
     }}",
         role_color,
         role_capabilities
@@ -466,7 +469,7 @@ fn update_without_correct_capability() {
         "{{
         \"name\": \"{}\",
         \"color\": \"{}\",
-        \"capability\": [{}]
+        \"capabilities\": [{}]
     }}",
         role_name,
         role_color,

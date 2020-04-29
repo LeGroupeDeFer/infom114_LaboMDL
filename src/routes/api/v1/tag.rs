@@ -3,13 +3,14 @@ use crate::database::DBConnection;
 use crate::guards::auth::Auth;
 
 use crate::http::responders::{ApiResult, OK};
+use crate::lib::EntityError;
 use rocket_contrib::json::Json;
 
 pub fn collect() -> Vec<rocket::Route> {
     routes!(post_tag, update_tag, delete_tag)
 }
 
-#[post("/api/v1/tag/<tag_label>", format = "json")]
+#[post("/api/v1/tag/<tag_label>")]
 pub fn post_tag(conn: DBConnection, _auth: Auth, tag_label: String) -> ApiResult<()> {
     let new_tag = TagMinima { label: tag_label };
 
@@ -31,22 +32,27 @@ pub fn update_tag(
 
     let tag_data = data.into_inner();
 
-    let mut tag = TagEntity::by_label(&*conn, &tag_label)??;
-    tag.label = tag_data.label;
-    tag.update(&*conn)?;
+    if let Some(mut tag) = TagEntity::by_label(&*conn, &tag_label)? {
+        tag.label = tag_data.label;
+        tag.update(&*conn)?;
+    } else {
+        Err(EntityError::InvalidID)?;
+    }
 
     OK()
 }
 
 #[delete("/api/v1/tag/<tag_label>")]
 pub fn delete_tag(conn: DBConnection, auth: Auth, tag_label: String) -> ApiResult<()> {
-    let capability = "tag:update";
+    let capability = "tag:delete";
 
     // manage capability
     auth.check_capability(&*conn, &capability)?;
 
-    let tag = TagEntity::by_label(&*conn, &tag_label)??;
-    tag.delete(&*conn)?;
+    match TagEntity::by_label(&*conn, &tag_label)? {
+        Some(tag) => tag.delete(&*conn)?,
+        None => Err(EntityError::InvalidID)?,
+    }
 
     OK()
 }

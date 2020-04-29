@@ -26,7 +26,9 @@ impl FmtDisplay for EntityError {
             EntityError::EmptyAttribute => {
                 write!(f, "At least one of the entity's attributes is empty")
             }
-            EntityError::InvalidID => write!(f, "The given ID does not correspond to any entity"),
+            EntityError::InvalidID => {
+                write!(f, "The given identifier does not correspond to any entity")
+            }
         }
     }
 }

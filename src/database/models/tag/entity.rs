@@ -2,14 +2,16 @@ use diesel::prelude::*;
 use diesel::MysqlConnection;
 use either::*;
 
-use crate::lib::consequence::*;
 use crate::database::models::Entity;
+use crate::lib::consequence::*;
 
 use crate::database::schema::tags;
 use crate::database::schema::tags::dsl::{self, tags as table};
 
 /* ---------------------------------- Tag ---------------------------------- */
-#[derive(Identifiable, Queryable, AsChangeset, Associations, Serialize, Deserialize, Clone, Debug)]
+#[derive(
+    Identifiable, Queryable, AsChangeset, Associations, Serialize, Deserialize, Clone, Debug,
+)]
 #[primary_key(id)]
 #[table_name = "tags"]
 pub struct TagEntity {
@@ -17,16 +19,13 @@ pub struct TagEntity {
     pub label: String,
 }
 
-
 #[derive(Serialize, Deserialize, Debug, Insertable)]
 #[table_name = "tags"]
 pub struct TagMinima {
     pub label: String,
 }
 
-
 impl Entity for TagEntity {
-
     type Minima = TagMinima;
 
     fn by_id(conn: &MysqlConnection, id: &u32) -> Consequence<Option<Self>> {
@@ -61,18 +60,23 @@ impl Entity for TagEntity {
     }
 
     fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {
-        diesel::update(self).set(self).execute(conn).map(|_| self).map(Ok)?
+        if Self::by_label(conn, &self.label)?.is_some() {
+            Err(EntityError::Duplicate)?;
+        }
+        diesel::update(self)
+            .set(self)
+            .execute(conn)
+            .map(|_| self)
+            .map(Ok)?
     }
 
-    fn delete(self, conn: &MysqlConnection) -> Consequence<()>  {
+    fn delete(self, conn: &MysqlConnection) -> Consequence<()> {
         diesel::delete(table.filter(dsl::id.eq(self.id)))
             .execute(conn)
             .map(|_| ())
             .map(Ok)?
     }
-
 }
-
 
 impl TagMinima {
     pub fn to_lowercase(&self) -> Self {

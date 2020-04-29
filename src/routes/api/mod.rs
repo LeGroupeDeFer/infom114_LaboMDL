@@ -43,17 +43,17 @@ pub fn api_get(path: PathBuf) -> Consequence<Redirect> {
     api(path)
 }
 
-#[post("/api/<path..>", format = "json", rank = 2)]
+#[post("/api/<path..>", format = "json", rank = 10)]
 pub fn api_post(path: PathBuf) -> Consequence<Redirect> {
     api(path)
 }
 
-#[put("/api/<path..>", format = "json", rank = 2)]
+#[put("/api/<path..>", format = "json", rank = 10)]
 pub fn api_put(path: PathBuf) -> Consequence<Redirect> {
     api(path)
 }
 
-#[delete("/api/<path..>", format = "json", rank = 2)]
+#[delete("/api/<path..>", format = "json", rank = 10)]
 pub fn api_delete(path: PathBuf) -> Consequence<Redirect> {
     api(path)
 }

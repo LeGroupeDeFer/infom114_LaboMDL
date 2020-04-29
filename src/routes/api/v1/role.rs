@@ -11,6 +11,7 @@ use crate::lib::consequence::*;
 use rocket::http::Status;
 
 use crate::database::models::role::forms::RoleData;
+use crate::guards::RoleGuard;
 use crate::http::responders::{ApiResult, OK};
 use rocket_contrib::json::Json;
 
@@ -56,20 +57,26 @@ pub fn create(conn: DBConnection, auth: Auth, data: Json<RoleData>) -> ApiResult
 /// When updating, the caller MUST specify each and every details, because
 /// there is no smart mechanism implemented to perform a differential update.
 /// The old values are removed and the new values are inserted.
-#[put("/api/v1/role/<role_id>", format = "json", data = "<data>", rank = 3)]
-pub fn update(conn: DBConnection, auth: Auth, role_id: u32, data: Json<RoleData>) -> ApiResult<()> {
+#[put("/api/v1/role/<_role_id>", format = "json", data = "<data>")]
+pub fn update(
+    conn: DBConnection,
+    auth: Auth,
+    role_guard: RoleGuard,
+    _role_id: u32,
+    data: Json<RoleData>,
+) -> ApiResult<()> {
     // manage capability
     let capability = "role:manage";
     auth.check_capability(&*conn, &capability)?;
 
-    let mut role = RoleEntity::by_id(&*conn, &role_id)??;
+    let mut role = role_guard.role_clone();
 
     // assert that the new name is not already used
     let role_data = data.into_inner();
     if let Some(r) = RoleEntity::by_name(&*conn, &role_data.name)? {
         // we do not want to throw an error if the found role with the same
         // name is the one we are working on
-        if r.id != role_id {
+        if &r.id != &role.id {
             Err(EntityError::Duplicate)?;
         }
     }
@@ -93,20 +100,23 @@ pub fn update(conn: DBConnection, auth: Auth, role_id: u32, data: Json<RoleData>
 ///
 /// This will first remove every capability linked to this role
 /// then it will remove the role.
-#[delete("/api/v1/role/<role_id>")]
-pub fn delete(conn: DBConnection, auth: Auth, role_id: u32) -> ApiResult<()> {
+#[delete("/api/v1/role/<_role_id>")]
+pub fn delete(
+    conn: DBConnection,
+    auth: Auth,
+    role_guard: RoleGuard,
+    _role_id: u32,
+) -> ApiResult<()> {
     // manage capability
     let capability = "role:manage";
 
     auth.check_capability(&*conn, &capability)?;
 
-    let role = RoleEntity::by_id(&*conn, &role_id)??;
-
     // reset capability
-    role.clear_capabilities(&*conn)?;
+    role_guard.role().clear_capabilities(&*conn)?;
 
     // delete role
-    role.delete(&*conn)?;
+    role_guard.role_clone().delete(&*conn)?;
 
     OK()
 }

@@ -91,30 +91,6 @@ impl RoleEntity {
         Ok(())
     }
 
-    /// Return all the roles with the corresponding capability as an array
-    /// of `RoleCapabilities`
-    pub fn all(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
-        Ok(RoleEntity::all(conn)?
-            .iter()
-            .map(|r| Self::by_role(conn, &r))
-            .collect::<Vec<Self>>())
-    }
-
-    /// Constructor of `RoleCapabilities` based on a role name
-    pub fn by_role_name(conn: &MysqlConnection, name: &str) -> Consequence<Option<Self>> {
-        Ok(RoleEntity::by_name(conn, name)?.map(|r| Self::by_role(conn, &r)))
-    }
-
-    /// Constructor of `RoleCapabilities` based on a `role::Role` object
-    pub fn by_role(conn: &MysqlConnection, r: &RoleEntity) -> Self {
-        Self {
-            id: r.id,
-            name: r.name.to_string(),
-            color: r.color.to_string(),
-            //capabilities: RelRoleCapability::get_capabilities_for_role(&conn, &r),
-        }
-    }
-
     pub fn add_capabilities(
         &self,
         conn: &MysqlConnection,

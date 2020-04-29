@@ -13,7 +13,11 @@ pub struct Tag {
 impl TagEntity {
     // by_label :: (MysqlConnection) -> Option<Tag>
     pub fn by_label(conn: &MysqlConnection, label: &str) -> Consequence<Option<Self>> {
-        Ok(Some(table.filter(dsl::label.eq(label)).first(conn)?))
+        table
+            .filter(dsl::label.eq(label))
+            .first(conn)
+            .optional()
+            .map(Ok)?
     }
 }
 
