@@ -14,6 +14,7 @@ use rocket_contrib::json::Json;
 pub fn collect() -> Vec<rocket::Route> {
     routes!(
         create_post,
+        get_all_posts_authenticated,
         get_all_posts,
         get_post,
         delete_post,
@@ -60,21 +61,25 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiRespon
     }
 }
 
-#[get("/api/posts", rank = 1)]
-fn get_all_posts_authenticated(conn: DBConnection, auth: Auth) -> ApiResponse {
-    let posts = Post::all(&*conn)
-        .drain(..)
-        .map(|mut p| {
-            Post::set_user_vote(&mut p, &*conn, auth.sub);
-            p
-        })
-        .collect::<Vec<Post>>();
-    ApiResponse::new(Status::Ok, json!(posts))
+#[get("/api/v1/posts", rank = 1)]
+fn get_all_posts_authenticated(conn: DBConnection, auth: Auth) -> ApiResult<Vec<Post>> {
+    let posts = if auth.has_capability(&*conn, "post:view_hidden") {
+        Post::admin_all(&*conn)?
+    } else {
+        Post::all(&*conn)?
+    }
+    .drain(..)
+    .map(|mut p| {
+        p.set_user_vote(&*conn, auth.sub);
+        p
+    })
+    .collect::<Vec<Post>>();
+    Ok(Json(posts))
 }
 
-#[get("/api/posts", rank = 2)]
-fn get_all_posts(conn: DBConnection) -> ApiResponse {
-    ApiResponse::new(Status::Ok, json!(Post::all(&conn)))
+#[get("/api/v1/posts", rank = 2)]
+fn get_all_posts(conn: DBConnection) -> ApiResult<Vec<Post>> {
+    Ok(Json(Post::all(&*conn)?))
 }
 
 /// Get post by id (unauth)

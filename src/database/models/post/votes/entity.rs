@@ -58,17 +58,21 @@ impl RelPostVoteEntity {
         })
     }
 
-    pub fn sum_by_post_id(conn: &MysqlConnection, post_id: u32) -> i64 {
+    pub fn sum_by_post_id(conn: &MysqlConnection, post_id: u32) -> Consequence<i64> {
         table
             .select(sum(votes_posts::vote_value))
             .filter(votes_posts::post_id.eq(post_id))
             .first::<Option<i64>>(conn)
             .unwrap_or(Some(0))
-            .unwrap()
+            .map(Ok)?
     }
 
-    pub fn update(conn: &MysqlConnection, post_id: u32, user_id: u32, vote: i16) -> bool {
-        // TODO : use florian magical result to manage these cases
+    pub fn update(
+        conn: &MysqlConnection,
+        post_id: u32,
+        user_id: u32,
+        vote: i16,
+    ) -> Consequence<()> {
         diesel::update(
             table.filter(
                 votes_posts::post_id
@@ -77,11 +81,11 @@ impl RelPostVoteEntity {
             ),
         )
         .set(votes_posts::vote_value.eq(vote))
-        .execute(conn)
-        .is_ok()
+        .execute(conn)?;
+        Ok(())
     }
 
-    pub fn delete(conn: &MysqlConnection, post_id: u32, user_id: u32) -> bool {
+    pub fn delete(conn: &MysqlConnection, post_id: u32, user_id: u32) -> Consequence<()> {
         diesel::delete(
             table.filter(
                 votes_posts::post_id
@@ -89,7 +93,7 @@ impl RelPostVoteEntity {
                     .and(votes_posts::user_id.eq(user_id)),
             ),
         )
-        .execute(conn)
-        .is_ok()
+        .execute(conn)?;
+        Ok(())
     }
 }

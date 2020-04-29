@@ -1,6 +1,6 @@
 use chrono::NaiveDateTime;
-use diesel::prelude::*;
 use diesel::expression::functions::date_and_time::now;
+use diesel::prelude::*;
 use diesel::MysqlConnection;
 use either::*;
 
@@ -10,8 +10,17 @@ use crate::lib::consequence::*;
 use crate::database::schema::posts;
 use crate::database::schema::posts::dsl::{self, posts as table};
 
-
-#[derive(Identifiable, Queryable, AsChangeset, Associations, Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(
+    Identifiable,
+    Queryable,
+    AsChangeset,
+    Associations,
+    Serialize,
+    Deserialize,
+    Clone,
+    Debug,
+    PartialEq,
+)]
 #[table_name = "posts"]
 pub struct PostEntity {
     pub id: u32,
@@ -28,7 +37,6 @@ pub struct PostEntity {
     pub score: i64,
 }
 
-
 #[derive(Serialize, Deserialize, Debug, Insertable)]
 #[table_name = "posts"]
 pub struct PostMinima {
@@ -37,17 +45,27 @@ pub struct PostMinima {
     pub author_id: u32,
 }
 
-
 impl Entity for PostEntity {
-
     type Minima = PostMinima;
 
     fn by_id(conn: &MysqlConnection, id: &u32) -> Consequence<Option<Self>> {
-        table.find(id).first::<PostEntity>(conn).optional().map(Ok)?
+        table
+            .find(id)
+            .first::<PostEntity>(conn)
+            .optional()
+            .map(Ok)?
     }
 
+    /// Even if this function is called "all", the posts that are deleted or
+    /// hidden are not returned.
+    ///
+    /// If you want to get the hidden posts too, please use
+    /// `PostEntity::admin_all()` method
     fn all(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
-        table.load(conn).map(Ok)?
+        let entities = table
+            .filter(posts::deleted_at.is_null().and(posts::hidden_at.is_null()))
+            .load::<Self>(conn)?;
+        Ok(entities)
     }
 
     fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Either<Self, Self>> {
@@ -55,9 +73,7 @@ impl Entity for PostEntity {
         if past.is_some() {
             Ok(Left(past.unwrap()))
         } else {
-            diesel::insert_into(table)
-                .values(minima)
-                .execute(conn)?;
+            diesel::insert_into(table).values(minima).execute(conn)?;
             let future = Self::select(conn, minima)??;
             Ok(Right(future))
         }
@@ -76,7 +92,11 @@ impl Entity for PostEntity {
     }
 
     fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {
-        diesel::update(self).set(self).execute(conn).map(|_| self).map(Ok)?
+        diesel::update(self)
+            .set(self)
+            .execute(conn)
+            .map(|_| self)
+            .map(Ok)?
     }
 
     fn delete(self, conn: &MysqlConnection) -> Consequence<()> {
@@ -86,5 +106,4 @@ impl Entity for PostEntity {
             .map(|_| ())
             .map(Ok)?
     }
-
 }

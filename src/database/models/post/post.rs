@@ -6,7 +6,7 @@ use diesel::MysqlConnection;
 use crate::database;
 use crate::database::models::prelude::*;
 use crate::database::schema::posts::dsl::{self, posts as table};
-use crate::lib::Consequence;
+use crate::lib::{Consequence, EntityError};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Post {
@@ -27,39 +27,65 @@ pub struct Post {
 
 impl PostEntity {
     /// Get `author_id` from a `post_id`
-    pub fn get_author_id_by_post_id(conn: &MysqlConnection, post_id: u32) -> Option<u32> {
-        table.find(post_id).select(dsl::author_id).first(conn).ok()
+    pub fn get_author_id_by_post_id(
+        conn: &MysqlConnection,
+        post_id: u32,
+    ) -> Consequence<Option<u32>> {
+        table
+            .find(post_id)
+            .select(dsl::author_id)
+            .first(conn)
+            .optional()
+            .map(Ok)?
+    }
+
+    pub fn admin_all(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
+        let t = table.filter(dsl::deleted_at.is_null()).load(conn)?;
+        Ok(t)
+    }
+
+    pub fn get_deleted(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
+        table
+            .filter(dsl::deleted_at.is_not_null())
+            .load(conn)
+            .map(Ok)?
     }
 
     /// Delete a post permanently (not used)
-    pub fn hard_delete(&self, conn: &MysqlConnection) {
-        diesel::delete(self).execute(conn).unwrap();
+    pub fn hard_delete(&self, conn: &MysqlConnection) -> Consequence<()> {
+        diesel::delete(self).execute(conn)?;
+        Ok(())
     }
 
-    pub fn upvote(&self, conn: &MysqlConnection, user_id: u32, vote: i32) -> Option<i64> {
+    pub fn upvote(
+        &self,
+        conn: &MysqlConnection,
+        user_id: u32,
+        vote: i32,
+    ) -> Consequence<Option<i64>> {
         // update rel score
         match vote {
             i if i == -1 || i == 1 => {
-                RelPostVoteEntity::update(&conn, self.id, user_id, i as i16);
+                RelPostVoteEntity::update(&conn, self.id, user_id, i as i16)?;
             }
             0 => {
-                RelPostVoteEntity::delete(&conn, self.id, user_id);
+                RelPostVoteEntity::delete(&conn, self.id, user_id)?;
             }
-            _ => panic!("TODO : improve this error management"), // TODO
+            _ => Err(EntityError::InvalidAttribute)?,
         }
 
         // get post score
-        let new_score = self.calculate_score(&conn);
+        let new_score = self.calculate_score(&conn)?;
 
         // update self
         diesel::update(self)
             .set(dsl::score.eq(new_score))
             .execute(conn)
-            .unwrap();
-        Some(new_score)
+            .map(|_| Some(new_score))
+            .map(Ok)?
     }
 
-    pub fn calculate_score(&self, conn: &MysqlConnection) -> i64 {
+    pub fn calculate_score(&self, conn: &MysqlConnection) -> Consequence<i64> {
         RelPostVoteEntity::sum_by_post_id(&conn, self.id)
     }
 
@@ -104,12 +130,20 @@ impl PostEntity {
 }
 
 impl Post {
-    pub fn all(conn: &MysqlConnection) -> Vec<Self> {
-        PostEntity::all(conn)
-            .unwrap()
+    pub fn all(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
+        let mut entities = PostEntity::all(conn)?;
+        let posts = entities
             .drain(..)
             .map(|post_entity| Post::from(post_entity))
-            .collect::<Vec<Self>>()
+            .collect::<Vec<Self>>();
+        Ok(posts)
+    }
+
+    pub fn admin_all(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
+        Ok(PostEntity::admin_all(conn)?
+            .drain(..)
+            .map(|post_entity| Post::from(post_entity))
+            .collect::<Vec<Self>>())
     }
 
     pub fn set_user_vote(&mut self, conn: &MysqlConnection, user_id: u32) -> Consequence<()> {

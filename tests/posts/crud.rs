@@ -8,7 +8,7 @@ use unanimitylibrary::lib::seeds::posts::seed_test_posts;
 
 #[test]
 fn read_all_posts() {
-    let route = "/api/posts";
+    let route = "/api/v1/posts";
 
     // clean database
     let client = init::clean_client();
@@ -31,10 +31,11 @@ fn read_all_posts() {
     // check the answer data is what we wanted
     let data = response.body_string().unwrap();
     let posts: Vec<Post> = serde_json::from_str(&data).unwrap();
-    let bite = "coucou";
     // we want a total of 6 post, the 5 normals & the locked one
+    assert_eq!(posts.len(), 6);
 }
 
+// read admin all posts
 // read all posts with a search term
 // read all posts related to a tag
 // read all posts with a sorting criteria

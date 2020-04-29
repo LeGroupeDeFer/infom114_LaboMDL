@@ -16,6 +16,7 @@ pub enum EntityError {
     NotIdentifiable,
     EmptyAttribute,
     InvalidID,
+    InvalidAttribute,
 }
 
 impl FmtDisplay for EntityError {
@@ -28,6 +29,9 @@ impl FmtDisplay for EntityError {
             }
             EntityError::InvalidID => {
                 write!(f, "The given identifier does not correspond to any entity")
+            }
+            EntityError::InvalidAttribute => {
+                write!(f, "At least one of the given attributes is invalid")
             }
         }
     }

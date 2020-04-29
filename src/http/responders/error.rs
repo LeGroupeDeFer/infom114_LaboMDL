@@ -19,6 +19,7 @@ fn response_code(error: &Error) -> u16 {
             EntityError::NotIdentifiable => 500,
             EntityError::EmptyAttribute => 422,
             EntityError::InvalidID => 400,
+            EntityError::InvalidAttribute => 400,
         },
         Error::TokenError(e) => match e {
             TokenError::Collision => 500,
