@@ -136,8 +136,8 @@ function removeTag(label) {
   return api(`/tag/${label}`, {method: "DELETE"})
 }
 
-function editTag(label) {
-  return api(`/tag/${label}`, {method: "PUT", body: { label: String(label) } })
+function editTag(oldLabel, newLabel) {
+  return api(`/tag/${oldLabel}`, {method: "PUT", body: { label: String(newLabel) } })
 }
 
 function roles() {

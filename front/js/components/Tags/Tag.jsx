@@ -1,4 +1,5 @@
 import React, {useState} from "react";
+import api from '../../lib/api';
 
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
@@ -11,8 +12,27 @@ import FormControl from 'react-bootstrap/FormControl';
 import Form from 'react-bootstrap/Form';
 
 
-const Tag = ({label, deleteTag, updateTag}) => {
+const Tag = ({name, deleteTag}) => {
   const [modalShow, setModalShow] = useState(false);
+  const [label, setLabel] = useState(name);
+
+  const handleEdit = async (oldLabel, newLabel) => {
+
+    const update = async (oldLabel, newLabel) => {
+      let result = await api.tag.edit(oldLabel, newLabel);
+      return(result);
+    }
+
+    await update(oldLabel, newLabel).then((answer) => {   
+      if (Object.keys(answer).length === 0 && answer.constructor === Object) {
+        setLabel(newLabel);
+      }
+    }).catch((err) =>{
+      //TODO replace with the toast 
+      alert(err.message);
+    });
+  };
+
 
   return (
     <>
@@ -21,7 +41,7 @@ const Tag = ({label, deleteTag, updateTag}) => {
         <Container>
           <Row>
             <Col>
-              <Card.Title >{label}</Card.Title>
+              <Card.Title>{label}</Card.Title>
             </Col>
 
             <Col md="auto">
@@ -37,7 +57,8 @@ const Tag = ({label, deleteTag, updateTag}) => {
         show={modalShow}
         onHide={() => setModalShow(false)}
         label={label}
-        updateTag={updateTag}
+        updateTag={handleEdit}
+        handleClose={() => setModalShow(false)}
       />
     </>
   )
@@ -53,8 +74,7 @@ function UpdateTagModal(props) {
     if (!newLabel)
       return; 
     
-    props.updateTag(newLabel, props.label);
-    setNewLabel("");
+    props.updateTag(props.label, newLabel);
   }
   
   return (
@@ -65,26 +85,23 @@ function UpdateTagModal(props) {
       aria-labelledby="contained-modal-title-vcenter"
       centered
     >
-      <Modal.Header closeButton>
-        <Modal.Title id="contained-modal-title-vcenter">
-          Modifier le tag
-        </Modal.Title>
-      </Modal.Header>
       <Modal.Body>
+        <InputGroup>
+          <InputGroup.Prepend>
+            <InputGroup.Text id="basic-addon1">{props.label}</InputGroup.Text>
+          </InputGroup.Prepend>
+          <FormControl
+            placeholder="Modifier le tag"
+            onChange={e => setNewLabel(e.target.value)}
+          />
 
-      <InputGroup>
-        <FormControl
-          placeholder="Modifier le nom"
-          onChange={e => setNewLabel(e.target.value)}
-        />
+          <Form onSubmit={handleEdit}>
+            <InputGroup.Append>
+              <Button variant="outline-secondary" type="submit" onClick={props.handleClose}>Modifier</Button>
+            </InputGroup.Append>
+          </Form>
 
-        <Form onSubmit={handleEdit}>
-          <InputGroup.Append>
-            <Button variant="outline-secondary" type="submit">Modifier</Button>
-          </InputGroup.Append>
-        </Form>
-
-      </InputGroup>
+        </InputGroup>
       </Modal.Body>
     </Modal>
   );

@@ -164,22 +164,13 @@ const TagsPage = () => {
     setTags(newTags);
   }
 
-  const handleEdit = (newLabel, oldLabel) => {
-
-    console.log(newLabel);
-    console.log(oldLabel);
-
-    //TODO
-
-  }
-
   return (
       <div>
       {tags.length 
       ? tags.map((tag, i) => {
         return (
           <Row key={i} className="mb-3">
-            <Tag label={tag.label} deleteTag={handleDelete} updateTag={handleEdit} ></Tag>
+            <Tag name={tag.label} deleteTag={handleDelete}></Tag>
           </Row>
         )
       })
