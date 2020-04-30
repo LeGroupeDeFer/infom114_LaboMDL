@@ -79,12 +79,11 @@ const Content = (_) => {
                 <Route path="/activate/:id?/:token?">
                   <Activate />
                 </Route>
-
                 <Route path="/post/:id">
                   <Post />
                 </Route>
 
-                <Route path="/post/create">
+                <Route path="/submit">
                   <CreatePost />
                 </Route>
                 <Route path="/restore">
