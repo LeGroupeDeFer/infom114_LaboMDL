@@ -86,7 +86,7 @@ impl Entity for PostEntity {
                     .eq(minima.title.clone())
                     .and(dsl::content.eq(minima.content.clone())),
             )
-            .order((dsl::id.desc()))
+            .order(dsl::id.desc())
             .first(conn)
             .optional()
             .map(Ok)?

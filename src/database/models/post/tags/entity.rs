@@ -19,11 +19,11 @@ pub struct RelPostTagEntity {
 impl Entity for RelPostTagEntity {
     type Minima = Self;
 
-    fn by_id(conn: &MysqlConnection, id: &u32) -> Consequence<Option<Self>> {
+    fn by_id(_conn: &MysqlConnection, _id: &u32) -> Consequence<Option<Self>> {
         Err(EntityError::NotIdentifiable)?
     }
 
-    fn all(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
+    fn all(_conn: &MysqlConnection) -> Consequence<Vec<Self>> {
         unimplemented!()
     }
 
@@ -51,11 +51,11 @@ impl Entity for RelPostTagEntity {
             .map(Ok)?
     }
 
-    fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {
+    fn update(&self, _conn: &MysqlConnection) -> Consequence<&Self> {
         unimplemented!()
     }
 
-    fn delete(self, conn: &MysqlConnection) -> Consequence<()> {
+    fn delete(self, _conn: &MysqlConnection) -> Consequence<()> {
         unimplemented!()
     }
 }

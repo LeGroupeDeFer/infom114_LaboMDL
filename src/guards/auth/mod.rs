@@ -167,7 +167,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for ForwardAuth {
         let state: State<AppState> = request.guard().unwrap();
         match request_auth(request, &state.jwt_secret) {
             Ok(auth) => Outcome::Success(Self(auth)),
-            Err(msg) => Outcome::Forward(()),
+            Err(_msg) => Outcome::Forward(()),
         }
     }
 }

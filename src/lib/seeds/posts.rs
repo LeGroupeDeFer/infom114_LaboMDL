@@ -37,12 +37,14 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
             p.add_tag(
                 &conn,
                 &TagEntity::by_label(&conn, "even").unwrap().unwrap().id,
-            );
+            )
+            .unwrap();
         } else {
             p.add_tag(
                 &conn,
                 &TagEntity::by_label(&conn, "odd").unwrap().unwrap().id,
-            );
+            )
+            .unwrap();
         }
     }
 
@@ -53,7 +55,7 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
         content: lib::lorem_ipsum(),
     };
     let deleted_post = PostEntity::insert_new(&conn, &deleted_minima).unwrap();
-    deleted_post.delete(&conn);
+    deleted_post.delete(&conn).unwrap();
 
     // create 1 hidden post
     let hidden_minima = PostMinima {
@@ -62,7 +64,7 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
         content: lib::lorem_ipsum(),
     };
     let hidden_post = PostEntity::insert_new(&conn, &hidden_minima).unwrap();
-    hidden_post.toggle_visibility(&conn);
+    hidden_post.toggle_visibility(&conn).unwrap();
 
     // create 1 locked post
     let locked_minima = PostMinima {
@@ -71,7 +73,7 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
         content: lib::lorem_ipsum(),
     };
     let locked_post = PostEntity::insert_new(&conn, &locked_minima).unwrap();
-    locked_post.toggle_lock(&conn);
+    locked_post.toggle_lock(&conn).unwrap();
 }
 
 /// Create an author for the posts
@@ -93,7 +95,7 @@ fn init_author(conn: &MysqlConnection) -> UserEntity {
     };
     let mut user = UserEntity::insert_either(&conn, &u).unwrap();
     if !user.active {
-        user.activate(&conn);
+        user.activate(&conn).unwrap();
     }
     UserEntity::by_email(&conn, email).unwrap().unwrap()
 }
@@ -107,6 +109,7 @@ fn init_tags(conn: &MysqlConnection) {
             &TagMinima {
                 label: label.to_string(),
             },
-        );
+        )
+        .unwrap();
     }
 }

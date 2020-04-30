@@ -4,12 +4,10 @@
 
 use crate::database::models::prelude::*;
 use crate::database::DBConnection;
-use crate::http::responders::api::ApiResponse;
 
 use crate::guards::auth::Auth;
 
 use crate::http::responders::ApiResult;
-use rocket::http::Status;
 use rocket_contrib::json::Json;
 
 /// Collect every routes that this module needs to share with the application

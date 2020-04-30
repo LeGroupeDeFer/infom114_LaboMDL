@@ -5,9 +5,6 @@ use crate::guards::{Auth, ForwardAuth, PostGuard};
 use crate::http::responders::{ApiResult, OK};
 use crate::lib::{AuthError, Consequence, EntityError};
 
-use diesel::prelude::*;
-use rocket::http::Status;
-use rocket::Request;
 use rocket_contrib::json::Json;
 
 pub fn collect() -> Vec<rocket::Route> {

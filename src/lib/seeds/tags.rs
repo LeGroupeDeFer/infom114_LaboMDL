@@ -1,5 +1,5 @@
-use crate::database::models::Entity;
 use crate::database::models::tag::{TagEntity, TagMinima};
+use crate::database::models::Entity;
 use diesel::MysqlConnection;
 
 pub fn seed_tags(conn: &MysqlConnection) {
@@ -11,6 +11,7 @@ pub fn seed_tags(conn: &MysqlConnection) {
             &TagMinima {
                 label: label.to_string(),
             },
-        );
+        )
+        .unwrap();
     }
 }

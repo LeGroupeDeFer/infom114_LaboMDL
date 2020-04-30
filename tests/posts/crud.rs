@@ -1,9 +1,7 @@
 use rocket::http::Status;
 
 use super::super::init;
-use super::utils;
 
-use crate::init::login_admin;
 use rocket::http::ContentType;
 use unanimitylibrary::database::models::prelude::*;
 
@@ -15,7 +13,6 @@ fn read_all_posts_while_logged_in() {
     // clean database
     let client = init::clean_client();
     init::seed();
-    let conn = init::database_connection();
 
     // login
     let (user, password) = init::get_user(true);
@@ -58,7 +55,6 @@ fn read_all_posts_while_logged_in_as_admin() {
     // clean database
     let client = init::clean_client();
     init::seed();
-    let conn = init::database_connection();
 
     // login
     let auth_token_header = init::login_admin();
@@ -100,7 +96,6 @@ fn read_all_posts_without_being_logged_in() {
     // clean database
     let client = init::clean_client();
     init::seed();
-    let conn = init::database_connection();
 
     // perform request
     let req = client.get(POSTS_ROUTE);
@@ -230,7 +225,7 @@ pub fn create_post_unauthenticated_user() {
         .post(POST_ROUTE)
         .header(ContentType::JSON)
         .body(post_json_data);
-    let mut response = req.dispatch();
+    let response = req.dispatch();
 
     assert_eq!(response.status(), Status::Forbidden);
 
@@ -252,7 +247,6 @@ pub fn create_post_missing_attribute() {
     let auth_token_header = init::login(&user.email, &passwd);
 
     let new_post_title = "new post title";
-    let new_post_content = "This is a new content for the post";
 
     let post_json_data = format!("{{\"title\": \"{}\"}}", new_post_title);
 
@@ -261,7 +255,7 @@ pub fn create_post_missing_attribute() {
         .header(ContentType::JSON)
         .header(auth_token_header)
         .body(post_json_data);
-    let mut response = req.dispatch();
+    let response = req.dispatch();
 
     assert_eq!(response.status(), Status::UnprocessableEntity);
 
@@ -295,7 +289,7 @@ pub fn create_post_bad_json() {
         .header(ContentType::JSON)
         .header(auth_token_header)
         .body(post_json_data);
-    let mut response = req.dispatch();
+    let response = req.dispatch();
 
     assert_eq!(response.status(), Status::BadRequest);
 
@@ -474,7 +468,6 @@ fn read_a_post() {
     // clean database
     let client = init::clean_client();
     init::seed();
-    let conn = init::database_connection();
 
     let existing_post_entity = init::get_post_entity(false, false, false);
 
@@ -497,7 +490,6 @@ fn read_a_post_as_authenticated() {
     // clean database
     let client = init::clean_client();
     init::seed();
-    let conn = init::database_connection();
 
     // login
     let (user, passwd) = init::get_user(true);
@@ -526,7 +518,6 @@ fn read_a_post_as_admin() {
     // clean database
     let client = init::clean_client();
     init::seed();
-    let conn = init::database_connection();
 
     let auth_token_header = init::login_admin();
     let existing_post_entity = init::get_post_entity(false, false, false);
@@ -561,7 +552,7 @@ fn read_a_post_invalid_id() {
 
     // perform request
     let req = client.get(format!("{}/{}", POST_ROUTE, unexisting_id));
-    let mut response = req.dispatch();
+    let response = req.dispatch();
 
     //check the answer is a Bad request
     assert_eq!(response.status(), Status::BadRequest);
@@ -572,7 +563,6 @@ fn read_a_post_soft_deleted() {
     // clean database
     let client = init::clean_client();
     init::seed();
-    let conn = init::database_connection();
 
     let auth_token_header = init::login_admin();
     let existing_post_entity = init::get_post_entity(false, false, true);
@@ -581,7 +571,7 @@ fn read_a_post_soft_deleted() {
     let req = client
         .get(format!("{}/{}", POST_ROUTE, existing_post_entity.id))
         .header(auth_token_header);
-    let mut response = req.dispatch();
+    let response = req.dispatch();
 
     //check the answer is Ok
     assert_eq!(response.status(), Status::BadRequest);
@@ -592,7 +582,6 @@ fn read_a_post_hidden_as_admin() {
     // clean database
     let client = init::clean_client();
     init::seed();
-    let conn = init::database_connection();
 
     let auth_token_header = init::login_admin();
     let existing_post_entity = init::get_post_entity(false, true, false);
@@ -618,7 +607,6 @@ fn read_a_post_hidden_as_user() {
     // clean database
     let client = init::clean_client();
     init::seed();
-    let conn = init::database_connection();
 
     let (user, password) = init::get_user(true);
     let auth_token_header = init::login(&user.email, &password);
@@ -628,7 +616,7 @@ fn read_a_post_hidden_as_user() {
     let req = client
         .get(format!("{}/{}", POST_ROUTE, existing_post_entity.id))
         .header(auth_token_header);
-    let mut response = req.dispatch();
+    let response = req.dispatch();
 
     //check the answer is Ok
     assert_eq!(response.status(), Status::BadRequest);
@@ -985,7 +973,7 @@ fn update_post_locked_as_author() {
     assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
 
     // lock the post
-    let mut post_entity = PostEntity::by_id(&conn, &p.id).unwrap().unwrap();
+    let post_entity = PostEntity::by_id(&conn, &p.id).unwrap().unwrap();
     post_entity.toggle_lock(&conn).unwrap();
 
     let updated_title = "updated title yo";
@@ -1108,7 +1096,7 @@ fn update_post_hidden_as_author() {
     assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
 
     // hide the post
-    let mut post_entity = PostEntity::by_id(&conn, &p.id).unwrap().unwrap();
+    let post_entity = PostEntity::by_id(&conn, &p.id).unwrap().unwrap();
     post_entity.toggle_visibility(&conn).unwrap();
 
     let updated_title = "updated title yo";
@@ -1264,7 +1252,6 @@ fn delete_post_already_deleted() {
     // clean database
     let client = init::clean_client();
     init::seed();
-    let conn = init::database_connection();
 
     let p = init::get_post_entity(false, false, true);
 
@@ -1351,7 +1338,7 @@ fn delete_post_locked_by_author() {
     assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
 
     // lock the post
-    let mut post_entity = PostEntity::by_id(&conn, &p.id).unwrap().unwrap();
+    let post_entity = PostEntity::by_id(&conn, &p.id).unwrap().unwrap();
     post_entity.toggle_lock(&conn).unwrap();
 
     let update_req = client
@@ -1398,7 +1385,7 @@ fn delete_post_hidden_by_author() {
     assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
 
     // lock the post
-    let mut post_entity = PostEntity::by_id(&conn, &p.id).unwrap().unwrap();
+    let post_entity = PostEntity::by_id(&conn, &p.id).unwrap().unwrap();
     post_entity.toggle_visibility(&conn).unwrap();
 
     let update_req = client

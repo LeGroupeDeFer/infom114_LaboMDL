@@ -1,9 +1,8 @@
 use crate::database::models::prelude::*;
-use diesel::MysqlConnection;
 use crate::lib::Consequence;
+use diesel::MysqlConnection;
 
-
-pub fn seed_mock_users(conn: &MysqlConnection) -> Consequence<()>{
+pub fn seed_mock_users(conn: &MysqlConnection) -> Consequence<()> {
     let x = 5;
 
     // lets create x users
@@ -21,12 +20,12 @@ pub fn seed_mock_users(conn: &MysqlConnection) -> Consequence<()>{
             phone: None,
             activation_token: Some(activation_token.id),
             recovery_token: Some(recovery_token.id),
-            refresh_token: Some(refresh_token.id)
+            refresh_token: Some(refresh_token.id),
         };
 
         let mut user = UserEntity::insert_new(&conn, &u).unwrap();
 
-        user.activate(&conn);
+        user.activate(&conn).unwrap();
     }
 
     Ok(())

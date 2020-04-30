@@ -5,9 +5,8 @@ use either::*;
 use crate::database::models::Entity;
 use crate::lib::consequence::*;
 
-use crate::database::schema::votes_comments;
 use crate::database::models::prelude::{CommentEntity, UserEntity};
-
+use crate::database::schema::votes_comments;
 
 #[derive(Queryable, Associations, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[table_name = "votes_comments"]
@@ -20,46 +19,33 @@ pub struct RelCommentVoteEntity {
     vote_value: bool,
 }
 
-
-//impl Identifiable for RelCommentVote {
-//
-//    type Id = (u32, u32);
-//
-//    fn id(self) -> Self::Id {
-//        (self.comment_id, self.user_id)
-//    }
-//
-//}
-
-
 // TODO : implement minima
 pub struct RelCommentVoteMinima {}
 
-
 impl Entity for RelCommentVoteEntity {
-
     type Minima = RelCommentVoteMinima;
 
-    fn by_id(conn: &MysqlConnection, id: &u32) -> Consequence<Option<Self>> { unimplemented!() }
-
-    fn all(conn: &MysqlConnection) -> Consequence<Vec<Self>> { unimplemented!() }
-
-    fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Either<Self, Self>> {
+    fn by_id(_conn: &MysqlConnection, _id: &u32) -> Consequence<Option<Self>> {
         unimplemented!()
     }
 
-    fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Option<Self>> {
+    fn all(_conn: &MysqlConnection) -> Consequence<Vec<Self>> {
         unimplemented!()
     }
 
-    fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {
+    fn insert(_conn: &MysqlConnection, _minima: &Self::Minima) -> Consequence<Either<Self, Self>> {
         unimplemented!()
     }
 
-    fn delete(self, conn: &MysqlConnection) -> Consequence<()> {
+    fn select(_conn: &MysqlConnection, _minima: &Self::Minima) -> Consequence<Option<Self>> {
         unimplemented!()
     }
 
+    fn update(&self, _conn: &MysqlConnection) -> Consequence<&Self> {
+        unimplemented!()
+    }
+
+    fn delete(self, _conn: &MysqlConnection) -> Consequence<()> {
+        unimplemented!()
+    }
 }
-
-

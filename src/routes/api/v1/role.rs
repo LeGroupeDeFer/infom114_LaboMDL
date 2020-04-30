@@ -5,10 +5,7 @@
 use crate::database::models::prelude::*;
 use crate::database::DBConnection;
 use crate::guards::auth::Auth;
-use crate::http::responders::api::ApiResponse;
 use crate::lib::consequence::*;
-
-use rocket::http::Status;
 
 use crate::database::models::role::forms::RoleData;
 use crate::guards::RoleGuard;

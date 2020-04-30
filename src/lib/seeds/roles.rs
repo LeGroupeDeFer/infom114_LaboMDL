@@ -27,7 +27,7 @@ pub fn seed_roles_and_capabilities(conn: &MysqlConnection) {
     };
 
     // insert those roles in database
-    RoleEntity::insert(&conn, &user_minima);
+    RoleEntity::insert(&conn, &user_minima).unwrap();
     let admin_role = RoleEntity::insert_either(&conn, &admin_minima).unwrap();
 
     // add every capability in database & link them to the admin role

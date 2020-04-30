@@ -23,7 +23,6 @@ pub struct RelUserRoleEntity {
     pub role_id: u32,
 }
 
-
 /// The struct `RelUserRoleMinima` is used to insert some data inside the
 /// `users_roles` table.
 #[derive(Serialize, Deserialize, Clone, Debug, Insertable)]
@@ -33,33 +32,30 @@ pub struct RelUserRoleMinima {
     pub role_id: u32,
 }
 
-
 impl Entity for RelUserRoleEntity {
-
     type Minima = RelUserRoleMinima;
 
-    fn by_id(conn: &MysqlConnection, id: &u32) -> Consequence<Option<Self>> {
+    fn by_id(_conn: &MysqlConnection, _id: &u32) -> Consequence<Option<Self>> {
         unimplemented!()
     }
 
-    fn all(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
+    fn all(_conn: &MysqlConnection) -> Consequence<Vec<Self>> {
         unimplemented!()
     }
 
-    fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Either<Self, Self>> {
+    fn insert(_conn: &MysqlConnection, _minima: &Self::Minima) -> Consequence<Either<Self, Self>> {
         unimplemented!()
     }
 
-    fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Option<Self>> {
+    fn select(_conn: &MysqlConnection, _minima: &Self::Minima) -> Consequence<Option<Self>> {
         unimplemented!()
     }
 
-    fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {
+    fn update(&self, _conn: &MysqlConnection) -> Consequence<&Self> {
         unimplemented!()
     }
 
-    fn delete(self, conn: &MysqlConnection) -> Consequence<()> {
+    fn delete(self, _conn: &MysqlConnection) -> Consequence<()> {
         unimplemented!()
     }
-
 }

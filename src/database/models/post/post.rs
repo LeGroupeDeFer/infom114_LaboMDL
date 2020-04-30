@@ -158,12 +158,12 @@ impl Post {
             .collect::<Vec<Self>>())
     }
 
-    pub fn set_user_vote(&mut self, conn: &MysqlConnection, user_id: &u32) -> Consequence<()> {
-        let user_vote =
-            RelPostVoteEntity::get(conn, &self.id, &user_id)?.map_or(0, |vote| vote.vote_value);
+    pub fn set_user_vote(&mut self, conn: &MysqlConnection, user_id: &u32) {
+        let user_vote = RelPostVoteEntity::get(conn, &self.id, &user_id)
+            .unwrap_or(None)
+            .map_or(0, |vote| vote.vote_value);
 
         self.user_vote = Some(user_vote);
-        Ok(())
     }
 }
 

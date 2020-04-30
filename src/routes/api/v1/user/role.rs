@@ -48,7 +48,8 @@ pub fn unassign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> Api
 
     let user_role_data = data.into_inner();
 
-    RelUserRoleEntity::get(&*conn, user_role_data.user_id, user_role_data.role_id)??.delete(&*conn);
+    RelUserRoleEntity::get(&*conn, user_role_data.user_id, user_role_data.role_id)??
+        .delete(&*conn)?;
 
     OK()
 }
