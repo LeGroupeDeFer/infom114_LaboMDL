@@ -23,7 +23,7 @@ fn create_correct_role() {
     let conn = init::database_connection();
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_name = "mynewrole";
     let role_color = "#ff0000";
@@ -82,7 +82,7 @@ fn create_role_missing_name() {
     let conn = init::database_connection();
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_name = "mynewrole";
     let role_color = "#ff0000";
@@ -125,7 +125,7 @@ fn create_role_empty_name() {
     let conn = init::database_connection();
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_name = "mynewrole";
     let role_color = "#ff0000";
@@ -169,7 +169,7 @@ fn create_role_missing_color() {
     let conn = init::database_connection();
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_name = "mynewrole";
     let role_capabilities = vec!["user:manage_role", "role:manage"];
@@ -211,7 +211,7 @@ fn create_role_missing_capabilities() {
     let conn = init::database_connection();
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_name = "mynewrole";
     let role_color = "#ff0000";
@@ -248,7 +248,7 @@ fn create_role_unexistant_capability() {
     let conn = init::database_connection();
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_name = "mynewrole";
     let role_color = "#ff0000";
@@ -297,9 +297,9 @@ fn create_existing_role() {
     let conn = init::database_connection();
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
-    let role_name = "admin"; // the admin role is created at the `init::seed()` step
+    let role_name = init::ADMIN_PASSWORD; // the admin role is created at the `init::seed()` step
     let role_color = "#ff0000";
     let role_capabilities = vec!["user:manage_role", "role:manage"];
 

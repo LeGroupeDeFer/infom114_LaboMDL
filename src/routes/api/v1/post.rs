@@ -5,10 +5,12 @@ use crate::http::responders::api::ApiResponse;
 
 use crate::guards::auth::Auth;
 use crate::guards::post::PostGuard;
+use crate::guards::ForwardAuth;
 use crate::http::responders::{ApiResult, OK};
 use crate::lib::AuthError;
 use diesel::prelude::*;
 use rocket::http::Status;
+use rocket::Request;
 use rocket_contrib::json::Json;
 
 pub fn collect() -> Vec<rocket::Route> {
@@ -62,15 +64,15 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiRespon
 }
 
 #[get("/api/v1/posts", rank = 1)]
-fn get_all_posts_authenticated(conn: DBConnection, auth: Auth) -> ApiResult<Vec<Post>> {
-    let posts = if auth.has_capability(&*conn, "post:view_hidden") {
+fn get_all_posts_authenticated(conn: DBConnection, auth: ForwardAuth) -> ApiResult<Vec<Post>> {
+    let posts = if auth.deref().has_capability(&*conn, "post:view_hidden") {
         Post::admin_all(&*conn)?
     } else {
         Post::all(&*conn)?
     }
     .drain(..)
     .map(|mut p| {
-        p.set_user_vote(&*conn, auth.sub);
+        p.set_user_vote(&*conn, &auth.deref().sub);
         p
     })
     .collect::<Vec<Post>>();

@@ -17,6 +17,7 @@ pub struct Post {
     pub updated_at: String,
     pub locked: bool,
     pub hidden: bool,
+    pub deleted: bool,
     pub votes: u64,
     pub score: i64,
     pub author: User,
@@ -40,8 +41,7 @@ impl PostEntity {
     }
 
     pub fn admin_all(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
-        let t = table.filter(dsl::deleted_at.is_null()).load(conn)?;
-        Ok(t)
+        Ok(table.filter(dsl::deleted_at.is_null()).load(conn)?)
     }
 
     pub fn get_deleted(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
@@ -146,7 +146,7 @@ impl Post {
             .collect::<Vec<Self>>())
     }
 
-    pub fn set_user_vote(&mut self, conn: &MysqlConnection, user_id: u32) -> Consequence<()> {
+    pub fn set_user_vote(&mut self, conn: &MysqlConnection, user_id: &u32) -> Consequence<()> {
         let user_vote =
             RelPostVoteEntity::get(conn, &self.id, &user_id)?.map_or(0, |vote| vote.vote_value);
 
@@ -167,6 +167,7 @@ impl From<PostEntity> for Post {
             updated_at: pe.updated_at.to_string(),
             locked: pe.locked_at.is_some(),
             hidden: pe.hidden_at.is_some(),
+            deleted: pe.deleted_at.is_some(),
             votes: pe.votes,
             score: pe.score,
             author: UserEntity::by_id(&conn, &pe.author_id)

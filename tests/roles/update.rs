@@ -43,7 +43,7 @@ fn update_everything() {
         .is_some());
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_name = "myupdatedrole";
     let role_color = "#00ffff";
@@ -119,7 +119,7 @@ fn update_same_name() {
         .is_some());
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_name = "mynewrole";
     let role_color = "#00ffff";
@@ -179,7 +179,7 @@ fn update_missing_id() {
     let conn = init::database_connection();
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_name = "myupdatedrole";
     let role_color = "#00ffff";
@@ -230,7 +230,7 @@ fn update_invalid_role_id() {
     }
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_name = "myupdatedrole";
     let role_color = "#00ffff";
@@ -291,7 +291,7 @@ fn update_no_color() {
         .is_some());
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_name = "myupdatedrole";
     let role_capabilities = vec!["user:manage_role", "role:manage"];
@@ -349,7 +349,7 @@ fn update_missing_role_name() {
         .is_some());
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_color = "#00ffff";
     let role_capabilities = vec!["user:manage_role", "role:manage"];
@@ -404,7 +404,7 @@ fn update_missing_role_capabilities() {
         .is_some());
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_name = "myupdatedrole";
     let role_color = "#00ffff";

@@ -6,6 +6,7 @@ Summary of implemented features classified by release (github tag)
 
 - merge all branch into `dev`
 - fix issue #82 : implement route `/api/users`
+- fix issue #10 : implement tests for GET `/api/posts`
 
 ## [0.2.4] - 2020-04-20
 

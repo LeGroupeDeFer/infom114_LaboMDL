@@ -40,7 +40,7 @@ fn delete_correctly() {
         .is_some());
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     // request
     let request = client
@@ -65,7 +65,7 @@ fn delete_missing_role_id() {
     init::seed();
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     // request
     let request = client
@@ -92,7 +92,7 @@ fn delete_invalid_role_id() {
     }
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     // request
     let request = client

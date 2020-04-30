@@ -24,7 +24,7 @@ fn assign_role_to_user() {
     let conn = init::database_connection();
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     // get a user
     let (user, _password) = init::get_user(true);
@@ -113,7 +113,7 @@ fn assign_role_to_user_missing_user_id() {
     let conn = init::database_connection();
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     // get a user
     let (user, _password) = init::get_user(true);
@@ -156,7 +156,7 @@ fn assign_role_to_user_missing_role_id() {
     let conn = init::database_connection();
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     // get a user
     let (user, _password) = init::get_user(true);

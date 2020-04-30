@@ -29,6 +29,15 @@ pub struct Auth {
     pub cap: Vec<CapabilityEntity>,
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ForwardAuth(Auth);
+
+impl ForwardAuth {
+    pub fn deref(&self) -> &Auth {
+        &self.0
+    }
+}
+
 /* ----------------------------- Implementation ---------------------------- */
 
 impl Auth {
@@ -61,7 +70,7 @@ impl Auth {
         password: &str,
         access_lifetime: &u32,
         refresh_lifetime: &u32,
-    ) -> Consequence<(Auth, TokenEntity, UserEntity)> {
+    ) -> Consequence<(Self, TokenEntity, UserEntity)> {
         // Get user info
         let mut user = UserEntity::by_email(conn, email)??;
         let verification = user.verify(password)?;
@@ -81,7 +90,7 @@ impl Auth {
 
         // We're good
         Ok((
-            Auth::create(conn, &user, access_lifetime)?,
+            Self::create(conn, &user, access_lifetime)?,
             refresh_token,
             user,
         ))
@@ -93,7 +102,7 @@ impl Auth {
         hash: &str,
         access_lifetime: &u32,
         refresh_lifetime: &u32,
-    ) -> Consequence<(Auth, TokenEntity, UserEntity)> {
+    ) -> Consequence<(Self, TokenEntity, UserEntity)> {
         let user = UserEntity::by_email(conn, email)??;
         let mut token = user.refresh_token(conn)??;
 
@@ -102,7 +111,7 @@ impl Auth {
             token.renew(conn, Some(refresh_lifetime), Some(&-1))?;
         }
 
-        Ok((Auth::create(conn, &user, access_lifetime)?, token, user))
+        Ok((Self::create(conn, &user, access_lifetime)?, token, user))
     }
 
     pub fn logout(conn: &MysqlConnection, email: &str, hash: &str) -> Consequence<()> {
@@ -146,6 +155,19 @@ impl<'a, 'r> FromRequest<'a, 'r> for Auth {
         match request_auth(request, &state.jwt_secret) {
             Ok(auth) => Outcome::Success(auth),
             Err(msg) => Outcome::Failure((Status::Forbidden, msg)),
+        }
+    }
+}
+
+impl<'a, 'r> FromRequest<'a, 'r> for ForwardAuth {
+    type Error = Error;
+
+    // from_request :: Request -> Outcome<Auth, Error>
+    fn from_request(request: &'a Request<'r>) -> request::Outcome<Self, Self::Error> {
+        let state: State<AppState> = request.guard().unwrap();
+        match request_auth(request, &state.jwt_secret) {
+            Ok(auth) => Outcome::Success(Self(auth)),
+            Err(msg) => Outcome::Forward(()),
         }
     }
 }

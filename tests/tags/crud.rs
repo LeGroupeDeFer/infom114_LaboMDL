@@ -92,7 +92,7 @@ fn delete_tag() {
     assert!(TagEntity::by_label(&conn, &tag).unwrap().is_some());
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let req = client
         .delete(format!("{}/{}", TAG_ROUTE, &tag))
@@ -117,7 +117,7 @@ fn delete_non_existing_tag() {
     assert!(TagEntity::by_label(&conn, &tag).unwrap().is_none());
 
     // login as admin
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let req = client
         .delete(format!("{}/{}", TAG_ROUTE, &tag))
@@ -174,7 +174,7 @@ fn update_tag() {
         .unwrap();
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let req = client
         .put(format!("{}/{}", TAG_ROUTE, existing_tag_label))
@@ -214,7 +214,7 @@ fn update_non_existing_tag() {
         .is_none());
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let req = client
         .put(format!("{}/{}", TAG_ROUTE, existing_tag_label))
@@ -254,7 +254,7 @@ fn update_tag_with_already_existing_label() {
         .unwrap();
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let req = client
         .put(format!("{}/{}", TAG_ROUTE, existing_tag_label))
@@ -337,7 +337,7 @@ fn update_tag_with_malformed_json() {
     assert!(TagEntity::by_label(&conn, &tag_label).unwrap().is_some());
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let data = "{ \"Malformed\": \"Json\" }";
 

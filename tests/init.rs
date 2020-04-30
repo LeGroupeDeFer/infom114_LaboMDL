@@ -16,6 +16,9 @@ use unanimitylibrary::lib::seeds;
 use diesel::query_dsl::RunQueryDsl;
 use rocket::http::{ContentType, Header};
 
+pub const ADMIN_EMAIL: &'static str = "admin@unamur.be";
+pub const ADMIN_PASSWORD: &'static str = "admin";
+
 /// Truncate all the tables
 pub fn clean() {
     // get connection
@@ -108,6 +111,7 @@ pub fn seed() {
 
     seeds::roles::seed_roles_and_capabilities(&conn);
     seeds::tags::seed_tags(&conn);
+    seeds::posts::seed_test_posts(&conn);
 }
 
 /// Return a MysqlConnection
@@ -224,16 +228,20 @@ pub fn get_user(do_activate: bool) -> (UserEntity, String) {
 /// Get the admin that is generated in the seeding process
 /// The admin has by default the following characteristics :
 ///
-///     - email : "admin@unamur.be"
-///     - password : "admin"
+///     - email : init::ADMIN_EMAIL
+///     - password : init::ADMIN_PASSWORD
 ///
 /// Of course these attributes MUST be updated ASAP for real world application
 /// but for our testing purposes its perfect because we can use it to confirm
 /// that some routes are protected by auth & by capability
 pub fn get_admin() -> UserEntity {
-    UserEntity::by_email(&database_connection(), "admin@unamur.be")
+    UserEntity::by_email(&database_connection(), ADMIN_EMAIL)
         .unwrap()
         .unwrap()
+}
+
+pub fn login_admin<'a, 'b>() -> Header<'b> {
+    login(ADMIN_EMAIL, ADMIN_PASSWORD)
 }
 
 /// Perform the login operation for the given `email` & `password`
