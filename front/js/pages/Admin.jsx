@@ -107,7 +107,7 @@ const TagsPage = () => {
   //value of form input
   const [input, setInput] = useState("");
 
-  const Notification = () => notification === "" ? <TagToast text={""}/> : <TagToast text={notification}/>;
+  const Notification = () => notification === "" ? <></> : <TagToast text={notification}/>;
 
   
   useEffect(() => {
@@ -156,8 +156,8 @@ const TagsPage = () => {
 
     const removeTag = async (tag) => {
       await api.tag.remove(tag).then((answer) => {
-        let newTags = tags.filter( tag => tag.label !== e.target.value);
-        setTags(newTags); 
+        let remainingTags = tags.filter( remainingTag => remainingTag.label !== tag); 
+        setTags(remainingTags);  //remainingTags is correct but it does not rerender well
       }).catch((error) => {
         setNotification("");
         setNotification(error.message);
