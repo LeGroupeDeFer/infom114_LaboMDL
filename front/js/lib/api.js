@@ -144,6 +144,18 @@ function roles() {
   return api('/roles');
 }
 
+function addRole(name, color, capability) { 
+  return api('/role', {method: 'POST', body: {name: String(name), color: String(color), capabilities:[{name:String(capability)}]} })
+}
+
+function editRole(id, name, color, capabilities) {
+  return api(`/role/${id}`, {method: 'PUT', body: {name: String(name), color: String(color), capabilities:capabilities } })
+}
+
+function deleteRole(id) { 
+  return api(`/role/${id}`, {method: 'DELETE'} )
+}
+
 function capabilities() {
   return api('/capabilities');
 }
@@ -163,9 +175,10 @@ api.tags.remove = removeTag;
 api.tags.edit = editTag;
 api.tag = tags;
 api.roles = roles;
+api.roles.add = addRole;
+api.roles.edit = editRole;
+api.roles.delete = deleteRole;
 api.capabilities = capabilities;
 api.users = users;
-
-
 
 export default api;
