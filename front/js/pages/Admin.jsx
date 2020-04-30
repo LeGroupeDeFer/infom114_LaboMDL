@@ -13,6 +13,7 @@ import AddForm from '../components/Tags/AddForm';
 import api from '../lib/api';
 import 'regenerator-runtime';
 
+
 function Admin(props) {
 
   const [menu, setMenu] = useState('tag');
@@ -98,29 +99,31 @@ const RolesPage = () => {
   );
 };
 
+const trace = x => { console.log(x); return x; }
+
 const TagsPage = () => {
 
   const [tags, setTags] = useState([]);
-  const [promise, setPromise] = useState(null);
+  const [deletedTag, setDeletedTag] = useState(null);
+  const [getPromise, setGetPromise] = useState(null);
+  const [delPromise, setDelPromise] = useState(null);
   const [notification, setNotification] = useState("");
-  
   //value of form input
   const [input, setInput] = useState("");
-
   const Notification = () => notification === "" ? <></> : <TagToast text={notification}/>;
-
   
   useEffect(() => {
-    setPromise(api.tags());
+    setGetPromise(api.tags());
   }, []);
 
+  // Get the tags
   useEffect(() => {    
-    if (!promise)
+    if (!getPromise)
       return;
     let isRendering = false;
     // On peut faire des changements d'état ici.
 
-    promise.then(data => {
+    getPromise.then(data => {
       if (!isRendering) 
         if (input.length) {
           setTags([...tags, {label: input}]);
@@ -129,17 +132,45 @@ const TagsPage = () => {
         else {
           setTags(data.tags);
         }
-    });
+    }).finally(() => setGetPromise(null));
 
     // A partir d'ici on ne peut plus.
     return () => isRendering = true;
-  }, [promise]);
+  }, [getPromise]);
+
+  // Delete a tag
+  useEffect(() => {
+    if (!delPromise)
+      return;
+    let isRendering = false;
+
+    delPromise.then(() => {
+      if (!isRendering) {
+        const remainingTags = tags.filter(t => t.label != deletedTag);
+        setTags(remainingTags);
+      }
+    }).catch(e => {
+      if (!isRendering) {
+        setNotification("");
+        setNotification(e.message);
+      }
+    }).finally(() => {
+      if (!isRendering) {
+        setDelPromise(null);
+        setDeletedTag(null);
+      }
+    });
+
+    return () => isRendering = true;
+  }, [delPromise]);
 
   //Handle adding tags to db and hook tags
   const addTag = (label) => {
     const sendTag = async (tag) => {
       await api.tag.add(tag).then((answer) => {
-        const newTags = [...tags, {label}];
+        // FIXME - Need the actual id
+        const id = tags.map(t => t.id).reduce((a, i) => a > i ? a : i, 0) + 1;
+        const newTags = [...tags, {label, id}];
         setTags(newTags);
       }).catch((error) => {
         setNotification("");
@@ -150,20 +181,10 @@ const TagsPage = () => {
     sendTag(label);
   };
 
-  //Handle delete tag button
-  const handleDelete = (e) => {
-    e.preventDefault()
-
-    const removeTag = async (tag) => {
-      await api.tag.remove(tag).then((answer) => {
-        let remainingTags = tags.filter( remainingTag => remainingTag.label !== tag); 
-        setTags(remainingTags);  //remainingTags is correct but it does not rerender well
-      }).catch((error) => {
-        setNotification("");
-        setNotification(error.message);
-      });
-    }
-    removeTag(e.target.value);
+  const onDelete = e => {
+    e.preventDefault();
+    setDeletedTag(e.target.value);
+    setDelPromise(api.tag.remove(e.target.value));
   }
 
   return (
@@ -175,8 +196,8 @@ const TagsPage = () => {
         {tags.length 
         ? tags.map((tag, i) => {
           return (
-            <Row key={i} className="mb-3">
-              <Tag name={tag.label} deleteTag={handleDelete} setNotification={setNotification}></Tag>
+            <Row key={tag.id} className="mb-3">
+              <Tag name={tag.label} deleteTag={onDelete} setNotification={setNotification}></Tag>
             </Row>
           )
         })
