@@ -92,34 +92,31 @@ impl PostEntity {
         RelPostVoteEntity::sum_by_post_id(&conn, self.id)
     }
 
-    pub fn toggle_visibility(&self, conn: &MysqlConnection) {
+    pub fn toggle_visibility(&self, conn: &MysqlConnection) -> Consequence<()> {
         if self.hidden_at.is_some() {
-            let nope: Option<NaiveDateTime> = None;
             diesel::update(self)
-                .set(dsl::hidden_at.eq(nope))
-                .execute(conn)
-                .unwrap();
+                .set(dsl::hidden_at.eq(None as Option<NaiveDateTime>))
+                .execute(conn)?;
         } else {
             diesel::update(self)
                 .set(dsl::hidden_at.eq(now))
-                .execute(conn)
-                .unwrap();
+                .execute(conn)?;
         }
+
+        Ok(())
     }
 
-    pub fn toggle_lock(&self, conn: &MysqlConnection) {
+    pub fn toggle_lock(&self, conn: &MysqlConnection) -> Consequence<()> {
         if self.locked_at.is_some() {
-            let nope: Option<NaiveDateTime> = None;
             diesel::update(self)
-                .set(dsl::locked_at.eq(nope))
-                .execute(conn)
-                .unwrap();
+                .set(dsl::locked_at.eq(None as Option<NaiveDateTime>))
+                .execute(conn)?;
         } else {
             diesel::update(self)
                 .set(dsl::locked_at.eq(now))
-                .execute(conn)
-                .unwrap();
+                .execute(conn)?;
         }
+        Ok(())
     }
 
     pub fn add_tag(&self, conn: &MysqlConnection, tag_id: &u32) -> Consequence<()> {
@@ -129,6 +126,18 @@ impl PostEntity {
         };
         RelPostTagEntity::insert_either(conn, &minima)?;
         Ok(())
+    }
+
+    pub fn is_deleted(&self) -> bool {
+        self.deleted_at.is_some()
+    }
+
+    pub fn is_locked(&self) -> bool {
+        self.locked_at.is_some()
+    }
+
+    pub fn is_hidden(&self) -> bool {
+        self.hidden_at.is_some()
     }
 }
 

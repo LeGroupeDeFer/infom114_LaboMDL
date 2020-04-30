@@ -15,6 +15,7 @@ pub fn collect() -> Vec<rocket::Route> {
         create_post,
         get_all_posts_authenticated,
         get_all_posts,
+        get_post_authenticated,
         get_post,
         delete_post,
         update_post,
@@ -79,13 +80,24 @@ fn get_post_authenticated(
     post_guard: PostGuard,
     _post_id: u32,
 ) -> ApiResult<Post> {
-    let mut p = Post::from(post_guard.post_clone());
-    p.set_user_vote(&*conn, &auth.deref().sub);
-    Ok(Json(p))
+    if !post_guard.post().is_deleted()
+        && (!post_guard.post().is_hidden()
+            || auth.deref().has_capability(&*conn, "post:view_hidden"))
+    {
+        let mut p = Post::from(post_guard.post_clone());
+        p.set_user_vote(&*conn, &auth.deref().sub);
+        Ok(Json(p))
+    } else {
+        Err(EntityError::InvalidID)?
+    }
 }
-#[get("/post/<_post_id>", rank = 2)]
+#[get("/api/v1/post/<_post_id>", rank = 2)]
 fn get_post(post_guard: PostGuard, _post_id: u32) -> ApiResult<Post> {
-    Ok(Json(Post::from(post_guard.post_clone())))
+    if !post_guard.post().is_deleted() && !post_guard.post().is_hidden() {
+        Ok(Json(Post::from(post_guard.post_clone())))
+    } else {
+        Err(EntityError::InvalidID)?
+    }
 }
 
 /// Delete a post

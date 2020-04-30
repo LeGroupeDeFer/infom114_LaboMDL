@@ -11,7 +11,7 @@ use unanimitylibrary::database;
 use unanimitylibrary::database::models::prelude::*;
 use unanimitylibrary::database::tables::*;
 
-use unanimitylibrary::lib::seeds;
+use unanimitylibrary::lib::{lorem_ipsum, seeds};
 
 use diesel::query_dsl::RunQueryDsl;
 use rocket::http::{ContentType, Header};
@@ -223,6 +223,33 @@ pub fn get_user(do_activate: bool) -> (UserEntity, String) {
     }
 
     (user, password)
+}
+
+pub fn get_post_entity(locked: bool, hidden: bool, deleted: bool) -> PostEntity {
+    let conn = database_connection();
+
+    let p = PostMinima {
+        title: "Test title".to_string(),
+        content: lorem_ipsum(),
+        author_id: get_admin().id,
+    };
+
+    let post = PostEntity::insert_new(&conn, &p).unwrap();
+    let id = post.id;
+
+    if locked {
+        post.toggle_lock(&conn).unwrap();
+    }
+
+    if hidden {
+        post.toggle_visibility(&conn).unwrap();
+    }
+
+    if deleted {
+        post.delete(&conn).unwrap();
+    }
+
+    PostEntity::by_id(&conn, &id).unwrap().unwrap()
 }
 
 /// Get the admin that is generated in the seeding process

@@ -2,6 +2,9 @@
 
 Summary of implemented features classified by release (github tag)
 
+## [0.3.0] - 2020-04-30
+
+
 ## [0.2.5] - 2020-04-28
 
 - merge all branch into `dev`

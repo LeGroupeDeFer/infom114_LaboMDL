@@ -468,10 +468,170 @@ pub fn create_post_simple_user_with_new_tags() {
     }
 }
 
-// read a post
-// read a post (invalid id)
-// read a soft-deleted post (same response as invalid id)
-// read an hidden post (???)
+#[test]
+fn read_a_post() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let existing_post_entity = init::get_post_entity(false, false, false);
+
+    // perform request
+    let req = client.get(format!("{}/{}", POST_ROUTE, existing_post_entity.id));
+    let mut response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::Ok);
+
+    // check the answer data is what we wanted
+    let data = response.body_string().unwrap();
+    let post: Post = serde_json::from_str(&data).unwrap();
+
+    assert_eq!(post.id, existing_post_entity.id);
+}
+
+#[test]
+fn read_a_post_as_authenticated() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    // login
+    let (user, passwd) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &passwd);
+
+    let post_entity = init::get_post_entity(false, false, false);
+
+    // perform request
+    let req = client
+        .get(format!("{}/{}", POST_ROUTE, post_entity.id))
+        .header(auth_token_header);
+    let mut response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::Ok);
+
+    // check the answer data is what we wanted
+    let data = response.body_string().unwrap();
+    let post: Post = serde_json::from_str(&data).unwrap();
+
+    assert_eq!(post.id, post_entity.id);
+}
+
+#[test]
+fn read_a_post_as_admin() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let auth_token_header = init::login_admin();
+    let existing_post_entity = init::get_post_entity(false, false, false);
+
+    // perform request
+    let req = client
+        .get(format!("{}/{}", POST_ROUTE, existing_post_entity.id))
+        .header(auth_token_header);
+    let mut response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::Ok);
+
+    // check the answer data is what we wanted
+    let data = response.body_string().unwrap();
+    let post: Post = serde_json::from_str(&data).unwrap();
+
+    assert_eq!(post.id, existing_post_entity.id);
+}
+
+#[test]
+fn read_a_post_invalid_id() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let mut unexisting_id = 12;
+    while PostEntity::by_id(&conn, &unexisting_id).unwrap().is_some() {
+        unexisting_id += 1;
+    }
+
+    // perform request
+    let req = client.get(format!("{}/{}", POST_ROUTE, unexisting_id));
+    let mut response = req.dispatch();
+
+    //check the answer is a Bad request
+    assert_eq!(response.status(), Status::BadRequest);
+}
+
+#[test]
+fn read_a_post_soft_deleted() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let auth_token_header = init::login_admin();
+    let existing_post_entity = init::get_post_entity(false, false, true);
+
+    // perform request
+    let req = client
+        .get(format!("{}/{}", POST_ROUTE, existing_post_entity.id))
+        .header(auth_token_header);
+    let mut response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::BadRequest);
+}
+
+#[test]
+fn read_a_post_hidden_as_admin() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let auth_token_header = init::login_admin();
+    let existing_post_entity = init::get_post_entity(false, true, false);
+
+    // perform request
+    let req = client
+        .get(format!("{}/{}", POST_ROUTE, existing_post_entity.id))
+        .header(auth_token_header);
+    let mut response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::Ok);
+
+    // check the answer data is what we wanted
+    let data = response.body_string().unwrap();
+    let post: Post = serde_json::from_str(&data).unwrap();
+
+    assert_eq!(post.id, existing_post_entity.id);
+}
+
+#[test]
+fn read_a_post_hidden_as_user() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let (user, password) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &password);
+    let existing_post_entity = init::get_post_entity(false, true, false);
+
+    // perform request
+    let req = client
+        .get(format!("{}/{}", POST_ROUTE, existing_post_entity.id))
+        .header(auth_token_header);
+    let mut response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::BadRequest);
+}
 
 // update a post (admin)
 // update a post with appropriate author
