@@ -6,7 +6,8 @@ import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Row from 'react-bootstrap/Row';
 
 import Tag from '../components/Tags/Tag';
-import TagToast from '../components/Tags/Toast';
+import Role from '../components/Tags/Role';
+import Toast from '../components/Tags/Toast';
 import AddForm from '../components/Tags/AddForm';
 
 
@@ -65,13 +66,16 @@ const RolesPage = () => {
 
   const [roles, setRoles] = useState([]);
   const [users, setUsers] = useState([]);
+  const [notification, setNotification] = useState("");
   const [capabilities, setCapabilities] = useState([]);
+
+  const Notification = () => notification === "" ? <></> : <Toast text={notification}/>;
 
   useEffect(() => {
 
     const fetchRoles = async () => {
       let roles = await api.roles();
-      setRoles(roles);
+      setRoles(roles);      
     }
 
     const fetchCapabilities = async () => {
@@ -89,11 +93,56 @@ const RolesPage = () => {
     fetchCapabilities();
   }, [])
 
+  const addRole = (role) => {
+
+    const sendRole = async (role) => {
+      await api.roles.add(role, "#8fd5a6", "").then((answer) => {
+        const newRoles = [...roles, {color:"#8fd5a6", id:role, name:role, capabilities:[]}]; //TODO fetch the real id...
+        setRoles(newRoles);
+        
+      }).catch((error) => {
+        setNotification('');
+        setNotification(error.message);
+      });
+    } 
+    sendRole(role);
+  }
+
+  const handleDelete = (roleId) => {
+
+    const deleteRole = async (id) => {
+      
+      await api.roles.delete(id).then((answer) => {
+        console.log(answer);
+        let remainingRoles = roles.filter( remainingRole => remainingRole.id !== id); 
+        setRoles(remainingRoles);  //remainingRoles is correct but it does not rerender well
+      }).catch((error) => {
+        console.log(error);
+        setNotification("");
+        setNotification(error.message);
+      });
+    }
+    deleteRole(roleId);
+  }
+
   return (
     <>
-    {roles.map((role, i) => {
-      return <Row key={i}>{role.name}</Row>;
+    <Notification />
+    <br />
+
+    <AddForm add={addRole}/>
+    <br />
+
+    {roles.length
+    ? roles.map((role, i) => {
+      return (
+        <Row key={i} className="mb-3">
+          <Role roleId={role.id} roleName={role.name} roleColor={role.color} roleCapabilities={role.capabilities} 
+                deleteRole={handleDelete} setNotification={setNotification} />
+        </Row>
+      )
     })
+    : <h1>No roles</h1>
     }
     </>
   );
@@ -110,7 +159,9 @@ const TagsPage = () => {
   const [notification, setNotification] = useState("");
   //value of form input
   const [input, setInput] = useState("");
-  const Notification = () => notification === "" ? <></> : <TagToast text={notification}/>;
+
+  const Notification = () => notification === "" ? <></> : <Toast text={notification}/>;
+
   
   useEffect(() => {
     setGetPromise(api.tags());
@@ -190,7 +241,9 @@ const TagsPage = () => {
   return (
       <>
         <Notification />
-        <AddForm addTag={addTag}/>
+        <br />
+
+        <AddForm add={addTag}/>
         <br />
 
         {tags.length 
