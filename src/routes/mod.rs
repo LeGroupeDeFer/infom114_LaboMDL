@@ -15,7 +15,14 @@ use std::path::{Path, PathBuf};
 
 pub fn collect() -> Vec<rocket::Route> {
     [
-        &routes!(index, dynamic_routing, files, activate, recover)[..],
+        &routes!(
+            index,
+            dynamic_routing,
+            get_hollow_post,
+            files,
+            activate,
+            recover
+        )[..],
         &api::collect()[..],
     ]
     .concat()
