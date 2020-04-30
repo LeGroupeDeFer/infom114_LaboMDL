@@ -67,7 +67,6 @@ fn get_all_posts_authenticated(conn: DBConnection, auth: ForwardAuth) -> ApiResu
     .collect::<Vec<Post>>();
     Ok(Json(posts))
 }
-
 #[get("/api/v1/posts", rank = 2)]
 fn get_all_posts(conn: DBConnection) -> ApiResult<Vec<Post>> {
     Ok(Json(Post::all(&*conn)?))
@@ -128,10 +127,15 @@ fn update_post(
     _post_id: u32,
     data: Json<NewPost>,
 ) -> ApiResult<()> {
-    let capability = "post:update";
     let a_post = data.into_inner();
 
-    if !(auth.has_capability(&*conn, &capability) || post_guard.post().author_id == auth.sub) {
+    if post_guard.post().is_deleted() {
+        Err(EntityError::InvalidID)?;
+    } else if false
+        || (post_guard.post().author_id != auth.sub && !auth.has_capability(&*conn, "post:update"))
+        || (post_guard.post().is_locked() && !auth.has_capability(&*conn, "post:edit_locked"))
+        || (post_guard.post().is_hidden() && !auth.has_capability(&*conn, "post:view_hidden"))
+    {
         Err(AuthError::MissingCapability)?;
     }
 

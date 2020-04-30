@@ -4,6 +4,7 @@ Summary of implemented features classified by release (github tag)
 
 ## [0.3.0] - 2020-04-30
 
+- fix issue #67 : implement post update + tests
 
 ## [0.2.5] - 2020-04-28
 
