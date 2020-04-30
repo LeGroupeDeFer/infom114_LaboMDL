@@ -107,9 +107,13 @@ fn delete_post(
     post_guard: PostGuard,
     _post_id: u32,
 ) -> ApiResult<()> {
-    let capability = "post:delete";
-
-    if !(auth.has_capability(&*conn, &capability) || post_guard.post().author_id == auth.sub) {
+    if post_guard.post().is_deleted() {
+        Err(EntityError::InvalidID)?;
+    } else if false
+        || (post_guard.post().author_id != auth.sub && !auth.has_capability(&*conn, "post:delete"))
+        || (post_guard.post().is_locked() && !auth.has_capability(&*conn, "post:edit_locked"))
+        || (post_guard.post().is_hidden() && !auth.has_capability(&*conn, "post:view_hidden"))
+    {
         Err(AuthError::MissingCapability)?;
     }
 

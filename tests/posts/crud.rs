@@ -3,6 +3,7 @@ use rocket::http::Status;
 use super::super::init;
 use super::utils;
 
+use crate::init::login_admin;
 use rocket::http::ContentType;
 use unanimitylibrary::database::models::prelude::*;
 
@@ -1132,12 +1133,283 @@ fn update_post_hidden_as_author() {
     assert_eq!(not_updated.id, p.id);
 }
 
-// delete a post (admin)
-// delete a post with appropriate author
-// delete a post with a different author
-// delete a post (invalid post id)
-// delete a soft-deleted post
-// delete a locked post (admin)
-// delete a locked post (author) -> error
-// delete an hidden post (admin)
-// delete an hidden post (author) -> error
+#[test]
+fn delete_post_as_author() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    // login
+    let (user, passwd) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &passwd);
+
+    // post creation
+    let new_post_title = "new post title";
+    let new_post_content = "This is a new content for the post";
+    let post_json_data = format!(
+        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
+        new_post_title, new_post_content
+    );
+    let req = client
+        .post(POST_ROUTE)
+        .header(ContentType::JSON)
+        .header(auth_token_header.clone())
+        .body(post_json_data);
+    let mut response = req.dispatch();
+    assert_eq!(response.status(), Status::Ok);
+    let data = response.body_string().unwrap();
+    let p: Post = serde_json::from_str(&data).unwrap();
+    assert_eq!(p.title, new_post_title);
+    assert_eq!(p.content, new_post_content);
+    assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
+
+    let update_req = client
+        .delete(format!("{}/{}", POST_ROUTE, &p.id))
+        .header(auth_token_header);
+    let update_response = update_req.dispatch();
+    assert_eq!(update_response.status(), Status::Ok);
+    let updated_post: Post = Post::from(PostEntity::by_id(&conn, &p.id).unwrap().unwrap());
+    assert!(updated_post.deleted);
+    assert_eq!(updated_post.id, p.id);
+}
+
+#[test]
+fn delete_post_as_admin() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    // login
+    let (user, passwd) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &passwd);
+
+    // post creation
+    let new_post_title = "new post title";
+    let new_post_content = "This is a new content for the post";
+    let post_json_data = format!(
+        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
+        new_post_title, new_post_content
+    );
+    let req = client
+        .post(POST_ROUTE)
+        .header(ContentType::JSON)
+        .header(auth_token_header.clone())
+        .body(post_json_data);
+    let mut response = req.dispatch();
+    assert_eq!(response.status(), Status::Ok);
+    let data = response.body_string().unwrap();
+    let p: Post = serde_json::from_str(&data).unwrap();
+    assert_eq!(p.title, new_post_title);
+    assert_eq!(p.content, new_post_content);
+    assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
+
+    let admin_auth_token_header = init::login_admin();
+    let update_req = client
+        .delete(format!("{}/{}", POST_ROUTE, &p.id))
+        .header(admin_auth_token_header);
+    let update_response = update_req.dispatch();
+    assert_eq!(update_response.status(), Status::Ok);
+    let updated_post: Post = Post::from(PostEntity::by_id(&conn, &p.id).unwrap().unwrap());
+    assert!(updated_post.deleted);
+    assert_eq!(updated_post.id, p.id);
+}
+
+#[test]
+fn delete_post_wrong_author() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let p = init::get_post_entity(false, false, false);
+
+    // login
+    let (user, passwd) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &passwd);
+
+    let update_req = client
+        .delete(format!("{}/{}", POST_ROUTE, &p.id))
+        .header(auth_token_header);
+    let update_response = update_req.dispatch();
+    assert_eq!(update_response.status(), Status::Forbidden);
+
+    let updated_post: Post = Post::from(PostEntity::by_id(&conn, &p.id).unwrap().unwrap());
+    assert!(!updated_post.deleted);
+    assert_eq!(updated_post.id, p.id);
+}
+
+#[test]
+fn delete_post_wrong_post_id() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let mut unexisting_id = 12;
+    while PostEntity::by_id(&conn, &unexisting_id).unwrap().is_some() {
+        unexisting_id += 1;
+    }
+
+    let update_req = client
+        .delete(format!("{}/{}", POST_ROUTE, &unexisting_id))
+        .header(init::login_admin());
+    let update_response = update_req.dispatch();
+    assert_eq!(update_response.status(), Status::BadRequest);
+}
+
+#[test]
+fn delete_post_already_deleted() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let p = init::get_post_entity(false, false, true);
+
+    let update_req = client
+        .delete(format!("{}/{}", POST_ROUTE, &p.id))
+        .header(init::login_admin());
+
+    let update_response = update_req.dispatch();
+    assert_eq!(update_response.status(), Status::BadRequest);
+}
+
+#[test]
+fn delete_post_locked_by_admin() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let p = init::get_post_entity(true, false, false);
+
+    let update_req = client
+        .delete(format!("{}/{}", POST_ROUTE, &p.id))
+        .header(init::login_admin());
+
+    let update_response = update_req.dispatch();
+    assert_eq!(update_response.status(), Status::Ok);
+
+    let updated_post: Post = Post::from(PostEntity::by_id(&conn, &p.id).unwrap().unwrap());
+    assert!(updated_post.deleted);
+    assert!(updated_post.locked);
+    assert_eq!(updated_post.id, p.id);
+}
+
+#[test]
+fn delete_post_hidden_by_admin() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let p = init::get_post_entity(false, true, false);
+
+    let update_req = client
+        .delete(format!("{}/{}", POST_ROUTE, &p.id))
+        .header(init::login_admin());
+
+    let update_response = update_req.dispatch();
+    assert_eq!(update_response.status(), Status::Ok);
+
+    let updated_post: Post = Post::from(PostEntity::by_id(&conn, &p.id).unwrap().unwrap());
+    assert!(updated_post.deleted);
+    assert!(updated_post.hidden);
+    assert_eq!(updated_post.id, p.id);
+}
+
+#[test]
+fn delete_post_locked_by_author() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let (user, password) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &password);
+
+    // post creation
+    let new_post_title = "new post title";
+    let new_post_content = "This is a new content for the post";
+    let post_json_data = format!(
+        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
+        new_post_title, new_post_content
+    );
+    let req = client
+        .post(POST_ROUTE)
+        .header(ContentType::JSON)
+        .header(auth_token_header.clone())
+        .body(post_json_data);
+    let mut response = req.dispatch();
+    assert_eq!(response.status(), Status::Ok);
+    let data = response.body_string().unwrap();
+    let p: Post = serde_json::from_str(&data).unwrap();
+    assert_eq!(p.title, new_post_title);
+    assert_eq!(p.content, new_post_content);
+    assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
+
+    // lock the post
+    let mut post_entity = PostEntity::by_id(&conn, &p.id).unwrap().unwrap();
+    post_entity.toggle_lock(&conn).unwrap();
+
+    let update_req = client
+        .delete(format!("{}/{}", POST_ROUTE, &p.id))
+        .header(ContentType::JSON)
+        .header(auth_token_header);
+    let update_response = update_req.dispatch();
+    assert_eq!(update_response.status(), Status::Forbidden);
+
+    let not_updated: Post = Post::from(PostEntity::by_id(&conn, &p.id).unwrap().unwrap());
+    assert!(!not_updated.deleted);
+    assert!(not_updated.locked);
+    assert_eq!(not_updated.id, p.id);
+}
+
+#[test]
+fn delete_post_hidden_by_author() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let (user, password) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &password);
+
+    // post creation
+    let new_post_title = "new post title";
+    let new_post_content = "This is a new content for the post";
+    let post_json_data = format!(
+        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
+        new_post_title, new_post_content
+    );
+    let req = client
+        .post(POST_ROUTE)
+        .header(ContentType::JSON)
+        .header(auth_token_header.clone())
+        .body(post_json_data);
+    let mut response = req.dispatch();
+    assert_eq!(response.status(), Status::Ok);
+    let data = response.body_string().unwrap();
+    let p: Post = serde_json::from_str(&data).unwrap();
+    assert_eq!(p.title, new_post_title);
+    assert_eq!(p.content, new_post_content);
+    assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
+
+    // lock the post
+    let mut post_entity = PostEntity::by_id(&conn, &p.id).unwrap().unwrap();
+    post_entity.toggle_visibility(&conn).unwrap();
+
+    let update_req = client
+        .delete(format!("{}/{}", POST_ROUTE, &p.id))
+        .header(ContentType::JSON)
+        .header(auth_token_header);
+    let update_response = update_req.dispatch();
+    assert_eq!(update_response.status(), Status::Forbidden);
+
+    let not_updated: Post = Post::from(PostEntity::by_id(&conn, &p.id).unwrap().unwrap());
+    assert!(!not_updated.deleted);
+    assert!(not_updated.hidden);
+    assert_eq!(not_updated.id, p.id);
+}
