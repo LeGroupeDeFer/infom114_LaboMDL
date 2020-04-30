@@ -203,7 +203,7 @@ const Stream = () => {
             <SearchBar handle_change={handleChange} tags={tags} />
           </Col>
           <Col xs={2} sm={1}>
-            <Link to="/about">
+            <Link to="/submit">
               <OverlayTrigger
                 placement="bottom"
                 overlay={<Tooltip>Créer un post</Tooltip>}

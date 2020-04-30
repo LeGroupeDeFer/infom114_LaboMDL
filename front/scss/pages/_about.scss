@@ -1,11 +1,2 @@
 @use '../themes'as *;
-@use '../abstract/mixins' as *;
-
-textarea {
-  border: 1px solid #ced4da !important;
-}
-
-#filter-bar .active {
-  background-color: $primary;
-  border-color: $primary;
-}
+@use '../abstract/mixins'as *;
