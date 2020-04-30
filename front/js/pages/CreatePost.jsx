@@ -153,8 +153,11 @@ function PollSection() {
                     onChange={(e) => updatePollOption(index, e.target.value)}
                   />
                   <InputGroup.Append>
-                    <Button variant="outline-danger">
-                      <TiDelete size={20} onClick={() => removePollOption(index)} />
+                    <Button
+                      variant="outline-danger"
+                      onClick={() => removePollOption(index)}
+                    >
+                      <TiDelete size={20} />
                     </Button>
                   </InputGroup.Append>
                 </InputGroup>
