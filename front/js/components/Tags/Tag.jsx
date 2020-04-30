@@ -12,7 +12,7 @@ import FormControl from 'react-bootstrap/FormControl';
 import Form from 'react-bootstrap/Form';
 
 
-const Tag = ({name, deleteTag}) => {
+const Tag = ({name, deleteTag, setNotification}) => {
   const [modalShow, setModalShow] = useState(false);
   const [label, setLabel] = useState(name);
 
@@ -27,9 +27,9 @@ const Tag = ({name, deleteTag}) => {
       if (Object.keys(answer).length === 0 && answer.constructor === Object) {
         setLabel(newLabel);
       }
-    }).catch((err) =>{
-      //TODO replace with the toast 
-      alert(err.message);
+    }).catch((error) =>{
+      setNotification("");
+      setNotification(error.message);
     });
   };
 
@@ -45,7 +45,7 @@ const Tag = ({name, deleteTag}) => {
             </Col>
 
             <Col md="auto">
-              <Button variant="secondary" onClick={() => setModalShow(true)} >Update</Button>
+              <Button variant="secondary" onClick={() => setModalShow(true)} >Update</Button> 
               <Button variant="danger" value={label} onClick={deleteTag}>Delete</Button>
             </Col>
           </Row>

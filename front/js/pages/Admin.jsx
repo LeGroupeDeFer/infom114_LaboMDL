@@ -6,6 +6,7 @@ import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Row from 'react-bootstrap/Row';
 
 import Tag from '../components/Tags/Tag';
+import TagToast from '../components/Tags/Toast';
 import AddForm from '../components/Tags/AddForm';
 
 
@@ -15,18 +16,26 @@ import 'regenerator-runtime';
 function Admin(props) {
 
   const [menu, setMenu] = useState('tag');
-  const Page = () =>  menu == 'tag' ? <TagsPage /> : <RolesPage />;
+  const [notification, setNotification] = useState("");
+
+  const Page = () =>  menu == 'tag' ? <TagsPage setNotification={setNotification} /> : <RolesPage />;
+  const Notification = () => notification === "" ? <></> : <TagToast text={notification}/>;
 
   return (
-    <Container>
+    <Container
+        style={{
+          position: 'relative',
+        }}>
       <br />
+      <div style={{position: 'absolute', top: 0,right: 0, 'z-index':1}}></div>
+      <Notification />
       <Row className='justify-content-md-center'>
         <MenuBar onClick={setMenu} currentMenu={menu} />
       </Row>
-
       <br />
-      <Page />
-
+      <div> 
+        <Page />
+      </div>
     </Container>
   );
 }
@@ -52,7 +61,7 @@ const MenuBar = ({ currentMenu, onClick }) => {
     </ButtonGroup>
   );
 
-}
+};
 
 const RolesPage = () => {
 
@@ -92,9 +101,7 @@ const RolesPage = () => {
   );
 };
 
-
-
-const TagsPage = () => {
+const TagsPage = ({setNotification}) => {
 
   const [tags, setTags] = useState([]);
   const [promise, setPromise] = useState(null);
@@ -106,7 +113,7 @@ const TagsPage = () => {
     setPromise(api.tags());
   }, []);
 
-  useEffect(() => {
+  useEffect(() => {    
     if (!promise)
       return;
     let isRendering = false;
@@ -130,21 +137,16 @@ const TagsPage = () => {
   //Handle adding tags to db and hook tags
   const addTag = (label) => {
     const sendTag = async (tag) => {
-      let result = await api.tag.add(tag);
-      return(result);
+      await api.tag.add(tag).then((answer) => {
+        const newTags = [...tags, {label}];
+        setTags(newTags);
+      }).catch((error) => {
+        setNotification("");
+        setNotification(error.message);
+      });
     }
-    
     //send data to server
-    let response = sendTag(label);
-    
-    //handle tag already exists
-    if (tags.some(tag => tag.label === label)) {
-      alert("Ce tag existe déjà !")
-      return;
-    }
-    //adding new tag to hook tags
-    const newTags = [...tags, {label}];
-    setTags(newTags);
+    sendTag(label);
   };
 
   //Handle delete tag button
@@ -152,32 +154,33 @@ const TagsPage = () => {
     e.preventDefault()
 
     const removeTag = async (tag) => {
-      let result = await api.tag.remove(tag)
-      return(result);
+      await api.tag.remove(tag).then((answer) => {
+        let newTags = tags.filter( tag => tag.label !== e.target.value);
+        setTags(newTags); 
+      }).catch((error) => {
+        setNotification("");
+        setNotification(error.message);
+      });
     }
-
-    let response = removeTag(e.target.value);
-
-    //remove tag in hook tag
-    let newTags = tags.filter( tag => tag.label !== e.target.value);
-    
-    setTags(newTags);
+    removeTag(e.target.value);
   }
 
   return (
-      <div>
-      {tags.length 
-      ? tags.map((tag, i) => {
-        return (
-          <Row key={i} className="mb-3">
-            <Tag name={tag.label} deleteTag={handleDelete}></Tag>
-          </Row>
-        )
-      })
-      : <h1>No tags</h1>
-      }
-      <AddForm addTag={addTag}/>
-      </div>
+      <>
+        <AddForm addTag={addTag}/>
+        <br />
+
+        {tags.length 
+        ? tags.map((tag, i) => {
+          return (
+            <Row key={i} className="mb-3">
+              <Tag name={tag.label} deleteTag={handleDelete} setNotification={setNotification}></Tag>
+            </Row>
+          )
+        })
+        : <h1>No tags</h1>
+        }
+      </>
   );
 }
 
