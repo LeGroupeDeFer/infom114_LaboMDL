@@ -46,10 +46,7 @@
   "paths": {
     "/register": {
       "get": {
-        "tags": [
-          "auth",
-          "hollow"
-        ],
+        "tags": ["auth", "hollow"],
         "description": "Fetch the form to create a new user on the platform",
         "responses": {
           "200": {
@@ -61,9 +58,7 @@
     },
     "/api/auth/register": {
       "post": {
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "description": "Send user information and login credentials for a new account on the application",
         "requestBody": {
           "content": {
@@ -117,10 +112,7 @@
     },
     "/login": {
       "get": {
-        "tags": [
-          "auth",
-          "hollow"
-        ],
+        "tags": ["auth", "hollow"],
         "description": "Fetch the login page",
         "responses": {
           "200": {
@@ -132,19 +124,14 @@
     },
     "/api/auth/login": {
       "post": {
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "description": "Send login credentials for authentication",
         "requestBody": {
           "content": {
             "json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "email",
-                  "password"
-                ],
+                "required": ["email", "password"],
                 "properties": {
                   "email": {
                     "type": "string",
@@ -215,10 +202,7 @@
     },
     "/activate/{id}/{token}": {
       "get": {
-        "tags": [
-          "auth",
-          "hollow"
-        ],
+        "tags": ["auth", "hollow"],
         "parameters": [
           {
             "name": "id",
@@ -250,18 +234,13 @@
     },
     "/api/auth/activate": {
       "post": {
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "description": "",
         "requestBody": {
           "content": {
             "application/x-www-form-urlencoded": {
               "schema": {
-                "required": [
-                  "id",
-                  "token"
-                ],
+                "required": ["id", "token"],
                 "properties": {
                   "id": {
                     "type": "integer",
@@ -319,10 +298,7 @@
     },
     "/logout": {
       "get": {
-        "tags": [
-          "auth",
-          "hollow"
-        ],
+        "tags": ["auth", "hollow"],
         "responses": {
           "200": {
             "description": "OK"
@@ -337,9 +313,7 @@
             "AdminAuth": []
           }
         ],
-        "tags": [
-          "admin"
-        ],
+        "tags": ["admin"],
         "description": "Fetch all the reported posts and comments",
         "responses": {
           "200": {
@@ -365,9 +339,7 @@
             "AdminAuth": []
           }
         ],
-        "tags": [
-          "admin"
-        ],
+        "tags": ["admin"],
         "description": "Fetch the most active posts and comments",
         "responses": {
           "200": {
@@ -393,9 +365,7 @@
             "AdminAuth": []
           }
         ],
-        "tags": [
-          "admin"
-        ],
+        "tags": ["admin"],
         "description": "Hide (or unhide - if already hide) a post or a comment",
         "requestBody": {
           "content": {
@@ -464,9 +434,7 @@
             "AdminAuth": []
           }
         ],
-        "tags": [
-          "admin"
-        ],
+        "tags": ["admin"],
         "description": "Edit a post or a comment",
         "requestBody": {
           "content": {
@@ -535,9 +503,7 @@
             "AdminAuth": []
           }
         ],
-        "tags": [
-          "admin"
-        ],
+        "tags": ["admin"],
         "description": "Mark the discussion of a post as closed",
         "requestBody": {
           "content": {
@@ -597,9 +563,7 @@
     },
     "/api/posts": {
       "get": {
-        "tags": [
-          "post"
-        ],
+        "tags": ["post"],
         "summary": "Fetch posts according to the parameters",
         "parameters": [
           {
@@ -629,11 +593,7 @@
             "name": "sort",
             "schema": {
               "type": "string",
-              "enum": [
-                "old",
-                "new",
-                "top"
-              ]
+              "enum": ["old", "new", "top"]
             },
             "description": "The criteria used to sort posts"
           },
@@ -642,12 +602,7 @@
             "name": "type",
             "schema": {
               "type": "string",
-              "enum": [
-                "info",
-                "idea",
-                "pool",
-                "decisional"
-              ]
+              "enum": ["info", "idea", "poll"]
             },
             "description": "The type used to filter posts"
           },
@@ -687,9 +642,7 @@
     },
     "/api/post": {
       "post": {
-        "tags": [
-          "post"
-        ],
+        "tags": ["post"],
         "summary": "Add a new post",
         "requestBody": {
           "required": true,
@@ -742,9 +695,7 @@
     },
     "/api/post/{post_id}": {
       "get": {
-        "tags": [
-          "post"
-        ],
+        "tags": ["post"],
         "summary": "Find post by id",
         "parameters": [
           {
@@ -784,9 +735,7 @@
         }
       },
       "put": {
-        "tags": [
-          "post"
-        ],
+        "tags": ["post"],
         "summary": "Update an existing post",
         "parameters": [
           {
@@ -880,9 +829,7 @@
         ]
       },
       "delete": {
-        "tags": [
-          "post"
-        ],
+        "tags": ["post"],
         "summary": "Delete a post",
         "parameters": [
           {
@@ -948,9 +895,7 @@
     },
     "/api/post/{post_id}/vote": {
       "post": {
-        "tags": [
-          "post"
-        ],
+        "tags": ["post"],
         "summary": "Add an up/down vote",
         "parameters": [
           {
@@ -1026,9 +971,7 @@
     },
     "/api/post/{post_id}/hide": {
       "post": {
-        "tags": [
-          "post"
-        ],
+        "tags": ["post"],
         "summary": "Hide a post",
         "parameters": [
           {
@@ -1094,9 +1037,7 @@
     },
     "/api/post/{post_id}/lock": {
       "post": {
-        "tags": [
-          "post"
-        ],
+        "tags": ["post"],
         "summary": "Lock a post, preventing the creation of any new comment and/or reply",
         "parameters": [
           {
@@ -1162,9 +1103,7 @@
     },
     "/api/post/{post_id}/report": {
       "post": {
-        "tags": [
-          "post"
-        ],
+        "tags": ["post"],
         "summary": "Report a post",
         "parameters": [
           {
@@ -1227,10 +1166,7 @@
     },
     "/api/post/{post_id}/comments": {
       "get": {
-        "tags": [
-          "post",
-          "comment"
-        ],
+        "tags": ["post", "comment"],
         "summary": "Get the comments of a post",
         "parameters": [
           {
@@ -1247,10 +1183,7 @@
             "name": "type",
             "schema": {
               "type": "string",
-              "enum": [
-                "time",
-                "score"
-              ],
+              "enum": ["time", "score"],
               "default": "time"
             },
             "description": "The type used to filter comment"
@@ -1260,10 +1193,7 @@
             "name": "order",
             "schema": {
               "type": "string",
-              "enum": [
-                "asc",
-                "desc"
-              ],
+              "enum": ["asc", "desc"],
               "default": "asc"
             },
             "description": "The type used to filter comment"
@@ -1317,10 +1247,7 @@
     },
     "/api/post/{post_id}/comment": {
       "post": {
-        "tags": [
-          "post",
-          "comment"
-        ],
+        "tags": ["post", "comment"],
         "summary": "Comment on a post or another comment",
         "parameters": [
           {
@@ -1412,9 +1339,7 @@
     },
     "/api/comment/{comment_id}": {
       "get": {
-        "tags": [
-          "comment"
-        ],
+        "tags": ["comment"],
         "summary": "Get the comment identified by its id",
         "parameters": [
           {
@@ -1453,9 +1378,7 @@
         }
       },
       "post": {
-        "tags": [
-          "comment"
-        ],
+        "tags": ["comment"],
         "summary": "Create a comment as a reply",
         "parameters": [
           {
@@ -1548,9 +1471,7 @@
         ]
       },
       "put": {
-        "tags": [
-          "comment"
-        ],
+        "tags": ["comment"],
         "summary": "Update a comment",
         "parameters": [
           {
@@ -1643,9 +1564,7 @@
         ]
       },
       "delete": {
-        "tags": [
-          "comment"
-        ],
+        "tags": ["comment"],
         "summary": "Delete a comment",
         "parameters": [
           {
@@ -1717,9 +1636,7 @@
     },
     "/api/comment/{comment_id}/report": {
       "post": {
-        "tags": [
-          "comment"
-        ],
+        "tags": ["comment"],
         "summary": "Report a comment",
         "parameters": [
           {
@@ -1772,9 +1689,7 @@
     },
     "/api/comment/{comment_id}/vote": {
       "post": {
-        "tags": [
-          "comment"
-        ],
+        "tags": ["comment"],
         "summary": "Add an up/down vote",
         "parameters": [
           {
@@ -1850,9 +1765,7 @@
     },
     "/api/comment/{comment_id}/hide": {
       "post": {
-        "tags": [
-          "comment"
-        ],
+        "tags": ["comment"],
         "summary": "Hide a comment",
         "parameters": [
           {
@@ -1918,9 +1831,7 @@
     },
     "/api/comment/{comment_id}/lock": {
       "post": {
-        "tags": [
-          "comment"
-        ],
+        "tags": ["comment"],
         "summary": "Lock a comment, preventing the creation of any new comment and/or reply",
         "parameters": [
           {
@@ -1986,9 +1897,7 @@
     },
     "/api/tags": {
       "get": {
-        "tags": [
-          "tag"
-        ],
+        "tags": ["tag"],
         "summary": "Return all tags of the application",
         "responses": {
           "200": {
@@ -2009,9 +1918,7 @@
     },
     "/api/tag/{tag_name}": {
       "post": {
-        "tags": [
-          "tag"
-        ],
+        "tags": ["tag"],
         "summary": "Create a tag",
         "parameters": [
           {
@@ -2050,9 +1957,7 @@
         ]
       },
       "put": {
-        "tags": [
-          "tag"
-        ],
+        "tags": ["tag"],
         "summary": "Update a tag",
         "parameters": [
           {
@@ -2126,9 +2031,7 @@
         ]
       },
       "delete": {
-        "tags": [
-          "tag"
-        ],
+        "tags": ["tag"],
         "summary": "Update a tag",
         "parameters": [
           {
@@ -2172,9 +2075,7 @@
     },
     "/api/roles": {
       "get": {
-        "tags": [
-          "role"
-        ],
+        "tags": ["role"],
         "summary": "Return all roles of the application",
         "responses": {
           "200": {
@@ -2200,9 +2101,7 @@
     },
     "/api/role": {
       "post": {
-        "tags": [
-          "role"
-        ],
+        "tags": ["role"],
         "summary": "Create a new role",
         "requestBody": {
           "content": {
@@ -2255,9 +2154,7 @@
     },
     "/api/role/{role_id}": {
       "put": {
-        "tags": [
-          "role"
-        ],
+        "tags": ["role"],
         "summary": "Update a role",
         "parameters": [
           {
@@ -2332,9 +2229,7 @@
         ]
       },
       "delete": {
-        "tags": [
-          "role"
-        ],
+        "tags": ["role"],
         "summary": "Delete a role",
         "parameters": [
           {
@@ -2388,9 +2283,7 @@
     },
     "/api/capabilities": {
       "get": {
-        "tags": [
-          "role"
-        ],
+        "tags": ["role"],
         "summary": "Return all capabilities of the application",
         "responses": {
           "200": {
@@ -2416,10 +2309,7 @@
     },
     "/api/user/role": {
       "post": {
-        "tags": [
-          "role",
-          "user"
-        ],
+        "tags": ["role", "user"],
         "summary": "Assign a role to a user",
         "requestBody": {
           "content": {
@@ -2478,10 +2368,7 @@
         ]
       },
       "delete": {
-        "tags": [
-          "role",
-          "user"
-        ],
+        "tags": ["role", "user"],
         "summary": "Remove a role from a user",
         "requestBody": {
           "content": {
@@ -2542,9 +2429,7 @@
     },
     "/api/users": {
       "get": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Return all users of the application",
         "responses": {
           "200": {
@@ -2570,10 +2455,7 @@
     },
     "/api/user/subscriptions": {
       "get": {
-        "tags": [
-          "tag",
-          "user"
-        ],
+        "tags": ["tag", "user"],
         "summary": "Get all the tags subscription of the current user",
         "responses": {
           "200": {
@@ -2612,10 +2494,7 @@
     },
     "/api/user/subscription/{tag_name}": {
       "post": {
-        "tags": [
-          "tag",
-          "user"
-        ],
+        "tags": ["tag", "user"],
         "summary": "Let the current user subscribe to a tag",
         "parameters": [
           {
@@ -2680,10 +2559,7 @@
         ]
       },
       "delete": {
-        "tags": [
-          "tag",
-          "user"
-        ],
+        "tags": ["tag", "user"],
         "summary": "Unsubscribe the current user to the tag",
         "parameters": [
           {
@@ -2783,22 +2659,11 @@
             "description": "The mail box number of the user"
           }
         },
-        "required": [
-          "street",
-          "number",
-          "city",
-          "zipcode",
-          "country"
-        ]
+        "required": ["street", "number", "city", "zipcode", "country"]
       },
       "UserRegisterInformation": {
         "type": "object",
-        "required": [
-          "email",
-          "firstname",
-          "lastname",
-          "password"
-        ],
+        "required": ["email", "firstname", "lastname", "password"],
         "properties": {
           "email": {
             "type": "string",
@@ -2891,6 +2756,10 @@
           "title": {
             "type": "string"
           },
+          "type": {
+            "type": "string",
+            "enum": ["info", "idea", "poll"]
+          },
           "content": {
             "type": "string"
           },
@@ -2928,11 +2797,7 @@
         "properties": {
           "vote": {
             "type": "integer",
-            "enum": [
-              -1,
-              0,
-              1
-            ]
+            "enum": [-1, 0, 1]
           }
         }
       },
