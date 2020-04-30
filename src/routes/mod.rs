@@ -62,6 +62,11 @@ pub fn dynamic_routing(route: String) -> Option<Template> {
     }
 }
 
+#[get("/post/<post_id>", rank = 2)]
+pub fn get_hollow_post(post_id: u32) -> Template {
+    Template::render("layout", &())
+}
+
 /// Hollow route to be accessed by activation link
 #[get("/activate/<_id>/<_token>", rank = 1)]
 pub fn activate(_id: u32, _token: String) -> Option<Template> {
