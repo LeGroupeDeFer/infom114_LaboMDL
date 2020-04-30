@@ -3,7 +3,7 @@ use crate::database::models::prelude::*;
 use crate::database::schema::votes_posts;
 use crate::database::tables::votes_posts_table as table;
 
-use crate::lib::Consequence;
+use crate::lib::{Consequence, EntityError};
 use chrono::NaiveDateTime;
 use diesel::dsl::*;
 use diesel::prelude::*;
@@ -29,35 +29,72 @@ pub struct RelPostVoteMinima {
     pub vote_value: i16,
 }
 
-impl RelPostVoteEntity {
-    pub fn get(conn: &MysqlConnection, post_id: &u32, user_id: &u32) -> Consequence<Option<Self>> {
-        Ok(Some(
-            table
-                .filter(
-                    votes_posts::post_id
-                        .eq(post_id)
-                        .and(votes_posts::user_id.eq(user_id)),
-                )
-                .first(conn)?,
-        ))
+impl Entity for RelPostVoteEntity {
+    type Minima = RelPostVoteMinima;
+
+    fn by_id(_conn: &MysqlConnection, _id: &u32) -> Consequence<Option<Self>> {
+        Err(EntityError::NotIdentifiable)?
+    }
+
+    fn all(_conn: &MysqlConnection) -> Consequence<Vec<Self>> {
+        unimplemented!()
     }
 
     /// Insert a vote for a given couple post and user
     /// `Either::Left` : The user had already voted for this post
     /// `Either::Right` : The user successfully added a new vote for this post
-    pub fn insert_minima(
-        conn: &MysqlConnection,
-        minima: RelPostVoteMinima,
-    ) -> Consequence<Either<Self, Self>> {
-        Ok(match Self::get(conn, &minima.post_id, &minima.user_id)? {
+    fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Either<Self, Self>> {
+        Ok(match Self::select(conn, &minima)? {
             Some(rel_post_vote) => Either::Left(rel_post_vote),
             None => {
-                diesel::insert_into(table).values(&minima).execute(conn)?;
-                Either::Right(Self::get(conn, &minima.post_id, &minima.user_id)??)
+                diesel::insert_into(table)
+                    .values(minima.clone())
+                    .execute(conn)?;
+                Either::Right(Self::select(conn, &minima)??)
             }
         })
     }
 
+    fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Option<Self>> {
+        table
+            .filter(
+                votes_posts::post_id
+                    .eq(minima.post_id)
+                    .and(votes_posts::user_id.eq(minima.user_id)),
+            )
+            .first(conn)
+            .optional()
+            .map(Ok)?
+    }
+
+    fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {
+        diesel::update(
+            table.filter(
+                votes_posts::post_id
+                    .eq(self.post_id)
+                    .and(votes_posts::user_id.eq(self.user_id)),
+            ),
+        )
+        .set(votes_posts::vote_value.eq(self.vote_value))
+        .execute(conn)
+        .map(|_| self)
+        .map(Ok)?
+    }
+
+    fn delete(self, conn: &MysqlConnection) -> Consequence<()> {
+        diesel::delete(
+            table.filter(
+                votes_posts::post_id
+                    .eq(self.post_id)
+                    .and(votes_posts::user_id.eq(self.user_id)),
+            ),
+        )
+        .execute(conn)?;
+        Ok(())
+    }
+}
+
+impl RelPostVoteEntity {
     pub fn sum_by_post_id(conn: &MysqlConnection, post_id: u32) -> Consequence<i64> {
         table
             .select(sum(votes_posts::vote_value))
@@ -67,33 +104,12 @@ impl RelPostVoteEntity {
             .map(Ok)?
     }
 
-    pub fn update(
-        conn: &MysqlConnection,
-        post_id: u32,
-        user_id: u32,
-        vote: i16,
-    ) -> Consequence<()> {
-        diesel::update(
-            table.filter(
-                votes_posts::post_id
-                    .eq(post_id)
-                    .and(votes_posts::user_id.eq(user_id)),
-            ),
-        )
-        .set(votes_posts::vote_value.eq(vote))
-        .execute(conn)?;
-        Ok(())
-    }
-
-    pub fn delete(conn: &MysqlConnection, post_id: u32, user_id: u32) -> Consequence<()> {
-        diesel::delete(
-            table.filter(
-                votes_posts::post_id
-                    .eq(post_id)
-                    .and(votes_posts::user_id.eq(user_id)),
-            ),
-        )
-        .execute(conn)?;
-        Ok(())
+    pub fn count_by_post_id(conn: &MysqlConnection, post_id: u32) -> Consequence<u64> {
+        table
+            .select(count(votes_posts::user_id))
+            .filter(votes_posts::post_id.eq(post_id))
+            .first::<i64>(conn)
+            .map(|v: i64| v as u64)
+            .map(Ok)?
     }
 }

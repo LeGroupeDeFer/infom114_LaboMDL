@@ -4,6 +4,7 @@ use diesel::prelude::*;
 use diesel::MysqlConnection;
 
 use crate::database;
+use crate::database::models::post::RelPostVoteMinima;
 use crate::database::models::prelude::*;
 use crate::database::schema::posts::dsl::{self, posts as table};
 use crate::lib::{Consequence, EntityError};
@@ -63,26 +64,41 @@ impl PostEntity {
     pub fn upvote(
         &self,
         conn: &MysqlConnection,
-        user_id: u32,
+        user_id: &u32,
         vote: i32,
     ) -> Consequence<Option<i64>> {
+        let minima = RelPostVoteMinima {
+            post_id: self.id,
+            user_id: user_id.clone(),
+            vote_value: vote as i16,
+        };
         // update rel score
         match vote {
-            i if i == -1 || i == 1 => {
-                RelPostVoteEntity::update(&conn, self.id, user_id, i as i16)?;
-            }
-            0 => {
-                RelPostVoteEntity::delete(&conn, self.id, user_id)?;
-            }
+            -1 | 1 => match RelPostVoteEntity::select(&conn, &minima)? {
+                Some(mut vote_entity) => {
+                    vote_entity.vote_value = minima.vote_value;
+                    vote_entity.update(&conn);
+                }
+                None => {
+                    RelPostVoteEntity::insert_new(&conn, &minima)?;
+                }
+            },
+            0 => match RelPostVoteEntity::select(&conn, &minima)? {
+                Some(vote_entity) => {
+                    vote_entity.delete(&conn)?;
+                }
+                None => {}
+            },
             _ => Err(EntityError::InvalidAttribute)?,
         }
 
         // get post score
         let new_score = self.calculate_score(&conn)?;
+        let votes = self.count_votes(&conn)?;
 
         // update self
         diesel::update(self)
-            .set(dsl::score.eq(new_score))
+            .set((dsl::score.eq(new_score), dsl::votes.eq(votes)))
             .execute(conn)
             .map(|_| Some(new_score))
             .map(Ok)?
@@ -90,6 +106,10 @@ impl PostEntity {
 
     pub fn calculate_score(&self, conn: &MysqlConnection) -> Consequence<i64> {
         RelPostVoteEntity::sum_by_post_id(&conn, self.id)
+    }
+
+    pub fn count_votes(&self, conn: &MysqlConnection) -> Consequence<u64> {
+        Ok(RelPostVoteEntity::count_by_post_id(&conn, self.id)? as u64)
     }
 
     pub fn toggle_visibility(&self, conn: &MysqlConnection) -> Consequence<()> {
@@ -159,7 +179,13 @@ impl Post {
     }
 
     pub fn set_user_vote(&mut self, conn: &MysqlConnection, user_id: &u32) {
-        let user_vote = RelPostVoteEntity::get(conn, &self.id, &user_id)
+        let minima = RelPostVoteMinima {
+            post_id: self.id,
+            user_id: user_id.clone(),
+            vote_value: 0,
+        };
+
+        let user_vote = RelPostVoteEntity::select(conn, &minima)
             .unwrap_or(None)
             .map_or(0, |vote| vote.vote_value);
 

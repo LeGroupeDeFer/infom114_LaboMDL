@@ -149,7 +149,7 @@ fn update_post(
     OK()
 }
 
-#[post("/api/v1/post/<_post_id>/upvote", format = "json", data = "<data>")]
+#[post("/api/v1/post/<_post_id>/vote", format = "json", data = "<data>")]
 fn updown_vote(
     conn: DBConnection,
     auth: Auth,
@@ -157,10 +157,20 @@ fn updown_vote(
     _post_id: u32,
     data: Json<ChangeVote>,
 ) -> ApiResult<()> {
+    if post_guard.post().is_deleted() {
+        Err(EntityError::InvalidID)?;
+    } else if false
+        || (post_guard.post().is_locked() && !auth.has_capability(&*conn, "post:edit_locked"))
+        || (post_guard.post().is_hidden() && !auth.has_capability(&*conn, "post:view_hidden"))
+    {
+        Err(AuthError::MissingCapability)?;
+    }
+
     let vote_request = data.into_inner();
 
     post_guard
         .post()
-        .upvote(&*conn, auth.sub, vote_request.vote)?;
+        .upvote(&*conn, &auth.sub, vote_request.vote)?;
+
     OK()
 }
