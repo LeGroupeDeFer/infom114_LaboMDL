@@ -16,10 +16,7 @@ import 'regenerator-runtime';
 function Admin(props) {
 
   const [menu, setMenu] = useState('tag');
-  const [notification, setNotification] = useState("");
-
-  const Page = () =>  menu == 'tag' ? <TagsPage setNotification={setNotification} /> : <RolesPage />;
-  const Notification = () => notification === "" ? <></> : <TagToast text={notification}/>;
+  const Page = () =>  menu == 'tag' ? <TagsPage/> : <RolesPage />;
 
   return (
     <Container
@@ -28,7 +25,7 @@ function Admin(props) {
         }}>
       <br />
       <div style={{position: 'absolute', top: 0,right: 0, 'z-index':1}}></div>
-      <Notification />
+
       <Row className='justify-content-md-center'>
         <MenuBar onClick={setMenu} currentMenu={menu} />
       </Row>
@@ -101,14 +98,18 @@ const RolesPage = () => {
   );
 };
 
-const TagsPage = ({setNotification}) => {
+const TagsPage = () => {
 
   const [tags, setTags] = useState([]);
   const [promise, setPromise] = useState(null);
+  const [notification, setNotification] = useState("");
   
   //value of form input
   const [input, setInput] = useState("");
 
+  const Notification = () => notification === "" ? <TagToast text={""}/> : <TagToast text={notification}/>;
+
+  
   useEffect(() => {
     setPromise(api.tags());
   }, []);
@@ -167,6 +168,7 @@ const TagsPage = ({setNotification}) => {
 
   return (
       <>
+        <Notification />
         <AddForm addTag={addTag}/>
         <br />
 
