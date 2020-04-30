@@ -3,10 +3,11 @@ use rocket::http::Status;
 use super::super::init;
 use super::utils;
 
-use unanimitylibrary::database::models::prelude::Post;
-use unanimitylibrary::lib::seeds::posts::seed_test_posts;
+use rocket::http::ContentType;
+use unanimitylibrary::database::models::prelude::*;
 
 const POSTS_ROUTE: &'static str = "/api/v1/posts";
+const POST_ROUTE: &'static str = "/api/v1/post";
 
 #[test]
 fn read_all_posts_while_logged_in() {
@@ -138,12 +139,334 @@ fn read_all_posts_without_being_logged_in() {
 // read all post of a certain type
 // read all post with limit and offset
 
-// create a post (admin)
-// create a post (wrong permission)
-// create a post (invalid json)
-// create a post (existing title)
-// create a post (multiple existing tags)
-// create a post (with new tags)
+#[test]
+pub fn create_post() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    // login
+    let auth_token_header = init::login_admin();
+
+    let new_post_title = "new post title";
+    let new_post_content = "This is a new content for the post";
+
+    let post_json_data = format!(
+        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
+        new_post_title, new_post_content
+    );
+
+    let req = client
+        .post(POST_ROUTE)
+        .header(ContentType::JSON)
+        .header(auth_token_header)
+        .body(post_json_data);
+    let mut response = req.dispatch();
+
+    assert_eq!(response.status(), Status::Ok);
+    let data = response.body_string().unwrap();
+    let p: Post = serde_json::from_str(&data).unwrap();
+
+    assert_eq!(p.title, new_post_title);
+    assert_eq!(p.content, new_post_content);
+
+    assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
+}
+
+#[test]
+pub fn create_post_simple_user() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    // login
+    let (user, passwd) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &passwd);
+
+    let new_post_title = "new post title";
+    let new_post_content = "This is a new content for the post";
+
+    let post_json_data = format!(
+        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
+        new_post_title, new_post_content
+    );
+
+    let req = client
+        .post(POST_ROUTE)
+        .header(ContentType::JSON)
+        .header(auth_token_header)
+        .body(post_json_data);
+    let mut response = req.dispatch();
+
+    assert_eq!(response.status(), Status::Ok);
+    let data = response.body_string().unwrap();
+    let p: Post = serde_json::from_str(&data).unwrap();
+
+    assert_eq!(p.title, new_post_title);
+    assert_eq!(p.content, new_post_content);
+
+    assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
+}
+
+#[test]
+pub fn create_post_unauthenticated_user() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let new_post_title = "new post title";
+    let new_post_content = "This is a new content for the post";
+
+    let post_json_data = format!(
+        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
+        new_post_title, new_post_content
+    );
+
+    let req = client
+        .post(POST_ROUTE)
+        .header(ContentType::JSON)
+        .body(post_json_data);
+    let mut response = req.dispatch();
+
+    assert_eq!(response.status(), Status::Forbidden);
+
+    assert_eq!(
+        PostEntity::by_title(&conn, &new_post_title).unwrap().len(),
+        0
+    );
+}
+
+#[test]
+pub fn create_post_missing_attribute() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    // login
+    let (user, passwd) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &passwd);
+
+    let new_post_title = "new post title";
+    let new_post_content = "This is a new content for the post";
+
+    let post_json_data = format!("{{\"title\": \"{}\"}}", new_post_title);
+
+    let req = client
+        .post(POST_ROUTE)
+        .header(ContentType::JSON)
+        .header(auth_token_header)
+        .body(post_json_data);
+    let mut response = req.dispatch();
+
+    assert_eq!(response.status(), Status::UnprocessableEntity);
+
+    assert_eq!(
+        PostEntity::by_title(&conn, &new_post_title).unwrap().len(),
+        0
+    );
+}
+
+#[test]
+pub fn create_post_bad_json() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    // login
+    let (user, passwd) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &passwd);
+
+    let new_post_title = "new post title";
+    let new_post_content = "This is a new content for the post";
+
+    let post_json_data = format!(
+        "{{\"title\": \"{}\",\"content\": {}}}",
+        new_post_title, new_post_content
+    );
+
+    let req = client
+        .post(POST_ROUTE)
+        .header(ContentType::JSON)
+        .header(auth_token_header)
+        .body(post_json_data);
+    let mut response = req.dispatch();
+
+    assert_eq!(response.status(), Status::BadRequest);
+
+    assert_eq!(
+        PostEntity::by_title(&conn, &new_post_title).unwrap().len(),
+        0
+    );
+}
+
+#[test]
+pub fn create_duplicate_post() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    // login
+    let auth_token_header = init::login_admin();
+
+    let new_post_title = "new post title";
+    let new_post_content = "This is a new content for the post";
+
+    let post_json_data = format!(
+        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
+        new_post_title, new_post_content
+    );
+
+    let req1 = client
+        .post(POST_ROUTE)
+        .header(ContentType::JSON)
+        .header(auth_token_header.clone())
+        .body(post_json_data.clone());
+    let mut response1 = req1.dispatch();
+
+    assert_eq!(response1.status(), Status::Ok);
+    let data1 = response1.body_string().unwrap();
+    let p1: Post = serde_json::from_str(&data1).unwrap();
+
+    assert_eq!(p1.title, new_post_title);
+    assert_eq!(p1.content, new_post_content);
+
+    assert!(PostEntity::by_id(&conn, &p1.id).unwrap().is_some());
+    assert_eq!(
+        PostEntity::by_title(&conn, &new_post_title).unwrap().len(),
+        1
+    );
+
+    let req2 = client
+        .post(POST_ROUTE)
+        .header(ContentType::JSON)
+        .header(auth_token_header.clone())
+        .body(post_json_data.clone());
+    let mut response2 = req2.dispatch();
+
+    assert_eq!(response2.status(), Status::Ok);
+    let data2 = response2.body_string().unwrap();
+    let p2: Post = serde_json::from_str(&data2).unwrap();
+
+    assert_eq!(p2.title, new_post_title);
+    assert_eq!(p2.content, new_post_content);
+
+    assert!(PostEntity::by_id(&conn, &p2.id).unwrap().is_some());
+    assert_ne!(p1.id, p2.id);
+    assert_eq!(
+        PostEntity::by_title(&conn, &new_post_title).unwrap().len(),
+        2
+    );
+}
+
+#[test]
+pub fn create_post_simple_user_with_tags() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    // login
+    let (user, passwd) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &passwd);
+
+    let new_post_title = "new post title";
+    let new_post_content = "This is a new content for the post";
+    let new_post_tags = vec!["even".to_string(), "odd".to_string()];
+
+    let post_json_data = format!(
+        "{{\"title\": \"{}\",\"content\": \"{}\", \"tags\": [{}]}}",
+        new_post_title,
+        new_post_content,
+        new_post_tags
+            .iter()
+            .map(|t| format!("\"{}\"", t))
+            .collect::<Vec<String>>()
+            .join(", ")
+    );
+
+    let req = client
+        .post(POST_ROUTE)
+        .header(ContentType::JSON)
+        .header(auth_token_header)
+        .body(post_json_data);
+    let mut response = req.dispatch();
+
+    assert_eq!(response.status(), Status::Ok);
+    let data = response.body_string().unwrap();
+    let p: Post = serde_json::from_str(&data).unwrap();
+
+    assert_eq!(p.title, new_post_title);
+    assert_eq!(p.content, new_post_content);
+
+    assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
+    let tags = RelPostTagEntity::tags_by_post_id(&conn, &p.id)
+        .unwrap()
+        .iter()
+        .map(|t| t.label.to_string())
+        .collect::<Vec<String>>();
+
+    for t in new_post_tags {
+        assert!(tags.contains(&t));
+    }
+}
+
+#[test]
+pub fn create_post_simple_user_with_new_tags() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    // login
+    let (user, passwd) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &passwd);
+
+    let new_post_title = "new post title";
+    let new_post_content = "This is a new content for the post";
+    let new_post_tags = vec!["frankyvincent".to_string(), "lerestaurant".to_string()];
+
+    let post_json_data = format!(
+        "{{\"title\": \"{}\",\"content\": \"{}\", \"tags\": [{}]}}",
+        new_post_title,
+        new_post_content,
+        new_post_tags
+            .iter()
+            .map(|t| format!("\"{}\"", t))
+            .collect::<Vec<String>>()
+            .join(", ")
+    );
+
+    let req = client
+        .post(POST_ROUTE)
+        .header(ContentType::JSON)
+        .header(auth_token_header)
+        .body(post_json_data);
+    let mut response = req.dispatch();
+
+    assert_eq!(response.status(), Status::Ok);
+    let data = response.body_string().unwrap();
+    let p: Post = serde_json::from_str(&data).unwrap();
+
+    assert_eq!(p.title, new_post_title);
+    assert_eq!(p.content, new_post_content);
+
+    assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
+    let tags = RelPostTagEntity::tags_by_post_id(&conn, &p.id)
+        .unwrap()
+        .iter()
+        .map(|t| t.label.to_string())
+        .collect::<Vec<String>>();
+
+    for t in new_post_tags {
+        assert!(tags.contains(&t));
+    }
+}
 
 // read a post
 // read a post (invalid id)

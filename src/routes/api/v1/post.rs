@@ -1,13 +1,10 @@
 use crate::database::models::prelude::*;
-use crate::database::schema::posts;
 use crate::database::DBConnection;
-use crate::http::responders::api::ApiResponse;
 
-use crate::guards::auth::Auth;
-use crate::guards::post::PostGuard;
-use crate::guards::ForwardAuth;
+use crate::guards::{Auth, ForwardAuth, PostGuard};
 use crate::http::responders::{ApiResult, OK};
-use crate::lib::AuthError;
+use crate::lib::{AuthError, Consequence, EntityError};
+
 use diesel::prelude::*;
 use rocket::http::Status;
 use rocket::Request;
@@ -32,8 +29,8 @@ pub fn allowed_paths() -> Vec<&'static str> {
 /// Create a new post. Client data (title, content, auth_token)
 /// + validate `auth_token`
 /// + insert a new post into DB.
-#[post("/api/post", format = "json", data = "<data>")]
-fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResponse {
+#[post("/api/v1/post", format = "json", data = "<data>")]
+fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult<Post> {
     let post_request = data.into_inner();
 
     let new_post = PostMinima {
@@ -42,25 +39,16 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiRespon
         author_id: auth.sub,
     };
 
-    let insert_result = diesel::insert_into(posts::dsl::posts)
-        .values(&new_post)
-        .execute(&*conn);
+    let p = PostEntity::insert_new(&*conn, &new_post)?;
+    post_request.tags.map(|tags| -> Consequence<()> {
+        for t in tags {
+            let tag_entity = TagEntity::insert_either(&*conn, &TagMinima { label: t })?;
+            p.add_tag(&*conn, &tag_entity.id)?;
+        }
+        Ok(())
+    });
 
-    if insert_result.is_ok() {
-        ApiResponse::new(
-            Status::Ok,
-            json!({
-                "msg":
-                    &format!(
-                        "Post '{}' of user '{}' inserted successfully",
-                        new_post.title, auth.sub
-                    )
-            }),
-        )
-    } else {
-        // since we are sure that insert_result is a type Err, we can unwrap
-        ApiResponse::db_error(insert_result.err().unwrap())
-    }
+    Ok(Json(Post::from(p)))
 }
 
 #[get("/api/v1/posts", rank = 1)]
@@ -84,33 +72,43 @@ fn get_all_posts(conn: DBConnection) -> ApiResult<Vec<Post>> {
     Ok(Json(Post::all(&*conn)?))
 }
 
-/// Get post by id (unauth)
-#[get("/post/<_post_id>")]
-fn get_post(post_guard: PostGuard, _post_id: u32) -> ApiResponse {
-    ApiResponse::new(Status::Ok, json!(post_guard.post()))
+#[get("/api/v1/post/<_post_id>", rank = 1)]
+fn get_post_authenticated(
+    conn: DBConnection,
+    auth: ForwardAuth,
+    post_guard: PostGuard,
+    _post_id: u32,
+) -> ApiResult<Post> {
+    let mut p = Post::from(post_guard.post_clone());
+    p.set_user_vote(&*conn, &auth.deref().sub);
+    Ok(Json(p))
+}
+#[get("/post/<_post_id>", rank = 2)]
+fn get_post(post_guard: PostGuard, _post_id: u32) -> ApiResult<Post> {
+    Ok(Json(Post::from(post_guard.post_clone())))
 }
 
 /// Delete a post
-#[delete("/api/post/<_post_id>")]
+#[delete("/api/v1/post/<_post_id>")]
 fn delete_post(
     conn: DBConnection,
     auth: Auth,
     post_guard: PostGuard,
     _post_id: u32,
-) -> ApiResponse {
+) -> ApiResult<()> {
     let capability = "post:delete";
 
     if !(auth.has_capability(&*conn, &capability) || post_guard.post().author_id == auth.sub) {
-        // TODO : return right management error
+        Err(AuthError::MissingCapability)?;
     }
 
-    post_guard.post_clone().delete(&*conn);
+    post_guard.post_clone().delete(&*conn)?;
 
-    ApiResponse::simple_success(Status::Ok)
+    OK()
 }
 
 /// Update a post (title/content)
-#[put("/api/post/<_post_id>", format = "json", data = "<data>")]
+#[put("/api/v1/post/<_post_id>", format = "json", data = "<data>")]
 fn update_post(
     conn: DBConnection,
     auth: Auth,
@@ -134,31 +132,18 @@ fn update_post(
     OK()
 }
 
-#[post("/api/post/<_post_id>/upvote", format = "json", data = "<data>")]
+#[post("/api/v1/post/<_post_id>/upvote", format = "json", data = "<data>")]
 fn updown_vote(
     conn: DBConnection,
     auth: Auth,
     post_guard: PostGuard,
     _post_id: u32,
     data: Json<ChangeVote>,
-) -> ApiResponse {
+) -> ApiResult<()> {
     let vote_request = data.into_inner();
 
-    match vote_request.vote {
-        i if -1 <= i && i <= 1 => {
-            let _new_score = post_guard.post().upvote(&*conn, auth.sub, i);
-            ApiResponse::success(
-                Status::Ok,
-                &format!(
-                    "Change vote of post '{}' of user '{}' successfully!",
-                    post_guard.post().id,
-                    auth.sub
-                ),
-            )
-        }
-        _ => ApiResponse::error(
-            Status::UnprocessableEntity,
-            "The vote value has to be included in {-1, 0, 1}",
-        ),
-    }
+    post_guard
+        .post()
+        .upvote(&*conn, auth.sub, vote_request.vote)?;
+    OK()
 }

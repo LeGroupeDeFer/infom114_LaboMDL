@@ -45,10 +45,13 @@ impl PostEntity {
     }
 
     pub fn get_deleted(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
-        table
-            .filter(dsl::deleted_at.is_not_null())
-            .load(conn)
-            .map(Ok)?
+        Ok(table.filter(dsl::deleted_at.is_not_null()).load(conn)?)
+    }
+
+    pub fn by_title(conn: &MysqlConnection, title: &str) -> Consequence<Vec<Self>> {
+        Ok(table
+            .filter(dsl::deleted_at.is_null().and(dsl::title.eq(title)))
+            .load(conn)?)
     }
 
     /// Delete a post permanently (not used)
@@ -124,7 +127,7 @@ impl PostEntity {
             post_id: self.id,
             tag_id: *tag_id,
         };
-        RelPostTagEntity::insert(conn, &minima)?;
+        RelPostTagEntity::insert_either(conn, &minima)?;
         Ok(())
     }
 }
@@ -174,7 +177,8 @@ impl From<PostEntity> for Post {
                 .unwrap()
                 .map(|user_entity| User::from(user_entity))
                 .unwrap(),
-            tags: RelPostTagEntity::tags_by_post_id(&conn, pe.id)
+            tags: RelPostTagEntity::tags_by_post_id(&conn, &pe.id)
+                .unwrap()
                 .iter()
                 .map(|tag_entity| tag_entity.label.to_string())
                 .collect::<Vec<String>>(),

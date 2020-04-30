@@ -68,17 +68,17 @@ impl Entity for PostEntity {
         Ok(entities)
     }
 
+    /// Since there is no UNIQUE constraint on the minima fields, there is no
+    /// `Either::Left` part returned here!
     fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Either<Self, Self>> {
-        let past = Self::select(conn, minima)?;
-        if past.is_some() {
-            Ok(Left(past.unwrap()))
-        } else {
-            diesel::insert_into(table).values(minima).execute(conn)?;
-            let future = Self::select(conn, minima)??;
-            Ok(Right(future))
-        }
+        diesel::insert_into(table).values(minima).execute(conn)?;
+        let future = Self::select(conn, minima)??;
+        Ok(Right(future))
     }
 
+    /// Caution : Since there is no UNIQUE constraint on the minima, it is possible
+    /// that the selected entity is not the expected one.
+    /// Please use `by_title()`, which explicitly returns a `Vec<Self>`
     fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Option<Self>> {
         table
             .filter(
@@ -86,6 +86,7 @@ impl Entity for PostEntity {
                     .eq(minima.title.clone())
                     .and(dsl::content.eq(minima.content.clone())),
             )
+            .order((dsl::id.desc()))
             .first(conn)
             .optional()
             .map(Ok)?

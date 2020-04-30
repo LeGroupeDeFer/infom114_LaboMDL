@@ -40,15 +40,15 @@ impl Entity for RelPostTagEntity {
     }
 
     fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Option<Self>> {
-        Ok(Some(
-            table
-                .filter(
-                    posts_tags::post_id
-                        .eq(minima.post_id)
-                        .and(posts_tags::tag_id.eq(minima.tag_id)),
-                )
-                .first(conn)?,
-        ))
+        table
+            .filter(
+                posts_tags::post_id
+                    .eq(minima.post_id)
+                    .and(posts_tags::tag_id.eq(minima.tag_id)),
+            )
+            .first(conn)
+            .optional()
+            .map(Ok)?
     }
 
     fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {
@@ -61,23 +61,12 @@ impl Entity for RelPostTagEntity {
 }
 
 impl RelPostTagEntity {
-    pub fn tags_by_post_id(conn: &MysqlConnection, post_id: u32) -> Vec<TagEntity> {
+    pub fn tags_by_post_id(conn: &MysqlConnection, post_id: &u32) -> Consequence<Vec<TagEntity>> {
         table
             .inner_join(tags_table)
             .select((tags::id, tags::label))
             .filter(posts_tags::post_id.eq(post_id))
             .load::<TagEntity>(conn)
-            .unwrap_or(vec![])
-    }
-
-    pub fn get(conn: &MysqlConnection, post_id: u32, tag_id: u32) -> Option<Self> {
-        table
-            .filter(
-                posts_tags::post_id
-                    .eq(post_id)
-                    .and(posts_tags::tag_id.eq(tag_id)),
-            )
-            .first(conn)
-            .ok()
+            .map(Ok)?
     }
 }
