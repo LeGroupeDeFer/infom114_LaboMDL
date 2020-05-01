@@ -1,9 +1,7 @@
-use crate::database::models::prelude::{
-    PostEntity, PostMinima, TagEntity, TagMinima, UserEntity, UserMinima,
-};
-use crate::database::Data;
+use crate::database::models::prelude::*;
 use crate::lib;
 use diesel::MysqlConnection;
+use either::Either;
 
 /// This seeder will create a user and some post on the database
 ///
@@ -30,15 +28,23 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
             content: lib::lorem_ipsum(),
         };
 
-        let p = match PostEntity::insert_minima(&conn, &post_minima) {
-            Data::Inserted(post) => post,
-            _ => panic!("supposed to be new post"),
+        let p = match PostEntity::insert(&conn, &post_minima).unwrap() {
+            Either::Left(post) => post,
+            Either::Right(post) => post,
         };
 
         if i % 2 == 0 {
-            p.add_tag(&conn, TagEntity::by_label(&conn, "even").unwrap().id);
+            p.add_tag(
+                &conn,
+                &TagEntity::by_label(&conn, "even").unwrap().unwrap().id,
+            )
+            .unwrap();
         } else {
-            p.add_tag(&conn, TagEntity::by_label(&conn, "odd").unwrap().id);
+            p.add_tag(
+                &conn,
+                &TagEntity::by_label(&conn, "odd").unwrap().unwrap().id,
+            )
+            .unwrap();
         }
     }
 
@@ -48,11 +54,8 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
         title: "Deleted post".to_string(),
         content: lib::lorem_ipsum(),
     };
-    let deleted_post = match PostEntity::insert_minima(&conn, &deleted_minima) {
-        Data::Inserted(p) => p,
-        _ => panic!("This should be a new post"),
-    };
-    deleted_post.delete(&conn);
+    let deleted_post = PostEntity::insert_new(&conn, &deleted_minima).unwrap();
+    deleted_post.delete(&conn).unwrap();
 
     // create 1 hidden post
     let hidden_minima = PostMinima {
@@ -60,11 +63,8 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
         title: "Hidden post".to_string(),
         content: lib::lorem_ipsum(),
     };
-    let hidden_post = match PostEntity::insert_minima(&conn, &hidden_minima) {
-        Data::Inserted(p) => p,
-        _ => panic!("This should be a new post"),
-    };
-    hidden_post.toggle_visibility(&conn);
+    let hidden_post = PostEntity::insert_new(&conn, &hidden_minima).unwrap();
+    hidden_post.toggle_visibility(&conn).unwrap();
 
     // create 1 locked post
     let locked_minima = PostMinima {
@@ -72,16 +72,16 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
         title: "Locked post".to_string(),
         content: lib::lorem_ipsum(),
     };
-    let locked_post = match PostEntity::insert_minima(&conn, &locked_minima) {
-        Data::Inserted(p) => p,
-        _ => panic!("This should be a new post"),
-    };
-    locked_post.toggle_lock(&conn);
+    let locked_post = PostEntity::insert_new(&conn, &locked_minima).unwrap();
+    locked_post.toggle_lock(&conn).unwrap();
 }
 
 /// Create an author for the posts
 fn init_author(conn: &MysqlConnection) -> UserEntity {
     let email = "alan.smithee@unamur.be";
+    let activation_token = TokenEntity::create_default(conn).unwrap();
+    let recovery_token = TokenEntity::create_default(conn).unwrap();
+    let refresh_token = TokenEntity::create_default(conn).unwrap();
     let u = UserMinima {
         email: email.to_string(),
         password: "author".to_string(),
@@ -89,16 +89,15 @@ fn init_author(conn: &MysqlConnection) -> UserEntity {
         lastname: "Smithee".to_string(),
         address: None,
         phone: None,
+        activation_token: Some(activation_token.id),
+        recovery_token: Some(recovery_token.id),
+        refresh_token: Some(refresh_token.id),
     };
-    let user = match UserEntity::insert_minima(&conn, &u) {
-        Data::Inserted(u) => u,
-        Data::Existing(u) => u,
-        _ => panic!("The user is supposed to be a new one"),
-    };
+    let mut user = UserEntity::insert_either(&conn, &u).unwrap();
     if !user.active {
-        user.activate(&conn);
+        user.activate(&conn).unwrap();
     }
-    UserEntity::by_email(&conn, email).unwrap()
+    UserEntity::by_email(&conn, email).unwrap().unwrap()
 }
 
 fn init_tags(conn: &MysqlConnection) {
@@ -110,6 +109,7 @@ fn init_tags(conn: &MysqlConnection) {
             &TagMinima {
                 label: label.to_string(),
             },
-        );
+        )
+        .unwrap();
     }
 }

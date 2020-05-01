@@ -1,17 +1,19 @@
-import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import React, { useEffect } from "react";
-import Col from "react-bootstrap/Col";
-import Container from "react-bootstrap/Container";
-import Form from "react-bootstrap/Form";
-import Row from "react-bootstrap/Row";
-import { Link, useHistory } from "react-router-dom";
-import AutoForm from "../components/AutoForm";
-import Flexbox from "../components/Flexbox";
-import Image from '../components/Image';
-import { useAuth } from "../context/authContext";
-import { isUnamurEmail, isValidNatural, isValidPassword } from "../lib/validators";
-import { debounce } from "../lib";
+import React, { useEffect, useState } from 'react';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft, faArrowRight, faExclamationCircle, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { Container, Row, Col, Form } from 'react-bootstrap';
+import { Link, useHistory } from 'react-router-dom';
+
+import { AutoForm, Flexbox, Image, Unauthenticated } from '../components';
+import { useAuth } from '../context/authContext';
+import { useAction } from '../hooks';
+import { api, trace, debounce, tee, aggregate } from '../lib';
+import { isUnamurEmail, isValidNatural, isValidPassword, isValidPhoneNumber } from '../lib/validators';
+
+
+const confirmPassword = ({ password, confirmPassword }) =>
+  password && confirmPassword && password.value === confirmPassword.value;
+
 
 function Header() {
   return (
@@ -30,41 +32,39 @@ function Header() {
         </Link>
       </h4>
     </Flexbox>
-  )
+  );
 }
 
-function RegisterForm() {
 
+function RegisterForm() {
   return (
     <>
       {/* Firstname & Lastname */}
       <Row>
 
         <Col sm="6">
-          <Form.Group className='form-group-material'>
+          <Form.Group className="form-group-material">
             <AutoForm.Control
               id="firstname"
               name="firstname"
               type="text"
-              eraseOnFailure={false}
             />
             <Form.Label>
-              <small><b>FIRSTNAME</b></small>
+              <small><b>FIRSTNAME*</b></small>
             </Form.Label>
             <span className="underline" />
             <div className="highlight" />
           </Form.Group>
         </Col>
         <Col>
-          <Form.Group className='form-group-material'>
+          <Form.Group className="form-group-material">
             <AutoForm.Control
               id="lastname"
               name="lastname"
               type="text"
-              eraseOnFailure={false}
             />
             <Form.Label>
-              <small><b>LASTNAME</b></small>
+              <small><b>LASTNAME*</b></small>
             </Form.Label>
             <span className="underline" />
             <div className="highlight" />
@@ -77,7 +77,7 @@ function RegisterForm() {
       <Row>
 
         <Col sm="6">
-          <Form.Group className='form-group-material'>
+          <Form.Group className="form-group-material">
             <AutoForm.Control
               id="email"
               name="email"
@@ -85,21 +85,22 @@ function RegisterForm() {
               validator={isUnamurEmail}
             />
             <Form.Label>
-              <small><b>EMAIL</b></small>
+              <small><b>EMAIL*</b></small>
             </Form.Label>
             <span className="underline" />
             <div className="highlight" />
           </Form.Group>
         </Col>
         <Col>
-          <Form.Group className='form-group-material'>
+          <Form.Group className="form-group-material">
             <AutoForm.Control
               id="phone"
               name="phone"
               type="tel"
+              validator={isValidPhoneNumber}
             />
             <Form.Label>
-              <small><b>PHONE</b></small>
+              <small><b>PHONE*</b></small>
             </Form.Label>
             <span className="underline" />
             <div className="highlight" />
@@ -111,13 +112,13 @@ function RegisterForm() {
       {/* Street, Number & Box */}
       <Row>
 
-        <Col xs="12" sm="7">
-          <Form.Group className='form-group-material'>
+        <Col xs="12" sm="6">
+          <Form.Group className="form-group-material">
             <AutoForm.Control
+              optional
               id="street"
               name="street"
               type="text"
-              eraseOnFailure={false}
             />
             <Form.Label>
               <small><b>STREET</b></small>
@@ -127,13 +128,13 @@ function RegisterForm() {
           </Form.Group>
         </Col>
         <Col xs="6" sm="3">
-          <Form.Group className='form-group-material'>
+          <Form.Group className="form-group-material">
             <AutoForm.Control
+              optional
               id="number"
               name="number"
               type="number"
               min="0"
-              eraseOnFailure={false}
               className="flex-grow-1"
               validator={isValidNatural}
             />
@@ -144,14 +145,13 @@ function RegisterForm() {
             <div className="highlight" />
           </Form.Group>
         </Col>
-        <Col xs="6" sm="2">
-          <Form.Group className='form-group-material'>
+        <Col xs="6" sm="3">
+          <Form.Group className="form-group-material">
             <AutoForm.Control
               optional
-              id='box'
-              name="box"
+              id="boxNumber"
+              name="boxNumber"
               type="text"
-              eraseOnFailure={false}
               className="flex-grow-1"
             />
             <Form.Label>
@@ -168,13 +168,13 @@ function RegisterForm() {
       <Row>
 
         <Col>
-          <Form.Group className='form-group-material'>
+          <Form.Group className="form-group-material">
             <AutoForm.Control
-              id="zip"
-              name="zip"
+              optional
+              id="zipcode"
+              name="zipcode"
               min="0"
-              type="number"
-              eraseOnFailure={false}
+              type="text"
               className="flex-grow-1"
               validator={isValidNatural}
             />
@@ -186,12 +186,12 @@ function RegisterForm() {
           </Form.Group>
         </Col>
         <Col>
-          <Form.Group className='form-group-material'>
+          <Form.Group className="form-group-material">
             <AutoForm.Control
+              optional
               id="city"
               name="city"
               type="text"
-              eraseOnFailure={false}
               className='flex-grow-4'
             />
             <Form.Label>
@@ -208,32 +208,32 @@ function RegisterForm() {
       <Row>
 
         <Col xs="12" sm="6">
-          <Form.Group className='form-group-material'>
+          <Form.Group className="form-group-material">
             <AutoForm.Control
+              eraseOnFailure
               id="password"
               name="password"
               type="password"
-              eraseOnFailure={true}
               validator={isValidPassword}
             />
             <Form.Label>
-              <small><b>PASSWORD</b></small>
+              <small><b>PASSWORD*</b></small>
             </Form.Label>
             <span className="underline" />
             <div className="highlight" />
           </Form.Group>
         </Col>
         <Col>
-          <Form.Group className='form-group-material'>
+          <Form.Group className="form-group-material">
             <AutoForm.Control
-              id="confirm_password"
-              name="confirm_password"
+              eraseOnFailure
+              id="confirmPassword"
+              name="confirmPassword"
               type="password"
-              eraseOnFailure={true}
               validator={isValidPassword}
             />
             <Form.Label>
-              <small><b>CONFIRM</b></small>
+              <small><b>CONFIRM*</b></small>
             </Form.Label>
             <span className="underline" />
             <div className="highlight" />
@@ -264,51 +264,80 @@ function RegisterForm() {
       </Row>
 
     </>
-
-  )
+  );
 }
 
-function ErrorHandler() {
-  const { error } = AutoForm.useForm();
-  if (!error)
-    return <></>
-  return <div className="bg-dark text-center py-2">{error.message}</div>
+
+function RegistrationSuccess({ email }) {
+  return (
+    <Flexbox className="h-100 text-center" align="center" direction="column" justify="center">
+      <Icon icon={faCheckCircle} className="display-4 pb-3" />
+      <h1 className="pb-3 text-secondary font-weight-bold">
+        Registration success
+      </h1>
+      <p>
+        We have sent you an email at <i className="px-1 text-primary bg-light">{email}</i>.
+        Follow the instructions in that message to pursue the registration process.
+      </p>
+    </Flexbox>
+  );
 }
 
-function Register(props) {
 
-  const { register, user } = useAuth();
+function ErrorMessage({ error }) {
+  return error ? (
+    <div className="bg-dark text-center p-2">
+      <Icon
+        icon={faExclamationCircle}
+        className="text-danger mr-2"
+        style={{ display: 'inline-box' }}
+      />
+    <p className="m-0">{error.reason}</p>
+    </div>
+  ) : false;
+}
 
-  const history = useHistory()
-  if (user) {
-    history.push('/');
-    // Shouldn't get here except in testing
-    return <></>;
-  }
 
-  const handleSubmit = newUser =>
-    register(newUser).then(_ => history.replace("/activate/"));
+const Register = Unauthenticated((props) => {
 
-  useEffect(() => (user ? history.replace("/") : undefined), [user])
+  const [email, setEmail] = useState(null);
+  const [handler, error, success] = useAction(tee(
+    ({ email }) => setEmail(email),
+    data => api.auth.register(
+      aggregate(data, 'address', ['street', 'number', 'boxNumber', 'zipcode', 'city'])
+    )
+  ));
 
   return (
     <Container className="register-form">
-      <AutoForm onSubmit={handleSubmit} autoComplete="off">
-
+      <AutoForm
+        onSubmit={handler}
+        validator={confirmPassword}
+        autoComplete="off"
+      >
         <Header />
         <hr />
 
         <Row>
-          <Col lg="6" sm="0"><Image cover path="https://placehold.it/500x500" /></Col>
           <Col>
-            <ErrorHandler />
-            <RegisterForm />
+            <ErrorMessage error={error} />
+            { success ? <RegistrationSuccess email={email} /> : <RegisterForm /> }
+          </Col>
+          <Col lg="6" sm="0">
+            <Image cover
+              path="https://placehold.it/500x500"
+              width="500px"
+              height="500px"
+              float="right"
+              className="d-none d-lg-block"
+            />
           </Col>
         </Row>
-
       </AutoForm>
     </Container >
   );
-}
+
+});
+
 
 export default Register;

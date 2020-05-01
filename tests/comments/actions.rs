@@ -11,13 +11,13 @@
 
 // hide and unhide a comment
 // hide a comment (invalid id)
-// hide a comment (invalid capabilities)
+// hide a comment (invalid capability)
 
 // lock and unlock a comment
 // lock a comment (invalid id)
-// lock a comment (invalid capabilities)
+// lock a comment (invalid capability)
 
 // report a comment
 // report a comment (invalid id)
-// report a comment (invalid capabilities)
+// report a comment (invalid capability)
 // report same comment twice

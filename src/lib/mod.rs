@@ -1,5 +1,9 @@
 pub mod mail;
 pub mod seeds;
+pub mod consequence;
+
+pub use consequence::*;
+
 
 pub fn lorem_ipsum() -> String {
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed mollis neque a magna sollicitudin laoreet.\

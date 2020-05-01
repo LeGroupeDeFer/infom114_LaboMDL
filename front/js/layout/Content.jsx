@@ -6,9 +6,10 @@ import {
   faInfoCircle,
   faStream,
   faBell,
-  faPencilAlt
+  faPencilAlt,
 } from '@fortawesome/free-solid-svg-icons';
 import Sidebar from './Sidebar';
+import layout from '../lib/layout';
 import { useAuth } from '../context/authContext';
 
 const Stream = lazy(() => import('../pages/Stream'));
@@ -19,57 +20,33 @@ const Notifications = lazy(() => import('../pages/Notifications'));
 const Login = lazy(() => import('../pages/Login'));
 const Logout = lazy(() => import('../pages/Logout'));
 const Register = lazy(() => import('../pages/Register'));
-const Create = lazy(() => import('../pages/Create'));
 const Activate = lazy(() => import('../pages/Activate'));
 const Admin = lazy(() => import('../pages/Admin'));
+const CreatePost = lazy(() => import('../pages/CreatePost'));
+const Post = lazy(() => import('../pages/Post'));
+const Recover = lazy(() => import('../pages/Recover'));
+const Restore = lazy(() => import('../pages/Restore'));
 
 // Content :: Object => Component
-const Content = _ => {
+const Content = (_) => {
   const location = useLocation();
   const { user } = useAuth();
   const locationClass = location.pathname.split('/')[1];
 
-  const links = [
-    { name: 'stream', path: '/', icon: faStream, title: "Fil d'actualité" },
-    { name: 'about', path: '/about', icon: faInfoCircle, title: 'À propos' }
-  ];
-  if (user)
-    links.push(
-      {
-        name: 'profile',
-        path: '/profile',
-        icon: faUserCircle,
-        title: 'Profil'
-      },
-      {
-        name: 'notifications',
-        path: '/notifications',
-        icon: faBell,
-        title: 'Notifications'
-      }
-    );
-  links.push({
-    name: 'settings',
-    path: '/settings',
-    icon: faCogs,
-    title: 'Paramètres'
-  });
+  const layoutStyle = layout.layout(`/${location.pathname.split('/')[1]}`);
+  const links = layout.links(user);
 
   return (
     <>
       <Sidebar links={links} />
 
-      <div className={`offset ${locationClass}`}>
+      <div className={`offset ${layoutStyle}`}>
         <main role="main">
           <div className="content">
             <Suspense fallback={<h1>Loading...</h1>}>
               <Switch>
                 <Route exact path="/">
                   <Stream />
-                </Route>
-
-                <Route path="/create">
-                  <Create />
                 </Route>
 
                 <Route path="/profile">
@@ -103,8 +80,25 @@ const Content = _ => {
                 <Route path="/activate/:id?/:token?">
                   <Activate />
                 </Route>
+
                 <Route path="/admin">
                   <Admin />
+                </Route>
+                 
+                <Route path="/post/:id">
+                  <Post />
+                </Route>
+
+                <Route path="/submit">
+                  <CreatePost />
+                </Route>
+                
+                <Route path="/restore">
+                  <Restore />
+                </Route>
+
+                <Route path="/recover/:id?/:token?">
+                  <Recover />
                 </Route>
               </Switch>
             </Suspense>
@@ -116,7 +110,7 @@ const Content = _ => {
 };
 
 Content.defaultProps = {
-  links: []
+  links: [],
 };
 
 export default Content;

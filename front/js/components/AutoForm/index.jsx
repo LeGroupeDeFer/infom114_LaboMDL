@@ -6,14 +6,14 @@ import Control from './Control';
 import Submit from './Submit';
 import Switch from './Switch';
 import { FormProvider, useForm } from './formContext';
-import { trace } from '../../lib';
+import { trace, identity } from '../../lib';
 
 
 // --------------------------------- TYPEDEFS ---------------------------------
 
 /**
  * Function called on [AutoForm]{@link AutoForm} submission.
- * 
+ *
  * @callback submitCallback
  * @param {Object} submission The form inputs values, as a key/value map
  * @return {Promise<any>}
@@ -23,7 +23,7 @@ import { trace } from '../../lib';
 /**
  * [AutoForm]{@link AutoForm} properties shape.
  * @typedef { Object } AutoFormProps
- * 
+ *
  * @property { submitCallback } onSubmit Callback to call on form submission
  * @property { boolean }        failure Whether a previous submission failed,
  *                                      triggers [Autoform.Control]{@link Autoform.Control} erasure
@@ -56,13 +56,13 @@ function InnerForm(props) {
  * @namespace
  * @param {AutoForm.AutoFormProps} props The form properties.
  * @returns { JSX.Element } The component
- * 
- * @example 
+ *
+ * @example
  * // A component that only accept string input with a "foo" substring and numbers between 23 and 42.
- * 
+ *
  * function MyComponent(props) {
  *   const [failure, setFailure] = useState(false);
- *   
+ *
  *   // Randomly succeed or fail on submit
  *   const onSubmit = obj => new Promise((resolve, reject) => {
  *     // Will output something like { foo: "a string with foo", bar: 37 }
@@ -74,13 +74,13 @@ function InnerForm(props) {
  *     setFailure(false);
  *     return resolve(obj);
  *   });
- *   
+ *
  *   // Check that "foo" is in the string
  *   const fooValidator = s => s.indexOf("foo") > -1;
- * 
+ *
  *   // Check that "bar" is higher than 23 but lower than 42
  *   const barValidator = n => n > 23 && n < 42;
- * 
+ *
  *   return (
  *     <AutoForm onSubmit={onSubmit} failure={failure}>
  *       <AutoForm.Control name="foo" type="text" validator={fooValidator} />
@@ -89,26 +89,30 @@ function InnerForm(props) {
  *     </AutoForm>
  *   );
  * }
- * 
+ *
  */
-function AutoForm({ onSubmit, ...others }) {
+function AutoForm({ onSubmit, validator, ...others }) {
 
   return (
-    <FormProvider onSubmit={onSubmit}>
+    <FormProvider onSubmit={onSubmit} validator={validator}>
       <InnerForm {...others} />
     </FormProvider>
   );
 
 }
 
-AutoForm.propTypes = {
-  onSubmit: func.isRequired,
-  failureTimeout: number
-};
+Object.assign(AutoForm, {
+  propTypes: {
+    onSubmit: func.isRequired,
+    failureTimeout: number,
+    validator: func
+  },
+  defaultProps: { validator: identity },
+  Switch,
+  Control,
+  Submit,
+  useForm
+});
 
-AutoForm.Switch = Switch;
-AutoForm.Control = Control;
-AutoForm.Submit = Submit;
-AutoForm.useForm = useForm;
 
 export default AutoForm;

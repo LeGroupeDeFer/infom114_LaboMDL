@@ -1,20 +1,18 @@
-use crate::database::models::posts::forms::{ChangeVote, NewPost};
-use crate::database::models::prelude::{Post, PostMinima};
-use crate::database::schema::posts;
+use crate::database::models::prelude::*;
 use crate::database::DBConnection;
-use crate::http::responders::api::ApiResponse;
 
-use crate::guards::auth::Auth;
-use crate::guards::post::PostGuard;
-use diesel::prelude::*;
-use rocket::http::Status;
+use crate::guards::{Auth, ForwardAuth, PostGuard};
+use crate::http::responders::{ApiResult, OK};
+use crate::lib::{AuthError, Consequence, EntityError};
+
 use rocket_contrib::json::Json;
-use std::ops::Deref;
 
 pub fn collect() -> Vec<rocket::Route> {
     routes!(
         create_post,
+        get_all_posts_authenticated,
         get_all_posts,
+        get_post_authenticated,
         get_post,
         delete_post,
         update_post,
@@ -29,8 +27,8 @@ pub fn allowed_paths() -> Vec<&'static str> {
 /// Create a new post. Client data (title, content, auth_token)
 /// + validate `auth_token`
 /// + insert a new post into DB.
-#[post("/api/post", format = "json", data = "<data>")]
-fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResponse {
+#[post("/api/v1/post", format = "json", data = "<data>")]
+fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult<Post> {
     let post_request = data.into_inner();
 
     let new_post = PostMinima {
@@ -39,135 +37,140 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiRespon
         author_id: auth.sub,
     };
 
-    let insert_result = diesel::insert_into(posts::dsl::posts)
-        .values(&new_post)
-        .execute(conn.deref());
+    let p = PostEntity::insert_new(&*conn, &new_post)?;
+    post_request.tags.map(|tags| -> Consequence<()> {
+        for t in tags {
+            let tag_entity = TagEntity::insert_either(&*conn, &TagMinima { label: t })?;
+            p.add_tag(&*conn, &tag_entity.id)?;
+        }
+        Ok(())
+    });
 
-    if insert_result.is_ok() {
-        ApiResponse::new(
-            Status::Ok,
-            json!({
-                "msg":
-                    &format!(
-                        "Post '{}' of user '{}' inserted successfully",
-                        new_post.title, auth.sub
-                    )
-            }),
-        )
+    Ok(Json(Post::from(p)))
+}
+
+#[get("/api/v1/posts", rank = 1)]
+fn get_all_posts_authenticated(conn: DBConnection, auth: ForwardAuth) -> ApiResult<Vec<Post>> {
+    let posts = if auth.deref().has_capability(&*conn, "post:view_hidden") {
+        Post::admin_all(&*conn)?
     } else {
-        // since we are sure that insert_result is a type Err, we can unwrap
-        ApiResponse::db_error(insert_result.err().unwrap())
+        Post::all(&*conn)?
+    }
+    .drain(..)
+    .map(|mut p| {
+        p.set_user_vote(&*conn, &auth.deref().sub);
+        p
+    })
+    .collect::<Vec<Post>>();
+    Ok(Json(posts))
+}
+#[get("/api/v1/posts", rank = 2)]
+fn get_all_posts(conn: DBConnection) -> ApiResult<Vec<Post>> {
+    Ok(Json(Post::all(&*conn)?))
+}
+
+#[get("/api/v1/post/<_post_id>", rank = 1)]
+fn get_post_authenticated(
+    conn: DBConnection,
+    auth: ForwardAuth,
+    post_guard: PostGuard,
+    _post_id: u32,
+) -> ApiResult<Post> {
+    if !post_guard.post().is_deleted()
+        && (!post_guard.post().is_hidden()
+            || auth.deref().has_capability(&*conn, "post:view_hidden"))
+    {
+        let mut p = Post::from(post_guard.post_clone());
+        p.set_user_vote(&*conn, &auth.deref().sub);
+        Ok(Json(p))
+    } else {
+        Err(EntityError::InvalidID)?
+    }
+}
+#[get("/api/v1/post/<_post_id>", rank = 2)]
+fn get_post(post_guard: PostGuard, _post_id: u32) -> ApiResult<Post> {
+    if !post_guard.post().is_deleted() && !post_guard.post().is_hidden() {
+        Ok(Json(Post::from(post_guard.post_clone())))
+    } else {
+        Err(EntityError::InvalidID)?
     }
 }
 
-#[get("/api/posts", rank = 1)]
-fn get_all_posts_authenticated(conn: DBConnection, auth: Auth) -> ApiResponse {
-    let posts = Post::all(conn.deref())
-        .drain(..)
-        .map(|mut p| {
-            Post::set_user_vote(&mut p, conn.deref(), auth.sub);
-            p
-        })
-        .collect::<Vec<Post>>();
-    ApiResponse::new(Status::Ok, json!(posts))
-}
-
-#[get("/api/posts", rank = 2)]
-fn get_all_posts(conn: DBConnection) -> ApiResponse {
-    // TODO: Get all related comments
-    ApiResponse::new(Status::Ok, json!(Post::all(&conn)))
-}
-
-/// Get post by id (unauth)
-#[get("/post/<_post_id>")]
-fn get_post(post_guard: PostGuard, _post_id: u32) -> ApiResponse {
-    ApiResponse::new(Status::Ok, json!(post_guard.post()))
-}
-
 /// Delete a post
-#[delete("/api/post/<_post_id>")]
+#[delete("/api/v1/post/<_post_id>")]
 fn delete_post(
     conn: DBConnection,
     auth: Auth,
     post_guard: PostGuard,
     _post_id: u32,
-) -> ApiResponse {
-    let capability = "post:delete";
-
-    if !(auth.has_capability(conn.deref(), &capability) || post_guard.post().author_id == auth.sub)
+) -> ApiResult<()> {
+    if post_guard.post().is_deleted() {
+        Err(EntityError::InvalidID)?;
+    } else if false
+        || (post_guard.post().author_id != auth.sub && !auth.has_capability(&*conn, "post:delete"))
+        || (post_guard.post().is_locked() && !auth.has_capability(&*conn, "post:edit_locked"))
+        || (post_guard.post().is_hidden() && !auth.has_capability(&*conn, "post:view_hidden"))
     {
-        // TODO : return right management error
+        Err(AuthError::MissingCapability)?;
     }
 
-    post_guard.post_clone().delete(conn.deref());
+    post_guard.post_clone().delete(&*conn)?;
 
-    ApiResponse::simple_success(Status::Ok)
+    OK()
 }
 
 /// Update a post (title/content)
-#[put("/api/post/<_post_id>", format = "json", data = "<data>")]
+#[put("/api/v1/post/<_post_id>", format = "json", data = "<data>")]
 fn update_post(
     conn: DBConnection,
     auth: Auth,
     post_guard: PostGuard,
     _post_id: u32,
     data: Json<NewPost>,
-) -> ApiResponse {
-    let capability = "post:update";
+) -> ApiResult<()> {
     let a_post = data.into_inner();
 
-    if !(auth.has_capability(conn.deref(), &capability) || post_guard.post().author_id == auth.sub)
+    if post_guard.post().is_deleted() {
+        Err(EntityError::InvalidID)?;
+    } else if false
+        || (post_guard.post().author_id != auth.sub && !auth.has_capability(&*conn, "post:update"))
+        || (post_guard.post().is_locked() && !auth.has_capability(&*conn, "post:edit_locked"))
+        || (post_guard.post().is_hidden() && !auth.has_capability(&*conn, "post:view_hidden"))
     {
-        // TODO : return right management error
+        Err(AuthError::MissingCapability)?;
     }
 
-    let minima = PostMinima {
-        author_id: post_guard.post().author_id,
-        title: a_post.title,
-        content: a_post.content,
-    };
+    let mut post = post_guard.post_clone();
+    post.title = a_post.title;
+    post.content = a_post.content;
 
-    match post_guard.post().update(conn.deref(), &minima) {
-        Some(_) => ApiResponse::new(
-            Status::Ok,
-            json!({
-                "msg":
-                    &format!(
-                        "Update a post '{}' of user '{}' successfully!",
-                        post_guard.post().id,
-                        auth.sub
-                    )
-            }),
-        ),
-        None => ApiResponse::error(Status::NotFound, "TODO Server error"),
-    }
+    post.update(&*conn)?;
+
+    OK()
 }
 
-#[post("/api/post/<_post_id>/upvote", format = "json", data = "<data>")]
+#[post("/api/v1/post/<_post_id>/vote", format = "json", data = "<data>")]
 fn updown_vote(
     conn: DBConnection,
     auth: Auth,
     post_guard: PostGuard,
     _post_id: u32,
     data: Json<ChangeVote>,
-) -> ApiResponse {
+) -> ApiResult<()> {
+    if post_guard.post().is_deleted() {
+        Err(EntityError::InvalidID)?;
+    } else if false
+        || (post_guard.post().is_locked() && !auth.has_capability(&*conn, "post:edit_locked"))
+        || (post_guard.post().is_hidden() && !auth.has_capability(&*conn, "post:view_hidden"))
+    {
+        Err(AuthError::MissingCapability)?;
+    }
+
     let vote_request = data.into_inner();
 
-    match vote_request.vote {
-        i if -1 <= i && i <= 1 => {
-            let _new_score = post_guard.post().upvote(conn.deref(), auth.sub, i);
-            ApiResponse::success(
-                Status::Ok,
-                &format!(
-                    "Change vote of post '{}' of user '{}' successfully!",
-                    post_guard.post().id,
-                    auth.sub
-                ),
-            )
-        }
-        _ => ApiResponse::error(
-            Status::UnprocessableEntity,
-            "The vote value has to be included in {-1, 0, 1}",
-        ),
-    }
+    post_guard
+        .post()
+        .upvote(&*conn, &auth.sub, vote_request.vote)?;
+
+    OK()
 }

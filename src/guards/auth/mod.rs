@@ -1,21 +1,22 @@
-use crate::conf::AppState;
-use crate::database::models::prelude::{CapabilityEntity, UserEntity};
-
-use chrono::{Duration, Utc};
+use chrono::Utc;
 use diesel::MysqlConnection;
-use jsonwebtoken as jwt;
-use jwt::Validation;
+use jsonwebtoken::{self as jwt, Validation};
 
 use rocket::http::Status;
 use rocket::request::{self, FromRequest, Request};
 use rocket::{Outcome, State};
 use serde::{Deserialize, Serialize};
 
+use crate::conf::AppState;
+use crate::database::models::prelude::*;
+use crate::lib::consequence::*;
+
 pub const TOKEN_PREFIX: &'static str = "Bearer ";
 
 /* --------------------------- Exposed submodules -------------------------- */
 
 pub mod forms;
+pub use forms::*;
 
 /* -------------------------------- Structs -------------------------------- */
 
@@ -28,23 +29,34 @@ pub struct Auth {
     pub cap: Vec<CapabilityEntity>,
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ForwardAuth(Auth);
+
+impl ForwardAuth {
+    pub fn deref(&self) -> &Auth {
+        &self.0
+    }
+}
+
 /* ----------------------------- Implementation ---------------------------- */
 
 impl Auth {
-    pub fn new(conn: &MysqlConnection, user: &UserEntity, length: i64) -> Self {
+    pub fn create(conn: &MysqlConnection, user: &UserEntity, lifetime: &u32) -> Consequence<Self> {
         let now = Utc::now().timestamp();
-        Auth {
+        Ok(Auth {
             iss: "Unanimity".to_string(),
             iat: now,
-            exp: now + length,
+            exp: now + (*lifetime as i64),
             sub: user.id,
-            cap: user.get_capabilities(&conn),
-        }
+            cap: user.get_capabilities(&conn)?,
+        })
     }
 
-    pub fn token(&self, secret: &[u8]) -> String {
-        jwt::encode(&jwt::Header::default(), self, secret).expect("jwt encoding error")
+    pub fn token(&self, secret: &[u8]) -> Consequence<String> {
+        jwt::encode(&jwt::Header::default(), self, secret).map(Ok)?
     }
+
+    // ---------------------------- LOGIN / LOGOUT ----------------------------
 
     /// Perform the login operation :
     /// check if the given email exists and is linked to a validated account
@@ -56,23 +68,78 @@ impl Auth {
         conn: &MysqlConnection,
         email: &str,
         password: &str,
-    ) -> Option<(Auth, UserEntity)> {
-        let validity = Duration::weeks(2).num_seconds();
-        if let Some(user) = UserEntity::by_email(conn, email) {
-            if user.verify(password) {
-                return Some((Auth::new(&conn, &user, validity), user));
-            }
+        access_lifetime: &u32,
+        refresh_lifetime: &u32,
+    ) -> Consequence<(Self, TokenEntity, UserEntity)> {
+        // Get user info
+        let mut user = UserEntity::by_email(conn, email)??;
+        let verification = user.verify(password)?;
+
+        // Check the info
+        if !verification {
+            return Err(AuthError::InvalidIDs)?;
+        } else if !user.active {
+            return Err(AuthError::Inactive)?;
         }
-        None
+
+        // Get or create the refresh token
+        let mut refresh_token = user.refresh_token(conn)??;
+        refresh_token.renew(conn, Some(refresh_lifetime), Some(&-1))?;
+        user.last_connection = Utc::now().naive_local();
+        user.update(conn)?;
+
+        // We're good
+        Ok((
+            Self::create(conn, &user, access_lifetime)?,
+            refresh_token,
+            user,
+        ))
+    }
+
+    pub fn refresh(
+        conn: &MysqlConnection,
+        email: &str,
+        hash: &str,
+        access_lifetime: &u32,
+        refresh_lifetime: &u32,
+    ) -> Consequence<(Self, TokenEntity, UserEntity)> {
+        let user = UserEntity::by_email(conn, email)??;
+        let mut token = user.refresh_token(conn)??;
+
+        token.verify(hash)?;
+        if token.ttl() < token.lifespan() / 2 {
+            token.renew(conn, Some(refresh_lifetime), Some(&-1))?;
+        }
+
+        Ok((Self::create(conn, &user, access_lifetime)?, token, user))
+    }
+
+    pub fn logout(conn: &MysqlConnection, email: &str, hash: &str) -> Consequence<()> {
+        let user = UserEntity::by_email(conn, email)??;
+        let mut token = user
+            .refresh_token(conn)?
+            .map_or_else(|| Err(AuthError::InvalidToken), |v| Ok(v))?;
+        token.verify(hash)?;
+        token.revoke(conn)?;
+
+        Ok(())
     }
 
     /// Check if the authenticated user has the requested capability
     pub fn has_capability(&self, conn: &MysqlConnection, capability: &str) -> bool {
-        if let Some(capa) = CapabilityEntity::by_name(&conn, &capability) {
+        if let Some(capa) = CapabilityEntity::by_name(&conn, &capability).unwrap() {
             self.cap.contains(&capa)
         } else {
             // TODO : panic or log an error since the given capability potentially do not exist
             false
+        }
+    }
+
+    pub fn check_capability(&self, conn: &MysqlConnection, capability: &str) -> Consequence<()> {
+        if !self.has_capability(conn, capability) {
+            Err(AuthError::MissingCapability)?
+        } else {
+            Ok(())
         }
     }
 }
@@ -80,7 +147,7 @@ impl Auth {
 /* ------------------------- Traits implementations ------------------------ */
 
 impl<'a, 'r> FromRequest<'a, 'r> for Auth {
-    type Error = String;
+    type Error = Error;
 
     // from_request :: Request -> Outcome<Auth, Error>
     fn from_request(request: &'a Request<'r>) -> request::Outcome<Self, Self::Error> {
@@ -92,31 +159,40 @@ impl<'a, 'r> FromRequest<'a, 'r> for Auth {
     }
 }
 
-/* ------------------------------- Functions ------------------------------- */
+impl<'a, 'r> FromRequest<'a, 'r> for ForwardAuth {
+    type Error = Error;
 
-// token_decode :: (String, [Int]) -> Result<Claims, Error>
-fn token_decode(token: &str, secret: &[u8]) -> Result<Auth, String> {
-    jwt::decode(token, secret, &Validation::default())
-        .map_err(|err| format!("Unable to decode token : {:?}", err))
-        .map(|data| data.claims)
-}
-
-// token_header :: String -> Result<String, Error>
-fn token_header(header: &str) -> Result<&str, String> {
-    if header.starts_with(TOKEN_PREFIX) {
-        Ok(&header[TOKEN_PREFIX.len()..])
-    } else {
-        Err(format!("Malformed authentication header: {:?}", header))
+    // from_request :: Request -> Outcome<Auth, Error>
+    fn from_request(request: &'a Request<'r>) -> request::Outcome<Self, Self::Error> {
+        let state: State<AppState> = request.guard().unwrap();
+        match request_auth(request, &state.jwt_secret) {
+            Ok(auth) => Outcome::Success(Self(auth)),
+            Err(_msg) => Outcome::Forward(()),
+        }
     }
 }
 
-// request_auth:: (Request, [Int]) -> Result<Claims, Error>
-fn request_auth(request: &Request, secret: &[u8]) -> Result<Auth, String> {
+/* ------------------------------- Functions ------------------------------- */
+
+fn token_decode(token: &str, secret: &[u8]) -> Consequence<Auth> {
+    jwt::decode(token, secret, &Validation::default())
+        .map(|data| data.claims)
+        .map(Ok)?
+}
+
+fn token_header(header: &str) -> Consequence<&str> {
+    if !header.starts_with(TOKEN_PREFIX) {
+        Err(AuthError::InvalidHeader)?;
+    }
+    Ok(&header[TOKEN_PREFIX.len()..])
+}
+
+fn request_auth(request: &Request, secret: &[u8]) -> Consequence<Auth> {
     if let Some(header) = request.headers().get_one("authorization") {
         let token = token_header(header);
         token.and_then(|token| token_decode(token, secret))
     } else {
-        Err("Missing authorization header".to_string())
+        Err(AuthError::MissingHeader)?
     }
 }
 

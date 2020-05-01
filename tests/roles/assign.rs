@@ -9,11 +9,10 @@ use rocket::http::ContentType;
 use rocket::http::Status;
 
 use super::super::init;
+use unanimitylibrary::database::models::prelude::*;
+use unanimitylibrary::lib::{EntityError, Error};
 
-const ROLE_ROUTE: &'static str = "/api/user/role/";
-
-use unanimitylibrary::database::models::prelude::{RelUserRoleEntity, RoleEntity, RoleMinima};
-use unanimitylibrary::database::Data;
+const ROLE_ROUTE: &'static str = "/api/v1/user/role/";
 
 /**************************** TESTS ******************************************/
 
@@ -25,7 +24,7 @@ fn assign_role_to_user() {
     let conn = init::database_connection();
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     // get a user
     let (user, _password) = init::get_user(true);
@@ -35,9 +34,10 @@ fn assign_role_to_user() {
         name: "newrole".to_string(),
         color: "#f0f0f0".to_string(),
     };
-    let role = match RoleEntity::insert_minima(&conn, &role_minima) {
-        Data::Inserted(r) => r,
-        _ => panic!("The role already existed"),
+    let role = match RoleEntity::insert_new(&conn, &role_minima) {
+        Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
+        Ok(r) => r,
+        _ => panic!("Internal error"),
     };
 
     let data = format!("{{ \"user_id\": {}, \"role_id\" : {} }}", user.id, role.id);
@@ -54,7 +54,9 @@ fn assign_role_to_user() {
     assert_eq!(response.status(), Status::Ok);
 
     // assert the user is now assigned to the role
-    assert!(RelUserRoleEntity::get(&conn, user.id, role.id).is_some());
+    assert!(RelUserRoleEntity::get(&conn, user.id, role.id)
+        .unwrap()
+        .is_some());
 }
 
 #[test]
@@ -76,9 +78,11 @@ fn assign_role_to_user_without_requested_capability() {
         name: "newrole".to_string(),
         color: "#f0f0f0".to_string(),
     };
-    let role = match RoleEntity::insert_minima(&conn, &role_minima) {
-        Data::Inserted(r) => r,
-        _ => panic!("The role already existed"),
+
+    let role = match RoleEntity::insert_new(&conn, &role_minima) {
+        Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
+        Ok(r) => r,
+        _ => panic!("Internal error"),
     };
 
     let data = format!("{{ \"user_id\": {}, \"role_id\" : {} }}", user.id, role.id);
@@ -95,7 +99,10 @@ fn assign_role_to_user_without_requested_capability() {
     assert_eq!(response.status(), Status::Forbidden);
 
     // assert the user do not have the role
-    assert!(RelUserRoleEntity::get(&conn, user.id, role.id).is_none());
+
+    assert!(RelUserRoleEntity::get(&conn, user.id, role.id)
+        .unwrap()
+        .is_none());
 }
 
 #[test]
@@ -106,7 +113,7 @@ fn assign_role_to_user_missing_user_id() {
     let conn = init::database_connection();
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     // get a user
     let (user, _password) = init::get_user(true);
@@ -116,9 +123,10 @@ fn assign_role_to_user_missing_user_id() {
         name: "newrole".to_string(),
         color: "#f0f0f0".to_string(),
     };
-    let role = match RoleEntity::insert_minima(&conn, &role_minima) {
-        Data::Inserted(r) => r,
-        _ => panic!("The role already existed"),
+    let role = match RoleEntity::insert_new(&conn, &role_minima) {
+        Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
+        Ok(r) => r,
+        _ => panic!("Internal error"),
     };
 
     let data = format!("{{ \"role_id\" : {} }}", role.id);
@@ -135,7 +143,9 @@ fn assign_role_to_user_missing_user_id() {
     assert_eq!(response.status(), Status::UnprocessableEntity);
 
     // assert the user is now assigned to the role
-    assert!(RelUserRoleEntity::get(&conn, user.id, role.id).is_none());
+    assert!(RelUserRoleEntity::get(&conn, user.id, role.id)
+        .unwrap()
+        .is_none());
 }
 
 #[test]
@@ -146,7 +156,7 @@ fn assign_role_to_user_missing_role_id() {
     let conn = init::database_connection();
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     // get a user
     let (user, _password) = init::get_user(true);
@@ -156,9 +166,10 @@ fn assign_role_to_user_missing_role_id() {
         name: "newrole".to_string(),
         color: "#f0f0f0".to_string(),
     };
-    let role = match RoleEntity::insert_minima(&conn, &role_minima) {
-        Data::Inserted(r) => r,
-        _ => panic!("The role already existed"),
+    let role = match RoleEntity::insert_new(&conn, &role_minima) {
+        Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
+        Ok(r) => r,
+        _ => panic!("Internal error"),
     };
 
     let data = format!("{{ \"user_id\": {} }}", user.id);
@@ -175,5 +186,7 @@ fn assign_role_to_user_missing_role_id() {
     assert_eq!(response.status(), Status::UnprocessableEntity);
 
     // assert the user is now assigned to the role
-    assert!(RelUserRoleEntity::get(&conn, user.id, role.id).is_none());
+    assert!(RelUserRoleEntity::get(&conn, user.id, role.id)
+        .unwrap()
+        .is_none());
 }

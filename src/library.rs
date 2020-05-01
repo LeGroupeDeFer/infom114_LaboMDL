@@ -37,16 +37,16 @@ pub mod routes;
 
 /// Prepare the Rocket app
 pub fn rocket(ignited: Rocket) -> Rocket {
-    ignited
-        .attach(conf::AppState::manage())
-        .attach(database::DBConnection::fairing())
-        .attach(Template::fairing())
-        .register(http::errors::catchers::collect())
-        .mount("/", routes::collect())
+  ignited
+    .attach(conf::AppState::manage())
+    .attach(database::DBConnection::fairing())
+    .attach(Template::fairing())
+    .register(http::errors::catchers::collect())
+    .mount("/", routes::collect())
 }
 
 /// Load the configuration from the `.env` file
 /// Returns a basic `Rocket` object
 pub fn ignite() -> Rocket {
-    rocket::custom(conf::from_env())
+  rocket::custom(conf::from_env())
 }

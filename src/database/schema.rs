@@ -111,6 +111,17 @@ table! {
 }
 
 table! {
+    tokens (id) {
+        id -> Unsigned<Integer>,
+        hash -> Varchar,
+        creation_date -> Timestamp,
+        expiration_date -> Nullable<Timestamp>,
+        count -> Integer,
+        consumed -> Bool,
+    }
+}
+
+table! {
     users (id) {
         id -> Unsigned<Integer>,
         email -> Varchar,
@@ -121,7 +132,9 @@ table! {
         phone -> Nullable<Varchar>,
         creation_date -> Timestamp,
         last_connection -> Timestamp,
-        token -> Nullable<Varchar>,
+        activation_token -> Nullable<Unsigned<Integer>>,
+        recovery_token -> Nullable<Unsigned<Integer>>,
+        refresh_token -> Nullable<Unsigned<Integer>>,
         active -> Bool,
     }
 }
@@ -186,6 +199,7 @@ allow_tables_to_appear_in_same_query!(
     roles_capabilities,
     tags,
     tags_subscription,
+    tokens,
     users,
     users_roles,
     votes_comments,

@@ -8,6 +8,8 @@ pub type State<'a> = rocket::State<'a, AppState>;
 // Add app-wide variables here!
 pub struct AppState {
     pub jwt_secret: Vec<u8>,
+    pub access_lifetime: u32,
+    pub refresh_lifetime: u32
 }
 
 impl AppState {
@@ -15,8 +17,17 @@ impl AppState {
         AdHoc::on_attach("Application state", |rocket| {
             // Using the env here as to palliate to "rocket" borrowing...
             let secret = env_setting("JWT_SECRET");
+            let access_lifetime = env_setting("JWT_LIFETIME")
+                .parse::<u32>()
+                .expect("JWT_LIFETIME must be a natural");
+            let refresh_lifetime = env_setting("REFRESH_LIFETIME")
+                .parse::<u32>()
+                .expect("REFRESH_LIFETIME must be a natural");
+
             Ok(rocket.manage(AppState {
                 jwt_secret: secret.as_bytes().to_vec(),
+                access_lifetime,
+                refresh_lifetime,
             }))
         })
     }

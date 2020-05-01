@@ -1,34 +1,21 @@
-use crate::database::models::prelude::{TagEntity, TagMinima};
-use crate::database::models::tags::forms::TagData;
+use crate::database::models::prelude::*;
 use crate::database::DBConnection;
-use crate::database::Data;
 use crate::guards::auth::Auth;
-use crate::http::responders::api::ApiResponse;
 
-use std::ops::Deref;
-
-use rocket::http::Status;
+use crate::http::responders::{ApiResult, OK};
+use crate::lib::EntityError;
 use rocket_contrib::json::Json;
 
 pub fn collect() -> Vec<rocket::Route> {
     routes!(post_tag, update_tag, delete_tag)
 }
 
-#[post("/api/v1/tag/<tag_label>", format = "json")]
-pub fn post_tag(conn: DBConnection, _auth: Auth, tag_label: String) -> ApiResponse {
+#[post("/api/v1/tag/<tag_label>")]
+pub fn post_tag(conn: DBConnection, _auth: Auth, tag_label: String) -> ApiResult<()> {
     let new_tag = TagMinima { label: tag_label };
 
-    //TODO Update the json containing the specifications, it is not correct (see error 400)
-    match TagEntity::insert(conn.deref(), &new_tag) {
-        Data::Existing(_) => {
-            return ApiResponse::error(Status::Conflict, "A tag with that name already exists")
-        }
-        Data::Inserted(_) => return ApiResponse::new(Status::Ok, json!({})),
-        _ => {
-            //This will never occur... but required by rust
-            return ApiResponse::new(Status::Ok, json!({}));
-        }
-    };
+    TagEntity::insert_new(&*conn, &new_tag)?;
+    OK()
 }
 
 #[put("/api/v1/tag/<tag_label>", format = "json", data = "<data>")]
@@ -37,57 +24,35 @@ pub fn update_tag(
     auth: Auth,
     tag_label: String,
     data: Json<TagData>,
-) -> ApiResponse {
+) -> ApiResult<()> {
     let capability = "tag:update";
 
     // manage capability
-    if !auth.has_capability(conn.deref(), &capability) {
-        return ApiResponse::error(
-            Status::Forbidden,
-            &format!("The user do not have the capability {}", capability),
-        );
-    }
+    auth.check_capability(&*conn, &capability)?;
 
     let tag_data = data.into_inner();
 
-    if let Some(tag) = TagEntity::by_label(conn.deref(), &tag_label) {
-        match tag.update(conn.deref(), &tag_data.label) {
-            Data::Updated(_) => return ApiResponse::new(Status::Ok, json!({})),
-            Data::Existing(_) => {
-                return ApiResponse::error(Status::Conflict, "A tag with this name already exists")
-            }
-            _ => {
-                //This will never occur... but required by rust
-                panic!("unreacheable code reached");
-            }
-        }
+    if let Some(mut tag) = TagEntity::by_label(&*conn, &tag_label)? {
+        tag.label = tag_data.label;
+        tag.update(&*conn)?;
     } else {
-        return ApiResponse::error(
-            Status::UnprocessableEntity,
-            "The targeted tag does not exist",
-        );
+        Err(EntityError::InvalidID)?;
     }
+
+    OK()
 }
 
 #[delete("/api/v1/tag/<tag_label>")]
-pub fn delete_tag(conn: DBConnection, auth: Auth, tag_label: String) -> ApiResponse {
-    let capability = "tag:update";
+pub fn delete_tag(conn: DBConnection, auth: Auth, tag_label: String) -> ApiResult<()> {
+    let capability = "tag:delete";
 
     // manage capability
-    if !auth.has_capability(conn.deref(), &capability) {
-        return ApiResponse::error(
-            Status::Forbidden,
-            &format!("The user do not have the capability {}", capability),
-        );
+    auth.check_capability(&*conn, &capability)?;
+
+    match TagEntity::by_label(&*conn, &tag_label)? {
+        Some(tag) => tag.delete(&*conn)?,
+        None => Err(EntityError::InvalidID)?,
     }
 
-    if let Some(tag) = TagEntity::by_label(conn.deref(), &tag_label) {
-        tag.delete(conn.deref());
-        ApiResponse::new(Status::Ok, json!({}))
-    } else {
-        ApiResponse::error(
-            Status::UnprocessableEntity,
-            "The targeted tag does not exist",
-        )
-    }
+    OK()
 }

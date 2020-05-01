@@ -13,6 +13,12 @@
 4. `docker-compose up [--build] [--detach]`
 5. Go on <http://localhost:8000>
 
+## Execute seeder
+
+```shell script
+cargo run --bin=seeder
+```
+
 ## Tests
 
 1. add a `TEST_DATABASE_URL` in your `.env` file

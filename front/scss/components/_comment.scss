@@ -1,0 +1,52 @@
+@use '../themes'as *;
+
+.comment .text-muted {
+    font-size: .85rem;
+}
+
+.comment {
+    margin-left: 5px;
+    margin-top: 20px;
+}
+
+.comment-text {
+    font-size: 1rem;
+}
+
+
+.comment-content:before {
+    content: '';
+    width: 2px;
+    height: 100%;
+    background: #e0e1e1;
+    position: absolute;
+    margin-left: 11px;
+}
+
+.comment-content:hover:before {
+    background: theme-color("secondary");
+}
+
+.comment-first-row:hover+.comment-content:before {
+    background: theme-color("secondary");
+}
+
+
+.comment-content {
+    position: relative;
+}
+
+.vote-col {
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.vote-col .btn {
+    z-index: 10;
+    position: relative;
+}
+
+
+#white-mask {
+    background-color: white;
+}

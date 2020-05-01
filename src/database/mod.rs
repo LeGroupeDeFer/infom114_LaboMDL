@@ -20,15 +20,6 @@ use std::collections::HashMap;
 #[database("mariadb_pool")]
 pub struct DBConnection(diesel::MysqlConnection);
 
-// use std::ops::Deref;
-// impl Deref for DBConnection {
-//     type Target = MysqlConnection;
-//
-//     fn deref(&self) -> &Self::Target {
-//         &self.0
-//     }
-// }
-
 // --------------------- FUNCTIONS --------------------------------------------
 
 /// Create a HashMap that can be used to feed a `Rocket::Config` object with

@@ -1,5 +1,6 @@
 use crate::database;
-use crate::database::models::prelude::PostEntity;
+use crate::database::models::prelude::*;
+use crate::lib::{EntityError, Error};
 use diesel::MysqlConnection;
 use rocket::http::Status;
 use rocket::request::FromRequest;
@@ -21,7 +22,7 @@ impl PostGuard {
 }
 
 impl<'a, 'r> FromRequest<'a, 'r> for PostGuard {
-    type Error = String;
+    type Error = Error;
 
     fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
         let conn: MysqlConnection = database::connection(&database::url());
@@ -49,9 +50,12 @@ impl<'a, 'r> FromRequest<'a, 'r> for PostGuard {
             }
         }
         match post_id {
-            Some(id) => match PostEntity::by_id(&conn, id) {
+            Some(id) => match PostEntity::by_id(&conn, &id).unwrap() {
                 Some(post) => Outcome::Success(Self { entity: post }),
-                None => Outcome::Failure((Status::BadRequest, "Invalid ID supplied".to_string())),
+                None => Outcome::Failure((
+                    Status::BadRequest,
+                    Error::EntityError(EntityError::InvalidID),
+                )),
             },
             None => Outcome::Forward(()),
         }

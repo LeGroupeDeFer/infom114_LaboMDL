@@ -9,15 +9,15 @@ use unanimitylibrary::conf::env_setting;
 
 use unanimitylibrary::database;
 use unanimitylibrary::database::models::prelude::*;
-
 use unanimitylibrary::database::tables::*;
 
-use unanimitylibrary::database::Data;
-use unanimitylibrary::lib::seeds;
+use unanimitylibrary::lib::{lorem_ipsum, seeds};
 
 use diesel::query_dsl::RunQueryDsl;
-
 use rocket::http::{ContentType, Header};
+
+pub const ADMIN_EMAIL: &'static str = "admin@unamur.be";
+pub const ADMIN_PASSWORD: &'static str = "admin";
 
 /// Truncate all the tables
 pub fn clean() {
@@ -25,22 +25,24 @@ pub fn clean() {
     let conn = database_connection();
 
     // truncate all tables
-    diesel::delete(users_roles_table).execute(&conn).unwrap();
-    diesel::delete(posts_tags_table).execute(&conn).unwrap();
     diesel::delete(roles_capabilities_table)
         .execute(&conn)
         .unwrap();
+    diesel::delete(capabilities_table).execute(&conn).unwrap();
+    diesel::delete(users_roles_table).execute(&conn).unwrap();
+    diesel::delete(posts_tags_table).execute(&conn).unwrap();
     diesel::delete(votes_comments_table).execute(&conn).unwrap();
     diesel::delete(votes_posts_table).execute(&conn).unwrap();
     diesel::delete(tags_subscription_table)
         .execute(&conn)
         .unwrap();
     diesel::delete(roles_table).execute(&conn).unwrap();
-    diesel::delete(capabilities_table).execute(&conn).unwrap();
-    diesel::delete(users_table).execute(&conn).unwrap();
-    diesel::delete(addresses_table).execute(&conn).unwrap();
     diesel::delete(tags_table).execute(&conn).unwrap();
+    diesel::delete(capabilities_table).execute(&conn).unwrap();
     diesel::delete(posts_table).execute(&conn).unwrap();
+    diesel::delete(users_table).execute(&conn).unwrap();
+    diesel::delete(tokens_table).execute(&conn).unwrap();
+    diesel::delete(addresses_table).execute(&conn).unwrap();
 
     // assert empty database
     assert_eq!(
@@ -109,6 +111,7 @@ pub fn seed() {
 
     seeds::roles::seed_roles_and_capabilities(&conn);
     seeds::tags::seed_tags(&conn);
+    seeds::posts::seed_test_posts(&conn);
 }
 
 /// Return a MysqlConnection
@@ -198,40 +201,74 @@ pub fn ignite() -> rocket::Rocket {
 pub fn get_user(do_activate: bool) -> (UserEntity, String) {
     let conn = database_connection();
 
-    let last_id = UserEntity::get_last_id(&conn) + 1;
+    let last_id = UserEntity::get_last_id(&conn).unwrap() + 1;
+    let activation_token = TokenEntity::create_default(&conn).unwrap();
+    let password = format!("password_{}", &last_id);
 
     let u = UserMinima {
         email: format!("firstname.lastname.{}@student.unamur.be", &last_id),
-        password: format!("password_{}", &last_id),
+        password: password.clone(),
         firstname: format!("Firstname{}", &last_id),
         lastname: format!("Lastname{}", &last_id),
         address: None,
         phone: None,
+        activation_token: Some(activation_token.id),
+        recovery_token: None,
+        refresh_token: None,
     };
 
-    let user = match UserEntity::insert_minima(&conn, &u) {
-        Data::Inserted(u) => u,
-        _ => panic!("The user is supposed to be a new one"),
-    };
-
+    let mut user = UserEntity::insert_either(&conn, &u).unwrap();
     if do_activate {
-        user.activate(&conn);
+        user.activate(&conn).unwrap();
     }
 
-    (UserEntity::by_email(&conn, &u.email).unwrap(), u.password)
+    (user, password)
+}
+
+pub fn get_post_entity(locked: bool, hidden: bool, deleted: bool) -> PostEntity {
+    let conn = database_connection();
+
+    let p = PostMinima {
+        title: "Test title".to_string(),
+        content: lorem_ipsum(),
+        author_id: get_admin().id,
+    };
+
+    let post = PostEntity::insert_new(&conn, &p).unwrap();
+    let id = post.id;
+
+    if locked {
+        post.toggle_lock(&conn).unwrap();
+    }
+
+    if hidden {
+        post.toggle_visibility(&conn).unwrap();
+    }
+
+    if deleted {
+        post.delete(&conn).unwrap();
+    }
+
+    PostEntity::by_id(&conn, &id).unwrap().unwrap()
 }
 
 /// Get the admin that is generated in the seeding process
 /// The admin has by default the following characteristics :
 ///
-///     - email : "admin@unamur.be"
-///     - password : "admin"
+///     - email : init::ADMIN_EMAIL
+///     - password : init::ADMIN_PASSWORD
 ///
 /// Of course these attributes MUST be updated ASAP for real world application
 /// but for our testing purposes its perfect because we can use it to confirm
-/// that some routes are protected by auth & by capabilities
+/// that some routes are protected by auth & by capability
 pub fn get_admin() -> UserEntity {
-    UserEntity::by_email(&database_connection(), "admin@unamur.be").unwrap()
+    UserEntity::by_email(&database_connection(), ADMIN_EMAIL)
+        .unwrap()
+        .unwrap()
+}
+
+pub fn login_admin<'a, 'b>() -> Header<'b> {
+    login(ADMIN_EMAIL, ADMIN_PASSWORD)
 }
 
 /// Perform the login operation for the given `email` & `password`
@@ -246,7 +283,7 @@ pub fn login<'a, 'b>(email: &'a str, password: &'a str) -> Header<'b> {
 
     // get the client
     let client = client();
-    let login_url = "/api/auth/login";
+    let login_url = "/api/v1/auth/login";
 
     // create the json body
     let json_credentials = format!(
@@ -264,7 +301,7 @@ pub fn login<'a, 'b>(email: &'a str, password: &'a str) -> Header<'b> {
     // get valuable data (the auth token)
     let content = response.body_string().unwrap();
     let data: Value = serde_json::from_str(&content).unwrap();
-    let auth_token = data["token"].to_string();
+    let auth_token = data["access_token"].to_string();
 
     Header::new(
         "authorization",

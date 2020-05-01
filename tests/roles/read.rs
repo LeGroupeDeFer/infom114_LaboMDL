@@ -1,6 +1,6 @@
 //! # Read roles
 //!
-//! Here are grouped the tests that are meant to retreive some information.
+//! Here are grouped the tests that are meant to retrieve some information.
 //!
 //! Both role & capability fetching are tested here.
 
@@ -10,16 +10,15 @@ use rocket::http::Status;
 // use rocket::http::{ContentType, Status};
 
 use super::super::init;
+use unanimitylibrary::database::models::prelude::*;
 
-const CAPABILITIES_ROUTE: &'static str = "/api/capabilities/";
-const ROLES_ROUTE: &'static str = "/api/roles/";
+const CAPABILITIES_ROUTE: &'static str = "/api/v1/capability/";
+const ROLES_ROUTE: &'static str = "/api/v1/roles/";
 
 /**************************** TESTS ******************************************/
 
 #[test]
 fn get_capabilities() {
-    use unanimitylibrary::database::models::prelude::CapabilityEntity;
-
     // init
     let client = init::clean_client();
     init::seed();
@@ -36,18 +35,16 @@ fn get_capabilities() {
     // validate status
     assert_eq!(response.status(), Status::Ok);
 
-    // assert those are the same capabilities as the one in database
+    // assert those are the same capability as the one in database
     let data = response.body_string().unwrap();
     let request_capabilities: Vec<CapabilityEntity> = serde_json::from_str(&data).unwrap();
-    for c in CapabilityEntity::all(&conn) {
+    for c in CapabilityEntity::all(&conn).unwrap() {
         assert!(request_capabilities.contains(&c));
     }
 }
 
 #[test]
 fn get_roles() {
-    use unanimitylibrary::database::models::prelude::Role;
-
     // init
     let client = init::clean_client();
     init::seed();
@@ -69,7 +66,7 @@ fn get_roles() {
     // assert those are the same roles as the one in database
     let data = response.body_string().unwrap();
     let request_roles: Vec<Role> = serde_json::from_str(&data).unwrap();
-    for c in Role::all(&conn) {
+    for c in Role::all(&conn).unwrap() {
         assert!(request_roles.contains(&c));
     }
 }

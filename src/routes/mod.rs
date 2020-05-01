@@ -15,13 +15,20 @@ use std::path::{Path, PathBuf};
 
 pub fn collect() -> Vec<rocket::Route> {
     [
-        &routes!(index, dynamic_routing, files, activate, recover)[..],
+        &routes!(
+            index,
+            dynamic_routing,
+            get_hollow_post,
+            files,
+            activate,
+            recover
+        )[..],
         &api::collect()[..],
     ]
     .concat()
 }
 
-const ALLOWED_ROUTES: [&str; 10] = [
+const ALLOWED_ROUTES: [&str; 12] = [
     "profile",
     "notifications",
     "settings",
@@ -29,9 +36,11 @@ const ALLOWED_ROUTES: [&str; 10] = [
     "login",
     "logout",
     "register",
-    "recovery",
+    "recover",
+    "restore",
     "activate",
     "admin",
+    "submit",
 ];
 
 // /api/<...subpath> => /api/v<version>/<...subpath>
@@ -58,6 +67,11 @@ pub fn dynamic_routing(route: String) -> Option<Template> {
     } else {
         None
     }
+}
+
+#[get("/post/<_post_id>", rank = 2)]
+pub fn get_hollow_post(_post_id: u32) -> Template {
+    Template::render("layout", &())
 }
 
 /// Hollow route to be accessed by activation link

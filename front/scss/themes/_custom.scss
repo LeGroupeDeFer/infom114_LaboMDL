@@ -1,16 +1,12 @@
-@use './bootstrap' as *;
+// @use './bootstrap'as *;
 
 /* These can't be disabled through variables */
 
-.form-control {
-    /* These can't be disabled through variables */
-    border-top: 0;
-    border-right: 0;
-    border-left: 0;
-}
 
 /* For both valid and invalid form-control statuses, overwrite the std rule */
-@each $state, $data in $form-validation-states {
+/*
+@each $state,
+$data in $form-validation-states {
     .form-control {
         @include form-validation-state-selector($state) {
             &:focus {
@@ -20,4 +16,4 @@
         }
     }
 }
-
+*/

@@ -2,6 +2,18 @@
 
 Summary of implemented features classified by release (github tag)
 
+## [0.3.0] - 2020-04-30
+
+- fix issue #67 : implement post update + tests
+- fix issue #51 : implement post delete + tests
+
+## [0.2.5] - 2020-04-28
+
+- merge all branch into `dev`
+- fix issue #82 : implement route `/api/users`
+- fix issue #10 : implement tests for GET `/api/posts`
+- fix issue #11 : implement posts creation
+
 ## [0.2.4] - 2020-04-20
 
 - add models structure for tags

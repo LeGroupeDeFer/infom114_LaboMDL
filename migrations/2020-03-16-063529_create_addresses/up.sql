@@ -6,7 +6,7 @@ CREATE TABLE addresses (
   box_number        VARCHAR(16),
   city              VARCHAR(150)    NOT NULL,
   zipcode           VARCHAR(20)     NOT NULL,
-  country           VARCHAR(150)    NOT NULL,
+  country           VARCHAR(150)    NOT NULL    DEFAULT 'BELGIUM',
 
   PRIMARY KEY (id),
   CONSTRAINT unique_address UNIQUE (street, number, box_number, city, zipcode, country)

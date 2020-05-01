@@ -9,11 +9,10 @@ use rocket::http::ContentType;
 use rocket::http::Status;
 
 use super::super::init;
+use unanimitylibrary::database::models::prelude::*;
+use unanimitylibrary::lib::{EntityError, Error};
 
-const ROLE_ROUTE: &'static str = "/api/role/";
-
-use unanimitylibrary::database::models::prelude::{Role, RoleEntity, RoleMinima};
-use unanimitylibrary::database::Data;
+const ROLE_ROUTE: &'static str = "/api/v1/role/";
 
 /**************************** TESTS ******************************************/
 
@@ -30,15 +29,21 @@ fn update_everything() {
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match RoleEntity::insert_minima(&conn, &role_minima) {
-        Data::Inserted(r) => r,
-        _ => panic!("should be a new role"),
-    };
+    // assert the role is not already in database
+    assert!(RoleEntity::by_name(&conn, &role_minima.name)
+        .unwrap()
+        .is_none());
+
+    // insert the role
+    let existing_role = RoleEntity::insert_new(&conn, &role_minima).unwrap();
+
     // assert the role is correctly added in database
-    assert!(RoleEntity::by_name(&conn, &role_minima.name).is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name)
+        .unwrap()
+        .is_some());
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_name = "myupdatedrole";
     let role_color = "#00ffff";
@@ -61,7 +66,7 @@ fn update_everything() {
     );
 
     // assert no role with this name already exists
-    assert!(RoleEntity::by_name(&conn, role_name).is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -75,14 +80,15 @@ fn update_everything() {
     assert_eq!(response.status(), Status::Ok);
 
     // assert there is a role with this new name in database
-    let role_option = RoleEntity::by_name(&conn, role_name);
+    let role_option = RoleEntity::by_name(&conn, role_name).unwrap();
     assert!(role_option.is_some());
     let role = role_option.unwrap();
 
     assert_eq!(role_name, role.name);
     assert_eq!(role_color, role.color);
     // if it panics, the test cannot pass !
-    let role_capa = Role::by_role_name(&conn, &role.name).unwrap();
+    let role_capa = Role::by_role_name(&conn, &role.name).unwrap().unwrap();
+
     assert_eq!(role_capa.capabilities.len(), role_capabilities.len());
     for capability in role_capa.capabilities {
         assert!(role_capabilities.contains(&&capability.name[..]));
@@ -102,15 +108,18 @@ fn update_same_name() {
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match RoleEntity::insert_minima(&conn, &role_minima) {
-        Data::Inserted(r) => r,
-        _ => panic!("should be a new role"),
+    let existing_role = match RoleEntity::insert_new(&conn, &role_minima) {
+        Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
+        Ok(r) => r,
+        _ => panic!("Internal error"),
     };
     // assert the role exists
-    assert!(RoleEntity::by_name(&conn, &role_minima.name).is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name)
+        .unwrap()
+        .is_some());
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_name = "mynewrole";
     let role_color = "#00ffff";
@@ -133,7 +142,7 @@ fn update_same_name() {
     );
 
     // assert no role with this name already exists (since its the same name)
-    assert!(RoleEntity::by_name(&conn, role_name).is_some());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_some());
 
     // request
     let request = client
@@ -147,14 +156,15 @@ fn update_same_name() {
     assert_eq!(response.status(), Status::Ok);
 
     // assert there is a role with this new name in database
-    let role_option = RoleEntity::by_name(&conn, role_name);
+    let role_option = RoleEntity::by_name(&conn, role_name).unwrap();
     assert!(role_option.is_some());
     let role = role_option.unwrap();
 
     assert_eq!(role_name, role.name);
     assert_eq!(role_color, role.color);
     // if it panics, the test cannot pass !
-    let role_capa = Role::by_role_name(&conn, &role.name).unwrap();
+    let role_capa = Role::by_role_name(&conn, &role.name).unwrap().unwrap();
+
     assert_eq!(role_capa.capabilities.len(), role_capabilities.len());
     for capability in role_capa.capabilities {
         assert!(role_capabilities.contains(&&capability.name[..]));
@@ -169,7 +179,7 @@ fn update_missing_id() {
     let conn = init::database_connection();
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_name = "myupdatedrole";
     let role_color = "#00ffff";
@@ -192,7 +202,7 @@ fn update_missing_id() {
     );
 
     // assert no role with this name already exists
-    assert!(RoleEntity::by_name(&conn, role_name).is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -215,12 +225,12 @@ fn update_invalid_role_id() {
 
     // first we'll find an unexisting role id
     let mut fake_id = 11;
-    while let Some(_) = RoleEntity::by_id(&conn, &fake_id) {
+    while let Some(_) = RoleEntity::by_id(&conn, &fake_id).unwrap() {
         fake_id += 11;
     }
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_name = "myupdatedrole";
     let role_color = "#00ffff";
@@ -243,7 +253,7 @@ fn update_invalid_role_id() {
     );
 
     // assert no role with this name already exists
-    assert!(RoleEntity::by_name(&conn, role_name).is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -254,7 +264,7 @@ fn update_invalid_role_id() {
     let response = request.dispatch();
 
     // validate status
-    assert_eq!(response.status(), Status::UnprocessableEntity);
+    assert_eq!(response.status(), Status::BadRequest);
 }
 
 #[test]
@@ -270,15 +280,18 @@ fn update_no_color() {
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match RoleEntity::insert_minima(&conn, &role_minima) {
-        Data::Inserted(r) => r,
-        _ => panic!("should be a new role"),
+    let existing_role = match RoleEntity::insert_new(&conn, &role_minima) {
+        Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
+        Ok(r) => r,
+        _ => panic!("Internal error"),
     };
     // assert the role is correctly added in database
-    assert!(RoleEntity::by_name(&conn, &role_minima.name).is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name)
+        .unwrap()
+        .is_some());
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_name = "myupdatedrole";
     let role_capabilities = vec!["user:manage_role", "role:manage"];
@@ -298,7 +311,7 @@ fn update_no_color() {
     );
 
     // assert no role with this name already exists
-    assert!(RoleEntity::by_name(&conn, role_name).is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -325,15 +338,18 @@ fn update_missing_role_name() {
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match RoleEntity::insert_minima(&conn, &role_minima) {
-        Data::Inserted(r) => r,
-        _ => panic!("should be a new role"),
+    let existing_role = match RoleEntity::insert_new(&conn, &role_minima) {
+        Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
+        Ok(r) => r,
+        _ => panic!("Internal error"),
     };
     // assert the role is correctly added in database
-    assert!(RoleEntity::by_name(&conn, &role_minima.name).is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name)
+        .unwrap()
+        .is_some());
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_color = "#00ffff";
     let role_capabilities = vec!["user:manage_role", "role:manage"];
@@ -377,15 +393,18 @@ fn update_missing_role_capabilities() {
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match RoleEntity::insert_minima(&conn, &role_minima) {
-        Data::Inserted(r) => r,
-        _ => panic!("should be a new role"),
+    let existing_role = match RoleEntity::insert_new(&conn, &role_minima) {
+        Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
+        Ok(r) => r,
+        _ => panic!("Internal error"),
     };
     // assert the role is correctly added in database
-    assert!(RoleEntity::by_name(&conn, &role_minima.name).is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name)
+        .unwrap()
+        .is_some());
 
     // login
-    let auth_token_header = init::login("admin@unamur.be", "admin");
+    let auth_token_header = init::login_admin();
 
     let role_name = "myupdatedrole";
     let role_color = "#00ffff";
@@ -400,7 +419,7 @@ fn update_missing_role_capabilities() {
     );
 
     // assert no role with this name already exists
-    assert!(RoleEntity::by_name(&conn, role_name).is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client
@@ -427,12 +446,15 @@ fn update_without_correct_capability() {
         color: "#ff0000".to_string(),
     };
 
-    let existing_role = match RoleEntity::insert_minima(&conn, &role_minima) {
-        Data::Inserted(r) => r,
-        _ => panic!("should be a new role"),
+    let existing_role = match RoleEntity::insert_new(&conn, &role_minima) {
+        Err(Error::EntityError(EntityError::Duplicate)) => panic!("The role already existed"),
+        Ok(r) => r,
+        _ => panic!("Internal error"),
     };
     // assert the role is correctly added in database
-    assert!(RoleEntity::by_name(&conn, &role_minima.name).is_some());
+    assert!(RoleEntity::by_name(&conn, &role_minima.name)
+        .unwrap()
+        .is_some());
 
     // login
     let (user, passwd) = init::get_user(true);
@@ -459,7 +481,7 @@ fn update_without_correct_capability() {
     );
 
     // assert no role with this name already exists
-    assert!(RoleEntity::by_name(&conn, role_name).is_none());
+    assert!(RoleEntity::by_name(&conn, role_name).unwrap().is_none());
 
     // request
     let request = client

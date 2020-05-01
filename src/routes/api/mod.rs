@@ -1,124 +1,59 @@
-use crate::conf;
-use crate::database::models::roles::forms::RoleData;
-use crate::database::models::tags::forms::TagData;
-use crate::database::models::users::roles::forms::UserRoleData;
-use crate::database::DBConnection;
-use crate::guards::auth::forms::{ActivationData, LoginData, RegisterData};
-use crate::guards::auth::Auth;
+use regex::Regex;
+use rocket;
+use rocket::response::Redirect;
+use std::path::PathBuf;
 
-use crate::http::responders::api::ApiResponse;
-
-use rocket_contrib::json::Json;
+use crate::lib::consequence::*;
 
 mod v1;
 
 pub fn collect() -> Vec<rocket::Route> {
     [
         &v1::collect()[..],
-        &routes!(
-            auth_register,
-            auth_login,
-            auth_activate,
-            tags_get,
-            tag_post,
-            tag_update,
-            tag_delete,
-            capabilities_get,
-            role_create,
-            role_update,
-            role_delete,
-            roles_get,
-            user_role_assign,
-            user_role_unassign,
-        )[..],
+        &routes!(api_get, api_post, api_put, api_delete)[..],
     ]
     .concat()
 }
 
-/************************************** AUTH ******************************************************/
+pub fn api(path: PathBuf) -> Consequence<Redirect> {
+    let components: Vec<&str> = path
+        .as_path()
+        .components()
+        .map(|c| c.as_os_str().to_str().unwrap()) // FIXME - Remove unwrap
+        .collect();
 
-#[post("/api/auth/register", format = "json", data = "<data>")]
-pub fn auth_register(conn: DBConnection, data: Json<RegisterData>) -> ApiResponse {
-    v1::auth::register(conn, data)
+    let api_version = Regex::new(r"v[0-9]+").unwrap();
+    if api_version.is_match(components[0]) {
+        // If the version was specified and yet this route is called, we've got a 404
+        Err(Error::NotFound)?
+    }
+
+    let uri: String = components
+        .iter()
+        .fold(String::from("/api/v1"), |acc, comp| {
+            format!("{}/{}", acc, comp)
+        });
+
+    // We need to return a 307 to retain the HTTP method & payload
+    Ok(Redirect::temporary(uri))
 }
 
-#[post("/api/auth/login", format = "json", data = "<data>")]
-pub fn auth_login(conn: DBConnection, state: conf::State, data: Json<LoginData>) -> ApiResponse {
-    v1::auth::login(conn, state, data)
+#[get("/api/<path..>", format = "json", rank = 10)]
+pub fn api_get(path: PathBuf) -> Consequence<Redirect> {
+    api(path)
 }
 
-#[post("/api/auth/activate", format = "json", data = "<data>")]
-pub fn auth_activate(conn: DBConnection, data: Json<ActivationData>) -> ApiResponse {
-    v1::auth::activate(conn, data)
+#[post("/api/<path..>", format = "json", rank = 10)]
+pub fn api_post(path: PathBuf) -> Consequence<Redirect> {
+    api(path)
 }
 
-/*************************************** TAG MANAGEMENT *******************************************/
-
-#[get("/api/tags")]
-pub fn tags_get(conn: DBConnection) -> ApiResponse {
-    v1::tags::get(conn)
+#[put("/api/<path..>", format = "json", rank = 10)]
+pub fn api_put(path: PathBuf) -> Consequence<Redirect> {
+    api(path)
 }
 
-#[post("/api/tag/<tag_label>")]
-pub fn tag_post(conn: DBConnection, auth: Auth, tag_label: String) -> ApiResponse {
-    v1::tag::post_tag(conn, auth, tag_label)
+#[delete("/api/<path..>", format = "json", rank = 10)]
+pub fn api_delete(path: PathBuf) -> Consequence<Redirect> {
+    api(path)
 }
-
-#[put("/api/tag/<tag_label>", data = "<data>")]
-pub fn tag_update(
-    conn: DBConnection,
-    auth: Auth,
-    tag_label: String,
-    data: Json<TagData>,
-) -> ApiResponse {
-    v1::tag::update_tag(conn, auth, tag_label, data)
-}
-
-#[delete("/api/tag/<tag_label>")]
-pub fn tag_delete(conn: DBConnection, auth: Auth, tag_label: String) -> ApiResponse {
-    v1::tag::delete_tag(conn, auth, tag_label)
-}
-
-/************************************* ROLE MANAGEMENT ********************************************/
-
-#[get("/api/capabilities")]
-pub fn capabilities_get(conn: DBConnection, auth: Auth) -> ApiResponse {
-    v1::capabilities::get(conn, auth)
-}
-
-#[post("/api/role", format = "json", data = "<data>")]
-pub fn role_create(conn: DBConnection, auth: Auth, data: Json<RoleData>) -> ApiResponse {
-    v1::role::create(conn, auth, data)
-}
-
-#[put("/api/role/<role_id>", format = "json", data = "<data>", rank = 3)]
-pub fn role_update(
-    conn: DBConnection,
-    auth: Auth,
-    role_id: u32,
-    data: Json<RoleData>,
-) -> ApiResponse {
-    v1::role::update(conn, auth, role_id, data)
-}
-
-#[delete("/api/role/<role_id>")]
-pub fn role_delete(conn: DBConnection, auth: Auth, role_id: u32) -> ApiResponse {
-    v1::role::delete(conn, auth, role_id)
-}
-
-#[get("/api/roles")]
-pub fn roles_get(conn: DBConnection, auth: Auth) -> ApiResponse {
-    v1::roles::get(conn, auth)
-}
-
-#[post("/api/user/role", format = "json", data = "<data>")]
-pub fn user_role_assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiResponse {
-    v1::user::role::assign(conn, auth, data)
-}
-
-#[delete("/api/user/role", format = "json", data = "<data>")]
-pub fn user_role_unassign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiResponse {
-    v1::user::role::unassign(conn, auth, data)
-}
-
-/*********************************** POST MANAGEMENT **********************************************/

@@ -6,9 +6,10 @@
 use unanimitylibrary::database;
 use unanimitylibrary::lib::seeds;
 
-/// Launch the rocket application
+/// Seed database
 fn main() {
     let conn = database::connection(&database::url());
     seeds::roles::seed_roles_and_capabilities(&conn);
     seeds::tags::seed_tags(&conn);
+    seeds::posts::seed_test_posts(&conn);
 }

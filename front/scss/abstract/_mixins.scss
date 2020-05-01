@@ -4,15 +4,3 @@
 @mixin circle {
     border-radius: 50%;
 }
-
-@mixin layout-secondary($bg-color: theme-color("primary"), $font-color: theme-color("light")) {
-    &.offset {
-        padding: 0;
-    }
-
-    & main {
-        background: $bg-color;
-        color: $font-color;
-        padding-bottom: 0;
-    }
-}
