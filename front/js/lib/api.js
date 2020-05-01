@@ -172,6 +172,10 @@ function getPost(id) {
   return api(`/post/${id}`);
 }
 
+function vote(id, vote) {
+  return api(`/post/${id}/vote`, { method: 'POST', body: { vote: vote } });
+}
+
 function tags(id) {
   return api('/tags/');
 }
@@ -180,5 +184,6 @@ api.posts = posts;
 api.getPost = getPost;
 api.auth = auth;
 api.tags = tags;
+api.vote = vote;
 
 export default api;
