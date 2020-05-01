@@ -207,10 +207,6 @@ function users() {
 }
 
 api.auth = auth;
-api.login = login;
-api.logout = logout;
-api.register = register;
-api.activate = activate;
 api.tags = tags;
 api.tags.add = addTag;
 api.tags.remove = removeTag;
