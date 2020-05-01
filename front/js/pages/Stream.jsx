@@ -19,102 +19,67 @@ import { useAuth } from '../context/authContext';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { Link } from 'react-router-dom';
+import api from '../lib/api';
+import { useRequest } from '../hooks';
+// import 'regenerator-runtime';
 
 // Stream :: None => Component
 const Stream = () => {
   const [filter, setFilter] = useState('all');
-  const [posts, setPosts] = useState(usePromise(fetchPosts, [fakeLatency]));
+  const [posts, setPosts] = useState([]);
   const [tags, setTags] = useState(null);
   const { login, user } = useAuth();
   const [postModal, setPostModal] = useState(null);
   const [modalDisplayed, setModalDisplayed] = useState(false);
-  //const isLogged = user != null ? 1 : 0;
-  const isLogged = 1;
+  const isLogged = user != null ? 1 : 0;
+
+  // Fetch tags
+  const [error, data] = useRequest(api.tags, []);
+  const tagList = (data ? data.tags : []).map((tag) => {
+    return {
+      id: tag.id,
+      value: tag.label,
+      label: (
+        <span>
+          <FaTag /> {tag.label}
+        </span>
+      )
+    };
+  });
+
+
+  // const isLogged = 1;
+
+  const FetchedPosts = () => {
+    const results = usePromise(api.posts, []);
+    setPosts(results);
+    return (
+      <PostList
+        currentFilter={filter}
+        posts={posts}
+        is_logged={isLogged}
+        tag_click={tagClickHandler}
+        show_modal={showModal}
+      />
+    );
+  };
 
   function hideModal() {
     setModalDisplayed(false);
   }
 
-  function showModal(e) {
-    const postId = e.currentTarget.closest('.post').getAttribute('id');
+  function showModal(postId) {
 
-    // TODO Fetch the post's data
+    const fetchPost = () => {
+      api.getPost(postId).then(post => {
+        setPostModal(post);
+        console.log(post);
+      }).catch((error) => {
 
-    const postData = {
-      post_id: 1234,
-      title: 'Je souhaite devenir champion de la WWE',
-      type: 'poll',
-      text: loremIpsum,
-      username: 'John Cena',
-      points: 7,
-      createdOn: '2020-03-01T12:59-0500',
-      commentNb: 5,
-      comments: [
-        {
-          id: 1,
-          text: 'Tu racontes de la merde bro ! ',
-          author: 'John Cena',
-          created_on: '2020-02-29T12:59-0500',
-          points: 12,
-          children: [
-            {
-              id: 34747,
-              text: 'Breeehhhhhhh',
-              author: 'John Cena',
-              created_on: '2020-03-14T12:59-0500',
-              points: 0,
-              children: [],
-            },
-            {
-              id: 2,
-              text: 'tg rdv a l gar du nor. 22h vien seul ',
-              author: 'John Casey',
-              created_on: '2020-02-29T12:59-0500',
-              points: 666,
-              children: [
-                {
-                  id: 3,
-                  text: 'Ok.',
-                  author: 'John Cena',
-                  created_on: '2020-03-14T12:59-0500',
-                  points: 0,
-                  children: [],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: 4,
-          text: 'Yallah ! ',
-          author: 'John Couscous',
-          created_on: '2020-02-29T12:59-0500',
-          points: -4,
-          children: [
-            {
-              id: 35,
-              text: 'Test',
-              author: 'John Cena',
-              created_on: '2020-03-14T12:59-0500',
-              points: 0,
-              children: [],
-            },
-          ],
-        },
-        {
-          id: 5,
-          text:
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque volutpat vulputate nisl quis pulvinar. Praesent euismod magna metus, quis ultricies nunc sagittis in. Maecenas eleifend pulvinar nunc Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque volutpat vulputate nisl quis pulvinar. Praesent euismod magna metus, quis ultricies nunc sagittis in. Maecenas eleifend pulvinar nunc',
-          author: 'John Latin',
-          created_on: '2020-02-29T12:59-0500',
-          points: -7,
-          children: [],
-        },
-      ],
-    };
+      });
+    }
 
-    setPostModal(postData);
-
+    fetchPost();
     setModalDisplayed(true);
   }
 
@@ -200,7 +165,7 @@ const Stream = () => {
         <br />
         <Row>
           <Col xs={10} sm={11}>
-            <SearchBar handle_change={handleChange} tags={tags} />
+            <SearchBar handle_change={handleChange} tags={tags} tagList={tagList} />
           </Col>
           <Col xs={2} sm={1}>
             <Link to="/submit">
@@ -229,14 +194,8 @@ const Stream = () => {
 
         <br />
 
-        <Suspense fallback={<h3>Loading posts...</h3>}>
-          <PostList
-            currentFilter={filter}
-            posts={posts}
-            is_logged={isLogged}
-            tag_click={tagClickHandler}
-            show_modal={(e) => showModal(e)}
-          />
+        <Suspense fallback={<h3>Chargement des posts...</h3>}>
+          <FetchedPosts />
         </Suspense>
         <br />
 
@@ -247,9 +206,7 @@ const Stream = () => {
         >
           <Modal.Header closeButton></Modal.Header>
           <Modal.Body>
-            <Suspense fallback={<h3>Loading data</h3>}>
-              <Post is_logged={isLogged} post_data={postModal} />
-            </Suspense>
+            {postModal ? <Post is_logged={isLogged} post_data={postModal} /> : "Chargement des données..."}
           </Modal.Body>
         </Modal>
       </Container>
@@ -259,57 +216,6 @@ const Stream = () => {
   );
 };
 
-/* Delayed fetching of user posts */
-// fetchPosts :: int => Promise<Array<Object>>
-const fetchPosts = (time) =>
-  new Promise((resolve, _) =>
-    setTimeout(
-      () =>
-        resolve([
-          {
-            id: 2,
-            title: 'Je suis également un titre',
-            type: 'poll',
-            text: loremIpsum,
-            username: 'John Cena',
-            points: 7,
-            createdOn: '2020-03-01T12:59-0500',
-            commentNb: 2,
-          },
-          {
-            id: 1,
-            title: 'Je suis également un titre',
-            type: 'poll',
-            text: loremIpsum,
-            username: 'John Couscous',
-            points: 12,
-            createdOn: '2020-02-29T12:59-0500',
-            commentNb: 1,
-          },
-          {
-            id: 4,
-            title: 'Je suis également un titre',
-            type: 'idea',
-            text: loremIpsum,
-            username: 'John Doe',
-            points: 0,
-            createdOn: '2020-02-27T12:59-0500',
-            commentNb: 4,
-          },
-          {
-            id: 3,
-            title: 'Im a post title',
-            type: 'info',
-            text: loremIpsum,
-            username: 'John Coffey',
-            points: 2,
-            createdOn: '2020-02-19T12:59-0500',
-            commentNb: 0,
-          },
-        ]),
-      time
-    )
-  );
 
 // PostList :: Object => Component
 const PostList = (props) => {
@@ -328,32 +234,7 @@ const PostList = (props) => {
 
 // SearchBar :: None => Component
 const SearchBar = (props) => {
-  const options = [
-    {
-      value: 'FacInfo',
-      label: (
-        <span>
-          <FaTag /> FacInfo
-        </span>
-      ),
-    },
-    {
-      value: 'FacEco',
-      label: (
-        <span>
-          <FaTag /> FacEco
-        </span>
-      ),
-    },
-    {
-      value: 'Arsenal',
-      label: (
-        <span>
-          <FaTag /> Arsenal
-        </span>
-      ),
-    },
-  ];
+
 
   const primary = '#A0C55F';
 
@@ -376,7 +257,7 @@ const SearchBar = (props) => {
     <CreatableSelect
       id="search-bar"
       isMulti
-      options={options}
+      options={props.tagList}
       components={{ DropdownIndicator }}
       placeholder={'Rechercher'}
       value={props.tags}

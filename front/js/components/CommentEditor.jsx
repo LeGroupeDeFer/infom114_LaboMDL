@@ -6,6 +6,7 @@ import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import clsx from 'clsx';
+import { Link } from 'react-router-dom';
 
 const CommentEditor = ({
   type,
@@ -47,12 +48,12 @@ const CommentEditor = ({
             <span className="mr-2">
               Il faut être authentifié pour pouvoir laisser un commentaire
             </span>
-            <a href="/login" className="button btn btn-primary mr-2">
+            <Link to="/login" className="button btn btn-primary mr-2">
               Se connecter
-            </a>
-            <a href="/register" className="button btn btn-secondary">
+            </Link>
+            <Link to="/register" className="button btn btn-secondary">
               S'inscrire
-            </a>
+            </Link>
           </p>
         </Card.Body>
       </Card>
