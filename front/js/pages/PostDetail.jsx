@@ -14,7 +14,7 @@ const PostDetail = () => {
 
   const FetchedPost = () => {
     const post = usePromise(api.getPost, [id]);
-    return <Post is_logged={isLogged} post_data={post} />;
+    return <Post {...post} is_logged={isLogged} />;
   };
 
   return (

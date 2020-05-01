@@ -31,10 +31,23 @@ const PostPreview = ({
   currentFilter,
   comments,
   tags,
+  userVote,
   ...otherProps
 }) => {
-  const [voted, setVoted] = useState('no');
+
+  let vote = "";
+  switch (userVote) {
+    case -1: vote = "down";
+      break;
+    case 1: vote = "up";
+      break;
+    default: vote = "no";
+      break;
+  }
+
+  const [voted, setVoted] = useState(vote);
   const [scoreState, setScoreState] = useState(score);
+
 
   function getDisplayedType(type) {
     switch (type) {
@@ -108,6 +121,7 @@ const PostPreview = ({
                 set_vote={setVoted}
                 score={scoreState}
                 set_score={setScoreState}
+                post_id={id}
               />
               <div
                 className={`text-center ${clsx(
@@ -123,6 +137,7 @@ const PostPreview = ({
                 set_vote={setVoted}
                 score={scoreState}
                 set_score={setScoreState}
+                post_id={id}
               />
             </div>
 

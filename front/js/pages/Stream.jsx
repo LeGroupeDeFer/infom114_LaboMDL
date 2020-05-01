@@ -69,11 +69,10 @@ const Stream = () => {
   }
 
   function showModal(postId) {
-
+    setPostModal(null);
     const fetchPost = () => {
       api.getPost(postId).then(post => {
         setPostModal(post);
-        console.log(post);
       }).catch((error) => {
 
       });

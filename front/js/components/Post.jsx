@@ -12,12 +12,36 @@ import clsx from 'clsx';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 
-const Post = ({ is_logged, post_data }) => {
-  console.log(is_logged);
+const Post = ({
+  id,
+  title,
+  content,
+  author,
+  score,
+  type,
+  previewLength,
+  createdAt,
+  currentFilter,
+  comments,
+  tags,
+  userVote,
+  is_logged
+}) => {
   const [commentEditors, setCommentEditors] = useState({});
-  const [comments, setComments] = useState(post_data.comments);
-  const [voted, setVoted] = useState('no');
-  const [pointsState, setPointsState] = useState(post_data.score);
+  const [commentList, setCommentList] = useState(comments);
+
+  let vote = "";
+  switch (userVote) {
+    case -1: vote = "down";
+      break;
+    case 1: vote = "up";
+      break;
+    default: vote = "no";
+      break;
+  }
+
+  const [voted, setVoted] = useState(vote);
+  const [scoreState, setscoreState] = useState(score);
 
   function addComment(comment) {
     setComments((cmmt) =>
@@ -27,7 +51,7 @@ const Post = ({ is_logged, post_data }) => {
           text: comment,
           author: 'John Doe',
           created_on: Date.now(),
-          points: -8,
+          score: -8,
           children: [],
         },
       ].concat(cmmt)
@@ -46,7 +70,7 @@ const Post = ({ is_logged, post_data }) => {
   }
 
   function addReply(comment, parentId, ancestorId) {
-    let newComments = [...comments];
+    let newComments = [...commentList];
     addReplyRecursively(newComments, comment, parentId, ancestorId);
     setComments(newComments);
   }
@@ -61,7 +85,7 @@ const Post = ({ is_logged, post_data }) => {
             text: comment,
             author: 'John Doe',
             created_on: Date.now(),
-            points: -8,
+            score: -8,
             children: [],
           });
         } else {
@@ -76,7 +100,7 @@ const Post = ({ is_logged, post_data }) => {
             text: comment,
             author: 'John Doe',
             created_on: Date.now(),
-            points: -8,
+            score: -8,
             children: [],
           });
         } else {
@@ -130,28 +154,29 @@ const Post = ({ is_logged, post_data }) => {
               is_logged={is_logged}
               voted={voted}
               set_vote={setVoted}
-              points={pointsState}
-              set_points={setPointsState}
+              score={scoreState}
+              set_score={setscoreState}
+              post_id={id}
             />
           </Col>
           <Col>
             {' '}
             <h5>
-              <Badge className={`post-${post_data.type} mr-1`}>
-                {getDisplayedType(post_data.type)}
+              <Badge className={`post-${type} mr-1`}>
+                {getDisplayedType(type)}
               </Badge>
-              <span className="mr-1">{post_data.title}</span>
+              <span className="mr-1">{title}</span>
 
               <span className="text-muted title-part2">
                 {' '}
                 <a href="#" className="text-dark">
-                  {post_data.author.firstname}
+                  {author.firstname}
                   {'  '}
-                  {post_data.author.lastname}
+                  {author.lastname}
                 </a>{' '}
                 -{' '}
                 <Moment locale="fr" fromNow>
-                  {post_data.createdAt}
+                  {createdAt}
                 </Moment>
               </span>
             </h5>
@@ -164,22 +189,23 @@ const Post = ({ is_logged, post_data }) => {
                 voted !== 'no' && voted + '-voted'
               )}`}
             >
-              <b>{pointsState}</b>
+              <b>{scoreState}</b>
             </div>
 
             <DownVote
               is_logged={is_logged}
               voted={voted}
               set_vote={setVoted}
-              points={pointsState}
-              set_points={setPointsState}
+              score={scoreState}
+              set_score={setscoreState}
+              post_id={id}
             />
           </Col>
 
           <Col>
             <div className="mb-1">
 
-              {post_data.tags.map(tag => {
+              {tags.map(tag => {
                 return (
                   <a
                     href="#"
@@ -193,26 +219,26 @@ const Post = ({ is_logged, post_data }) => {
               })}
             </div>
             <br />
-            <p>{post_data.content}</p>
+            <p>{content}</p>
             <div>
               <a className="post-footer-btn mr-3" href="#">
                 <MdModeComment size="1.25em" className="mr-2" />
                 <span className="text-muted">
-                  {post_data.comments.length}{' '}
-                  {post_data.comments.length <= 1
+                  {comments.length}{' '}
+                  {comments.length <= 1
                     ? 'commentaire'
                     : 'commentaires'}
                 </span>
               </a>
 
               <FacebookShareButton
-                url={'https://unanimity.be/post/' + post_data.id}
+                url={'https://unanimity.be/post/' + id}
                 quote={
-                  post_data.title +
+                  title +
                   ' - ' +
-                  post_data.author.firstname +
+                  author.firstname +
                   ' ' +
-                  post_data.author.lastname
+                  author.lastname
                 }
                 onClick={(e) => e.stopPropagation()}
               >

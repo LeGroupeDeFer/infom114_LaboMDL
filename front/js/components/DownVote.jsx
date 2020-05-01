@@ -4,24 +4,38 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Button from 'react-bootstrap/Button';
 import clsx from 'clsx';
+import api from '../lib/api';
 
-const DownVote = ({ is_logged, voted, set_vote, points, set_points }) => {
+const DownVote = ({ is_logged, voted, set_vote, score, set_score, post_id }) => {
   let notLoggedMsg = 'Il faut être authentifié pour pouvoir voter';
 
   function downVote(e, cancel) {
     e.stopPropagation();
-    if (cancel) {
-      set_points(points + 1);
-      set_vote('no');
-    } else {
-      // Case : We directly go from down to up
-      if (voted == 'up') {
-        set_points(points - 2);
-      } else {
-        set_points(points - 1);
+
+    const vote = () => {
+      let vote = -1;
+      if (cancel) {
+        vote = 0;
       }
-      set_vote('down');
+      api.vote(post_id, vote).then(() => {
+        if (cancel) {
+          set_score(score + 1);
+          set_vote('no');
+        } else {
+          // Case : We directly go from up to down
+          if (voted == 'up') {
+            set_score(score - 2);
+          } else {
+            set_score(score - 1);
+          }
+          set_vote('down');
+        }
+      }).catch((error) => {
+        console.log(error);
+      });
     }
+
+    vote();
   }
 
   return (
@@ -35,17 +49,17 @@ const DownVote = ({ is_logged, voted, set_vote, points, set_points }) => {
           <GoArrowDown size="1.5em" />
         </Button>
       ) : (
-        <OverlayTrigger
-          placement="right"
-          overlay={<Tooltip> {notLoggedMsg} </Tooltip>}
-        >
-          <span className="d-inline-block">
-            <Button variant="light" className={'down-vote-btn'} disabled>
-              <GoArrowDown size="1.5em" />
-            </Button>
-          </span>
-        </OverlayTrigger>
-      )}
+          <OverlayTrigger
+            placement="right"
+            overlay={<Tooltip> {notLoggedMsg} </Tooltip>}
+          >
+            <span className="d-inline-block">
+              <Button variant="light" className={'down-vote-btn'} disabled>
+                <GoArrowDown size="1.5em" />
+              </Button>
+            </span>
+          </OverlayTrigger>
+        )}
     </>
   );
 };
