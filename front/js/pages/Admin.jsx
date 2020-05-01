@@ -18,21 +18,21 @@ import 'regenerator-runtime';
 function Admin(props) {
 
   const [menu, setMenu] = useState('tag');
-  const Page = () =>  menu == 'tag' ? <TagsPage/> : <RolesPage />;
+  const Page = () => menu == 'tag' ? <TagsPage /> : <RolesPage />;
 
   return (
     <Container
-        style={{
-          position: 'relative',
-        }}>
+      style={{
+        position: 'relative',
+      }}>
       <br />
-      <div style={{position: 'absolute', top: 0,right: 0, 'z-index':1}}></div>
+      <div style={{ position: 'absolute', top: 0, right: 0, 'z-index': 1 }}></div>
 
       <Row className='justify-content-md-center'>
         <MenuBar onClick={setMenu} currentMenu={menu} />
       </Row>
       <br />
-      <div> 
+      <div>
         <Page />
       </div>
     </Container>
@@ -69,13 +69,13 @@ const RolesPage = () => {
   const [notification, setNotification] = useState("");
   const [capabilities, setCapabilities] = useState([]);
 
-  const Notification = () => notification === "" ? <></> : <Toast text={notification}/>;
+  const Notification = () => notification === "" ? <></> : <Toast text={notification} />;
 
   useEffect(() => {
 
     const fetchRoles = async () => {
       let roles = await api.roles();
-      setRoles(roles);      
+      setRoles(roles);
     }
 
     const fetchCapabilities = async () => {
@@ -93,31 +93,44 @@ const RolesPage = () => {
     fetchCapabilities();
   }, [])
 
-  const addRole = (role) => {
+  //Gets all information about a role
+  //Useful to get missing information when creating a new role 
+  const fetchRoleInformation = async (roleToModify) => {
 
-    const sendRole = async (role) => {
-      await api.roles.add(role, "#8fd5a6", "").then((answer) => {
-        const newRoles = [...roles, {color:"#8fd5a6", id:role, name:role, capabilities:[]}]; //TODO fetch the real id...
-        setRoles(newRoles);
-        
+    const roleInformation = async () => {
+      let result = api.roles();
+      return result;
+    }
+    let roles = await roleInformation();
+    return roles.filter(role => role.name === roleToModify.name )[0];
+  }
+
+
+  //Add a new role 
+  const addRole = (roleName) => {
+
+    const sendRole = async (roleName) => {
+      await api.roles.add(roleName, "#8fd5a6", "").then(async answer => {
+        let role = await fetchRoleInformation({ name: roleName });
+        const newRoles = [...roles, { color: role.color, id: role.id, name: role.name, capabilities: role.capabilities }];
+        setRoles(newRoles); c
+
       }).catch((error) => {
         setNotification('');
         setNotification(error.message);
       });
-    } 
-    sendRole(role);
+    }
+    sendRole(roleName);
   }
 
   const handleDelete = (roleId) => {
 
     const deleteRole = async (id) => {
-      
+
       await api.roles.delete(id).then((answer) => {
-        console.log(answer);
-        let remainingRoles = roles.filter( remainingRole => remainingRole.id !== id); 
+        let remainingRoles = roles.filter(remainingRole => remainingRole.id !== id);
         setRoles(remainingRoles);  //remainingRoles is correct but it does not rerender well
       }).catch((error) => {
-        console.log(error);
         setNotification("");
         setNotification(error.message);
       });
@@ -127,28 +140,26 @@ const RolesPage = () => {
 
   return (
     <>
-    <Notification />
-    <br />
+      <Notification />
+      <br />
 
-    <AddForm add={addRole}/>
-    <br />
+      <AddForm add={addRole} />
+      <br />
 
-    {roles.length
-    ? roles.map((role, i) => {
-      return (
-        <Row key={i} className="mb-3">
-          <Role roleId={role.id} roleName={role.name} roleColor={role.color} roleCapabilities={role.capabilities} 
+      {roles.length
+        ? roles.map((role, i) => {
+          return (
+            <Row key={role.id} className="mb-3">
+              <Role roleId={role.id} roleName={role.name} roleColor={role.color} roleCapabilities={role.capabilities}
                 deleteRole={handleDelete} setNotification={setNotification} />
-        </Row>
-      )
-    })
-    : <h1>No roles</h1>
-    }
+            </Row>
+          )
+        })
+        : <h1>No roles</h1>
+      }
     </>
   );
 };
-
-const trace = x => { console.log(x); return x; }
 
 const TagsPage = () => {
 
@@ -160,24 +171,24 @@ const TagsPage = () => {
   //value of form input
   const [input, setInput] = useState("");
 
-  const Notification = () => notification === "" ? <></> : <Toast text={notification}/>;
+  const Notification = () => notification === "" ? <></> : <Toast text={notification} />;
 
-  
+
   useEffect(() => {
     setGetPromise(api.tags());
   }, []);
 
   // Get the tags
-  useEffect(() => {    
+  useEffect(() => {
     if (!getPromise)
       return;
     let isRendering = false;
     // On peut faire des changements d'état ici.
 
     getPromise.then(data => {
-      if (!isRendering) 
+      if (!isRendering)
         if (input.length) {
-          setTags([...tags, {label: input}]);
+          setTags([...tags, { label: input }]);
           setInput("");
         }
         else {
@@ -221,7 +232,7 @@ const TagsPage = () => {
       await api.tag.add(tag).then((answer) => {
         // FIXME - Need the actual id
         const id = tags.map(t => t.id).reduce((a, i) => a > i ? a : i, 0) + 1;
-        const newTags = [...tags, {label, id}];
+        const newTags = [...tags, { label, id }];
         setTags(newTags);
       }).catch((error) => {
         setNotification("");
@@ -239,14 +250,14 @@ const TagsPage = () => {
   }
 
   return (
-      <>
-        <Notification />
-        <br />
+    <>
+      <Notification />
+      <br />
 
-        <AddForm add={addTag}/>
-        <br />
+      <AddForm add={addTag} />
+      <br />
 
-        {tags.length 
+      {tags.length
         ? tags.map((tag, i) => {
           return (
             <Row key={tag.id} className="mb-3">
@@ -255,8 +266,8 @@ const TagsPage = () => {
           )
         })
         : <h1>No tags</h1>
-        }
-      </>
+      }
+    </>
   );
 }
 
