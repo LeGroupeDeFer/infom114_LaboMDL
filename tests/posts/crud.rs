@@ -136,7 +136,7 @@ fn read_all_posts_without_being_logged_in() {
 // read all post with limit and offset
 
 #[test]
-pub fn create_post() {
+fn create_post() {
     // clean database
     let client = init::clean_client();
     init::seed();
@@ -171,7 +171,7 @@ pub fn create_post() {
 }
 
 #[test]
-pub fn create_post_simple_user() {
+fn create_post_simple_user() {
     // clean database
     let client = init::clean_client();
     init::seed();
@@ -207,7 +207,7 @@ pub fn create_post_simple_user() {
 }
 
 #[test]
-pub fn create_post_unauthenticated_user() {
+fn create_post_unauthenticated_user() {
     // clean database
     let client = init::clean_client();
     init::seed();
@@ -236,7 +236,7 @@ pub fn create_post_unauthenticated_user() {
 }
 
 #[test]
-pub fn create_post_missing_attribute() {
+fn create_post_missing_attribute() {
     // clean database
     let client = init::clean_client();
     init::seed();
@@ -266,7 +266,7 @@ pub fn create_post_missing_attribute() {
 }
 
 #[test]
-pub fn create_post_bad_json() {
+fn create_post_bad_json() {
     // clean database
     let client = init::clean_client();
     init::seed();
@@ -300,7 +300,7 @@ pub fn create_post_bad_json() {
 }
 
 #[test]
-pub fn create_duplicate_post() {
+fn create_duplicate_post() {
     // clean database
     let client = init::clean_client();
     init::seed();
@@ -360,7 +360,7 @@ pub fn create_duplicate_post() {
 }
 
 #[test]
-pub fn create_post_simple_user_with_tags() {
+fn create_post_simple_user_with_tags() {
     // clean database
     let client = init::clean_client();
     init::seed();
@@ -412,7 +412,7 @@ pub fn create_post_simple_user_with_tags() {
 }
 
 #[test]
-pub fn create_post_simple_user_with_new_tags() {
+fn create_post_simple_user_with_new_tags() {
     // clean database
     let client = init::clean_client();
     init::seed();

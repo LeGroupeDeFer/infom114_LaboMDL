@@ -35,9 +35,11 @@ table! {
 }
 
 table! {
-    comments_reports (comment_id, report_id) {
+    comments_reports (comment_id, user_id) {
         comment_id -> Unsigned<Integer>,
-        report_id -> Unsigned<Integer>,
+        user_id -> Unsigned<Integer>,
+        reported_at -> Timestamp,
+        reason -> Nullable<Mediumtext>,
     }
 }
 
@@ -59,9 +61,11 @@ table! {
 }
 
 table! {
-    posts_reports (post_id, report_id) {
+    posts_reports (post_id, user_id) {
         post_id -> Unsigned<Integer>,
-        report_id -> Unsigned<Integer>,
+        user_id -> Unsigned<Integer>,
+        reported_at -> Timestamp,
+        reason -> Nullable<Mediumtext>,
     }
 }
 
@@ -69,13 +73,6 @@ table! {
     posts_tags (post_id, tag_id) {
         post_id -> Unsigned<Integer>,
         tag_id -> Unsigned<Integer>,
-    }
-}
-
-table! {
-    reports (id) {
-        id -> Unsigned<Integer>,
-        reason -> Nullable<Mediumtext>,
     }
 }
 
@@ -168,10 +165,10 @@ table! {
 joinable!(comments -> posts (post_id));
 joinable!(comments -> users (author_id));
 joinable!(comments_reports -> comments (comment_id));
-joinable!(comments_reports -> reports (report_id));
+joinable!(comments_reports -> users (user_id));
 joinable!(posts -> users (author_id));
 joinable!(posts_reports -> posts (post_id));
-joinable!(posts_reports -> reports (report_id));
+joinable!(posts_reports -> users (user_id));
 joinable!(posts_tags -> posts (post_id));
 joinable!(posts_tags -> tags (tag_id));
 joinable!(roles_capabilities -> capabilities (capability_id));
@@ -194,7 +191,6 @@ allow_tables_to_appear_in_same_query!(
     posts,
     posts_reports,
     posts_tags,
-    reports,
     roles,
     roles_capabilities,
     tags,

@@ -6,6 +6,9 @@ Summary of implemented features classified by release (github tag)
 
 - fix issue #67 : implement post update + tests
 - fix issue #51 : implement post delete + tests
+- fix issue #35 : implement post reporting + tests
+- fix issue #45 : implement visibility management for posts + tests
+- implement post locking management + tests
 
 ## [0.2.5] - 2020-04-28
 

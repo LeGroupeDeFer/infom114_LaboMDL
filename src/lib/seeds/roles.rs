@@ -13,7 +13,7 @@ pub fn seed_roles_and_capabilities(conn: &MysqlConnection) {
         .collect::<Vec<CapabilityData>>();
 
     for capability in capabilities_data.iter() {
-        CapabilityEntity::insert_new(conn, &capability.into()).unwrap();
+        CapabilityEntity::insert_either(conn, &capability.into()).unwrap();
     }
 
     // create some minima roles (admin & user)
