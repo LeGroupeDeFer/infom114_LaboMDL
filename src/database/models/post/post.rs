@@ -4,7 +4,7 @@ use diesel::prelude::*;
 use diesel::MysqlConnection;
 
 use crate::database;
-use crate::database::models::post::RelPostVoteMinima;
+use crate::database::models::post::{RelPostReportEntity, RelPostReportMinima, RelPostVoteMinima};
 use crate::database::models::prelude::*;
 use crate::database::schema::posts::dsl::{self, posts as table};
 use crate::lib::{Consequence, EntityError};
@@ -21,10 +21,12 @@ pub struct Post {
     pub deleted: bool,
     pub votes: u64,
     pub score: i64,
+    pub flags: u64,
     pub author: User,
     pub tags: Vec<String>,
     pub comments: Vec<Comment>,
     pub user_vote: Option<i16>,
+    pub user_flag: Option<bool>,
 }
 
 impl PostEntity {
@@ -77,7 +79,7 @@ impl PostEntity {
             -1 | 1 => match RelPostVoteEntity::select(&conn, &minima)? {
                 Some(mut vote_entity) => {
                     vote_entity.vote_value = minima.vote_value;
-                    vote_entity.update(&conn);
+                    vote_entity.update(&conn)?;
                 }
                 None => {
                     RelPostVoteEntity::insert_new(&conn, &minima)?;
@@ -159,6 +161,36 @@ impl PostEntity {
     pub fn is_hidden(&self) -> bool {
         self.hidden_at.is_some()
     }
+
+    pub fn report(
+        &self,
+        conn: &MysqlConnection,
+        user_id: &u32,
+        reason: Option<String>,
+    ) -> Consequence<()> {
+        let minima = RelPostReportMinima {
+            post_id: self.id,
+            user_id: user_id.clone(),
+            reason,
+        };
+        RelPostReportEntity::insert_new(conn, &minima)?;
+        Ok(())
+    }
+
+    pub fn remove_report(&self, conn: &MysqlConnection, user_id: &u32) -> Consequence<()> {
+        let minima = RelPostReportMinima {
+            post_id: self.id,
+            user_id: user_id.clone(),
+            reason: None,
+        };
+        match RelPostReportEntity::select(conn, &minima)? {
+            Some(entity) => {
+                entity.delete(conn)?;
+            }
+            None => Err(EntityError::InvalidID)?,
+        }
+        Ok(())
+    }
 }
 
 impl Post {
@@ -178,18 +210,30 @@ impl Post {
             .collect::<Vec<Self>>())
     }
 
-    pub fn set_user_vote(&mut self, conn: &MysqlConnection, user_id: &u32) {
-        let minima = RelPostVoteMinima {
+    pub fn set_user_info(&mut self, conn: &MysqlConnection, user_id: &u32) {
+        let vote_minima = RelPostVoteMinima {
             post_id: self.id,
             user_id: user_id.clone(),
             vote_value: 0,
         };
 
-        let user_vote = RelPostVoteEntity::select(conn, &minima)
+        let user_vote = RelPostVoteEntity::select(conn, &vote_minima)
             .unwrap_or(None)
             .map_or(0, |vote| vote.vote_value);
 
         self.user_vote = Some(user_vote);
+
+        let report_minima = RelPostReportMinima {
+            post_id: self.id,
+            user_id: user_id.clone(),
+            reason: None,
+        };
+
+        self.user_flag = Some(
+            RelPostReportEntity::select(&conn, &report_minima)
+                .unwrap_or(None)
+                .is_some(),
+        );
     }
 }
 
@@ -208,6 +252,7 @@ impl From<PostEntity> for Post {
             deleted: pe.deleted_at.is_some(),
             votes: pe.votes,
             score: pe.score,
+            flags: RelPostReportEntity::count_by_post_id(&conn, &pe.id).unwrap(),
             author: UserEntity::by_id(&conn, &pe.author_id)
                 .unwrap()
                 .map(|user_entity| User::from(user_entity))
@@ -223,6 +268,7 @@ impl From<PostEntity> for Post {
                 .map(|comment_entity| Comment::from(comment_entity))
                 .collect::<Vec<Comment>>(),
             user_vote: None,
+            user_flag: None,
         }
     }
 }

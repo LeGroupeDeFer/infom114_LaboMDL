@@ -9,3 +9,8 @@ pub struct NewPost {
 pub struct ChangeVote {
     pub vote: i32, // -1, 0, +1
 }
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+pub struct ReportData {
+    pub reason: Option<String>,
+}

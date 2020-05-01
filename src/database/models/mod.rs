@@ -46,7 +46,7 @@ pub trait Entity: Sized {
         if let Right(record) = addition {
             Ok(record)
         } else {
-            Err(Error::EntityError(EntityError::Duplicate))
+            Err(Error::EntityError(EntityError::Duplicate))?
         }
     }
 

@@ -15,6 +15,7 @@ use unanimitylibrary::lib::{lorem_ipsum, seeds};
 
 use diesel::query_dsl::RunQueryDsl;
 use rocket::http::{ContentType, Header};
+use unanimitylibrary::database::models::post::RelPostReportEntity;
 
 pub const ADMIN_EMAIL: &'static str = "admin@unamur.be";
 pub const ADMIN_PASSWORD: &'static str = "admin";
@@ -39,6 +40,7 @@ pub fn clean() {
     diesel::delete(roles_table).execute(&conn).unwrap();
     diesel::delete(tags_table).execute(&conn).unwrap();
     diesel::delete(capabilities_table).execute(&conn).unwrap();
+    diesel::delete(posts_reports_table).execute(&conn).unwrap();
     diesel::delete(posts_table).execute(&conn).unwrap();
     diesel::delete(users_table).execute(&conn).unwrap();
     diesel::delete(tokens_table).execute(&conn).unwrap();
@@ -102,6 +104,13 @@ pub fn clean() {
     );
     assert_eq!(tags_table.load::<TagEntity>(&conn).unwrap().len(), 0);
     assert_eq!(posts_table.load::<PostEntity>(&conn).unwrap().len(), 0);
+    assert_eq!(
+        posts_reports_table
+            .load::<RelPostReportEntity>(&conn)
+            .unwrap()
+            .len(),
+        0
+    );
 }
 
 /// Fill the database with some data that is needed for the application to run

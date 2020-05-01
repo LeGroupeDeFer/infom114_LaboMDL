@@ -17,6 +17,9 @@ pub fn collect() -> Vec<rocket::Route> {
         delete_post,
         update_post,
         updown_vote,
+        toggle_visibility,
+        toggle_lock,
+        manage_post_report,
     )
 }
 
@@ -58,7 +61,7 @@ fn get_all_posts_authenticated(conn: DBConnection, auth: ForwardAuth) -> ApiResu
     }
     .drain(..)
     .map(|mut p| {
-        p.set_user_vote(&*conn, &auth.deref().sub);
+        p.set_user_info(&*conn, &auth.deref().sub);
         p
     })
     .collect::<Vec<Post>>();
@@ -81,7 +84,7 @@ fn get_post_authenticated(
             || auth.deref().has_capability(&*conn, "post:view_hidden"))
     {
         let mut p = Post::from(post_guard.post_clone());
-        p.set_user_vote(&*conn, &auth.deref().sub);
+        p.set_user_info(&*conn, &auth.deref().sub);
         Ok(Json(p))
     } else {
         Err(EntityError::InvalidID)?
@@ -171,6 +174,77 @@ fn updown_vote(
     post_guard
         .post()
         .upvote(&*conn, &auth.sub, vote_request.vote)?;
+
+    OK()
+}
+
+#[post("/api/v1/post/<_post_id>/hide")]
+fn toggle_visibility(
+    conn: DBConnection,
+    auth: Auth,
+    post_guard: PostGuard,
+    _post_id: u32,
+) -> ApiResult<()> {
+    if post_guard.post().is_deleted() {
+        Err(EntityError::InvalidID)?;
+    } else if post_guard.post().is_locked() && !auth.has_capability(&*conn, "post:edit_locked") {
+        Err(AuthError::MissingCapability)?;
+    }
+    auth.check_capability(&*conn, "post:hide")?;
+
+    post_guard.post().toggle_visibility(&*conn)?;
+
+    OK()
+}
+
+#[post("/api/v1/post/<_post_id>/lock")]
+fn toggle_lock(
+    conn: DBConnection,
+    auth: Auth,
+    post_guard: PostGuard,
+    _post_id: u32,
+) -> ApiResult<()> {
+    if post_guard.post().is_deleted() {
+        Err(EntityError::InvalidID)?;
+    } else if post_guard.post().is_hidden() && !auth.has_capability(&*conn, "post:view_hidden") {
+        Err(AuthError::MissingCapability)?;
+    }
+    auth.check_capability(&*conn, "post:lock")?;
+
+    post_guard.post().toggle_lock(&*conn)?;
+
+    OK()
+}
+
+#[post("/api/v1/post/<_post_id>/report", format = "json", data = "<data>")]
+fn manage_post_report(
+    conn: DBConnection,
+    auth: Auth,
+    post_guard: PostGuard,
+    _post_id: u32,
+    data: Option<Json<ReportData>>,
+) -> ApiResult<()> {
+    if post_guard.post().is_deleted() {
+        Err(EntityError::InvalidID)?;
+    } else if false
+        || (post_guard.post().is_locked() && !auth.has_capability(&*conn, "post:edit_locked"))
+        || (post_guard.post().is_hidden() && !auth.has_capability(&*conn, "post:view_hidden"))
+    {
+        Err(AuthError::MissingCapability)?;
+    }
+
+    match data {
+        Some(json_data) => {
+            let report_data = json_data.into_inner();
+
+            post_guard
+                .post()
+                .report(&*conn, &auth.sub, report_data.reason)?;
+        }
+        None => {
+            post_guard.post().remove_report(&*conn, &auth.sub)?;
+        }
+    }
 
     OK()
 }

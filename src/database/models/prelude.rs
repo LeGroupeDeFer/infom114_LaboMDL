@@ -4,6 +4,7 @@ pub use super::{
     comment::{Comment, CommentEntity, CommentMinima, RelCommentVoteEntity},
     post::{
         ChangeVote, NewPost, Post, PostEntity, PostMinima, RelPostTagEntity, RelPostVoteEntity,
+        ReportData,
     },
     role::{RelRoleCapabilityEntity, Role, RoleData, RoleEntity, RoleMinima},
     tag::{Tag, TagData, TagEntity, TagMinima},
