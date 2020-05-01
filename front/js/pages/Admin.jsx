@@ -117,7 +117,9 @@ const RolesPage = () => {
 
       }).catch((error) => {
         setNotification('');
-        setNotification(error.message);
+        setNotification(error.reason);
+        console.log(error.reason);
+        
       });
     }
     sendRole(roleName);
@@ -132,7 +134,8 @@ const RolesPage = () => {
         setRoles(remainingRoles);  //remainingRoles is correct but it does not rerender well
       }).catch((error) => {
         setNotification("");
-        setNotification(error.message);
+        setNotification(error.reason);
+        console.log(error.reason);
       });
     }
     deleteRole(roleId);
@@ -214,7 +217,7 @@ const TagsPage = () => {
     }).catch(e => {
       if (!isRendering) {
         setNotification("");
-        setNotification(e.message);
+        setNotification(e.reason);
       }
     }).finally(() => {
       if (!isRendering) {
@@ -236,7 +239,8 @@ const TagsPage = () => {
         setTags(newTags);
       }).catch((error) => {
         setNotification("");
-        setNotification(error.message);
+        setNotification(error.reason);
+        console.log(error.reason);
       });
     }
     //send data to server

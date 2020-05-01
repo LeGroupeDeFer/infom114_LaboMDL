@@ -29,7 +29,8 @@ const Tag = ({name, deleteTag, setNotification}) => {
       }
     }).catch((error) =>{
       setNotification("");
-      setNotification(error.message);
+      setNotification(error.reason);
+      console.log(error.reason);
     });
   };
 

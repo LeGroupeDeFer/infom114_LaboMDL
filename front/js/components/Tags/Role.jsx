@@ -29,7 +29,7 @@ const Role = ({ roleId, roleName, roleColor, roleCapabilities, deleteRole, setNo
       
     }).catch((error) => {
       setNotification("");
-      setNotification(error.message);
+      setNotification(error.reason);
     });
   };
 
