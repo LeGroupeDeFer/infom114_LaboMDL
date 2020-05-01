@@ -11,15 +11,13 @@ import { FaTag, FaFacebookSquare, FaEyeSlash, FaFlag } from 'react-icons/fa';
 import clsx from 'clsx';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import DropdownButton from 'react-bootstrap/DropdownButton';
-import Dropdown from 'react-bootstrap/Dropdown';
-import { MdSort } from 'react-icons/md';
 
 const Post = ({ is_logged, post_data }) => {
+  console.log(is_logged);
   const [commentEditors, setCommentEditors] = useState({});
   const [comments, setComments] = useState(post_data.comments);
   const [voted, setVoted] = useState('no');
-  const [pointsState, setPointsState] = useState(post_data.points);
+  const [pointsState, setPointsState] = useState(post_data.score);
 
   function addComment(comment) {
     setComments((cmmt) =>
@@ -147,11 +145,13 @@ const Post = ({ is_logged, post_data }) => {
               <span className="text-muted title-part2">
                 {' '}
                 <a href="#" className="text-dark">
-                  {post_data.username}
+                  {post_data.author.firstname}
+                  {'  '}
+                  {post_data.author.lastname}
                 </a>{' '}
                 -{' '}
                 <Moment locale="fr" fromNow>
-                  {post_data.createdOn}
+                  {post_data.createdAt}
                 </Moment>
               </span>
             </h5>
@@ -178,48 +178,42 @@ const Post = ({ is_logged, post_data }) => {
 
           <Col>
             <div className="mb-1">
-              <a
-                href="#"
-                className="mr-2 tag"
-                onClick={(e) => otherProps.tag_click(e)}
-                value="Arsenal"
-              >
-                <FaTag className="mr-1" />
-                Arsenal
-              </a>
-              <a
-                href="#"
-                className="mr-2 tag"
-                onClick={(e) => otherProps.tag_click(e)}
-                value="FacInfo"
-              >
-                <FaTag className="mr-1" />
-                FacInfo
-              </a>
-              <a
-                href="#"
-                className="mr-2 tag"
-                onClick={(e) => otherProps.tag_click(e)}
-                value="FacEco"
-              >
-                <FaTag className="mr-1" />
-                FacEco
-              </a>
+
+              {post_data.tags.map(tag => {
+                return (
+                  <a
+                    href="#"
+                    className="mr-2 tag"
+                    onClick={(e) => otherProps.tag_click(e)}
+                    value={tag}
+                  >
+                    <FaTag className="mr-1" />
+                    {tag}
+                  </a>);
+              })}
             </div>
             <br />
-            <p>{post_data.text}</p>
+            <p>{post_data.content}</p>
             <div>
               <a className="post-footer-btn mr-3" href="#">
                 <MdModeComment size="1.25em" className="mr-2" />
                 <span className="text-muted">
-                  {post_data.commentNb}{' '}
-                  {post_data.commentNb <= 1 ? 'commentaire' : 'commentaires'}
+                  {post_data.comments.length}{' '}
+                  {post_data.comments.length <= 1
+                    ? 'commentaire'
+                    : 'commentaires'}
                 </span>
               </a>
 
               <FacebookShareButton
-                url="unanimty.be"
-                quote="Vive le covid-19"
+                url={'https://unanimity.be/post/' + post_data.id}
+                quote={
+                  post_data.title +
+                  ' - ' +
+                  post_data.author.firstname +
+                  ' ' +
+                  post_data.author.lastname
+                }
                 onClick={(e) => e.stopPropagation()}
               >
                 <a className="post-footer-btn mr-3" href="#">

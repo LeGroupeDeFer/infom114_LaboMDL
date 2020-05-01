@@ -11,6 +11,7 @@ import {
 import Sidebar from './Sidebar';
 import layout from '../lib/layout';
 import { useAuth } from '../context/authContext';
+import PostDetail from '../pages/PostDetail';
 
 const Stream = lazy(() => import('../pages/Stream'));
 const Profile = lazy(() => import('../pages/Profile'));
@@ -80,7 +81,7 @@ const Content = (_) => {
                   <Activate />
                 </Route>
                 <Route path="/post/:id">
-                  <Post />
+                  <PostDetail />
                 </Route>
 
                 <Route path="/submit">

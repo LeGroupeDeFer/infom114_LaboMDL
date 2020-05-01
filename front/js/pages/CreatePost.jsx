@@ -9,21 +9,36 @@ import { FaPlusSquare, FaTag } from 'react-icons/fa';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import InputGroup from 'react-bootstrap/InputGroup';
-
-const handleSubmit = () => console.log('submit');
+import api from '../lib/api';
+import { useRequest } from '../hooks';
 
 const CreatePost = () => {
+  const [error, data] = useRequest(api.tags, []);
+
+
+  const tags = (data ? data.tags : []).map((tag) => {
+    return {
+      id: tag.id,
+      value: tag.label,
+      label: (
+        <span>
+          <FaTag /> {tag.label}
+        </span>
+      )
+    };
+  });
+
   return (
     <Container>
       <br />
       <h3>Créer un post</h3>
       <br />
-      <CreateForm />
+      <CreateForm tags={tags} />
     </Container>
   );
 };
 
-function CreateForm() {
+function CreateForm(tags) {
   const [category, setCategory] = useState(null);
 
   const cats = [
@@ -32,33 +47,7 @@ function CreateForm() {
     { value: 'poll', label: 'Vote' },
   ];
 
-  const tags = [
-    {
-      value: 'FacInfo',
-      label: (
-        <span>
-          <FaTag /> FacInfo
-        </span>
-      ),
-    },
-    {
-      value: 'FacEco',
-      label: (
-        <span>
-          <FaTag /> FacEco
-        </span>
-      ),
-    },
-    {
-      value: 'Arsenal',
-      label: (
-        <span>
-          <FaTag /> Arsenal
-        </span>
-      ),
-    },
-  ];
-
+  // I didn't find another way to add styles to the select
   const primary = '#A0C55F';
   const customStyles = {
     control: (base, state) => ({
@@ -97,22 +86,28 @@ function CreateForm() {
               <Form.Control type="text" placeholder="Titre du post" />
             </Col>
           </Row>
+
           <br />
+
           <Select
-            options={tags}
+            options={tags.tags}
             isMulti
             placeholder={'Sélectionner un ou plusieurs tags'}
             styles={customStyles}
           />
+
           <br />
+
           <Form.Group>
             <Form.Control as="textarea" rows="5" placeholder="Texte.." />
           </Form.Group>
+
           {category == 'poll' && <PollSection />}
 
           <Button variant="primary" className="mt-1 float-right">
             Créer
           </Button>
+
         </Form>
       </Card.Body>
     </Card>
@@ -122,17 +117,16 @@ function CreateForm() {
 function PollSection() {
   const [pollOptions, setPollOptions] = useState(['', '']);
 
-  function addPollOption() {
-    console.log('hey0');
+  function addOption() {
     setPollOptions(pollOptions.concat(['']));
   }
-  function removePollOption(index) {
+  function removeOption(index) {
     var tmp = [...pollOptions];
     tmp.splice(index, 1);
     setPollOptions(tmp);
   }
 
-  function updatePollOption(index, val) {
+  function updateOption(index, val) {
     var tmp = [...pollOptions];
     tmp[index] = val;
     setPollOptions(tmp);
@@ -150,12 +144,12 @@ function PollSection() {
                     type="text"
                     placeholder={'Option ' + (index + 1)}
                     value={val}
-                    onChange={(e) => updatePollOption(index, e.target.value)}
+                    onChange={(e) => updateOption(index, e.target.value)}
                   />
                   <InputGroup.Append>
                     <Button
                       variant="outline-danger"
-                      onClick={() => removePollOption(index)}
+                      onClick={() => removeOption(index)}
                     >
                       <TiDelete size={20} />
                     </Button>
@@ -163,20 +157,20 @@ function PollSection() {
                 </InputGroup>
               </>
             ) : (
-              <Form.Control
-                type="text"
-                placeholder={'Option ' + (index + 1)}
-                value={val}
-                onChange={(e) => updatePollOption(index, e.target.value)}
-              />
-            )}
+                <Form.Control
+                  type="text"
+                  placeholder={'Option ' + (index + 1)}
+                  value={val}
+                  onChange={(e) => updateOption(index, e.target.value)}
+                />
+              )}
 
             <br />
           </div>
         ))}
 
         {pollOptions.length < 5 && (
-          <a href="#" onClick={addPollOption}>
+          <a href="#" onClick={addOption}>
             <FaPlusSquare className="mr-1" size={20} />
             Ajouter une option
           </a>
