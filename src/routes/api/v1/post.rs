@@ -1,11 +1,12 @@
 use crate::database::models::prelude::*;
-use crate::database::DBConnection;
+use crate::database::{DBConnection, SortOrder};
 
 use crate::guards::{Auth, ForwardAuth, PostGuard};
 use crate::http::responders::{ApiResult, OK};
 use crate::lib::{AuthError, Consequence, EntityError};
 
 use rocket_contrib::json::Json;
+use serde::export::TryFrom;
 
 pub fn collect() -> Vec<rocket::Route> {
     routes!(
@@ -52,24 +53,64 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult
     Ok(Json(Post::from(p)))
 }
 
-#[get("/api/v1/posts", rank = 1)]
-fn get_all_posts_authenticated(conn: DBConnection, auth: ForwardAuth) -> ApiResult<Vec<Post>> {
-    let posts = if auth.deref().has_capability(&*conn, "post:view_hidden") {
-        Post::admin_all(&*conn)?
-    } else {
-        Post::all(&*conn)?
+// typo on tape is intentional : `type` is a rust reserved keyword
+#[get(
+    "/api/v1/posts?<tag>&<search>&<sort>&<tape>&<limit>&<offset>",
+    rank = 1
+)]
+fn get_all_posts_authenticated(
+    conn: DBConnection,
+    auth: ForwardAuth,
+    tag: Option<String>,
+    search: Option<String>,
+    sort: Option<String>,
+    tape: Option<String>, // type
+    limit: Option<u32>,
+    offset: Option<u32>,
+) -> ApiResult<Vec<Post>> {
+    let mut sort_order: Option<SortOrder> = None;
+    if let Some(value) = sort {
+        sort_order = Some(SortOrder::try_from(value.as_ref())?)
     }
-    .drain(..)
-    .map(|mut p| {
+
+    let posts = Post::all(
+        &*conn,
+        auth.deref().has_capability(&*conn, "post:view_hidden"),
+        tag,
+        search,
+        sort_order,
+        tape,
+        limit,
+        offset,
+    )?
+    .into_iter()
+    .map(move |mut p| {
         p.set_user_info(&*conn, &auth.deref().sub);
         p
     })
     .collect::<Vec<Post>>();
     Ok(Json(posts))
 }
-#[get("/api/v1/posts", rank = 2)]
-fn get_all_posts(conn: DBConnection) -> ApiResult<Vec<Post>> {
-    Ok(Json(Post::all(&*conn)?))
+#[get(
+    "/api/v1/posts?<tag>&<search>&<sort>&<tape>&<limit>&<offset>",
+    rank = 2
+)]
+fn get_all_posts(
+    conn: DBConnection,
+    tag: Option<String>,
+    search: Option<String>,
+    sort: Option<String>,
+    tape: Option<String>, // type
+    limit: Option<u32>,
+    offset: Option<u32>,
+) -> ApiResult<Vec<Post>> {
+    let mut sort_order: Option<SortOrder> = None;
+    if let Some(value) = sort {
+        sort_order = Some(SortOrder::try_from(value.as_ref())?)
+    }
+    Ok(Json(Post::all(
+        &*conn, false, tag, search, sort_order, tape, limit, offset,
+    )?))
 }
 
 #[get("/api/v1/post/<_post_id>", rank = 1)]

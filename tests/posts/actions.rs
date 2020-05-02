@@ -11,7 +11,7 @@ fn json_vote(value: i8) -> String {
     format!("{{ \"vote\":{} }}", value)
 }
 
-fn send_vote<'a, 'b>(
+pub fn send_vote<'a, 'b>(
     client: &'a rocket::local::Client,
     auth_token: rocket::http::Header<'static>,
     post_id: &'b u32,
@@ -543,11 +543,6 @@ fn lock_a_post_without_capability() {
     tmp_post = get_post(&client, auth_token.clone(), &post.id);
     assert!(!tmp_post.locked);
 }
-
-// report a post
-// report a post (invalid id)
-// report a post (invalid capability)
-// report same post twice
 
 #[test]
 fn report_a_post() {

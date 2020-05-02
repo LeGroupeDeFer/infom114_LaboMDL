@@ -2,11 +2,43 @@ use rocket::http::Status;
 
 use super::super::init;
 
+use chrono::NaiveDateTime;
 use rocket::http::ContentType;
 use unanimitylibrary::database::models::prelude::*;
+use unanimitylibrary::lib::seeds;
 
 const POSTS_ROUTE: &'static str = "/api/v1/posts";
 const POST_ROUTE: &'static str = "/api/v1/post";
+
+fn get_posts_limit_and_offset(
+    client: &rocket::local::Client,
+    limit: Option<u32>,
+    offset: Option<u32>,
+) -> Vec<Post> {
+    let route: String = if limit.is_some() && offset.is_some() {
+        format!(
+            "{}?limit={}&offset={}",
+            POSTS_ROUTE,
+            limit.unwrap(),
+            offset.unwrap()
+        )
+    } else if let Some(l) = limit {
+        format!("{}?limit={}", POSTS_ROUTE, l)
+    } else if let Some(o) = offset {
+        format!("{}?offset={}", POSTS_ROUTE, o)
+    } else {
+        POSTS_ROUTE.to_string()
+    };
+
+    let req = client.get(route);
+    let mut response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::Ok);
+
+    let data = response.body_string().unwrap();
+    serde_json::from_str(&data).unwrap()
+}
 
 #[test]
 fn read_all_posts_while_logged_in() {
@@ -48,6 +80,325 @@ fn read_all_posts_while_logged_in() {
             .count(),
         5
     );
+}
+
+#[test]
+fn read_all_no_posts() {
+    // clean database
+    let client = init::clean_client();
+    let conn = init::database_connection();
+    seeds::roles::seed_roles_and_capabilities(&conn);
+    seeds::tags::seed_tags(&conn);
+
+    // login
+    let auth_token_header = init::login_admin();
+
+    // perform request
+    let req = client.get(POSTS_ROUTE).header(auth_token_header);
+    let mut response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::Ok);
+
+    // check the answer data is what we wanted
+    let data = response.body_string().unwrap();
+    let posts: Vec<Post> = serde_json::from_str(&data).unwrap();
+    // we want a total of 0 post
+    assert_eq!(posts.len(), 0);
+}
+
+#[test]
+fn read_all_no_posts_unauthenticated() {
+    // clean database
+    let client = init::clean_client();
+
+    // perform request
+    let req = client.get(POSTS_ROUTE);
+    let mut response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::Ok);
+
+    // check the answer data is what we wanted
+    let data = response.body_string().unwrap();
+    let posts: Vec<Post> = serde_json::from_str(&data).unwrap();
+    // we want a total of 0 post
+    assert_eq!(posts.len(), 0);
+}
+
+#[test]
+fn read_all_post_query_tags_even() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+
+    // perform request
+    let req = client.get(format!("{}?tag=even", POSTS_ROUTE));
+    let mut response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::Ok);
+
+    // check the answer data is what we wanted
+    let data = response.body_string().unwrap();
+    let posts: Vec<Post> = serde_json::from_str(&data).unwrap();
+    // we want a total of 0 post
+    assert_eq!(posts.len(), 2);
+
+    assert_eq!(
+        posts
+            .iter()
+            .filter(|&p| p.tags.contains(&"even".to_string()))
+            .count(),
+        posts.len()
+    )
+}
+
+#[test]
+fn read_all_post_query_search_lock_in_title() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let search_term = "lock";
+
+    // perform request
+    let req = client.get(format!("{}?search={}", POSTS_ROUTE, &search_term));
+    let mut response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::Ok);
+
+    // check the answer data is what we wanted
+    let data = response.body_string().unwrap();
+    let posts: Vec<Post> = serde_json::from_str(&data).unwrap();
+    // we want a total of 0 post
+    assert_eq!(posts.len(), 1);
+
+    assert!(posts[0]
+        .title
+        .to_lowercase()
+        .contains(&search_term.to_string()));
+}
+
+#[test]
+fn read_all_post_query_search_valid_in_title() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let search_term = "valid";
+    // perform request
+    let req = client.get(format!("{}?search={}", POSTS_ROUTE, &search_term));
+    let mut response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::Ok);
+
+    // check the answer data is what we wanted
+    let data = response.body_string().unwrap();
+    let posts: Vec<Post> = serde_json::from_str(&data).unwrap();
+    // we want a total of 0 post
+    assert_eq!(posts.len(), 5);
+
+    assert_eq!(
+        posts
+            .iter()
+            .filter(|&p| p.title.to_lowercase().contains(&search_term.to_string()))
+            .count(),
+        posts.len()
+    );
+}
+
+#[test]
+fn read_all_post_query_tags_odd() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+
+    // perform request
+    let req = client.get(format!("{}?tag=odd", POSTS_ROUTE));
+    let mut response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::Ok);
+
+    // check the answer data is what we wanted
+    let data = response.body_string().unwrap();
+    let posts: Vec<Post> = serde_json::from_str(&data).unwrap();
+    // we want a total of 0 post
+    assert_eq!(posts.len(), 3);
+
+    assert_eq!(
+        posts
+            .iter()
+            .filter(|&p| p.tags.contains(&"odd".to_string()))
+            .count(),
+        posts.len()
+    )
+}
+
+#[test]
+fn read_all_post_query_sort_by_invalid() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+
+    let sorting_term = "invalid";
+
+    // perform request
+    let req = client.get(format!("{}?sort={}", POSTS_ROUTE, sorting_term));
+    let response = req.dispatch();
+
+    //check the answer is a bad request
+    assert_eq!(response.status(), Status::BadRequest);
+}
+
+#[test]
+fn read_all_post_query_sort_by_new() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+
+    let sorting_term = "new";
+
+    // perform request
+    let req = client.get(format!("{}?sort={}", POSTS_ROUTE, sorting_term));
+    let mut response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::Ok);
+
+    let data = response.body_string().unwrap();
+    let posts: Vec<Post> = serde_json::from_str(&data).unwrap();
+    let mut desc_time = NaiveDateTime::from_timestamp(i32::MAX as i64, 0);
+
+    for post in posts {
+        let comparable_time =
+            NaiveDateTime::parse_from_str(post.created_at.as_ref(), "%Y-%m-%d %H:%M:%S").unwrap();
+        assert!(desc_time >= comparable_time);
+        if comparable_time < desc_time {
+            desc_time = comparable_time;
+        }
+    }
+}
+
+#[test]
+fn read_all_post_query_sort_by_old() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+
+    let sorting_term = "old";
+
+    // perform request
+    let req = client.get(format!("{}?sort={}", POSTS_ROUTE, sorting_term));
+    let mut response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::Ok);
+
+    let data = response.body_string().unwrap();
+    let posts: Vec<Post> = serde_json::from_str(&data).unwrap();
+    let mut asc_time = NaiveDateTime::from_timestamp(i32::MIN as i64, 0);
+
+    for post in posts {
+        let comparable_time =
+            NaiveDateTime::parse_from_str(post.created_at.as_ref(), "%Y-%m-%d %H:%M:%S").unwrap();
+        assert!(asc_time <= comparable_time);
+        if comparable_time > asc_time {
+            asc_time = comparable_time;
+        }
+    }
+}
+
+#[test]
+fn read_all_post_query_sort_by_score_desc() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let p = init::get_post_entity(false, false, false);
+    super::actions::send_vote(&client, init::login_admin(), &p.id, 1);
+
+    let sorting_term = "top";
+
+    // perform request
+    let req = client.get(format!("{}?sort={}", POSTS_ROUTE, sorting_term));
+    let mut response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::Ok);
+
+    let data = response.body_string().unwrap();
+    let posts: Vec<Post> = serde_json::from_str(&data).unwrap();
+    let mut asc_score = i64::MAX;
+
+    for post in posts {
+        assert!(asc_score >= post.score);
+        if post.score < asc_score {
+            asc_score = post.score;
+        }
+    }
+}
+
+#[test]
+fn read_all_post_query_sort_by_score_asc() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let p = init::get_post_entity(false, false, false);
+    super::actions::send_vote(&client, init::login_admin(), &p.id, 1);
+
+    let sorting_term = "low";
+
+    // perform request
+    let req = client.get(format!("{}?sort={}", POSTS_ROUTE, sorting_term));
+    let mut response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::Ok);
+
+    let data = response.body_string().unwrap();
+    let posts: Vec<Post> = serde_json::from_str(&data).unwrap();
+    let mut asc_score = i64::MIN;
+
+    for post in posts {
+        assert!(asc_score <= post.score);
+        if post.score > asc_score {
+            asc_score = post.score;
+        }
+    }
+}
+
+#[test]
+fn read_all_post_query_limit_and_offset() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+
+    let mut tmp_posts: Vec<Post>;
+
+    tmp_posts = get_posts_limit_and_offset(&client, Some(2), None);
+    assert_eq!(tmp_posts.len(), 2);
+
+    let mut posts_iter = tmp_posts.iter();
+    assert_eq!(posts_iter.next().unwrap().title.as_str(), "Valid post #1");
+    assert_eq!(posts_iter.next().unwrap().title.as_str(), "Valid post #2");
+    assert!(posts_iter.next().is_none());
+
+    tmp_posts = get_posts_limit_and_offset(&client, Some(1), Some(2));
+    assert_eq!(tmp_posts.len(), 1);
+
+    posts_iter = tmp_posts.iter();
+    assert_eq!(posts_iter.next().unwrap().title.as_str(), "Valid post #3");
+    assert!(posts_iter.next().is_none());
+
+    tmp_posts = get_posts_limit_and_offset(&client, None, Some(3));
+    assert_eq!(tmp_posts.len(), 3);
+
+    posts_iter = tmp_posts.iter();
+    assert_eq!(posts_iter.next().unwrap().title.as_str(), "Valid post #4");
+    assert_eq!(posts_iter.next().unwrap().title.as_str(), "Valid post #5");
+    assert_eq!(posts_iter.next().unwrap().title.as_str(), "Locked post");
+    assert!(posts_iter.next().is_none());
 }
 
 #[test]

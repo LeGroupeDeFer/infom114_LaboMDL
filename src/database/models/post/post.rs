@@ -6,7 +6,10 @@ use diesel::MysqlConnection;
 use crate::database;
 use crate::database::models::post::{RelPostReportEntity, RelPostReportMinima, RelPostVoteMinima};
 use crate::database::models::prelude::*;
-use crate::database::schema::posts::dsl::{self, posts as table};
+use crate::database::schema::posts::dsl;
+use crate::database::schema::tags::dsl as tags;
+use crate::database::tables::{posts_table as table, posts_tags_table, tags_table};
+use crate::database::SortOrder;
 use crate::lib::{Consequence, EntityError};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -43,8 +46,66 @@ impl PostEntity {
             .map(Ok)?
     }
 
-    pub fn admin_all(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
-        Ok(table.filter(dsl::deleted_at.is_null()).load(conn)?)
+    pub fn get_all(
+        conn: &MysqlConnection,
+        can_see_hidden: bool,
+        tag: Option<String>,
+        search: Option<String>,
+        sort: Option<SortOrder>,
+        _tape: Option<String>, // type
+        limit: Option<u32>,
+        offset: Option<u32>,
+    ) -> Consequence<Vec<Self>> {
+        let mut query = table
+            .left_join(posts_tags_table.inner_join(tags_table))
+            .into_boxed();
+
+        // filter out deleted
+        query = query.filter(dsl::deleted_at.is_null());
+
+        // filter out hidden
+        if !can_see_hidden {
+            query = query.filter(dsl::hidden_at.is_null());
+        }
+
+        // filter on tag
+        if let Some(t) = tag {
+            query = query.filter(tags::label.eq(t.to_string()));
+        }
+
+        // filter on the search term given (in title)
+        if let Some(s) = search {
+            query = query.filter(dsl::title.like(format!("%{}%", s)));
+        }
+
+        // order by
+        if let Some(s) = sort {
+            match s {
+                SortOrder::New => query = query.order(dsl::created_at.desc()),
+                SortOrder::Old => query = query.order(dsl::created_at.asc()),
+                SortOrder::HighScore => query = query.order(dsl::score.desc()),
+                SortOrder::LowScore => query = query.order(dsl::score.asc()),
+            }
+        }
+
+        // limit the results
+        if let Some(l) = limit {
+            query = query.limit(l as i64);
+        }
+
+        // offset the results
+        if let Some(o) = offset {
+            if limit.is_none() {
+                query = query.limit(10_000);
+            }
+            query = query.offset(o as i64);
+        }
+
+        Ok(query
+            .load::<(PostEntity, Option<(RelPostTagEntity, TagEntity)>)>(conn)?
+            .into_iter()
+            .map(move |(post_entity, _)| post_entity)
+            .collect::<Vec<Self>>())
     }
 
     pub fn get_deleted(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
@@ -194,20 +255,23 @@ impl PostEntity {
 }
 
 impl Post {
-    pub fn all(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
-        let mut entities = PostEntity::all(conn)?;
+    pub fn all(
+        conn: &MysqlConnection,
+        can_see_hidden: bool,
+        tag: Option<String>,
+        search: Option<String>,
+        sort: Option<SortOrder>,
+        tape: Option<String>, // type
+        limit: Option<u32>,
+        offset: Option<u32>,
+    ) -> Consequence<Vec<Self>> {
+        let entities =
+            PostEntity::get_all(conn, can_see_hidden, tag, search, sort, tape, limit, offset)?;
         let posts = entities
-            .drain(..)
-            .map(|post_entity| Post::from(post_entity))
+            .into_iter()
+            .map(move |post_entity| Post::from(post_entity))
             .collect::<Vec<Self>>();
         Ok(posts)
-    }
-
-    pub fn admin_all(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
-        Ok(PostEntity::admin_all(conn)?
-            .drain(..)
-            .map(|post_entity| Post::from(post_entity))
-            .collect::<Vec<Self>>())
     }
 
     pub fn set_user_info(&mut self, conn: &MysqlConnection, user_id: &u32) {

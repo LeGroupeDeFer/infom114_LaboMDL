@@ -9,10 +9,12 @@ pub mod tables;
 
 use crate::conf::env_setting;
 use crate::diesel::Connection;
+use crate::lib::EntityError;
 use diesel::MysqlConnection;
 use dotenv::dotenv;
 use rocket::config::Value;
 use rocket_contrib::databases::diesel;
+use serde::export::TryFrom;
 use std::collections::HashMap;
 
 // --------------------- DB OBJECT --------------------------------------------
@@ -74,4 +76,25 @@ pub enum Data<T> {
     Existing(T),
     Inserted(T),
     Updated(T),
+}
+
+pub enum SortOrder {
+    New,
+    Old,
+    HighScore,
+    LowScore,
+}
+
+impl TryFrom<&str> for SortOrder {
+    type Error = EntityError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "new" => Ok(Self::New),
+            "old" => Ok(Self::Old),
+            "top" => Ok(Self::HighScore),
+            "low" => Ok(Self::LowScore),
+            _ => Err(EntityError::InvalidAttribute),
+        }
+    }
 }

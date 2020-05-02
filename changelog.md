@@ -2,6 +2,12 @@
 
 Summary of implemented features classified by release (github tag)
 
+## [0.3.1] - 2020-05-02
+
+- fix issue #44 : sort posts by date + tests
+- fix issue #24 : sort posts with keyword in title + tests
+- implement limit & offset on route GET `/api/v1/posts` + tests
+
 ## [0.3.0] - 2020-04-30
 
 - fix issue #67 : implement post update + tests
