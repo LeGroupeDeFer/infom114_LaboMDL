@@ -550,7 +550,6 @@ fn create_post_empty_content() {
     // clean database
     let client = init::clean_client();
     init::seed();
-    let conn = init::database_connection();
 
     // login
     let auth_token_header = init::login_admin();

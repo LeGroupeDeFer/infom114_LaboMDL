@@ -181,6 +181,29 @@ fn upvote_post() {
 }
 
 #[test]
+fn upvote_and_remove_vote() {
+    let client = init::clean_client();
+    init::seed();
+    let post = init::get_post_entity(false, false, false);
+    let mut tmp_post: Post;
+
+    let (user1, password) = init::get_user(true);
+    let auth_token_user1 = init::login(&user1.email, &password);
+
+    let mut r1 = send_vote(&client, auth_token_user1.clone(), &post.id, 1);
+    assert_eq!(r1.status(), Status::Ok);
+    tmp_post = serde_json::from_str(r1.body_string().unwrap().as_str()).unwrap();
+    assert_eq!(tmp_post.score, 1);
+    assert_eq!(tmp_post.user_vote, Some(1));
+
+    let mut r2 = send_vote(&client, auth_token_user1.clone(), &post.id, 0);
+    assert_eq!(r2.status(), Status::Ok);
+    tmp_post = serde_json::from_str(r2.body_string().unwrap().as_str()).unwrap();
+    assert_eq!(tmp_post.score, 0);
+    assert_eq!(tmp_post.user_vote, Some(0));
+}
+
+#[test]
 fn upvote_post_unauthenticated() {
     let client = init::clean_client();
     init::seed();

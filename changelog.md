@@ -8,6 +8,7 @@ Summary of implemented features classified by release (github tag)
 - fix issue #24 : sort posts with keyword in title + tests
 - implement limit & offset on route GET `/api/v1/posts` + tests
 - fix issue #84 : prevent creation of post if empty string in title or content
+- fix issue #83 : fix bug 404 & return Post struct after voting
 
 ## [0.3.0] - 2020-04-30
 

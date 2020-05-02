@@ -204,7 +204,7 @@ fn updown_vote(
     post_guard: PostGuard,
     _post_id: u32,
     data: Json<ChangeVote>,
-) -> ApiResult<()> {
+) -> ApiResult<Post> {
     if post_guard.post().is_deleted() {
         Err(EntityError::InvalidID)?;
     } else if false
@@ -220,7 +220,9 @@ fn updown_vote(
         .post()
         .upvote(&*conn, &auth.sub, vote_request.vote)?;
 
-    OK()
+    let mut post = Post::from(PostEntity::by_id(&*conn, &post_guard.post().id)??);
+    post.set_user_info(&*conn, &auth.sub);
+    Ok(Json(post))
 }
 
 #[post("/api/v1/post/<_post_id>/hide")]
