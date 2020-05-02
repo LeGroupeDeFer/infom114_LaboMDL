@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import api from '../../lib/api';
 
 import Button from 'react-bootstrap/Button';
@@ -7,15 +7,12 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Modal from 'react-bootstrap/Modal';
-import InputGroup from 'react-bootstrap/InputGroup';
-import FormControl from 'react-bootstrap/FormControl';
-import Form from 'react-bootstrap/Form';
 
-
-const User = ({user}) => {
+const User = ({user, roles}) => {
 
     const [modalShow, setModalShow] = useState(false);
-
+    console.log(user);
+    console.log(roles);
     return (
         <>
         <Card style={{ width: '100vw' }}>
@@ -25,44 +22,55 @@ const User = ({user}) => {
                 <Col>
                   <Card.Title>{user.lastname} {user.firstname}</Card.Title>
                 </Col>
-                <Col md="auto">
-                  <Button variant="secondary" className="mr-3" onClick={() => setModalShow(true)} >Modifier</Button> 
-                  <Button>Voir profil</Button>
-                </Col>
+                <Button variant="primary" className="mr-3" onClick={() => setModalShow(true)}>Gérer les roles</Button>    
+                <Button variant="secondary">Voir profil</Button>
               </Row>
             </Container>
           </Card.Body>
         </Card>
-    
-        <UpdateUserModal
-            show={modalShow}
-            onHide={() => setModalShow(false)}
-            handleClose={() => setModalShow(false)}
-          />
+
+        <EditModal
+        user={user}
+        roles={roles}
+        show={modalShow}
+        onHide={() => setModalShow(false)}
+        handleClose={() => setModalShow(false)}
+        />
         </>
     )
 }
 
-const UpdateUserModal = (props) => {
+const EditModal = ({user, show, onHide, roles, handleClose}) => {
+    console.log(roles)
     return (
         <Modal
-          onHide={props.onHide}
-          show={props.show}
-          size="lg"
-          aria-labelledby="contained-modal-title-vcenter"
-          centered
+        onHide={onHide}
+        show={show}
+        size="lg"
+        aria-labelledby="contained-modal-title-vcenter"
+        centered
         >
-          <Modal.Body>
-            <p>Roles</p>
-            <Form>
-                <Form.Check 
-                    type="checkbox"
-                    label="TATATATAAAA"
-                />  
-                </Form>
-          </Modal.Body>
+        <Modal.Body>
+        <Container>
+            <Row>
+                <Col>
+                    {user.roles.map( (role, i) => {
+                        return <p key={i}>{role.name}</p>
+                    })}
+                </Col>
+                <Col>
+                    {user.lastname} {user.firstname}
+                </Col>
+                <Col>
+                    {roles.map( (role, i) => {
+                        return <p key={i}>{role.name}</p>
+                    })}
+                </Col>
+            </Row>
+        </Container>
+        </Modal.Body>
         </Modal>
-      );
+        );
 }
 
 export default User;

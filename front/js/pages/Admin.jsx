@@ -70,14 +70,22 @@ const MenuBar = ({ currentMenu, onClick, menuList }) => {
 const UsersPage = () => {
 
   const [users, setUsers] = useState([]);
-  
+  const [roles, setRoles] = useState([]);
+
   useEffect(() => {
     const fetchUsers = async () => {
       let users = await api.users();
       setUsers(users);
     }
 
+    const fetchRoles = async () => {
+      let roles = await api.roles()
+      setRoles(roles);
+    }
+
     fetchUsers();
+    fetchRoles();
+
   }, [])
 
   return (
@@ -86,7 +94,7 @@ const UsersPage = () => {
         ? users.map((user) => {
           return (
             <Row key={user.id} className="mb-3">
-              <User user={user}/>
+              <User user={user} roles={roles}/>
             </Row>
           )
         })
@@ -211,7 +219,6 @@ const TagsPage = () => {
 
   useEffect(() => {
     setGetPromise(api.tags());
-    console.log('getting tags for first time')
   }, []);
 
   // Get the tags
