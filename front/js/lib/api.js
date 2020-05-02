@@ -164,7 +164,7 @@ Object.assign(auth, {
   },
 });
 
-function posts(tags = [], search = []) {
+function posts() {
   return api('/posts');
 }
 
@@ -180,10 +180,15 @@ function tags(id) {
   return api('/tags/');
 }
 
+function addPost(post) {
+  return api(`/post`, { method: 'POST', body: post });
+}
+
 api.posts = posts;
 api.getPost = getPost;
 api.auth = auth;
 api.tags = tags;
 api.vote = vote;
+api.addPost = addPost;
 
 export default api;

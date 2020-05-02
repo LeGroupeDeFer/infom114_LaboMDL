@@ -19,9 +19,7 @@ const Post = ({
   author,
   score,
   type,
-  previewLength,
   createdAt,
-  currentFilter,
   comments,
   tags,
   userVote,
@@ -29,6 +27,7 @@ const Post = ({
 }) => {
   const [commentEditors, setCommentEditors] = useState({});
   const [commentList, setCommentList] = useState(comments);
+
 
   let vote = "";
   switch (userVote) {
@@ -44,7 +43,8 @@ const Post = ({
   const [scoreState, setscoreState] = useState(score);
 
   function addComment(comment) {
-    setComments((cmmt) =>
+
+    setCommentList((cmmt) =>
       [
         {
           id: Date.now(),
@@ -72,7 +72,7 @@ const Post = ({
   function addReply(comment, parentId, ancestorId) {
     let newComments = [...commentList];
     addReplyRecursively(newComments, comment, parentId, ancestorId);
-    setComments(newComments);
+    setCommentList(newComments);
   }
 
   function addReplyRecursively(comments, comment, parentId, ancestorId) {
@@ -287,7 +287,7 @@ const Post = ({
           toggle_comment_editor={toggleCommentEditor}
           add_comment_editor={addCommentEditor}
           comment_editors={commentEditors}
-          comments={comments}
+          comments={commentList}
         />
       </div>
       <br />

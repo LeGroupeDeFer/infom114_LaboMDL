@@ -14,8 +14,6 @@ import { useRequest } from '../hooks';
 
 const CreatePost = () => {
   const [error, data] = useRequest(api.tags, []);
-
-
   const tags = (data ? data.tags : []).map((tag) => {
     return {
       id: tag.id,
@@ -24,7 +22,7 @@ const CreatePost = () => {
         <span>
           <FaTag /> {tag.label}
         </span>
-      )
+      ),
     };
   });
 
@@ -39,13 +37,46 @@ const CreatePost = () => {
 };
 
 function CreateForm(tags) {
-  const [category, setCategory] = useState(null);
+  const [selectedTags, setSelectedTags] = useState(null);
+  const [selectedTypes, setSelectedTypes] = useState(null);
 
-  const cats = [
+  const [post, setPost] = useState({
+    title: '',
+    content: '',
+    type: '',
+    tags: [],
+    options: ['', ''],
+  });
+
+  const typeList = [
     { value: 'idea', label: 'Idée' },
     { value: 'info', label: 'Information' },
     { value: 'poll', label: 'Vote' },
   ];
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setPost({ ...post, [name]: value });
+  };
+
+  function submitHandler(e) {
+    e.preventDefault();
+
+    // Not updated immediately :/
+    if (post.type != 'poll') {
+      setPost({ ...post, options: [] });
+    }
+
+    const addPost = () => {
+      api
+        .addPost(post)
+        .then(() => {
+          console.log('Added');
+        })
+        .catch((error) => {});
+    };
+    addPost();
+  }
 
   // I didn't find another way to add styles to the select
   const primary = '#A0C55F';
@@ -65,25 +96,38 @@ function CreateForm(tags) {
     }),
   };
 
-  function handleCategoryChange(selectedOpttion) {
-    setCategory(selectedOpttion.value);
+  function handleSelectTypeChange(selectedOpttion) {
+    setSelectedTypes(selectedOpttion);
+    setPost({ ...post, type: selectedOpttion.value });
+  }
+
+  function handleSelectTagChange(selectedOpttion) {
+    setSelectedTags(selectedOpttion);
+    setPost({ ...post, tags: selectedOpttion.map((tag) => tag.value) });
   }
 
   return (
     <Card>
       <Card.Body>
-        <Form>
+        <Form onSubmit={submitHandler}>
           <Row>
             <Col>
               <Select
-                options={cats}
+                options={typeList}
                 placeholder={'Sélectionner une catégorie'}
                 styles={customStyles}
-                onChange={handleCategoryChange}
+                onChange={handleSelectTypeChange}
+                value={selectedTypes}
               />
             </Col>
             <Col>
-              <Form.Control type="text" placeholder="Titre du post" />
+              <Form.Control
+                type="text"
+                placeholder="Titre du post"
+                onChange={handleInputChange}
+                name="title"
+                value={post.title}
+              />
             </Col>
           </Row>
 
@@ -94,48 +138,63 @@ function CreateForm(tags) {
             isMulti
             placeholder={'Sélectionner un ou plusieurs tags'}
             styles={customStyles}
+            onChange={handleSelectTagChange}
+            value={selectedTags}
           />
 
           <br />
 
           <Form.Group>
-            <Form.Control as="textarea" rows="5" placeholder="Texte.." />
+            <Form.Control
+              as="textarea"
+              rows="5"
+              placeholder="Texte.."
+              onChange={handleInputChange}
+              name="content"
+              value={post.content}
+            />
           </Form.Group>
 
-          {category == 'poll' && <PollSection />}
+          {post.type == 'poll' && (
+            <PollSection set_post={setPost} post={post} />
+          )}
 
-          <Button variant="primary" className="mt-1 float-right">
+          <Button variant="primary" className="mt-1 float-right" type="submit">
             Créer
           </Button>
-
         </Form>
       </Card.Body>
     </Card>
   );
 }
 
-function PollSection() {
-  const [pollOptions, setPollOptions] = useState(['', '']);
-
+function PollSection(props) {
   function addOption() {
-    setPollOptions(pollOptions.concat(['']));
+    props.set_post((post) => {
+      return { ...post, options: post.options.concat(['']) };
+    });
   }
+
   function removeOption(index) {
-    var tmp = [...pollOptions];
+    var tmp = [...props.post.options];
     tmp.splice(index, 1);
-    setPollOptions(tmp);
+    props.set_post((post) => {
+      return { ...post, options: tmp };
+    });
   }
 
   function updateOption(index, val) {
-    var tmp = [...pollOptions];
+    var tmp = [...props.post.options];
     tmp[index] = val;
-    setPollOptions(tmp);
+    props.set_post((post) => {
+      return { ...post, options: tmp };
+    });
   }
 
   return (
     <>
       <Form.Group>
-        {pollOptions.map((val, index) => (
+        {props.post.options.map((val, index) => (
           <div key={index}>
             {index > 1 ? (
               <>
@@ -157,19 +216,19 @@ function PollSection() {
                 </InputGroup>
               </>
             ) : (
-                <Form.Control
-                  type="text"
-                  placeholder={'Option ' + (index + 1)}
-                  value={val}
-                  onChange={(e) => updateOption(index, e.target.value)}
-                />
-              )}
+              <Form.Control
+                type="text"
+                placeholder={'Option ' + (index + 1)}
+                value={val}
+                onChange={(e) => updateOption(index, e.target.value)}
+              />
+            )}
 
             <br />
           </div>
         ))}
 
-        {pollOptions.length < 5 && (
+        {props.post.options.length < 5 && (
           <a href="#" onClick={addOption}>
             <FaPlusSquare className="mr-1" size={20} />
             Ajouter une option

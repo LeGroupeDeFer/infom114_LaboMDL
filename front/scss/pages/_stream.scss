@@ -1,33 +1,37 @@
 @use '../themes'as *;
 
 #filter-bar .active {
-    background-color: $primary;
-    border-color: $primary;
+  background-color: $primary;
+  border-color: $primary;
 }
 
 #search-bar {
-    z-index: 2;
+  z-index: 2;
 }
 
 .dropdown-item:hover {
-    background-color: $primary;
+  background-color: $primary;
 }
 
 .modal-80w {
-    width: 75%;
-    max-width: none;
-    margin: 0 auto;
+  width: 75%;
+  max-width: none;
+  margin: 0 auto;
 }
 
 .modal-header {
-    border-bottom: none;
-    padding: 0.5rem 1rem 0rem 1rem;
+  border-bottom: none;
+  padding: 0.5rem 1rem 0rem 1rem;
 }
 
 .modal-body {
-    padding: 0rem 1rem 1rem 1rem;
+  padding: 0rem 1rem 1rem 1rem;
 }
 
 #sort-post.dropdown-toggle:after {
-    content: none
+  content: none;
+}
+
+.post {
+  width: 100%;
 }
