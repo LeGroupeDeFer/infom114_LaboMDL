@@ -40,6 +40,8 @@ fn get_posts_limit_and_offset(
     serde_json::from_str(&data).unwrap()
 }
 
+// todo : read all post of a certain type
+
 #[test]
 fn read_all_posts_while_logged_in() {
     // clean database
@@ -480,12 +482,6 @@ fn read_all_posts_without_being_logged_in() {
     );
 }
 
-// read all posts with a search term
-// read all posts related to a tag
-// read all posts with a sorting criteria
-// read all post of a certain type
-// read all post with limit and offset
-
 #[test]
 fn create_post() {
     // clean database
@@ -519,6 +515,62 @@ fn create_post() {
     assert_eq!(p.content, new_post_content);
 
     assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
+}
+
+#[test]
+fn create_post_empty_title() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    // login
+    let auth_token_header = init::login_admin();
+
+    let new_post_title = "";
+    let new_post_content = "This is a new content for the post";
+
+    let post_json_data = format!(
+        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
+        new_post_title, new_post_content
+    );
+
+    let req = client
+        .post(POST_ROUTE)
+        .header(ContentType::JSON)
+        .header(auth_token_header)
+        .body(post_json_data);
+    let response = req.dispatch();
+
+    assert_eq!(response.status(), Status::BadRequest);
+}
+
+#[test]
+fn create_post_empty_content() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    // login
+    let auth_token_header = init::login_admin();
+
+    let new_post_title = "New title";
+    let new_post_content = "";
+
+    let post_json_data = format!(
+        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
+        new_post_title, new_post_content
+    );
+
+    let req = client
+        .post(POST_ROUTE)
+        .header(ContentType::JSON)
+        .header(auth_token_header)
+        .body(post_json_data);
+    let response = req.dispatch();
+
+    assert_eq!(response.status(), Status::BadRequest);
 }
 
 #[test]

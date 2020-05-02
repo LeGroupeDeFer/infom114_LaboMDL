@@ -35,6 +35,10 @@ pub fn allowed_paths() -> Vec<&'static str> {
 fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult<Post> {
     let post_request = data.into_inner();
 
+    if post_request.title == "" || post_request.content == "" {
+        Err(EntityError::InvalidAttribute)?;
+    }
+
     let new_post = PostMinima {
         title: post_request.title,
         content: post_request.content,
