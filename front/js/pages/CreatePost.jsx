@@ -11,9 +11,12 @@ import Col from 'react-bootstrap/Col';
 import InputGroup from 'react-bootstrap/InputGroup';
 import api from '../lib/api';
 import { useRequest } from '../hooks';
+import { useHistory } from 'react-router-dom';
+import Spinner from 'react-bootstrap/Spinner';
 
 const CreatePost = () => {
   const [error, data] = useRequest(api.tags, []);
+
   const tags = (data ? data.tags : []).map((tag) => {
     return {
       id: tag.id,
@@ -37,6 +40,9 @@ const CreatePost = () => {
 };
 
 function CreateForm(tags) {
+  const history = useHistory();
+  const [loading, setLoading] = useState(false);
+  const [submitBtnText, setSubmitBtnText] = useState('Créer');
   const [selectedTags, setSelectedTags] = useState(null);
   const [selectedTypes, setSelectedTypes] = useState(null);
 
@@ -62,6 +68,9 @@ function CreateForm(tags) {
   function submitHandler(e) {
     e.preventDefault();
 
+    setLoading(true);
+    setSubmitBtnText('');
+
     // Not updated immediately :/
     if (post.type != 'poll') {
       setPost({ ...post, options: [] });
@@ -70,8 +79,8 @@ function CreateForm(tags) {
     const addPost = () => {
       api
         .addPost(post)
-        .then(() => {
-          console.log('Added');
+        .then((newPost) => {
+          history.push(`/post/${newPost.id}`);
         })
         .catch((error) => {});
     };
@@ -159,8 +168,22 @@ function CreateForm(tags) {
             <PollSection set_post={setPost} post={post} />
           )}
 
-          <Button variant="primary" className="mt-1 float-right" type="submit">
-            Créer
+          <Button
+            variant="primary"
+            className="mt-1 float-right"
+            type="submit"
+            disabled={loading}
+          >
+            {submitBtnText}
+            {loading && (
+              <Spinner
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+              />
+            )}
           </Button>
         </Form>
       </Card.Body>
