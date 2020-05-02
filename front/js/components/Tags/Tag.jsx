@@ -28,9 +28,10 @@ const Tag = ({name, deleteTag, setNotification}) => {
         setLabel(newLabel);
       }
     }).catch((error) =>{
+      let reason = error.reason == null ? "La demande n'a pu être traitée" : error.reason;
       setNotification("");
-      setNotification(error.reason);
-      console.log(error.reason);
+      setNotification(reason);
+      console.log(error);
     });
   };
 

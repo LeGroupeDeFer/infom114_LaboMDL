@@ -7,7 +7,7 @@ import Row from 'react-bootstrap/Row';
 
 import Tag from '../components/Tags/Tag';
 import Role from '../components/Tags/Role';
-import Toast from '../components/Tags/Toast';
+import Toast from '../components/Tags/Notification';
 import AddForm from '../components/Tags/AddForm';
 
 
@@ -26,7 +26,7 @@ function Admin(props) {
         position: 'relative',
       }}>
       <br />
-      <div style={{ position: 'absolute', top: 0, right: 0, 'z-index': 1 }}></div>
+      <div style={{ position: 'absolute', top: 0, right: 0, 'zIndex': 1 }}></div>
 
       <Row className='justify-content-md-center'>
         <MenuBar onClick={setMenu} currentMenu={menu} />
@@ -74,18 +74,23 @@ const RolesPage = () => {
   useEffect(() => {
 
     const fetchRoles = async () => {
-      let roles = await api.roles();
+      let roles = await api.roles()
       setRoles(roles);
+      console.log(roles);
     }
 
     const fetchCapabilities = async () => {
       let capabilities = await api.capabilities();
       setCapabilities(capabilities);
+      console.log(capabilities);
+      
     }
 
     const fetchUsers = async () => {
       let users = await api.users();
       setUsers(users);
+      console.log(users);
+      
     }
 
     fetchUsers();
@@ -116,9 +121,10 @@ const RolesPage = () => {
         setRoles(newRoles); c
 
       }).catch((error) => {
+        let reason = error.reason == null ? "La demande n'a pu être traitée" : error.reason;
         setNotification('');
-        setNotification(error.reason);
-        console.log(error.reason);
+        setNotification(reason);
+        console.log(error);
         
       });
     }
@@ -133,9 +139,10 @@ const RolesPage = () => {
         let remainingRoles = roles.filter(remainingRole => remainingRole.id !== id);
         setRoles(remainingRoles);  //remainingRoles is correct but it does not rerender well
       }).catch((error) => {
+        let reason = error.reason == null ? "La demande n'a pu être traitée" : error.reason
         setNotification("");
-        setNotification(error.reason);
-        console.log(error.reason);
+        setNotification(reason);
+        console.log(error);
       });
     }
     deleteRole(roleId);
@@ -216,8 +223,9 @@ const TagsPage = () => {
       }
     }).catch(e => {
       if (!isRendering) {
+        let reason = e.reason == null ? "La demande n'a pu être traitée" : error.reason
         setNotification("");
-        setNotification(e.reason);
+        setNotification(reason);
       }
     }).finally(() => {
       if (!isRendering) {
@@ -238,9 +246,10 @@ const TagsPage = () => {
         const newTags = [...tags, { label, id }];
         setTags(newTags);
       }).catch((error) => {
+        let reason = error.reason == null ? "La demande n'a pu être traitée" : error.reason; 
         setNotification("");
-        setNotification(error.reason);
-        console.log(error.reason);
+        setNotification(reason);
+        console.log(error);
       });
     }
     //send data to server

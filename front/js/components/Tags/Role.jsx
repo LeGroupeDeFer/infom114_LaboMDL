@@ -28,8 +28,11 @@ const Role = ({ roleId, roleName, roleColor, roleCapabilities, deleteRole, setNo
       setRole({id: role.id, name:newName, color:role.color, capabilities:role.capabilities});
       
     }).catch((error) => {
+      let reason = error.reason == null ? "La demande n'a pu être traitée" : error.reason
       setNotification("");
-      setNotification(error.reason);
+      setNotification(reason);
+      console.log(reason);
+      
     });
   };
 

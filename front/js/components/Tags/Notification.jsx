@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import Toast from 'react-bootstrap/Toast';
 
-function TagToast({text}) {
+function Notification({text}) {
     const [show, setShow] = useState(true);
     
     useEffect(() =>{ 
@@ -24,4 +24,4 @@ function TagToast({text}) {
     )
 }
 
-export default TagToast
+export default Notification
