@@ -21,7 +21,7 @@ pub fn collect() -> Vec<Route> {
 ///
 /// The user needs to be authenticated, but this call do not require a special capability
 /// All the capability stored in database are responded into the json format
-#[get("/api/v1/capability")]
+#[get("/api/v1/capabilities")]
 pub fn get(conn: DBConnection, _auth: Auth) -> ApiResponse {
     ApiResponse::new(Status::Ok, json!(CapabilityEntity::all(&conn).unwrap()))
 }
