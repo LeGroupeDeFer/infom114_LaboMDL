@@ -210,7 +210,7 @@ const Stream = () => {
           <Modal.Header closeButton></Modal.Header>
           <Modal.Body>
             {postModal ? (
-              <Post is_logged={isLogged} post_data={postModal} />
+              <Post {...postModal} is_logged={isLogged} />
             ) : (
               'Chargement des données...'
             )}
