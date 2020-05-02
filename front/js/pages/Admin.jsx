@@ -5,10 +5,11 @@ import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Row from 'react-bootstrap/Row';
 
-import Tag from '../components/Tags/Tag';
-import Role from '../components/Tags/Role';
-import Toast from '../components/Tags/Notification';
-import AddForm from '../components/Tags/AddForm';
+import Tag from '../components/Admin/Tag';
+import Role from '../components/Admin/Role';
+import Toast from '../components/Admin/Notification';
+import AddForm from '../components/Admin/AddForm';
+import User from '../components/Admin/User';
 
 
 import api from '../lib/api';
@@ -17,8 +18,22 @@ import 'regenerator-runtime';
 
 function Admin(props) {
 
-  const [menu, setMenu] = useState('tag');
-  const Page = () => menu == 'tag' ? <TagsPage /> : <RolesPage />;
+  const menuList = ['tags', 'roles', 'users', 'reporting']
+  const [currentMenu, setCurrentMenu] = useState('tags');
+  const Page = () => {
+    if (currentMenu == 'tags') {
+      return <TagsPage />;
+    }
+    else if (currentMenu == 'users') {
+      return <UsersPage />;
+    }
+    else if (currentMenu == 'reporting') {
+      return <p>reporting page</p>;
+    }
+    else {
+      return <RolesPage />;
+    }
+  } 
 
   return (
     <Container
@@ -29,7 +44,7 @@ function Admin(props) {
       <div style={{ position: 'absolute', top: 0, right: 0, 'zIndex': 1 }}></div>
 
       <Row className='justify-content-md-center'>
-        <MenuBar onClick={setMenu} currentMenu={menu} />
+        <MenuBar onClick={setCurrentMenu} currentMenu={currentMenu} menuList={menuList}/>
       </Row>
       <br />
       <div>
@@ -39,28 +54,47 @@ function Admin(props) {
   );
 }
 
-const MenuBar = ({ currentMenu, onClick }) => {
-
+const MenuBar = ({ currentMenu, onClick, menuList }) => {
+  
   return (
     <ButtonGroup id='menu-bar'>
-      <Button
-        variant='secondary'
-        className={currentMenu == 'tag' ? 'active' : ''}
-        onClick={() => onClick('tag')}
-      >
-        Tags
-      </Button>
-      <Button
-        variant='secondary'
-        className={currentMenu == 'roles' ? 'active' : ''}
-        onClick={() => onClick('roles')}
-      >
-        Roles
-      </Button>
+      { menuList.map((menu, i) => {
+        return <Button key={i} variant="secondary" className={currentMenu == menu ? 'active' : ''} onClick={() => onClick(menu)}>{menu}</Button>
+      })
+      }
     </ButtonGroup>
   );
 
 };
+
+const UsersPage = () => {
+
+  const [users, setUsers] = useState([]);
+  
+  useEffect(() => {
+    const fetchUsers = async () => {
+      let users = await api.users();
+      setUsers(users);
+    }
+
+    fetchUsers();
+  }, [])
+
+  return (
+  <>
+      {users.length
+        ? users.map((user) => {
+          return (
+            <Row key={user.id} className="mb-3">
+              <User name={user.firstname}/>
+            </Row>
+          )
+        })
+        : <h1>No users</h1>
+      }
+  </>
+  )
+}
 
 const RolesPage = () => {
 
@@ -85,15 +119,7 @@ const RolesPage = () => {
       console.log(capabilities);
       
     }
-
-    const fetchUsers = async () => {
-      let users = await api.users();
-      setUsers(users);
-      console.log(users);
-      
-    }
-
-    fetchUsers();
+    
     fetchRoles();
     fetchCapabilities();
   }, [])
@@ -172,7 +198,6 @@ const RolesPage = () => {
 };
 
 const TagsPage = () => {
-
   const [tags, setTags] = useState([]);
   const [deletedTag, setDeletedTag] = useState(null);
   const [getPromise, setGetPromise] = useState(null);
@@ -186,6 +211,7 @@ const TagsPage = () => {
 
   useEffect(() => {
     setGetPromise(api.tags());
+    console.log('getting tags for first time')
   }, []);
 
   // Get the tags
