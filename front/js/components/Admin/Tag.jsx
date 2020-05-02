@@ -47,7 +47,7 @@ const Tag = ({name, deleteTag, setNotification}) => {
             </Col>
 
             <Col md="auto">
-              <Button variant="secondary" onClick={() => setModalShow(true)} >Renommer</Button> 
+              <Button variant="secondary" className="mr-3" onClick={() => setModalShow(true)} >Renommer</Button> 
               <Button variant="danger" value={label} onClick={deleteTag}>Supprimer</Button>
             </Col>
           </Row>

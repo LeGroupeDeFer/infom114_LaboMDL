@@ -52,8 +52,8 @@ const Role = ({ roleId, roleName, roleColor, roleCapabilities, deleteRole, setNo
               </Col>
 
               <Col md="auto">
-                <Button variant="secondary" onClick={() => setEditModalShow(true)} >Modifier</Button>
-                <Button variant="secondary" onClick={() => setRenameModalShow(true)} >Renommer</Button>
+                <Button variant="secondary" className="mr-3" onClick={() => setEditModalShow(true)} >Modifier</Button>
+                <Button variant="primary" className="mr-3" onClick={() => setRenameModalShow(true)} >Renommer</Button>
                 <Button variant="danger" value={role.name} onClick={() => deleteRole(role.id)} >Supprimer</Button>
               </Col>
             </Row>

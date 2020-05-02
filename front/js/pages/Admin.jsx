@@ -86,7 +86,7 @@ const UsersPage = () => {
         ? users.map((user) => {
           return (
             <Row key={user.id} className="mb-3">
-              <User name={user.firstname}/>
+              <User user={user}/>
             </Row>
           )
         })
