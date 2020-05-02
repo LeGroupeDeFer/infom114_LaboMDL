@@ -43,10 +43,9 @@ const Stream = () => {
         <span>
           <FaTag /> {tag.label}
         </span>
-      )
+      ),
     };
   });
-
 
   // const isLogged = 1;
 
@@ -71,12 +70,13 @@ const Stream = () => {
   function showModal(postId) {
     setPostModal(null);
     const fetchPost = () => {
-      api.getPost(postId).then(post => {
-        setPostModal(post);
-      }).catch((error) => {
-
-      });
-    }
+      api
+        .getPost(postId)
+        .then((post) => {
+          setPostModal(post);
+        })
+        .catch((error) => {});
+    };
 
     fetchPost();
     setModalDisplayed(true);
@@ -164,7 +164,11 @@ const Stream = () => {
         <br />
         <Row>
           <Col xs={10} sm={11}>
-            <SearchBar handle_change={handleChange} tags={tags} tagList={tagList} />
+            <SearchBar
+              handle_change={handleChange}
+              tags={tags}
+              tagList={tagList}
+            />
           </Col>
           <Col xs={2} sm={1}>
             <Link to="/submit">
@@ -205,7 +209,11 @@ const Stream = () => {
         >
           <Modal.Header closeButton></Modal.Header>
           <Modal.Body>
-            {postModal ? <Post is_logged={isLogged} post_data={postModal} /> : "Chargement des données..."}
+            {postModal ? (
+              <Post is_logged={isLogged} post_data={postModal} />
+            ) : (
+              'Chargement des données...'
+            )}
           </Modal.Body>
         </Modal>
       </Container>
@@ -214,7 +222,6 @@ const Stream = () => {
     </>
   );
 };
-
 
 // PostList :: Object => Component
 const PostList = (props) => {
@@ -233,8 +240,6 @@ const PostList = (props) => {
 
 // SearchBar :: None => Component
 const SearchBar = (props) => {
-
-
   const primary = '#A0C55F';
 
   const customStyles = {
