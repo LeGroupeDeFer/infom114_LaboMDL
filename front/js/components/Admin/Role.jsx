@@ -174,8 +174,6 @@ function EditModal({ onHide, show, roleToModify, allCapabilities, setRole, setNo
       return e;
     });
     setCapabilities(tmp)
-    //capability.assigned = !capability.assigned; //TODO PAS BON, pas modifier la dom
-    //api.roles.edit(roleToModify.id, roleToModify.name, roleToModify.color, [...roleToModify.capabilities, capability])
   }
 
   return (
@@ -186,31 +184,31 @@ function EditModal({ onHide, show, roleToModify, allCapabilities, setRole, setNo
       aria-labelledby="contained-modal-title-vcenter"
       centered
     >
-      <Modal.Header>
-        Modifier les capabilities du role {roleToModify.name}
+      <Modal.Header closeButton>        
+        <Modal.Title>Capabilities du role {roleToModify.name}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
+        <hr />
         {capabilities.map(capability => {
             return (
-              <Card>
-                <Card.Body>
-                  <Row>
-                    <Col>
-                      {capability.name}
-                    </Col>
-                    <Col md="auto">
+              <>
+              <Row>
+                <Col>
+                  {capability.name}
+                </Col>
+                <Col md="auto">
 
-                      <Form.Check 
-                        type="switch"
-                        id={ capability.id }
-                        label={ " " }
-                        checked={ capability.assigned }
-                        onClick={ e => handleEdit(e, capability) }
-                      />
-                    </Col>
-                  </Row>
-                </Card.Body>
-              </Card>
+                  <Form.Check 
+                    type="switch"
+                    id={ capability.id }
+                    label={ " " }
+                    checked={ capability.assigned }
+                    onClick={ e => handleEdit(e, capability) }
+                  />
+                </Col>
+              </Row>
+              <hr />
+              </>
             );
           })}
       </Modal.Body>
