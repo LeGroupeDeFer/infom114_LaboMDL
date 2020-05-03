@@ -12,6 +12,13 @@ use crate::database::tables::{posts_table as table, posts_tags_table, tags_table
 use crate::database::SortOrder;
 use crate::lib::{Consequence, EntityError};
 
+
+// TODO - Move this in app state
+const BASE: f64 = 1.414213562;
+const EPOCH: u64 = 1577840400; // 01/01/2020
+const EASING: u64 = 24 * 3600; // 1 day
+
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Post {
     pub id: u32,
@@ -24,6 +31,7 @@ pub struct Post {
     pub deleted: bool,
     pub votes: u64,
     pub score: i64,
+    pub rank: f64,
     pub flags: u64,
     pub author: User,
     pub tags: Vec<String>,
@@ -80,11 +88,13 @@ impl PostEntity {
 
         // order by
         if let Some(s) = sort {
-            match s {
-                SortOrder::New => query = query.order(dsl::created_at.desc()),
-                SortOrder::Old => query = query.order(dsl::created_at.asc()),
-                SortOrder::HighScore => query = query.order(dsl::score.desc()),
-                SortOrder::LowScore => query = query.order(dsl::score.asc()),
+            query = match s {
+                SortOrder::New => query.order(dsl::created_at.desc()),
+                SortOrder::Old => query.order(dsl::created_at.asc()),
+                SortOrder::HighScore => query.order(dsl::score.desc()),
+                SortOrder::LowScore => query.order(dsl::score.asc()),
+                SortOrder::HighRank => query.order(dsl::rank.desc()),
+                SortOrder::LowRank => query.order(dsl::rank.asc()),
             }
         }
 
@@ -125,11 +135,11 @@ impl PostEntity {
     }
 
     pub fn upvote(
-        &self,
+        &mut self,
         conn: &MysqlConnection,
         user_id: &u32,
         vote: i32,
-    ) -> Consequence<Option<i64>> {
+    ) -> Consequence<()> {
         let minima = RelPostVoteMinima {
             post_id: self.id,
             user_id: user_id.clone(),
@@ -156,15 +166,13 @@ impl PostEntity {
         }
 
         // get post score
-        let new_score = self.calculate_score(&conn)?;
-        let votes = self.count_votes(&conn)?;
+        self.score = self.calculate_score(&conn)?;
+        self.votes = self.count_votes(&conn)?;
+        self.rank = self.calculate_rank();
 
         // update self
-        diesel::update(self)
-            .set((dsl::score.eq(new_score), dsl::votes.eq(votes)))
-            .execute(conn)
-            .map(|_| Some(new_score))
-            .map(Ok)?
+        self.update(&conn)?;
+        Ok(())
     }
 
     pub fn calculate_score(&self, conn: &MysqlConnection) -> Consequence<i64> {
@@ -173,6 +181,14 @@ impl PostEntity {
 
     pub fn count_votes(&self, conn: &MysqlConnection) -> Consequence<u64> {
         Ok(RelPostVoteEntity::count_by_post_id(&conn, self.id)? as u64)
+    }
+
+    pub fn calculate_rank(&self) -> f64 {
+        let elapsed = self.created_at.timestamp() as u64 - EPOCH;
+        let logarithm = (self.votes as f64).log(BASE);
+        let order = logarithm;
+
+        order + (elapsed / EASING) as f64
     }
 
     pub fn toggle_visibility(&self, conn: &MysqlConnection) -> Consequence<()> {
@@ -316,6 +332,7 @@ impl From<PostEntity> for Post {
             deleted: pe.deleted_at.is_some(),
             votes: pe.votes,
             score: pe.score,
+            rank: pe.rank,
             flags: RelPostReportEntity::count_by_post_id(&conn, &pe.id).unwrap(),
             author: UserEntity::by_id(&conn, &pe.author_id)
                 .unwrap()

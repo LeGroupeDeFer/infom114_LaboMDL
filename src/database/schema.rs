@@ -57,6 +57,7 @@ table! {
         locked_at -> Nullable<Timestamp>,
         votes -> Unsigned<Bigint>,
         score -> Bigint,
+        rank -> Double,
     }
 }
 

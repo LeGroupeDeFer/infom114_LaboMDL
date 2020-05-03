@@ -216,12 +216,12 @@ fn updown_vote(
 
     let vote_request = data.into_inner();
 
-    post_guard
-        .post()
-        .upvote(&*conn, &auth.sub, vote_request.vote)?;
+    let mut post_entity = post_guard.post_clone();
+    post_entity.upvote(&*conn, &auth.sub, vote_request.vote)?;
 
-    let mut post = Post::from(PostEntity::by_id(&*conn, &post_guard.post().id)??);
+    let mut post = Post::from(post_entity);
     post.set_user_info(&*conn, &auth.sub);
+
     Ok(Json(post))
 }
 

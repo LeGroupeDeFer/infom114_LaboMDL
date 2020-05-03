@@ -1,24 +1,20 @@
 import React, { Suspense, useState, useEffect } from 'react';
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
+import {
+  Container, Row, Col, Button, Modal, ButtonGroup, Dropdown, DropdownButton,
+  Tooltip, OverlayTrigger
+} from 'react-bootstrap';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+import {faGlobeEurope, faBalanceScale, faInfo, faLightbulb} from '@fortawesome/free-solid-svg-icons';
 import { MdSort } from 'react-icons/md';
 import usePromise from 'react-promise-suspense';
-import PostPreview from '../components/PostPreview';
-import Post from '../components/Post';
 import { fakeLatency, loremIpsum } from '../lib/dev';
-import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
-import ButtonGroup from 'react-bootstrap/ButtonGroup';
-import DropdownButton from 'react-bootstrap/DropdownButton';
-import Dropdown from 'react-bootstrap/Dropdown';
-import CreatableSelect from 'react-select/creatable';
 import { components } from 'react-select';
 import { FaSearch, FaTag, FaEdit } from 'react-icons/fa';
 import { useAuth } from '../context/authContext';
-import Tooltip from 'react-bootstrap/Tooltip';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { Link } from 'react-router-dom';
+import { PostPreview, Post, SearchBar } from '../components';
+import clsx from 'clsx';
+
 
 // Stream :: None => Component
 const Stream = () => {
@@ -196,12 +192,13 @@ const Stream = () => {
 
   return (
     <>
+      <SearchBar onChange={handleChange} tags={tags}>
+        <FilterBar onClick={setFilter} currentFilter={filter} />
+      </SearchBar>
       <Container>
+
         <br />
         <Row>
-          <Col xs={10} sm={11}>
-            <SearchBar handle_change={handleChange} tags={tags} />
-          </Col>
           <Col xs={2} sm={1}>
             <Link to="/submit">
               <OverlayTrigger
@@ -214,11 +211,6 @@ const Stream = () => {
               </OverlayTrigger>
             </Link>
           </Col>
-        </Row>
-        <br />
-
-        <Row className="justify-content-md-center">
-          <FilterBar onClick={setFilter} currentFilter={filter} />
         </Row>
 
         <br />
@@ -326,67 +318,6 @@ const PostList = (props) => {
   );
 };
 
-// SearchBar :: None => Component
-const SearchBar = (props) => {
-  const options = [
-    {
-      value: 'FacInfo',
-      label: (
-        <span>
-          <FaTag /> FacInfo
-        </span>
-      ),
-    },
-    {
-      value: 'FacEco',
-      label: (
-        <span>
-          <FaTag /> FacEco
-        </span>
-      ),
-    },
-    {
-      value: 'Arsenal',
-      label: (
-        <span>
-          <FaTag /> Arsenal
-        </span>
-      ),
-    },
-  ];
-
-  const primary = '#A0C55F';
-
-  const customStyles = {
-    control: (base, state) => ({
-      ...base,
-      boxShadow: state.isFocused ? '0 0 0 1px ' + primary : 0,
-      borderColor: state.isFocused ? primary : base.borderColor,
-      '&:hover': {
-        borderColor: state.isFocused ? primary : primary,
-      },
-    }),
-    option: (styles, { isFocused }) => ({
-      ...styles,
-      backgroundColor: isFocused ? primary : null,
-    }),
-  };
-
-  return (
-    <CreatableSelect
-      id="search-bar"
-      isMulti
-      options={options}
-      components={{ DropdownIndicator }}
-      placeholder={'Rechercher'}
-      value={props.tags}
-      styles={customStyles}
-      formatCreateLabel={(userInput) => `Rechercher "${userInput}"`}
-      onChange={props.handle_change}
-    />
-  );
-};
-
 const DropdownIndicator = (props) => {
   return (
     <components.DropdownIndicator {...props}>
@@ -442,37 +373,25 @@ const SortDropdown = (props) => {
 };
 
 // FilterBar :: Object => Component
-const FilterBar = (props) => {
+const FilterBar = ({ currentFilter, onClick }) => {
+  const options = [
+    { label: 'Tout', key: 'all', icon: faGlobeEurope },
+    { label: 'Sondage', key: 'poll', icon: faBalanceScale },
+    { label: 'Info', key: 'info', icon: faInfo },
+    { label: 'Idée', key: 'idea', icon: faLightbulb }
+  ];
+
   return (
-    <ButtonGroup id="filter-bar">
-      <Button
-        variant="secondary"
-        className={props.currentFilter == 'all' ? 'active' : ''}
-        onClick={() => props.onClick('all')}
-      >
-        Tout
-      </Button>
-      <Button
-        variant="secondary"
-        className={props.currentFilter == 'poll' ? 'active' : ''}
-        onClick={() => props.onClick('poll')}
-      >
-        Votes
-      </Button>
-      <Button
-        variant="secondary"
-        className={props.currentFilter == 'info' ? 'active' : ''}
-        onClick={() => props.onClick('info')}
-      >
-        Informations
-      </Button>
-      <Button
-        variant="secondary"
-        className={props.currentFilter == 'idea' ? 'active' : ''}
-        onClick={() => props.onClick('idea')}
-      >
-        Idées
-      </Button>
+    <ButtonGroup className="filter-bar d-flex justify-content-between">
+      {options.map(({ key, icon }) => (
+        <Button
+          key={key}
+          className={clsx('filter-choice', currentFilter === key && 'active')}
+          onClick={() => onClick(key)}
+        >
+          <Icon icon={icon} />
+        </Button>
+      ))}
     </ButtonGroup>
   );
 };

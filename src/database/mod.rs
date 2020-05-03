@@ -83,6 +83,8 @@ pub enum SortOrder {
     Old,
     HighScore,
     LowScore,
+    HighRank,
+    LowRank
 }
 
 impl TryFrom<&str> for SortOrder {
@@ -94,6 +96,8 @@ impl TryFrom<&str> for SortOrder {
             "old" => Ok(Self::Old),
             "top" => Ok(Self::HighScore),
             "low" => Ok(Self::LowScore),
+            "high_rank" => Ok(Self::HighRank),
+            "low_rank" => Ok(Self::LowRank),
             _ => Err(EntityError::InvalidAttribute),
         }
     }
