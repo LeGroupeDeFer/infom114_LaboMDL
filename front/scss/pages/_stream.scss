@@ -1,5 +1,9 @@
 @use '../themes'as *;
 
+.stream-header {
+  margin-top: 5rem;
+}
+
 #filter-bar .active {
   background-color: $primary;
   border-color: $primary;

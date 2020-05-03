@@ -48,7 +48,6 @@ table! {
         id -> Unsigned<Integer>,
         title -> Varchar,
         content -> Mediumtext,
-        post_type -> Varchar,
         author_id -> Unsigned<Integer>,
         created_at -> Timestamp,
         updated_at -> Timestamp,
@@ -57,6 +56,8 @@ table! {
         locked_at -> Nullable<Timestamp>,
         votes -> Unsigned<Bigint>,
         score -> Bigint,
+        rank -> Double,
+        kind -> Unsigned<Tinyint>,
     }
 }
 

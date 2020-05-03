@@ -26,6 +26,7 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
             author_id: author.id,
             title: format!("Valid post #{}", i),
             content: lib::lorem_ipsum(),
+            kind: 0
         };
 
         let p = match PostEntity::insert(&conn, &post_minima).unwrap() {
@@ -53,6 +54,7 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
         author_id: author.id,
         title: "Deleted post".to_string(),
         content: lib::lorem_ipsum(),
+        kind: 0
     };
     let deleted_post = PostEntity::insert_new(&conn, &deleted_minima).unwrap();
     deleted_post.delete(&conn).unwrap();
@@ -62,6 +64,7 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
         author_id: author.id,
         title: "Hidden post".to_string(),
         content: lib::lorem_ipsum(),
+        kind: 0
     };
     let hidden_post = PostEntity::insert_new(&conn, &hidden_minima).unwrap();
     hidden_post.toggle_visibility(&conn).unwrap();
@@ -71,6 +74,7 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
         author_id: author.id,
         title: "Locked post".to_string(),
         content: lib::lorem_ipsum(),
+        kind: 0
     };
     let locked_post = PostEntity::insert_new(&conn, &locked_minima).unwrap();
     locked_post.toggle_lock(&conn).unwrap();

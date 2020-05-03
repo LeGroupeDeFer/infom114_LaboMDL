@@ -57,7 +57,7 @@ function CreateForm(tags) {
   const typeList = [
     { value: 'idea', label: 'Idée' },
     { value: 'info', label: 'Information' },
-    { value: 'poll', label: 'Vote' },
+    { value: 'poll', label: 'Sondage' },
   ];
 
   const handleInputChange = (e) => {
@@ -71,20 +71,19 @@ function CreateForm(tags) {
     setLoading(true);
     setSubmitBtnText('');
 
+    post.kind = post.type;
+
     // Not updated immediately :/
     if (post.type != 'poll') {
       setPost({ ...post, options: [] });
     }
 
-    const addPost = () => {
-      api
-        .addPost(post)
-        .then((newPost) => {
-          history.push(`/post/${newPost.id}`);
-        })
-        .catch((error) => {});
-    };
-    addPost();
+    api.posts
+      .add(post)
+      .then((newPost) => {
+        history.push(`/post/${newPost.id}`);
+      })
+      .catch((error) => {});
   }
 
   // I didn't find another way to add styles to the select
@@ -192,6 +191,7 @@ function CreateForm(tags) {
 }
 
 function PollSection(props) {
+  console.log(props);
   function addOption() {
     props.set_post((post) => {
       return { ...post, options: post.options.concat(['']) };

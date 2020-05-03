@@ -10,6 +10,7 @@ use crate::lib::consequence::*;
 use crate::database::schema::posts;
 use crate::database::schema::posts::dsl::{self, posts as table};
 
+
 #[derive(
     Identifiable,
     Queryable,
@@ -26,7 +27,6 @@ pub struct PostEntity {
     pub id: u32,
     pub title: String,
     pub content: String,
-    pub post_type: String,
     pub author_id: u32,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
@@ -35,6 +35,8 @@ pub struct PostEntity {
     pub locked_at: Option<NaiveDateTime>,
     pub votes: u64,
     pub score: i64,
+    pub rank: f64,
+    pub kind: u8,
 }
 
 #[derive(Serialize, Deserialize, Debug, Insertable)]
@@ -43,6 +45,7 @@ pub struct PostMinima {
     pub title: String,
     pub content: String,
     pub author_id: u32,
+    pub kind: u8
 }
 
 impl Entity for PostEntity {

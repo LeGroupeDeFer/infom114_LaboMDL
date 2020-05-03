@@ -23,7 +23,6 @@ const Logout = lazy(() => import('../pages/Logout'));
 const Register = lazy(() => import('../pages/Register'));
 const Activate = lazy(() => import('../pages/Activate'));
 const CreatePost = lazy(() => import('../pages/CreatePost'));
-const Post = lazy(() => import('../pages/Post'));
 const Recover = lazy(() => import('../pages/Recover'));
 const Restore = lazy(() => import('../pages/Restore'));
 

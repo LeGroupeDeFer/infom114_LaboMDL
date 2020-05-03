@@ -39,10 +39,12 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult
         Err(EntityError::InvalidAttribute)?;
     }
 
+    let post_kind: Consequence<PostKind> = PostKind::try_from((&post_request).kind.clone());
     let new_post = PostMinima {
         title: post_request.title,
         content: post_request.content,
         author_id: auth.sub,
+        kind: post_kind?.into()
     };
 
     let p = PostEntity::insert_new(&*conn, &new_post)?;
@@ -59,7 +61,7 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult
 
 // typo on tape is intentional : `type` is a rust reserved keyword
 #[get(
-    "/api/v1/posts?<tag>&<search>&<sort>&<tape>&<limit>&<offset>",
+    "/api/v1/posts?<tag>&<search>&<sort>&<kind>&<limit>&<offset>",
     rank = 1
 )]
 fn get_all_posts_authenticated(
@@ -68,7 +70,7 @@ fn get_all_posts_authenticated(
     tag: Option<String>,
     search: Option<String>,
     sort: Option<String>,
-    tape: Option<String>, // type
+    kind: Option<String>, // type
     limit: Option<u32>,
     offset: Option<u32>,
 ) -> ApiResult<Vec<Post>> {
@@ -83,7 +85,7 @@ fn get_all_posts_authenticated(
         tag,
         search,
         sort_order,
-        tape,
+        kind,
         limit,
         offset,
     )?
@@ -96,7 +98,7 @@ fn get_all_posts_authenticated(
     Ok(Json(posts))
 }
 #[get(
-    "/api/v1/posts?<tag>&<search>&<sort>&<tape>&<limit>&<offset>",
+    "/api/v1/posts?<tag>&<search>&<sort>&<kind>&<limit>&<offset>",
     rank = 2
 )]
 fn get_all_posts(
@@ -104,7 +106,7 @@ fn get_all_posts(
     tag: Option<String>,
     search: Option<String>,
     sort: Option<String>,
-    tape: Option<String>, // type
+    kind: Option<String>, // type
     limit: Option<u32>,
     offset: Option<u32>,
 ) -> ApiResult<Vec<Post>> {
@@ -113,7 +115,7 @@ fn get_all_posts(
         sort_order = Some(SortOrder::try_from(value.as_ref())?)
     }
     Ok(Json(Post::all(
-        &*conn, false, tag, search, sort_order, tape, limit, offset,
+        &*conn, false, tag, search, sort_order, kind, limit, offset,
     )?))
 }
 
@@ -216,12 +218,12 @@ fn updown_vote(
 
     let vote_request = data.into_inner();
 
-    post_guard
-        .post()
-        .upvote(&*conn, &auth.sub, vote_request.vote)?;
+    let mut post_entity = post_guard.post_clone();
+    post_entity.upvote(&*conn, &auth.sub, vote_request.vote)?;
 
-    let mut post = Post::from(PostEntity::by_id(&*conn, &post_guard.post().id)??);
+    let mut post = Post::from(post_entity);
     post.set_user_info(&*conn, &auth.sub);
+
     Ok(Json(post))
 }
 

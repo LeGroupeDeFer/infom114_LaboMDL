@@ -243,6 +243,9 @@ function aggregate(o, key, props) {
   return Object.assign({}, others, aggregation);
 }
 
+/* ------------------------------ Array utils ------------------------------ */
+
+const empty = xs => (xs instanceof Array) && xs.length === 0;
 
 /* -------------------------------- Exports -------------------------------- */
 
@@ -283,5 +286,7 @@ export {
   iff,
   tee,
 
-  aggregate
+  aggregate,
+
+  empty
 };

@@ -1,0 +1,136 @@
+@use '../themes' as *;
+
+.search-container {
+  position: fixed;
+  top: 0;
+  z-index: 1000;
+
+  box-shadow: rgba(0, 0, 0, 0.1) 5px 0px 10px;
+  background: white;
+}
+
+/* Search bar */
+
+.search-bar {
+  max-width: 350px;
+  border-radius: 1.5em !important;
+
+  &:focus {
+    outline: none;
+  }
+
+  &__control {
+    background-color: gray("200") !important;
+
+    &--is-focused, &--menu-is-open {
+      box-shadow: none !important;
+    }
+
+    border: none !important;
+    border-radius: 1.5em !important;
+  }
+
+  &__menu {
+    /* Bits of css trickery to get the position we want */
+    margin-left: -1em;
+    width: 350px + 2 * $font-size !important;
+
+    /* Remove react-select styling */
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+
+    /* Actual styling */
+    padding: .5em 1em !important;
+  }
+
+  &__option {
+    padding: 1em .5em;
+    border-radius: .5em;
+
+    &--is-focused {
+      background: none !important;
+    }
+
+    &:hover {
+      cursor: pointer;
+      background-color: gray("200") !important;
+    }
+  }
+
+  &__value-container {
+    padding: 0.1em 1em !important;
+  }
+
+  &__indicator {
+    margin-right: .3em;
+  }
+
+  &__multi-value {
+    border-radius: 1em !important;
+    background-color: gray("500") !important;
+  }
+}
+
+.search-option {
+  color: gray("800");
+
+  &-icon {
+    margin-right: .8em;
+  }
+}
+
+@include media-breakpoint-down("md") {
+    .search-bar {
+      margin: auto;
+      position: static !important;
+
+      &__menu {
+        left: 0;
+        width: 100% !important;
+        margin: 0 !important;
+      }
+    }
+}
+
+/* Filter bar */
+
+.filter-bar {
+  z-index: 0 !important;
+}
+
+.filter-choice {
+  max-width: 2em !important;
+  height: 2em;
+
+  /* reset default style */
+  border: none !important;
+  border-radius-topleft: 50% !important;
+  border-radius-topright: 50% !important;
+  border-radius-bottomleft: 50% !important;
+  border-radius-bottomright: 50% !important;
+
+  border-radius: 50% !important;
+  font-size: 1.4em;
+  padding: .2em !important;
+
+  background: none !important;
+  color: gray("500") !important;
+
+  &:focus, &:active {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  &:hover {
+    color: $primary !important;
+  }
+
+  &.active {
+    outline: none !important;
+    color: $primary !important;
+    border: none !important;
+  }
+}

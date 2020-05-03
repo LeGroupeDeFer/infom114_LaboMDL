@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import Card from 'react-bootstrap/Card';
-import { dev, preview } from '../lib';
-import Badge from 'react-bootstrap/Badge';
+import { Link } from 'react-router-dom';
 import Moment from 'react-moment';
-import DownVote from './DownVote';
-import UpVote from './UpVote';
+import { dev, preview } from '../../lib';
+import { Badge, Card, Dropdown, DropdownButton } from 'react-bootstrap';
+import { DownVote, UpVote } from './Vote';
 import { MdModeComment, MdReport } from 'react-icons/md';
 import {
   FaTag,
@@ -16,26 +15,30 @@ import {
   FaLock,
 } from 'react-icons/fa';
 import clsx from 'clsx';
-import DropdownButton from 'react-bootstrap/DropdownButton';
-import Dropdown from 'react-bootstrap/Dropdown';
 import { FacebookShareButton } from 'react-share';
-import { Link } from 'react-router-dom';
+import { useAuth } from 'unanimity/context/authContext';
+
+function getDisplayedType(type) {
+  switch (type) {
+    case 'info':
+      return 'Information';
+    case 'poll':
+      return 'Vote';
+    case 'idea':
+      return 'Idée';
+  }
+}
 
 const PostPreview = ({
-  id,
-  title,
-  content,
-  author,
-  score,
-  type,
+  post,
   previewLength,
-  createdAt,
   currentFilter,
-  comments,
-  tags,
   userVote,
-  ...otherProps
+  show_modal,
+  onTagClick,
+  ...others
 }) => {
+<<<<<<< HEAD:front/js/components/PostPreview.jsx
   let vote = '';
   switch (userVote) {
     case -1:
@@ -48,10 +51,26 @@ const PostPreview = ({
       vote = 'no';
       break;
   }
+=======
+  const isLogged = !!useAuth().user;
+  const {
+    id,
+    title,
+    content,
+    author,
+    score,
+    type,
+    createdAt,
+    comments,
+    tags,
+  } = post;
+  let vote = ['down', 'up', 'no'][userVote + 1];
+>>>>>>> issue_64:front/js/components/Post/Preview.jsx
 
   const [voted, setVoted] = useState(vote);
   const [scoreState, setScoreState] = useState(score);
 
+<<<<<<< HEAD:front/js/components/PostPreview.jsx
   function getDisplayedType(type) {
     switch (type) {
       case 'info':
@@ -63,16 +82,13 @@ const PostPreview = ({
     }
   }
 
+=======
+>>>>>>> issue_64:front/js/components/Post/Preview.jsx
   if (!['all', type].includes(currentFilter)) return <></>;
 
   return (
     <div className="d-flex">
-      <Card
-        {...otherProps}
-        className="post"
-        onClick={() => otherProps.show_modal(id)}
-        id={id}
-      >
+      <Card {...others} className="post" onClick={() => show_modal(id)} id={id}>
         <Card.Header>
           <h5>
             <Badge className={`post-${type} mr-2`}>
@@ -127,7 +143,7 @@ const PostPreview = ({
           <div className="d-flex">
             <div className="vote-section">
               <UpVote
-                is_logged={otherProps.is_logged}
+                isLogged={isLogged}
                 voted={voted}
                 set_vote={setVoted}
                 score={scoreState}
@@ -143,7 +159,7 @@ const PostPreview = ({
               </div>
 
               <DownVote
-                is_logged={otherProps.is_logged}
+                isLogged={isLogged}
                 voted={voted}
                 set_vote={setVoted}
                 score={scoreState}
@@ -159,7 +175,7 @@ const PostPreview = ({
                     <a
                       href="#"
                       className="mr-2 tag"
-                      onClick={(e) => otherProps.tag_click(e)}
+                      onClick={(e) => onTagClick(e)}
                       value={tag}
                       key={index}
                     >

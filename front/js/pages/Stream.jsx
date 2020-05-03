@@ -1,69 +1,93 @@
+import 'regenerator-runtime';
 import React, { Suspense, useState, useEffect } from 'react';
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
+import {
+  Container,
+  Row,
+  Col,
+  Button,
+  Modal,
+  ButtonGroup,
+  Dropdown,
+  DropdownButton,
+  Tooltip,
+  OverlayTrigger,
+} from 'react-bootstrap';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+import {
+  faGlobeEurope,
+  faBalanceScale,
+  faInfo,
+  faLightbulb,
+} from '@fortawesome/free-solid-svg-icons';
 import { MdSort } from 'react-icons/md';
 import usePromise from 'react-promise-suspense';
-import PostPreview from '../components/PostPreview';
-import Post from '../components/Post';
-import { fakeLatency, loremIpsum } from '../lib/dev';
-import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
-import ButtonGroup from 'react-bootstrap/ButtonGroup';
-import DropdownButton from 'react-bootstrap/DropdownButton';
-import Dropdown from 'react-bootstrap/Dropdown';
-import CreatableSelect from 'react-select/creatable';
+import { loremIpsum } from '../lib/dev';
 import { components } from 'react-select';
 import { FaSearch, FaTag, FaEdit } from 'react-icons/fa';
 import { useAuth } from '../context/authContext';
-import Tooltip from 'react-bootstrap/Tooltip';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { Link } from 'react-router-dom';
+import { Post, SearchBar } from '../components';
+import clsx from 'clsx';
 import api from '../lib/api';
 import { useRequest } from '../hooks';
-// import 'regenerator-runtime';
+
+function InnerStream({ filter, tags, onClick, show_modal, tag_click }) {
+  const query = [
+    ['kind', filter],
+    ['tags', tags],
+  ].reduce((a, [k, v]) => (v ? { ...a, [k]: v } : a), {});
+  const posts = usePromise(api.posts.where, [query]);
+
+  return (
+    <>
+      {posts.map((post) => (
+        <Row key={post.id} className="mb-4">
+          <Col>
+            <Post.Preview
+              onClick={onClick}
+              post={post}
+              show_modal={show_modal}
+              onTagClick={tag_click}
+            />
+          </Col>
+        </Row>
+      ))}
+    </>
+  );
+}
 
 // Stream :: None => Component
 const Stream = () => {
+<<<<<<< HEAD
   const [filter, setFilter] = useState('all');
   const [posts, setPosts] = useState([]);
   const [tags, setTags] = useState(null);
   const { login, user, token } = useAuth();
   const caps = token.cap;
 
+=======
+  const { user } = useAuth();
+  const isLogged = !!user;
+
+  const [filter, setFilter] = useState({ key: 'all', label: 'Actualité' });
+>>>>>>> issue_64
   const [postModal, setPostModal] = useState(null);
   const [modalDisplayed, setModalDisplayed] = useState(false);
-  const isLogged = user != null ? 1 : 0;
 
-  // Fetch tags
-  const [error, data] = useRequest(api.tags, []);
-  const tagList = (data ? data.tags : []).map((tag) => {
-    return {
-      id: tag.id,
-      value: tag.label,
-      label: (
-        <span>
-          <FaTag /> {tag.label}
-        </span>
+  const [tags, setTags] = useState([]);
+  const [choices, setChoices] = useState([]);
+  const [error, tagsData] = useRequest(api.tags, []);
+
+  useEffect(
+    () =>
+      setTags(
+        (tagsData ? tagsData.tags : []).map((tag) => ({
+          id: tag.id,
+          label: tag.label,
+        }))
       ),
-    };
-  });
-
-  // const isLogged = 1;
-
-  const FetchedPosts = () => {
-    const results = usePromise(api.posts, []);
-    setPosts(results);
-    return (
-      <PostList
-        currentFilter={filter}
-        posts={posts}
-        is_logged={isLogged}
-        tag_click={tagClickHandler}
-        show_modal={showModal}
-      />
-    );
-  };
+    [tagsData]
+  );
 
   function hideModal() {
     setModalDisplayed(false);
@@ -72,50 +96,43 @@ const Stream = () => {
   function showModal(postId) {
     setPostModal(null);
     const fetchPost = () => {
-      api
-        .getPost(postId)
+      api.posts
+        .of(postId)
         .then((post) => {
           setPostModal(post);
         })
         .catch((error) => {});
     };
-
     fetchPost();
     setModalDisplayed(true);
   }
-
-  function handleChange(selectedOpttion) {
-    if (selectedOpttion != null) {
-      let tags = selectedOpttion.map(function (x) {
-        return {
-          value: x.value,
-          label: x.label,
-        };
-      });
-      setTags(tags);
-    } else {
-      setTags(null);
-    }
+  function handleChange(selectedOptions) {
+    setChoices(
+      selectedOptions != null
+        ? selectedOptions.map(({ label, value }) => ({ label, value }))
+        : []
+    );
   }
 
   function tagClickHandler(e) {
     e.stopPropagation();
-    let tagValue = e.target.getAttribute('value');
+    let value = e.target.getAttribute('value');
     let tag = {
-      value: tagValue,
+      value: value,
       label: (
         <span>
-          <FaTag /> {tagValue}
+          <FaTag /> {value}
         </span>
       ),
     };
-    setTags(tag);
+    setChoices([tag]);
+
     // Scroll to the top
-    document.getElementsByTagName('main')[0].scrollTo(0, 0);
+    //document.getElementsByTagName('main')[0].scrollTo(0, 0);
   }
 
   function sortPost(criteria) {
-    let sortedPost = [
+    return [
       {
         id: 1,
         title: 'Je suis également un titre',
@@ -157,52 +174,44 @@ const Stream = () => {
         commentNb: 4,
       },
     ];
-    setPosts(sortedPost);
   }
 
   return (
     <>
-      <Container>
-        <br />
+      <SearchBar onChange={handleChange} tags={tags} choices={choices}>
+        <FilterBar onClick={setFilter} currentFilter={filter} />
+      </SearchBar>
+      <Container className="py-5">
         <Row>
-          <Col xs={10} sm={11}>
-            <SearchBar
-              handle_change={handleChange}
-              tags={tags}
-              tagList={tagList}
-            />
+          <Col>
+            <h1 className="text-dark stream-header">{filter.label}</h1>
+            <hr />
           </Col>
-          <Col xs={2} sm={1}>
-            <Link to="/submit">
-              <OverlayTrigger
-                placement="bottom"
-                overlay={<Tooltip>Créer un post</Tooltip>}
-              >
-                <Button variant="primary">
-                  <FaEdit />
+        </Row>
+
+        <Row className="pb-3">
+          <Col className="d-flex justify-content-between">
+            <Link to="/submit" className="shape-circle">
+              <OverlayTrigger overlay={<Tooltip>Créer un post</Tooltip>}>
+                <Button variant="primary" className="h-100">
+                  <div className="d-flex text-light">
+                    <FaEdit />
+                  </div>
                 </Button>
               </OverlayTrigger>
             </Link>
+            <SortDropdown sortPost={sortPost} />
           </Col>
         </Row>
-        <br />
-
-        <Row className="justify-content-md-center">
-          <FilterBar onClick={setFilter} currentFilter={filter} />
-        </Row>
-
-        <br />
-
-        <Row className="justify-content-end">
-          <SortDropdown sortPost={sortPost} />
-        </Row>
-
-        <br />
 
         <Suspense fallback={<h3>Chargement des posts...</h3>}>
-          <FetchedPosts />
+          <InnerStream
+            filter={filter.key}
+            tags={choices}
+            show_modal={showModal}
+            tag_click={tagClickHandler}
+          />
         </Suspense>
-        <br />
 
         <Modal
           show={modalDisplayed}
@@ -212,7 +221,7 @@ const Stream = () => {
           <Modal.Header closeButton></Modal.Header>
           <Modal.Body>
             {postModal ? (
-              <Post {...postModal} is_logged={isLogged} />
+              <Post {...postModal} isLogged={isLogged} />
             ) : (
               'Chargement des données...'
             )}
@@ -222,55 +231,6 @@ const Stream = () => {
 
       <br />
     </>
-  );
-};
-
-// PostList :: Object => Component
-const PostList = (props) => {
-  return (
-    <>
-      {props.posts.map((post, i) => (
-        <Row key={i} className="mb-4">
-          <Col>
-            <PostPreview {...props} {...post} />
-          </Col>
-        </Row>
-      ))}
-    </>
-  );
-};
-
-// SearchBar :: None => Component
-const SearchBar = (props) => {
-  const primary = '#A0C55F';
-
-  const customStyles = {
-    control: (base, state) => ({
-      ...base,
-      boxShadow: state.isFocused ? '0 0 0 1px ' + primary : 0,
-      borderColor: state.isFocused ? primary : base.borderColor,
-      '&:hover': {
-        borderColor: state.isFocused ? primary : primary,
-      },
-    }),
-    option: (styles, { isFocused }) => ({
-      ...styles,
-      backgroundColor: isFocused ? primary : null,
-    }),
-  };
-
-  return (
-    <CreatableSelect
-      id="search-bar"
-      isMulti
-      options={props.tagList}
-      components={{ DropdownIndicator }}
-      placeholder={'Rechercher'}
-      value={props.tags}
-      styles={customStyles}
-      formatCreateLabel={(userInput) => `Rechercher "${userInput}"`}
-      onChange={props.handle_change}
-    />
   );
 };
 
@@ -329,37 +289,28 @@ const SortDropdown = (props) => {
 };
 
 // FilterBar :: Object => Component
-const FilterBar = (props) => {
+const FilterBar = ({ currentFilter, onClick }) => {
+  const options = [
+    { label: 'Actualité', key: 'all', icon: faGlobeEurope },
+    { label: 'Sondages', key: 'poll', icon: faBalanceScale },
+    { label: 'Infos', key: 'info', icon: faInfo },
+    { label: 'Idées', key: 'idea', icon: faLightbulb },
+  ];
+
   return (
-    <ButtonGroup id="filter-bar">
-      <Button
-        variant="secondary"
-        className={props.currentFilter == 'all' ? 'active' : ''}
-        onClick={() => props.onClick('all')}
-      >
-        Tout
-      </Button>
-      <Button
-        variant="secondary"
-        className={props.currentFilter == 'poll' ? 'active' : ''}
-        onClick={() => props.onClick('poll')}
-      >
-        Votes
-      </Button>
-      <Button
-        variant="secondary"
-        className={props.currentFilter == 'info' ? 'active' : ''}
-        onClick={() => props.onClick('info')}
-      >
-        Informations
-      </Button>
-      <Button
-        variant="secondary"
-        className={props.currentFilter == 'idea' ? 'active' : ''}
-        onClick={() => props.onClick('idea')}
-      >
-        Idées
-      </Button>
+    <ButtonGroup className="filter-bar d-flex justify-content-between">
+      {options.map(({ key, icon, label }) => (
+        <Button
+          key={key}
+          className={clsx(
+            'filter-choice',
+            currentFilter.key === key && 'active'
+          )}
+          onClick={() => onClick({ key, icon, label })}
+        >
+          <Icon icon={icon} />
+        </Button>
+      ))}
     </ButtonGroup>
   );
 };

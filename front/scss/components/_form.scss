@@ -76,6 +76,9 @@ $input-animation: 0.2s ease all;
 
     input.form-control {
         color: theme-color("secondary");
+        border-left: 0;
+        border-top: 0;
+        border-right: 0;
 
         &:invalid {
             border-color: $input-border-color;
@@ -83,6 +86,7 @@ $input-animation: 0.2s ease all;
 
         &:focus {
             border-color: transparent;
+            box-shadow: none;
 
             &[value=""] ~ .highlight {
                 animation: inputHighlighter 0.3s ease;

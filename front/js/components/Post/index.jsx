@@ -1,18 +1,41 @@
-import React, { useState } from 'react';
-import CommentEditor from '../components/CommentEditor';
-import Comment from '../components/Comment';
-import Badge from 'react-bootstrap/Badge';
+import React, {useState} from 'react';
+import { Row, Col, Badge } from 'react-bootstrap';
 import Moment from 'react-moment';
-import { FacebookShareButton } from 'react-share';
-import DownVote from './DownVote';
-import UpVote from './UpVote';
-import { MdModeComment, MdReport } from 'react-icons/md';
-import { FaTag, FaFacebookSquare, FaEyeSlash, FaFlag } from 'react-icons/fa';
 import clsx from 'clsx';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
+import { UpVote, DownVote } from './Vote';
+import { FaEyeSlash, FaFacebookSquare, FaFlag, FaTag } from 'react-icons/fa';
+import { MdModeComment } from 'react-icons/md';
+import { FacebookShareButton } from 'react-share';
 
-const Post = ({
+import Preview from './Preview';
+import Comment from './Comment';
+
+function Comments({
+  isLogged,
+  toggle_comment_editor,
+  add_comment_editor,
+  comment_editors,
+  comments,
+}) {
+  return (
+    <>
+      {Object.keys(comments).map((key) => {
+        return (
+          <Comment
+            key={comments[key].id}
+            comment={comments[key]}
+            isLogged={isLogged}
+            toggle_comment_editor={toggle_comment_editor}
+            add_comment_editor={add_comment_editor}
+            comment_editors={comment_editors}
+          />
+        );
+      })}
+    </>
+  );
+}
+
+function Post({
   id,
   title,
   content,
@@ -23,27 +46,17 @@ const Post = ({
   comments,
   tags,
   userVote,
-  is_logged
-}) => {
+  isLogged
+}) {
+
   const [commentEditors, setCommentEditors] = useState({});
   const [commentList, setCommentList] = useState(comments);
 
-
-  let vote = "";
-  switch (userVote) {
-    case -1: vote = "down";
-      break;
-    case 1: vote = "up";
-      break;
-    default: vote = "no";
-      break;
-  }
-
+  let vote = ['down', 'up', 'no'][userVote +1 ];
   const [voted, setVoted] = useState(vote);
-  const [scoreState, setscoreState] = useState(score);
+  const [scoreState, setScoreState] = useState(score);
 
   function addComment(comment) {
-
     setCommentList((cmmt) =>
       [
         {
@@ -127,9 +140,9 @@ const Post = ({
 
     let newEditor = {
       editor: (
-        <CommentEditor
+        <Comment.Editor
           type="reply"
-          is_logged={is_logged}
+          isLogged={isLogged}
           toggle_comment_editor={toggleCommentEditor}
           comment_id={commentId}
           ancestor_id={ancestorId}
@@ -151,11 +164,11 @@ const Post = ({
         <Row className="comment-first-row">
           <Col className="col-auto vote-col">
             <UpVote
-              is_logged={is_logged}
+              isLogged={isLogged}
               voted={voted}
               set_vote={setVoted}
               score={scoreState}
-              set_score={setscoreState}
+              set_score={setScoreState}
               post_id={id}
             />
           </Col>
@@ -193,11 +206,11 @@ const Post = ({
             </div>
 
             <DownVote
-              is_logged={is_logged}
+              isLogged={isLogged}
               voted={voted}
               set_vote={setVoted}
               score={scoreState}
-              set_score={setscoreState}
+              set_score={setScoreState}
               post_id={id}
             />
           </Col>
@@ -260,8 +273,8 @@ const Post = ({
             </div>
             <br />
 
-            <CommentEditor
-              is_logged={is_logged}
+            <Comment.Editor
+              isLogged={isLogged}
               type="comment"
               add_comment={addComment}
             />
@@ -283,7 +296,7 @@ const Post = ({
         </DropdownButton>
         <hr/> */}
         <Comments
-          is_logged={is_logged}
+          isLogged={isLogged}
           toggle_comment_editor={toggleCommentEditor}
           add_comment_editor={addCommentEditor}
           comment_editors={commentEditors}
@@ -293,31 +306,10 @@ const Post = ({
       <br />
     </>
   );
-};
+}
 
-const Comments = ({
-  is_logged,
-  toggle_comment_editor,
-  add_comment_editor,
-  comment_editors,
-  comments,
-}) => {
-  return (
-    <>
-      {Object.keys(comments).map((key) => {
-        return (
-          <Comment
-            key={comments[key].id}
-            comment={comments[key]}
-            is_logged={is_logged}
-            toggle_comment_editor={toggle_comment_editor}
-            add_comment_editor={add_comment_editor}
-            comment_editors={comment_editors}
-          />
-        );
-      })}
-    </>
-  );
-};
+
+Object.assign(Post, { Preview, Comment });
+
 
 export default Post;
