@@ -58,19 +58,11 @@ function InnerStream({ filter, tags, onClick, show_modal, tag_click }) {
 
 // Stream :: None => Component
 const Stream = () => {
-<<<<<<< HEAD
-  const [filter, setFilter] = useState('all');
-  const [posts, setPosts] = useState([]);
-  const [tags, setTags] = useState(null);
-  const { login, user, token } = useAuth();
+  const { user, token } = useAuth();
+  const isLogged = !!user;
   const caps = token.cap;
 
-=======
-  const { user } = useAuth();
-  const isLogged = !!user;
-
   const [filter, setFilter] = useState({ key: 'all', label: 'Actualité' });
->>>>>>> issue_64
   const [postModal, setPostModal] = useState(null);
   const [modalDisplayed, setModalDisplayed] = useState(false);
 
@@ -254,7 +246,7 @@ const SortDropdown = (props) => {
           <MdSort size={20} /> {title}
         </span>
       }
-      variant="secondary"
+      variant="primary"
       id="sort-post"
     >
       <Dropdown.Item

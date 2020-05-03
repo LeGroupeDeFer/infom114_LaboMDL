@@ -29,7 +29,7 @@ function getDisplayedType(type) {
   }
 }
 
-const PostPreview = ({
+const Preview = ({
   post,
   previewLength,
   currentFilter,
@@ -38,20 +38,6 @@ const PostPreview = ({
   onTagClick,
   ...others
 }) => {
-<<<<<<< HEAD:front/js/components/PostPreview.jsx
-  let vote = '';
-  switch (userVote) {
-    case -1:
-      vote = 'down';
-      break;
-    case 1:
-      vote = 'up';
-      break;
-    default:
-      vote = 'no';
-      break;
-  }
-=======
   const isLogged = !!useAuth().user;
   const {
     id,
@@ -65,25 +51,10 @@ const PostPreview = ({
     tags,
   } = post;
   let vote = ['down', 'up', 'no'][userVote + 1];
->>>>>>> issue_64:front/js/components/Post/Preview.jsx
 
   const [voted, setVoted] = useState(vote);
   const [scoreState, setScoreState] = useState(score);
 
-<<<<<<< HEAD:front/js/components/PostPreview.jsx
-  function getDisplayedType(type) {
-    switch (type) {
-      case 'info':
-        return 'Information';
-      case 'poll':
-        return 'Vote';
-      case 'idea':
-        return 'Idée';
-    }
-  }
-
-=======
->>>>>>> issue_64:front/js/components/Post/Preview.jsx
   if (!['all', type].includes(currentFilter)) return <></>;
 
   return (
@@ -221,4 +192,4 @@ const PostPreview = ({
   );
 };
 
-export default PostPreview;
+export default Preview;
