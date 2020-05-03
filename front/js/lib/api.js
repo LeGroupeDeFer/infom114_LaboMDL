@@ -175,11 +175,11 @@ function addTag(label) {
 }
 
 function removeTag(label) {
-  return api(`/tag/${label}`, {method: "DELETE"})
+  return api(`/tag/${label}`, {method: "DELETE"});
 }
 
 function editTag(oldLabel, newLabel) {
-  return api(`/tag/${oldLabel}`, {method: "PUT", body: { label: String(newLabel) } })
+  return api(`/tag/${oldLabel}`, {method: "PUT", body: { label: String(newLabel) } });
 }
 
 function roles() {
@@ -187,15 +187,15 @@ function roles() {
 }
 
 function addRole(name, color, capability) { 
-  return api('/role', {method: 'POST', body: {name: String(name), color: String(color), capabilities:[{name:String(capability)}]} })
+  return api('/role', {method: 'POST', body: {name: String(name), color: String(color), capabilities:[{name:String(capability)}]} });
 }
 
 function editRole(id, name, color, capabilities) {
-  return api(`/role/${id}`, {method: 'PUT', body: {name: String(name), color: String(color), capabilities:capabilities } })
+  return api(`/role/${id}`, {method: 'PUT', body: {name: String(name), color: String(color), capabilities:capabilities } });
 }
 
 function deleteRole(id) { 
-  return api(`/role/${id}`, {method: 'DELETE'} )
+  return api(`/role/${id}`, {method: 'DELETE'} );
 }
 
 function capabilities() {
@@ -204,6 +204,14 @@ function capabilities() {
 
 function users() {
   return api('/users');
+}
+
+function addRoleToUser() {
+  return api('/user/role', {method: 'POST', body: {}} );
+}
+
+function removeRoleFromUser() {
+  return api('user/role', {method: 'DELETE', body: {}} );
 }
 
 api.auth = auth;
@@ -218,7 +226,7 @@ api.roles.edit = editRole;
 api.roles.delete = deleteRole;
 api.capabilities = capabilities;
 api.users = users;
-
+api.user.role.add = addRoleToUser;
 
 Object.assign(api, { auth /*, ...otherAPIs */ });
 

@@ -11,8 +11,7 @@ import Modal from 'react-bootstrap/Modal';
 const User = ({user, roles}) => {
 
     const [modalShow, setModalShow] = useState(false);
-    console.log(user);
-    console.log(roles);
+
     return (
         <>
         <Card style={{ width: '100vw' }}>
@@ -42,6 +41,18 @@ const User = ({user, roles}) => {
 
 const EditModal = ({user, show, onHide, roles, handleClose}) => {
     console.log(roles)
+
+    const [userRoles, setUserRoles] = useState(user.roles);
+    
+    const handleRemove = (e) => {
+      console.log(e.target.value);
+    }
+
+    const handleAdd = (e) => {
+      console.log(e.target.value);
+    }
+
+
     return (
         <Modal
         onHide={onHide}
@@ -54,17 +65,29 @@ const EditModal = ({user, show, onHide, roles, handleClose}) => {
         <Container>
             <Row>
                 <Col>
-                    {user.roles.map( (role, i) => {
-                        return <p key={i}>{role.name}</p>
-                    })}
+                    {userRoles.map( (role, i) => {
+                        return (
+                          <Row className="mt-3">
+                          <h3 key={i} className="mr-3">{role.name}</h3>
+                          <Button value={role.name} onClick={handleRemove}>Retirer</Button>
+                          </Row>
+                        )
+                    })
+                    }
                 </Col>
                 <Col>
                     {user.lastname} {user.firstname}
                 </Col>
                 <Col>
                     {roles.map( (role, i) => {
-                        return <p key={i}>{role.name}</p>
-                    })}
+                        return (
+                          <Row className="mt-3">
+                          <h3 key={i} className="mr-3">{role.name}</h3>
+                          <Button value={role.name} onClick={handleAdd}>Ajouter</Button>
+                          </Row>
+                        )
+                    })
+                    }
                 </Col>
             </Row>
         </Container>
