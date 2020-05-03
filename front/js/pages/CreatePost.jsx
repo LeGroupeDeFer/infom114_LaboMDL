@@ -51,12 +51,13 @@ function CreateForm(tags) {
     content: '',
     type: '',
     tags: [],
+    options: ['', ''],
   });
 
   const typeList = [
     { value: 'idea', label: 'Idée' },
     { value: 'info', label: 'Information' },
-    { value: 'poll', label: 'Vote' },
+    { value: 'poll', label: 'Sondage' },
   ];
 
   const handleInputChange = (e) => {
@@ -190,6 +191,7 @@ function CreateForm(tags) {
 }
 
 function PollSection(props) {
+  console.log(props);
   function addOption() {
     props.set_post((post) => {
       return { ...post, options: post.options.concat(['']) };

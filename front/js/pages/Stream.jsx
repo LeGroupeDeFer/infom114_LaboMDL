@@ -1,11 +1,24 @@
 import 'regenerator-runtime';
 import React, { Suspense, useState, useEffect } from 'react';
 import {
-  Container, Row, Col, Button, Modal, ButtonGroup, Dropdown, DropdownButton,
-  Tooltip, OverlayTrigger
+  Container,
+  Row,
+  Col,
+  Button,
+  Modal,
+  ButtonGroup,
+  Dropdown,
+  DropdownButton,
+  Tooltip,
+  OverlayTrigger,
 } from 'react-bootstrap';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { faGlobeEurope, faBalanceScale, faInfo, faLightbulb } from '@fortawesome/free-solid-svg-icons';
+import {
+  faGlobeEurope,
+  faBalanceScale,
+  faInfo,
+  faLightbulb,
+} from '@fortawesome/free-solid-svg-icons';
 import { MdSort } from 'react-icons/md';
 import usePromise from 'react-promise-suspense';
 import { loremIpsum } from '../lib/dev';
@@ -18,39 +31,32 @@ import clsx from 'clsx';
 import api from '../lib/api';
 import { useRequest } from '../hooks';
 
-
 function InnerStream({ filter, tags, onClick }) {
-
-  const query = [['kind', filter], ['tags', tags]].reduce(
-    (a, [k, v]) => v ? { ...a, [k]: v} : a,
-    {}
-  );
+  const query = [
+    ['kind', filter],
+    ['tags', tags],
+  ].reduce((a, [k, v]) => (v ? { ...a, [k]: v } : a), {});
   const posts = usePromise(api.posts.where, [query]);
 
   return (
     <>
-      {posts.map(post => (
+      {posts.map((post) => (
         <Row key={post.id} className="mb-4">
           <Col>
-            <Post.Preview
-              onClick={onClick}
-              post={post}
-            />
+            <Post.Preview onClick={onClick} post={post} />
           </Col>
         </Row>
       ))}
     </>
   );
-
 }
-
 
 // Stream :: None => Component
 const Stream = () => {
   const { user } = useAuth();
   const isLogged = !!user;
 
-  const [filter, setFilter] = useState({ key: 'all', label: 'Actualité'});
+  const [filter, setFilter] = useState({ key: 'all', label: 'Actualité' });
   const [postModal, setPostModal] = useState(null);
   const [modalDisplayed, setModalDisplayed] = useState(false);
 
@@ -58,10 +64,16 @@ const Stream = () => {
   const [choices, setChoices] = useState([]);
   const [error, tagsData] = useRequest(api.tags, []);
 
-  useEffect(() => setTags((tagsData ? tagsData.tags : []).map(
-    tag => ({ id: tag.id, label: tag.label })
-  )), [tagsData]);
-
+  useEffect(
+    () =>
+      setTags(
+        (tagsData ? tagsData.tags : []).map((tag) => ({
+          id: tag.id,
+          label: tag.label,
+        }))
+      ),
+    [tagsData]
+  );
 
   function hideModal() {
     setModalDisplayed(false);
@@ -83,9 +95,11 @@ const Stream = () => {
   }
 
   function handleChange(selectedOptions) {
-    setChoices(selectedOptions != null
-      ? selectedOptions.map(({ label, value }) => ({ label, value }))
-      : []
+    console.log(selectedOptions);
+    setChoices(
+      selectedOptions != null
+        ? selectedOptions.map(({ label, value }) => ({ label, value }))
+        : []
     );
   }
 
@@ -149,20 +163,21 @@ const Stream = () => {
         <FilterBar onClick={setFilter} currentFilter={filter} />
       </SearchBar>
       <Container className="py-5">
-
-        <Row><Col>
-          <h1 className="text-dark stream-header">{filter.label}</h1>
-          <hr />
-        </Col></Row>
+        <Row>
+          <Col>
+            <h1 className="text-dark stream-header">{filter.label}</h1>
+            <hr />
+          </Col>
+        </Row>
 
         <Row className="pb-3">
           <Col className="d-flex justify-content-between">
             <Link to="/submit" className="shape-circle">
-              <OverlayTrigger
-                overlay={<Tooltip>Créer un post</Tooltip>}
-              >
+              <OverlayTrigger overlay={<Tooltip>Créer un post</Tooltip>}>
                 <Button variant="primary" className="h-100">
-                  <div className="d-flex text-light"><FaEdit /></div>
+                  <div className="d-flex text-light">
+                    <FaEdit />
+                  </div>
                 </Button>
               </OverlayTrigger>
             </Link>
@@ -210,7 +225,6 @@ const PostList = (props) => {
   );
 };
 
-
 const DropdownIndicator = (props) => {
   return (
     <components.DropdownIndicator {...props}>
@@ -218,7 +232,6 @@ const DropdownIndicator = (props) => {
     </components.DropdownIndicator>
   );
 };
-
 
 // SortDropdown :: None => Component
 const SortDropdown = (props) => {
@@ -272,7 +285,7 @@ const FilterBar = ({ currentFilter, onClick }) => {
     { label: 'Actualité', key: 'all', icon: faGlobeEurope },
     { label: 'Sondages', key: 'poll', icon: faBalanceScale },
     { label: 'Infos', key: 'info', icon: faInfo },
-    { label: 'Idées', key: 'idea', icon: faLightbulb }
+    { label: 'Idées', key: 'idea', icon: faLightbulb },
   ];
 
   return (
@@ -280,7 +293,10 @@ const FilterBar = ({ currentFilter, onClick }) => {
       {options.map(({ key, icon, label }) => (
         <Button
           key={key}
-          className={clsx('filter-choice', currentFilter.key === key && 'active')}
+          className={clsx(
+            'filter-choice',
+            currentFilter.key === key && 'active'
+          )}
           onClick={() => onClick({ key, icon, label })}
         >
           <Icon icon={icon} />
@@ -291,6 +307,5 @@ const FilterBar = ({ currentFilter, onClick }) => {
 };
 
 Stream.defaultProps = {};
-
 
 export default Stream;
