@@ -27,9 +27,8 @@ function SearchOption({ icon, label }) {
 }
 
 function SearchBar({ tags, choices, onChange, children }) {
-  console.log(tags);
   const options = tags.map(({ label, id }) => ({
-    value: id,
+    value: label,
     label: <SearchOption icon={faTag} label={label} />,
   }));
 

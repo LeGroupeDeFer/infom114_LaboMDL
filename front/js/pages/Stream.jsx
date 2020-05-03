@@ -31,7 +31,7 @@ import clsx from 'clsx';
 import api from '../lib/api';
 import { useRequest } from '../hooks';
 
-function InnerStream({ filter, tags, onClick }) {
+function InnerStream({ filter, tags, onClick, show_modal, tag_click }) {
   const query = [
     ['kind', filter],
     ['tags', tags],
@@ -43,7 +43,12 @@ function InnerStream({ filter, tags, onClick }) {
       {posts.map((post) => (
         <Row key={post.id} className="mb-4">
           <Col>
-            <Post.Preview onClick={onClick} post={post} />
+            <Post.Preview
+              onClick={onClick}
+              post={post}
+              show_modal={show_modal}
+              onTagClick={tag_click}
+            />
           </Col>
         </Row>
       ))}
@@ -82,20 +87,17 @@ const Stream = () => {
   function showModal(postId) {
     setPostModal(null);
     const fetchPost = () => {
-      api
-        .getPost(postId)
+      api.posts
+        .of(postId)
         .then((post) => {
           setPostModal(post);
         })
         .catch((error) => {});
     };
-
     fetchPost();
     setModalDisplayed(true);
   }
-
   function handleChange(selectedOptions) {
-    console.log(selectedOptions);
     setChoices(
       selectedOptions != null
         ? selectedOptions.map(({ label, value }) => ({ label, value }))
@@ -106,10 +108,18 @@ const Stream = () => {
   function tagClickHandler(e) {
     e.stopPropagation();
     let value = e.target.getAttribute('value');
-    let tag = { value, label: value };
+    let tag = {
+      value: value,
+      label: (
+        <span>
+          <FaTag /> {value}
+        </span>
+      ),
+    };
     setChoices([tag]);
+
     // Scroll to the top
-    document.getElementsByTagName('main')[0].scrollTo(0, 0);
+    //document.getElementsByTagName('main')[0].scrollTo(0, 0);
   }
 
   function sortPost(criteria) {
@@ -186,7 +196,12 @@ const Stream = () => {
         </Row>
 
         <Suspense fallback={<h3>Chargement des posts...</h3>}>
-          <InnerStream filter={filter.key} tags={choices} />
+          <InnerStream
+            filter={filter.key}
+            tags={choices}
+            show_modal={showModal}
+            tag_click={tagClickHandler}
+          />
         </Suspense>
 
         <Modal
@@ -206,21 +221,6 @@ const Stream = () => {
       </Container>
 
       <br />
-    </>
-  );
-};
-
-// PostList :: Object => Component
-const PostList = (props) => {
-  return (
-    <>
-      {props.posts.map((post, i) => (
-        <Row key={i} className="mb-4">
-          <Col>
-            <PostPreview {...props} {...post} />
-          </Col>
-        </Row>
-      ))}
     </>
   );
 };

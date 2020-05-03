@@ -14,8 +14,7 @@ import {
 } from 'react-icons/fa';
 import clsx from 'clsx';
 import { FacebookShareButton } from 'react-share';
-import {useAuth} from "unanimity/context/authContext";
-
+import { useAuth } from 'unanimity/context/authContext';
 
 function getDisplayedType(type) {
   switch (type) {
@@ -29,14 +28,27 @@ function getDisplayedType(type) {
 }
 
 const PostPreview = ({
- post, previewLength, currentFilter, userVote, showModal, onTagClick, ...others
+  post,
+  previewLength,
+  currentFilter,
+  userVote,
+  show_modal,
+  onTagClick,
+  ...others
 }) => {
-
   const isLogged = !!useAuth().user;
   const {
-    id, title, content, author, score, type, createdAt, comments, tags
+    id,
+    title,
+    content,
+    author,
+    score,
+    type,
+    createdAt,
+    comments,
+    tags,
   } = post;
-  let vote = ['down', 'up', 'no'][userVote+1];
+  let vote = ['down', 'up', 'no'][userVote + 1];
 
   const [voted, setVoted] = useState(vote);
   const [scoreState, setScoreState] = useState(score);
@@ -45,12 +57,7 @@ const PostPreview = ({
 
   return (
     <div className="d-flex">
-      <Card
-        {...others}
-        className="post"
-        onClick={() => showModal(id)}
-        id={id}
-      >
+      <Card {...others} className="post" onClick={() => show_modal(id)} id={id}>
         <Card.Header>
           <h5>
             <Badge className={`post-${type} mr-2`}>
@@ -124,7 +131,6 @@ const PostPreview = ({
 
             <div className="px-3 pb-3 pt-2">
               <div className="mb-1">
-
                 {tags.map((tag, index) => {
                   return (
                     <a
@@ -136,9 +142,9 @@ const PostPreview = ({
                     >
                       <FaTag className="mr-1" />
                       {tag}
-                    </a>);
+                    </a>
+                  );
                 })}
-
               </div>
 
               <Card.Text>
@@ -174,8 +180,6 @@ const PostPreview = ({
       </Card>
     </div>
   );
-
 };
-
 
 export default PostPreview;
