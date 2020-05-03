@@ -10,8 +10,6 @@ import Modal from 'react-bootstrap/Modal';
 import InputGroup from 'react-bootstrap/InputGroup';
 import FormControl from 'react-bootstrap/FormControl';
 import Form from 'react-bootstrap/Form';
-import ToggleButton from 'react-bootstrap/ToggleButton';
-import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 
 const Role = ({ roleId, roleName, roleColor, roleCapabilities, deleteRole, setNotification, allCapabilities }) => {
 
@@ -37,11 +35,6 @@ const Role = ({ roleId, roleName, roleColor, roleCapabilities, deleteRole, setNo
 
     });
   };
-
-  const handleEdit = async () => {
-    console.log("TODO");
-
-  }
 
   return (
     <>
@@ -73,7 +66,8 @@ const Role = ({ roleId, roleName, roleColor, roleCapabilities, deleteRole, setNo
       <EditModal
         show={editModalShow}
         onHide={() => setEditModalShow(false)}
-        updateRole={handleEdit}
+        setNotification={setNotification}
+        setRole={setRole}
         handleClose={() => setEditModalShow(false)}
         roleToModify={ role }
         allCapabilities={ allCapabilities }
@@ -127,25 +121,62 @@ function RenameModal(props) {
   );
 }
 
-function EditModal({ onHide, show, roleToModify, allCapabilities }) {
+function EditModal({ onHide, show, roleToModify, allCapabilities, setRole, setNotification }) {
 
   const [capabilities, setCapabilities] = useState([]); //1 checked, 0 unchecked 
 
   useEffect(() => {
     const getCapabilities = async () => {
+
+      //Add every capacity to the modal
       let tmp = Array.from(capabilities); //in case there is no capability to show
       allCapabilities.forEach(capability => {
-        tmp = [...tmp, { name: capability.name, assigned: 0 }]
+        tmp = [...tmp, { id: capability.id, name: capability.name, assigned: false }]
       });
 
-      //FIXME : check if the capability is assigned to the role
-      
+      //Indicate wether or not the capability is assigned to the role
+      roleToModify.capabilities.forEach(e => {
+        tmp.forEach(capability => {
+          if (capability.id === e.id) {
+            capability.assigned = true;
+          }
+        });
+      });
+
       setCapabilities(tmp);
     };
     getCapabilities();
 
 
   }, []);
+
+  function handleEdit(button, capability) {
+    let tmp = capabilities.map(e => {
+      if (e.id === capability.id) {
+        let newCapabilities;
+        if (e.assigned){
+          newCapabilities = roleToModify.capabilities.filter(f => f.id !== e.id);
+
+        }else {
+          newCapabilities = [...roleToModify.capabilities, capability]
+        }
+        //telling the server
+        api.roles.edit(roleToModify.id, roleToModify.name, roleToModify.color, newCapabilities).then(answer => {
+          e.assigned = !e.assigned;
+          setRole({ id: roleToModify.id, name: roleToModify.name, color: roleToModify.color, capabilities: newCapabilities });
+        }).catch(error => {
+          let reason = error.reason == null ? "La demande n'a pu être traitée" : error.reason;
+          setNotification('');
+          setNotification(reason);
+          console.log(error);
+        });
+      }
+      return e;
+    });
+    setCapabilities(tmp)
+    //capability.assigned = !capability.assigned; //TODO PAS BON, pas modifier la dom
+    //api.roles.edit(roleToModify.id, roleToModify.name, roleToModify.color, [...roleToModify.capabilities, capability])
+  }
 
   return (
     <Modal
@@ -168,9 +199,14 @@ function EditModal({ onHide, show, roleToModify, allCapabilities }) {
                       {capability.name}
                     </Col>
                     <Col md="auto">
-                      <ToggleButtonGroup type="checkbox" defaultValue={[1]} className="mb-2">
-                        <ToggleButton variant="secondary" value={capability.assigned}>Attribuer</ToggleButton>
-                      </ToggleButtonGroup>
+
+                      <Form.Check 
+                        type="switch"
+                        id={ capability.id }
+                        label={ " " }
+                        checked={ capability.assigned }
+                        onClick={ e => handleEdit(e, capability) }
+                      />
                     </Col>
                   </Row>
                 </Card.Body>

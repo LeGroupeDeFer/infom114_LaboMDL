@@ -108,7 +108,6 @@ const UsersPage = () => {
 const RolesPage = () => {
 
   const [roles, setRoles] = useState([]);
-  const [users, setUsers] = useState([]);
   const [notification, setNotification] = useState("");
   const [capabilities, setCapabilities] = useState([]);
 
