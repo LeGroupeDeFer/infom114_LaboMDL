@@ -19,9 +19,13 @@ import api from '../lib/api';
 import { useRequest } from '../hooks';
 
 
-function InnerStream({ filter, tags, isLogged, onClick }) {
+function InnerStream({ filter, tags, onClick }) {
 
-  const posts = usePromise(api.posts, []);
+  const query = [['kind', filter], ['tags', tags]].reduce(
+    (a, [k, v]) => v ? { ...a, [k]: v} : a,
+    {}
+  );
+  const posts = usePromise(api.posts.where, [query]);
 
   return (
     <>
@@ -29,9 +33,8 @@ function InnerStream({ filter, tags, isLogged, onClick }) {
         <Row key={post.id} className="mb-4">
           <Col>
             <Post.Preview
-              isLogged={isLogged}
               onClick={onClick}
-              {...post}
+              post={post}
             />
           </Col>
         </Row>
@@ -47,8 +50,7 @@ const Stream = () => {
   const { user } = useAuth();
   const isLogged = !!user;
 
-  const [filter, setFilter] = useState('all');
-  const [posts, setPosts] = useState([]);
+  const [filter, setFilter] = useState({ key: 'all', label: 'Actualité'});
   const [postModal, setPostModal] = useState(null);
   const [modalDisplayed, setModalDisplayed] = useState(false);
 
@@ -146,36 +148,31 @@ const Stream = () => {
       <SearchBar onChange={handleChange} tags={tags} choices={choices}>
         <FilterBar onClick={setFilter} currentFilter={filter} />
       </SearchBar>
-      <Container className="my-5">
+      <Container className="py-5">
 
-        <br />
-        <Row>
-          <Col xs={2} sm={1}>
-            <Link to="/submit">
+        <Row><Col>
+          <h1 className="text-dark stream-header">{filter.label}</h1>
+          <hr />
+        </Col></Row>
+
+        <Row className="pb-3">
+          <Col className="d-flex justify-content-between">
+            <Link to="/submit" className="shape-circle">
               <OverlayTrigger
-                placement="bottom"
                 overlay={<Tooltip>Créer un post</Tooltip>}
               >
-                <Button variant="primary">
-                  <FaEdit />
+                <Button variant="primary" className="h-100">
+                  <div className="d-flex text-light"><FaEdit /></div>
                 </Button>
               </OverlayTrigger>
             </Link>
+            <SortDropdown sortPost={sortPost} />
           </Col>
         </Row>
 
-        <br />
-
-        <Row className="justify-content-end">
-          <SortDropdown sortPost={sortPost} />
-        </Row>
-
-        <br />
-
         <Suspense fallback={<h3>Chargement des posts...</h3>}>
-          <InnerStream />
+          <InnerStream filter={filter.key} tags={choices} />
         </Suspense>
-        <br />
 
         <Modal
           show={modalDisplayed}
@@ -272,19 +269,19 @@ const SortDropdown = (props) => {
 // FilterBar :: Object => Component
 const FilterBar = ({ currentFilter, onClick }) => {
   const options = [
-    { label: 'Tout', key: 'all', icon: faGlobeEurope },
-    { label: 'Sondage', key: 'poll', icon: faBalanceScale },
-    { label: 'Info', key: 'info', icon: faInfo },
-    { label: 'Idée', key: 'idea', icon: faLightbulb }
+    { label: 'Actualité', key: 'all', icon: faGlobeEurope },
+    { label: 'Sondages', key: 'poll', icon: faBalanceScale },
+    { label: 'Infos', key: 'info', icon: faInfo },
+    { label: 'Idées', key: 'idea', icon: faLightbulb }
   ];
 
   return (
     <ButtonGroup className="filter-bar d-flex justify-content-between">
-      {options.map(({ key, icon }) => (
+      {options.map(({ key, icon, label }) => (
         <Button
           key={key}
-          className={clsx('filter-choice', currentFilter === key && 'active')}
-          onClick={() => onClick(key)}
+          className={clsx('filter-choice', currentFilter.key === key && 'active')}
+          onClick={() => onClick({ key, icon, label })}
         >
           <Icon icon={icon} />
         </Button>

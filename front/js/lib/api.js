@@ -1,4 +1,4 @@
-import { snake, camel } from './index';
+import {snake, camel, empty, trace, identity} from './index';
 import jwtDecode from 'jwt-decode';
 
 /* istanbul ignore next */
@@ -31,6 +31,20 @@ let currentAccessToken;
  * @property { int }     code [HTTP status code]{@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status}.
  */
 
+const encode = encodeURIComponent;
+function query(target, search = {}) {
+  const snakeSearch = snake(search);
+  const params = Object.keys(snakeSearch).map(key =>
+    snakeSearch[key] instanceof Array
+      ? snakeSearch[key].map(elem => `${key}=${encode(elem)}`).join('&')
+      : `${key}=${encode(snakeSearch[key])}`
+  ).filter(identity);
+
+  return empty(params) ? target : `${target}?${params.join('&')}`;
+}
+
+Object.assign(query, { encode });
+
 /**
  * Fetch asynchronously the given api resource with the provided config.
  *
@@ -47,8 +61,9 @@ function api(endpoint, { body, ...providedConfig } = {}) {
   if (currentAccessToken)
     headers['Authorization'] = `Bearer ${currentAccessToken}`;
 
+  const method = providedConfig.method || (body ? 'POST' : 'GET');
   const config = {
-    method: body ? 'POST' : 'GET',
+    method,
     ...providedConfig,
     headers: {
       ...headers,
@@ -56,10 +71,12 @@ function api(endpoint, { body, ...providedConfig } = {}) {
     },
   };
 
-  if (body) config.body = JSON.stringify(snake(body));
+  let target = `${root}${endpoint}`;
+  if (body && method === 'GET') target = query(target, body);
+  if (body && method === 'POST') config.body = JSON.stringify(snake(body));
 
   return window
-    .fetch(`${root}${endpoint}`, config)
+    .fetch(target, config)
     .then((response) =>
       Promise.all([
         new Promise((resolve, _) => resolve(response.status)),
@@ -174,17 +191,18 @@ function posts() {
 
 Object.assign(posts, {
   of(id) { return api(`/post/${id}`); },
-  vote(id, vote) { return api(`/post/${id}/vote`, { body: { vote: vote } }); },
-  add(post) { return api(`/post`, { body: post }); }
+  vote(id, vote) { return api(`/post/${id}/vote`, { body: { vote } }); },
+  add(post) { return api('/post', { body: post }); },
+  where(query) { return api('/posts', { method: 'GET', body: query }); }
 });
 
 /* --------------------------------- Tags --------------------------------- */
 
 function tags(id) {
-  return api('/tags/');
+  return api('/tags');
 }
 
-Object.assign(api, { auth, posts, tags });
+Object.assign(api, { query, auth, posts, tags });
 
 
 export default api;

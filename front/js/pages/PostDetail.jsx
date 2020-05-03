@@ -11,11 +11,11 @@ import Card from 'react-bootstrap/Card';
 const PostDetail = () => {
   const { id } = useParams();
   const { user } = useAuth();
-  const isLogged = user != null ? 1 : 0;
+  const isLogged = !!user;
 
   const FetchedPost = () => {
     const post = usePromise(api.posts.of, [id]);
-    return <Post {...post} is_logged={isLogged} />;
+    return <Post {...post} isLogged={isLogged} />;
   };
 
   return (

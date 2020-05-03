@@ -14,56 +14,41 @@ import {
 } from 'react-icons/fa';
 import clsx from 'clsx';
 import { FacebookShareButton } from 'react-share';
+import {useAuth} from "unanimity/context/authContext";
+
+
+function getDisplayedType(type) {
+  switch (type) {
+    case 'info':
+      return 'Information';
+    case 'poll':
+      return 'Vote';
+    case 'idea':
+      return 'Idée';
+  }
+}
 
 const PostPreview = ({
- id,
- title,
- content,
- author,
- score,
- type,
- previewLength,
- createdAt,
- currentFilter,
- comments,
- tags,
- userVote,
- ...otherProps
+ post, previewLength, currentFilter, userVote, showModal, onTagClick, ...others
 }) => {
 
-  let vote = "";
-  switch (userVote) {
-    case -1: vote = "down";
-      break;
-    case 1: vote = "up";
-      break;
-    default: vote = "no";
-      break;
-  }
+  const isLogged = !!useAuth().user;
+  const {
+    id, title, content, author, score, type, createdAt, comments, tags
+  } = post;
+  let vote = ['down', 'up', 'no'][userVote+1];
 
   const [voted, setVoted] = useState(vote);
   const [scoreState, setScoreState] = useState(score);
-
-
-  function getDisplayedType(type) {
-    switch (type) {
-      case 'info':
-        return 'Information';
-      case 'poll':
-        return 'Vote';
-      case 'idea':
-        return 'Idée';
-    }
-  }
 
   if (!['all', type].includes(currentFilter)) return <></>;
 
   return (
     <div className="d-flex">
       <Card
-        {...otherProps}
+        {...others}
         className="post"
-        onClick={() => otherProps.show_modal(id)}
+        onClick={() => showModal(id)}
         id={id}
       >
         <Card.Header>
@@ -112,7 +97,7 @@ const PostPreview = ({
           <div className="d-flex">
             <div className="vote-section">
               <UpVote
-                is_logged={otherProps.is_logged}
+                isLogged={isLogged}
                 voted={voted}
                 set_vote={setVoted}
                 score={scoreState}
@@ -128,7 +113,7 @@ const PostPreview = ({
               </div>
 
               <DownVote
-                is_logged={otherProps.is_logged}
+                isLogged={isLogged}
                 voted={voted}
                 set_vote={setVoted}
                 score={scoreState}
@@ -145,7 +130,7 @@ const PostPreview = ({
                     <a
                       href="#"
                       className="mr-2 tag"
-                      onClick={(e) => otherProps.tag_click(e)}
+                      onClick={(e) => onTagClick(e)}
                       value={tag}
                       key={index}
                     >
@@ -189,6 +174,8 @@ const PostPreview = ({
       </Card>
     </div>
   );
+
 };
+
 
 export default PostPreview;

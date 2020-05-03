@@ -1,3 +1,4 @@
+use std::convert::{TryFrom, TryInto};
 use chrono::NaiveDateTime;
 use diesel::expression::functions::date_and_time::now;
 use diesel::prelude::*;
@@ -10,7 +11,7 @@ use crate::database::schema::posts::dsl;
 use crate::database::schema::tags::dsl as tags;
 use crate::database::tables::{posts_table as table, posts_tags_table, tags_table};
 use crate::database::SortOrder;
-use crate::lib::{Consequence, EntityError};
+use crate::lib::{self as conseq, Consequence, EntityError};
 
 
 // TODO - Move this in app state
@@ -18,6 +19,55 @@ const BASE: f64 = 1.414213562;
 const EPOCH: u64 = 1577840400; // 01/01/2020
 const EASING: u64 = 24 * 3600; // 1 day
 
+pub enum PostKind {
+    Info,
+    Poll,
+    Idea,
+    Decision,
+    Discussion,
+}
+
+impl TryFrom<u8> for PostKind {
+    type Error = conseq::Error;
+
+    fn try_from(n: u8) -> Consequence<PostKind> {
+        Ok(match n {
+            0 => PostKind::Info,
+            1 => PostKind::Idea,
+            2 => PostKind::Poll,
+            3 => PostKind::Decision,
+            4 => PostKind::Discussion,
+            _ => Err(EntityError::UnknownKind)?
+        })
+    }
+}
+
+impl TryFrom<String> for PostKind {
+    type Error = conseq::Error;
+
+    fn try_from(s: String) -> Consequence<PostKind> {
+        Ok(match &*s.to_lowercase() {
+            "poll" => PostKind::Poll,
+            "idea" => PostKind::Idea,
+            "info" => PostKind::Info,
+            "Decision" => PostKind::Decision,
+            "Discussion" => PostKind::Discussion,
+            _ => Err(EntityError::UnknownKind)?
+        })
+    }
+}
+
+impl From<PostKind> for u8 {
+    fn from(kind: PostKind) -> u8 {
+        match kind {
+            PostKind::Info => 0,
+            PostKind::Idea => 1,
+            PostKind::Poll => 2,
+            PostKind::Decision => 3,
+            PostKind::Discussion => 4
+        }
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Post {
@@ -60,7 +110,7 @@ impl PostEntity {
         tag: Option<String>,
         search: Option<String>,
         sort: Option<SortOrder>,
-        _tape: Option<String>, // type
+        kind: Option<String>, // type
         limit: Option<u32>,
         offset: Option<u32>,
     ) -> Consequence<Vec<Self>> {
@@ -96,6 +146,14 @@ impl PostEntity {
                 SortOrder::HighRank => query.order(dsl::rank.desc()),
                 SortOrder::LowRank => query.order(dsl::rank.asc()),
             }
+        }
+
+        let post_kind = kind
+            .and_then(|v| if &*v == "all" { None } else { Some(v) })
+            .map(|v| PostKind::try_from(v));
+        if let Some(kind) = post_kind {
+            let kind_id: u8 = kind?.into();
+            query = query.filter(dsl::kind.eq(kind_id));
         }
 
         // limit the results
@@ -271,18 +329,19 @@ impl PostEntity {
 }
 
 impl Post {
+
     pub fn all(
         conn: &MysqlConnection,
         can_see_hidden: bool,
         tag: Option<String>,
         search: Option<String>,
         sort: Option<SortOrder>,
-        tape: Option<String>, // type
+        kind: Option<String>, // type
         limit: Option<u32>,
         offset: Option<u32>,
     ) -> Consequence<Vec<Self>> {
         let entities =
-            PostEntity::get_all(conn, can_see_hidden, tag, search, sort, tape, limit, offset)?;
+            PostEntity::get_all(conn, can_see_hidden, tag, search, sort, kind, limit, offset)?;
         let posts = entities
             .into_iter()
             .map(move |post_entity| Post::from(post_entity))

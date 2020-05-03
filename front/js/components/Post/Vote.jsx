@@ -6,7 +6,7 @@ import clsx from 'clsx';
 import api from '../../lib/api';
 
 
-export const UpVote = ({ is_logged, voted, set_vote, score, set_score, post_id }) => {
+export const UpVote = ({ isLogged, voted, set_vote, score, set_score, post_id }) => {
   let notLoggedMsg = 'Il faut être authentifié pour pouvoir voter';
 
   function upVote(e, cancel) {
@@ -17,7 +17,7 @@ export const UpVote = ({ is_logged, voted, set_vote, score, set_score, post_id }
       if (cancel) {
         vote = 0;
       }
-      api.vote(post_id, vote).then(() => {
+      api.posts.vote(post_id, vote).then(() => {
         if (cancel) {
           set_score(score - 1);
           set_vote('no');
@@ -39,7 +39,7 @@ export const UpVote = ({ is_logged, voted, set_vote, score, set_score, post_id }
 
   return (
     <>
-      {is_logged ? (
+      {isLogged ? (
         <Button
           variant="light"
           className={`up-vote-btn ${clsx(voted === 'up' && 'up-voted')}`}
@@ -64,12 +64,12 @@ export const UpVote = ({ is_logged, voted, set_vote, score, set_score, post_id }
 };
 
 UpVote.defaultProps = {
-  is_logged: false,
+  isLogged: false,
   click_handle: null,
   voted: 'no',
 };
 
-export const DownVote = ({ is_logged, voted, set_vote, score, set_score, post_id }) => {
+export const DownVote = ({ isLogged, voted, set_vote, score, set_score, post_id }) => {
   let notLoggedMsg = 'Il faut être authentifié pour pouvoir voter';
 
   function downVote(e, cancel) {
@@ -80,7 +80,7 @@ export const DownVote = ({ is_logged, voted, set_vote, score, set_score, post_id
       if (cancel) {
         vote = 0;
       }
-      api.vote(post_id, vote).then(() => {
+      api.posts.vote(post_id, vote).then(() => {
         if (cancel) {
           set_score(score + 1);
           set_vote('no');
@@ -103,7 +103,7 @@ export const DownVote = ({ is_logged, voted, set_vote, score, set_score, post_id
 
   return (
     <>
-      {is_logged ? (
+      {isLogged ? (
         <Button
           variant="light"
           className={`down-vote-btn ${clsx(voted === 'down' && 'down-voted')}`}
@@ -128,7 +128,7 @@ export const DownVote = ({ is_logged, voted, set_vote, score, set_score, post_id
 };
 
 DownVote.defaultProps = {
-  is_logged: false,
+  isLogged: false,
   click_handle: null,
   voted: 'no',
 };

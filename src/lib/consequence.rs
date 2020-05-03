@@ -17,6 +17,7 @@ pub enum EntityError {
     EmptyAttribute,
     InvalidID,
     InvalidAttribute,
+    UnknownKind, // FIXME - Move in Post Error
 }
 
 impl FmtDisplay for EntityError {
@@ -32,6 +33,9 @@ impl FmtDisplay for EntityError {
             }
             EntityError::InvalidAttribute => {
                 write!(f, "At least one of the given attributes is invalid")
+            },
+            EntityError::UnknownKind => {
+                write!(f, "Unknown post kind")
             }
         }
     }

@@ -4,23 +4,24 @@ import Moment from 'react-moment';
 import { DownVote, UpVote } from './Vote';
 import { Row, Col, Button, Card, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import {useAuth} from "unanimity/context/authContext";
 
 const Comment = ({
  comment,
- is_logged,
  add_comment_editor,
  toggle_comment_editor,
  comment_editors,
  add_reply,
  ancestor_id = comment.id,
 }) => {
+  const isLogged = !!useAuth().user;
   const nestedComments = (comment.children || []).map((cmmt) => {
     return (
       <Comment
         ancestor_id={ancestor_id}
         key={cmmt.id}
         comment={cmmt}
-        is_logged={is_logged}
+        isLogged={isLogged}
         add_comment_editor={add_comment_editor}
         toggle_comment_editor={toggle_comment_editor}
         comment_editors={comment_editors}
@@ -45,7 +46,7 @@ const Comment = ({
         <Row className="comment-first-row">
           <Col className="col-auto vote-col">
             <UpVote
-              is_logged={is_logged}
+              isLogged={isLogged}
               voted={voted}
               set_vote={setVoted}
               points={pointsState}
@@ -71,7 +72,7 @@ const Comment = ({
           <Col className="col-auto vote-col">
             <div id="white-mask">
               <DownVote
-                is_logged={is_logged}
+                isLogged={isLogged}
                 voted={voted}
                 set_vote={setVoted}
                 points={pointsState}
@@ -82,7 +83,7 @@ const Comment = ({
           <Col>
             <div className="comment-text">{comment.text}</div>
 
-            {is_logged && (
+            {isLogged && (
               <Row className="pl-3">
                 <a
                   className="post-footer-btn mr-2"
@@ -119,7 +120,7 @@ const Comment = ({
 
 const CommentEditor = ({
  type,
- is_logged,
+ isLogged,
  comment_id,
  toggle_comment_editor,
  add_comment,
@@ -149,7 +150,7 @@ const CommentEditor = ({
     cancelClickHandle();
   }
 
-  if (!is_logged && type == 'comment') {
+  if (!isLogged && type == 'comment') {
     editor = (
       <Card>
         <Card.Body class="comment-editor comment-editor-guest">
@@ -169,7 +170,7 @@ const CommentEditor = ({
     );
   }
 
-  if (is_logged && type == 'comment') {
+  if (isLogged && type == 'comment') {
     editor = (
       <div className="comment-editor">
         <Form.Control
@@ -193,7 +194,7 @@ const CommentEditor = ({
     );
   }
 
-  if (is_logged && type == 'reply') {
+  if (isLogged && type == 'reply') {
     editor = (
       <div className="comment-editor pt-2">
         <Form.Control

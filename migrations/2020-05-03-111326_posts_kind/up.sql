@@ -1,0 +1,4 @@
+-- Your SQL goes here
+ALTER TABLE posts DROP CONSTRAINT posttype_values;
+ALTER TABLE posts DROP COLUMN post_type;
+ALTER TABLE posts ADD kind TINYINT UNSIGNED NOT NULL DEFAULT 0;

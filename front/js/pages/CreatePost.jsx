@@ -51,7 +51,6 @@ function CreateForm(tags) {
     content: '',
     type: '',
     tags: [],
-    options: ['', ''],
   });
 
   const typeList = [
@@ -71,20 +70,19 @@ function CreateForm(tags) {
     setLoading(true);
     setSubmitBtnText('');
 
+    post.kind = post.type;
+
     // Not updated immediately :/
     if (post.type != 'poll') {
       setPost({ ...post, options: [] });
     }
 
-    const addPost = () => {
-      api
-        .addPost(post)
-        .then((newPost) => {
-          history.push(`/post/${newPost.id}`);
-        })
-        .catch((error) => {});
-    };
-    addPost();
+    api.posts
+      .add(post)
+      .then((newPost) => {
+        history.push(`/post/${newPost.id}`);
+      })
+      .catch((error) => {});
   }
 
   // I didn't find another way to add styles to the select

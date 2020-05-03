@@ -154,7 +154,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for Auth {
         let state: State<AppState> = request.guard().unwrap();
         match request_auth(request, &state.jwt_secret) {
             Ok(auth) => Outcome::Success(auth),
-            Err(msg) => Outcome::Failure((Status::Forbidden, msg)),
+            Err(msg) => Outcome::Failure((Status::Unauthorized, msg)),
         }
     }
 }
