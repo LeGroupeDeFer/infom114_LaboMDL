@@ -25,22 +25,12 @@ function SearchOption({ icon, label }) {
   );
 }
 
-function SearchBar({ tags, onChange, children }) {
+function SearchBar({ tags, choices, onChange, children }) {
 
-  const options = [
-    {
-      value: 'FacInfo',
-      label: <SearchOption icon={faTag} label="FacInfo" />
-    },
-    {
-      value: 'FacEco',
-      label: <SearchOption icon={faTag} label="FacEco" />
-    },
-    {
-      value: 'Arsenal',
-      label: <SearchOption icon={faTag} label="Arsenal" />
-    },
-  ];
+  const options = tags.map(({ label, value }) => ({
+    value,
+    label: <SearchOption icon={faTag} label={label} />
+  }));
 
   return (
     <Container fluid className="search-container py-2">
@@ -56,7 +46,7 @@ function SearchBar({ tags, onChange, children }) {
             components={{ DropdownIndicator }}
             placeholder="Rechercher"
             formatCreateLabel={(userInput) => `Rechercher "${userInput}"`}
-            value={tags}
+            value={choices}
             onChange={onChange}
           />
         </Col>
@@ -66,6 +56,7 @@ function SearchBar({ tags, onChange, children }) {
       </Row>
     </Container>
   );
+
 }
 
 export default SearchBar;

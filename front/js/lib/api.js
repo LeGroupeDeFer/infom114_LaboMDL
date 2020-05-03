@@ -23,13 +23,13 @@ let currentAccessToken;
  */
 
 /**
-* @memberof api
-*
-* @typedef { Object } Response
-* @property { boolean } success Request success status.
-* @property { string }  message A short description explaining the success status.
-* @property { int }     code [HTTP status code]{@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status}.
-*/
+ * @memberof api
+ *
+ * @typedef { Object } Response
+ * @property { boolean } success Request success status.
+ * @property { string }  message A short description explaining the success status.
+ * @property { int }     code [HTTP status code]{@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status}.
+ */
 
 /**
  * Fetch asynchronously the given api resource with the provided config.
@@ -42,7 +42,6 @@ let currentAccessToken;
  * @param { ...any } [config.others=null] [Fetch parameters]{@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API} to override automatic parameters.
  */
 function api(endpoint, { body, ...providedConfig } = {}) {
-
   const headers = { 'content-type': 'application/json' };
 
   if (currentAccessToken)
@@ -53,32 +52,33 @@ function api(endpoint, { body, ...providedConfig } = {}) {
     ...providedConfig,
     headers: {
       ...headers,
-      ...providedConfig.headers
-    }
+      ...providedConfig.headers,
+    },
   };
 
-  if (body)
-    config.body = JSON.stringify(snake(body));
+  if (body) config.body = JSON.stringify(snake(body));
 
   return window
     .fetch(`${root}${endpoint}`, config)
-    .then(response => Promise.all(
-      [new Promise(resolve => resolve(response.status)), response.json()]
-    ))
+    .then((response) =>
+      Promise.all([
+        new Promise((resolve, _) => resolve(response.status)),
+        response.json(),
+      ])
+    )
     .then(([status, data]) => {
-      if (status < 200 || status >= 300)
-        throw { ...data, code: status };
+      if (status < 200 || status >= 300) throw { ...data, code: status };
       return camel(data);
     });
-
 }
+
+/* --------------------------------- Auth --------------------------------- */
 
 function auth(endpoint, config) {
   return api(`/auth${endpoint}`, config);
 }
 
 Object.assign(auth, {
-
   clear() {
     currentAccessToken = undefined;
     store.removeItem('__refresh_token__');
@@ -94,13 +94,12 @@ Object.assign(auth, {
    */
   login(email, password) {
     return auth('/login', {
-      body: { email, password }
+      body: { email, password },
     }).then(({ user, accessToken, refreshToken }) => {
       currentAccessToken = accessToken;
       store.setItem('__refresh_token__', `${email}:${refreshToken}`);
       return { accessToken, user };
     });
-
   },
 
   /**
@@ -115,8 +114,9 @@ Object.assign(auth, {
     if (refreshToken === null)
       return Promise.reject({ code: 0, reason: 'Not connected' });
 
-    return auth('/logout', { body: { email, refreshToken } })
-      .then(data => auth.clear() || data);
+    return auth('/logout', { body: { email, refreshToken } }).then(
+      (data) => auth.clear() || data
+    );
   },
 
   refresh() {
@@ -130,7 +130,8 @@ Object.assign(auth, {
         return { accessToken, user };
       })
       .catch(({ code, reason }) => {
-        if (code == 403) // Token expired
+        if (code == 403)
+          // Token expired
           auth.clear();
         return Promise.reject({ code, reason });
       });
@@ -163,10 +164,27 @@ Object.assign(auth, {
   session() {
     return store.getItem('__refresh_token__') !== null;
   },
-
 });
 
-Object.assign(api, { auth /*, ...otherAPIs */ });
+/* --------------------------------- Posts -------------------------------- */
+
+function posts() {
+  return api('/posts');
+}
+
+Object.assign(posts, {
+  of(id) { return api(`/post/${id}`); },
+  vote(id, vote) { return api(`/post/${id}/vote`, { body: { vote: vote } }); },
+  add(post) { return api(`/post`, { body: post }); }
+});
+
+/* --------------------------------- Tags --------------------------------- */
+
+function tags(id) {
+  return api('/tags/');
+}
+
+Object.assign(api, { auth, posts, tags });
 
 
 export default api;

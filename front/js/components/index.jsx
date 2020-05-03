@@ -6,4 +6,3 @@ export { default as Waiting } from './Waiting';
 export { Unauthenticated, Authenticated, Dialog } from './Auth';
 export { default as SearchBar } from './SearchBar';
 export { default as Post } from './Post';
-export { default as PostPreview } from './PostPreview';

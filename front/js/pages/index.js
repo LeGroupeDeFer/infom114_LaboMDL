@@ -8,8 +8,6 @@ import Profile from './Profile';
 import Register from './Register';
 import Settings from './Settings';
 import Stream from './Stream';
-import Post from './Post';
-import CreatePost from './CreatePost';
 import Restore from './Restore';
 
 export default {
@@ -24,6 +22,4 @@ export default {
   Restore,
   Settings,
   Stream,
-  Post,
-  CreatePost,
 };

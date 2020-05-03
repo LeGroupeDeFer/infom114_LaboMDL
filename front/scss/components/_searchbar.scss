@@ -66,6 +66,11 @@
   &__indicator {
     margin-right: .3em;
   }
+
+  &__multi-value {
+    border-radius: 1em !important;
+    background-color: gray("500") !important;
+  }
 }
 
 .search-option {

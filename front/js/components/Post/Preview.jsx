@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import Card from 'react-bootstrap/Card';
-import { dev, preview } from '../lib';
-import Badge from 'react-bootstrap/Badge';
-import GoArrowDown from 'react-icons/go';
+import { Link } from 'react-router-dom';
 import Moment from 'react-moment';
-import DownVote from './DownVote';
-import UpVote from './UpVote';
+import { dev, preview } from '../../lib';
+import { Badge, Card, Dropdown, DropdownButton } from 'react-bootstrap';
+import { DownVote, UpVote } from './Vote';
 import { MdModeComment, MdReport } from 'react-icons/md';
 import {
   FaTag,
@@ -15,24 +13,37 @@ import {
   FaFlag,
 } from 'react-icons/fa';
 import clsx from 'clsx';
-import DropdownButton from 'react-bootstrap/DropdownButton';
-import Dropdown from 'react-bootstrap/Dropdown';
 import { FacebookShareButton } from 'react-share';
 
 const PostPreview = ({
-  title,
-  text,
-  username,
-  points,
-  type,
-  previewLength,
-  createdOn,
-  currentFilter,
-  commentNb,
-  ...otherProps
+ id,
+ title,
+ content,
+ author,
+ score,
+ type,
+ previewLength,
+ createdAt,
+ currentFilter,
+ comments,
+ tags,
+ userVote,
+ ...otherProps
 }) => {
-  const [voted, setVoted] = useState('no');
-  const [pointsState, setPointsState] = useState(points);
+
+  let vote = "";
+  switch (userVote) {
+    case -1: vote = "down";
+      break;
+    case 1: vote = "up";
+      break;
+    default: vote = "no";
+      break;
+  }
+
+  const [voted, setVoted] = useState(vote);
+  const [scoreState, setScoreState] = useState(score);
+
 
   function getDisplayedType(type) {
     switch (type) {
@@ -52,7 +63,8 @@ const PostPreview = ({
       <Card
         {...otherProps}
         className="post"
-        onClick={(e) => otherProps.show_modal(e)}
+        onClick={() => otherProps.show_modal(id)}
+        id={id}
       >
         <Card.Header>
           <h5>
@@ -64,11 +76,13 @@ const PostPreview = ({
             <span className="text-muted">
               {' '}
               <a href="#" className="text-dark">
-                {username}
+                {author.firstname}
+                {'  '}
+                {author.lastname}
               </a>{' '}
               -{' '}
               <Moment locale="fr" fromNow>
-                {createdOn}
+                {createdAt}
               </Moment>
             </span>
 
@@ -101,71 +115,67 @@ const PostPreview = ({
                 is_logged={otherProps.is_logged}
                 voted={voted}
                 set_vote={setVoted}
-                points={pointsState}
-                set_points={setPointsState}
+                score={scoreState}
+                set_score={setScoreState}
+                post_id={id}
               />
               <div
                 className={`text-center ${clsx(
                   voted !== 'no' && voted + '-voted'
                 )}`}
               >
-                <b>{pointsState}</b>
+                <b>{scoreState}</b>
               </div>
 
               <DownVote
                 is_logged={otherProps.is_logged}
                 voted={voted}
                 set_vote={setVoted}
-                points={pointsState}
-                set_points={setPointsState}
+                score={scoreState}
+                set_score={setScoreState}
+                post_id={id}
               />
             </div>
 
             <div className="px-3 pb-3 pt-2">
               <div className="mb-1">
-                <a
-                  href="#"
-                  className="mr-2 tag"
-                  onClick={(e) => otherProps.tag_click(e)}
-                  value="Arsenal"
-                >
-                  <FaTag className="mr-1" />
-                  Arsenal
-                </a>
-                <a
-                  href="#"
-                  className="mr-2 tag"
-                  onClick={(e) => otherProps.tag_click(e)}
-                  value="FacInfo"
-                >
-                  <FaTag className="mr-1" />
-                  FacInfo
-                </a>
-                <a
-                  href="#"
-                  className="mr-2 tag"
-                  onClick={(e) => otherProps.tag_click(e)}
-                  value="FacEco"
-                >
-                  <FaTag className="mr-1" />
-                  FacEco
-                </a>
+
+                {tags.map((tag, index) => {
+                  return (
+                    <a
+                      href="#"
+                      className="mr-2 tag"
+                      onClick={(e) => otherProps.tag_click(e)}
+                      value={tag}
+                      key={index}
+                    >
+                      <FaTag className="mr-1" />
+                      {tag}
+                    </a>);
+                })}
+
               </div>
 
               <Card.Text>
-                {preview(text, previewLength)} <a href="#">Lire la suite</a>
+                {preview(content, previewLength)}{' '}
+                <Link to={'/post/' + id}>Lire la suite</Link>
               </Card.Text>
 
-              <a className="post-footer-btn mr-2" href="#">
+              <Link
+                to={'/post/' + id}
+                className="post-footer-btn mr-2"
+                href="#"
+              >
                 <MdModeComment size="1.25em" className="mr-1" />
                 <span className="text-muted">
-                  {commentNb} {commentNb <= 1 ? 'commentaire' : 'commentaires'}
+                  {comments.length}{' '}
+                  {comments.length <= 1 ? 'commentaire' : 'commentaires'}
                 </span>
-              </a>
+              </Link>
 
               <FacebookShareButton
-                url="unanimty.be"
-                quote="Vive le covid-19"
+                url={'https://unanimity.be/post/' + id}
+                quote={title + ' - ' + author.firstname + ' ' + author.lastname}
                 onClick={(e) => e.stopPropagation()}
               >
                 <a className="post-footer-btn mr-2" href="#">
@@ -179,17 +189,6 @@ const PostPreview = ({
       </Card>
     </div>
   );
-};
-
-PostPreview.defaultProps = {
-  title: 'A post',
-  text: dev.loremIpsum,
-  username: 'John Coffey',
-  previewLength: 200,
-  points: 25,
-  type: 'info',
-  createdOn: '2020-02-29T12:59-0500',
-  commentNb: 12,
 };
 
 export default PostPreview;

@@ -1,151 +1,103 @@
+import 'regenerator-runtime';
 import React, { Suspense, useState, useEffect } from 'react';
 import {
   Container, Row, Col, Button, Modal, ButtonGroup, Dropdown, DropdownButton,
   Tooltip, OverlayTrigger
 } from 'react-bootstrap';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import {faGlobeEurope, faBalanceScale, faInfo, faLightbulb} from '@fortawesome/free-solid-svg-icons';
+import { faGlobeEurope, faBalanceScale, faInfo, faLightbulb } from '@fortawesome/free-solid-svg-icons';
 import { MdSort } from 'react-icons/md';
 import usePromise from 'react-promise-suspense';
-import { fakeLatency, loremIpsum } from '../lib/dev';
+import { loremIpsum } from '../lib/dev';
 import { components } from 'react-select';
 import { FaSearch, FaTag, FaEdit } from 'react-icons/fa';
 import { useAuth } from '../context/authContext';
 import { Link } from 'react-router-dom';
-import { PostPreview, Post, SearchBar } from '../components';
+import { Post, SearchBar } from '../components';
 import clsx from 'clsx';
+import api from '../lib/api';
+import { useRequest } from '../hooks';
+
+
+function InnerStream({ filter, tags, isLogged, onClick }) {
+
+  const posts = usePromise(api.posts, []);
+
+  return (
+    <>
+      {posts.map(post => (
+        <Row key={post.id} className="mb-4">
+          <Col>
+            <Post.Preview
+              isLogged={isLogged}
+              onClick={onClick}
+              {...post}
+            />
+          </Col>
+        </Row>
+      ))}
+    </>
+  );
+
+}
 
 
 // Stream :: None => Component
 const Stream = () => {
+  const { user } = useAuth();
+  const isLogged = !!user;
+
   const [filter, setFilter] = useState('all');
-  const [posts, setPosts] = useState(usePromise(fetchPosts, [fakeLatency]));
-  const [tags, setTags] = useState(null);
-  const { login, user } = useAuth();
+  const [posts, setPosts] = useState([]);
   const [postModal, setPostModal] = useState(null);
   const [modalDisplayed, setModalDisplayed] = useState(false);
-  //const isLogged = user != null ? 1 : 0;
-  const isLogged = 1;
+
+  const [tags, setTags] = useState([]);
+  const [choices, setChoices] = useState([]);
+  const [error, tagsData] = useRequest(api.tags, []);
+
+  useEffect(() => setTags((tagsData ? tagsData.tags : []).map(
+    tag => ({ id: tag.id, label: tag.label })
+  )), [tagsData]);
+
 
   function hideModal() {
     setModalDisplayed(false);
   }
 
-  function showModal(e) {
-    const postId = e.currentTarget.closest('.post').getAttribute('id');
-
-    // TODO Fetch the post's data
-
-    const postData = {
-      post_id: 1234,
-      title: 'Je souhaite devenir champion de la WWE',
-      type: 'poll',
-      text: loremIpsum,
-      username: 'John Cena',
-      points: 7,
-      createdOn: '2020-03-01T12:59-0500',
-      commentNb: 5,
-      comments: [
-        {
-          id: 1,
-          text: 'Tu racontes de la merde bro ! ',
-          author: 'John Cena',
-          created_on: '2020-02-29T12:59-0500',
-          points: 12,
-          children: [
-            {
-              id: 34747,
-              text: 'Breeehhhhhhh',
-              author: 'John Cena',
-              created_on: '2020-03-14T12:59-0500',
-              points: 0,
-              children: [],
-            },
-            {
-              id: 2,
-              text: 'tg rdv a l gar du nor. 22h vien seul ',
-              author: 'John Casey',
-              created_on: '2020-02-29T12:59-0500',
-              points: 666,
-              children: [
-                {
-                  id: 3,
-                  text: 'Ok.',
-                  author: 'John Cena',
-                  created_on: '2020-03-14T12:59-0500',
-                  points: 0,
-                  children: [],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: 4,
-          text: 'Yallah ! ',
-          author: 'John Couscous',
-          created_on: '2020-02-29T12:59-0500',
-          points: -4,
-          children: [
-            {
-              id: 35,
-              text: 'Test',
-              author: 'John Cena',
-              created_on: '2020-03-14T12:59-0500',
-              points: 0,
-              children: [],
-            },
-          ],
-        },
-        {
-          id: 5,
-          text:
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque volutpat vulputate nisl quis pulvinar. Praesent euismod magna metus, quis ultricies nunc sagittis in. Maecenas eleifend pulvinar nunc Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque volutpat vulputate nisl quis pulvinar. Praesent euismod magna metus, quis ultricies nunc sagittis in. Maecenas eleifend pulvinar nunc',
-          author: 'John Latin',
-          created_on: '2020-02-29T12:59-0500',
-          points: -7,
-          children: [],
-        },
-      ],
+  function showModal(postId) {
+    setPostModal(null);
+    const fetchPost = () => {
+      api
+        .getPost(postId)
+        .then((post) => {
+          setPostModal(post);
+        })
+        .catch((error) => {});
     };
 
-    setPostModal(postData);
-
+    fetchPost();
     setModalDisplayed(true);
   }
 
-  function handleChange(selectedOpttion) {
-    if (selectedOpttion != null) {
-      let tags = selectedOpttion.map(function (x) {
-        return {
-          value: x.value,
-          label: x.label,
-        };
-      });
-      setTags(tags);
-    } else {
-      setTags(null);
-    }
+  function handleChange(selectedOptions) {
+    setChoices(selectedOptions != null
+      ? selectedOptions.map(({ label, value }) => ({ label, value }))
+      : []
+    );
   }
 
   function tagClickHandler(e) {
     e.stopPropagation();
-    let tagValue = e.target.getAttribute('value');
-    let tag = {
-      value: tagValue,
-      label: (
-        <span>
-          <FaTag /> {tagValue}
-        </span>
-      ),
-    };
-    setTags(tag);
+    let value = e.target.getAttribute('value');
+    let tag = { value, label: value };
+    setChoices([tag]);
     // Scroll to the top
     document.getElementsByTagName('main')[0].scrollTo(0, 0);
   }
 
   function sortPost(criteria) {
-    let sortedPost = [
+    return [
       {
         id: 1,
         title: 'Je suis également un titre',
@@ -187,15 +139,14 @@ const Stream = () => {
         commentNb: 4,
       },
     ];
-    setPosts(sortedPost);
   }
 
   return (
     <>
-      <SearchBar onChange={handleChange} tags={tags}>
+      <SearchBar onChange={handleChange} tags={tags} choices={choices}>
         <FilterBar onClick={setFilter} currentFilter={filter} />
       </SearchBar>
-      <Container>
+      <Container className="my-5">
 
         <br />
         <Row>
@@ -221,14 +172,8 @@ const Stream = () => {
 
         <br />
 
-        <Suspense fallback={<h3>Loading posts...</h3>}>
-          <PostList
-            currentFilter={filter}
-            posts={posts}
-            is_logged={isLogged}
-            tag_click={tagClickHandler}
-            show_modal={(e) => showModal(e)}
-          />
+        <Suspense fallback={<h3>Chargement des posts...</h3>}>
+          <InnerStream />
         </Suspense>
         <br />
 
@@ -239,9 +184,11 @@ const Stream = () => {
         >
           <Modal.Header closeButton></Modal.Header>
           <Modal.Body>
-            <Suspense fallback={<h3>Loading data</h3>}>
-              <Post is_logged={isLogged} post_data={postModal} />
-            </Suspense>
+            {postModal ? (
+              <Post {...postModal} isLogged={isLogged} />
+            ) : (
+              'Chargement des données...'
+            )}
           </Modal.Body>
         </Modal>
       </Container>
@@ -250,58 +197,6 @@ const Stream = () => {
     </>
   );
 };
-
-/* Delayed fetching of user posts */
-// fetchPosts :: int => Promise<Array<Object>>
-const fetchPosts = (time) =>
-  new Promise((resolve, _) =>
-    setTimeout(
-      () =>
-        resolve([
-          {
-            id: 2,
-            title: 'Je suis également un titre',
-            type: 'poll',
-            text: loremIpsum,
-            username: 'John Cena',
-            points: 7,
-            createdOn: '2020-03-01T12:59-0500',
-            commentNb: 2,
-          },
-          {
-            id: 1,
-            title: 'Je suis également un titre',
-            type: 'poll',
-            text: loremIpsum,
-            username: 'John Couscous',
-            points: 12,
-            createdOn: '2020-02-29T12:59-0500',
-            commentNb: 1,
-          },
-          {
-            id: 4,
-            title: 'Je suis également un titre',
-            type: 'idea',
-            text: loremIpsum,
-            username: 'John Doe',
-            points: 0,
-            createdOn: '2020-02-27T12:59-0500',
-            commentNb: 4,
-          },
-          {
-            id: 3,
-            title: 'Im a post title',
-            type: 'info',
-            text: loremIpsum,
-            username: 'John Coffey',
-            points: 2,
-            createdOn: '2020-02-19T12:59-0500',
-            commentNb: 0,
-          },
-        ]),
-      time
-    )
-  );
 
 // PostList :: Object => Component
 const PostList = (props) => {
@@ -318,6 +213,7 @@ const PostList = (props) => {
   );
 };
 
+
 const DropdownIndicator = (props) => {
   return (
     <components.DropdownIndicator {...props}>
@@ -325,6 +221,7 @@ const DropdownIndicator = (props) => {
     </components.DropdownIndicator>
   );
 };
+
 
 // SortDropdown :: None => Component
 const SortDropdown = (props) => {
@@ -397,5 +294,6 @@ const FilterBar = ({ currentFilter, onClick }) => {
 };
 
 Stream.defaultProps = {};
+
 
 export default Stream;

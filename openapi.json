@@ -2739,7 +2739,16 @@
           "content": {
             "type": "string"
           },
+          "type": {
+            "type": "string"
+          },
           "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "options": {
             "type": "array",
             "items": {
               "type": "string"

@@ -1,35 +1,70 @@
-import React, { useState } from 'react';
-import CommentEditor from '../components/CommentEditor';
-import Comment from '../components/Comment';
-import Badge from 'react-bootstrap/Badge';
+import React, {useState} from 'react';
+import { Row, Col, Badge } from 'react-bootstrap';
 import Moment from 'react-moment';
-import { FacebookShareButton } from 'react-share';
-import DownVote from './DownVote';
-import UpVote from './UpVote';
-import { MdModeComment, MdReport } from 'react-icons/md';
-import { FaTag, FaFacebookSquare, FaEyeSlash, FaFlag } from 'react-icons/fa';
 import clsx from 'clsx';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import DropdownButton from 'react-bootstrap/DropdownButton';
-import Dropdown from 'react-bootstrap/Dropdown';
-import { MdSort } from 'react-icons/md';
+import { UpVote, DownVote } from './Vote';
+import { FaEyeSlash, FaFacebookSquare, FaFlag, FaTag } from 'react-icons/fa';
+import { MdModeComment } from 'react-icons/md';
+import { FacebookShareButton } from 'react-share';
 
-const Post = ({ is_logged, post_data }) => {
+import Preview from './Preview';
+import Comment from './Comment';
+
+function Comments({
+  isLogged,
+  toggle_comment_editor,
+  add_comment_editor,
+  comment_editors,
+  comments,
+}) {
+  return (
+    <>
+      {Object.keys(comments).map((key) => {
+        return (
+          <Comment
+            key={comments[key].id}
+            comment={comments[key]}
+            isLogged={isLogged}
+            toggle_comment_editor={toggle_comment_editor}
+            add_comment_editor={add_comment_editor}
+            comment_editors={comment_editors}
+          />
+        );
+      })}
+    </>
+  );
+}
+
+function Post({
+  id,
+  title,
+  content,
+  author,
+  score,
+  type,
+  createdAt,
+  comments,
+  tags,
+  userVote,
+  isLogged
+}) {
+
   const [commentEditors, setCommentEditors] = useState({});
-  const [comments, setComments] = useState(post_data.comments);
-  const [voted, setVoted] = useState('no');
-  const [pointsState, setPointsState] = useState(post_data.points);
+  const [commentList, setCommentList] = useState(comments);
+
+  let vote = ['down', 'up', 'no'][userVote +1 ];
+  const [voted, setVoted] = useState(vote);
+  const [scoreState, setScoreState] = useState(score);
 
   function addComment(comment) {
-    setComments((cmmt) =>
+    setCommentList((cmmt) =>
       [
         {
           id: Date.now(),
           text: comment,
           author: 'John Doe',
           created_on: Date.now(),
-          points: -8,
+          score: -8,
           children: [],
         },
       ].concat(cmmt)
@@ -48,9 +83,9 @@ const Post = ({ is_logged, post_data }) => {
   }
 
   function addReply(comment, parentId, ancestorId) {
-    let newComments = [...comments];
+    let newComments = [...commentList];
     addReplyRecursively(newComments, comment, parentId, ancestorId);
-    setComments(newComments);
+    setCommentList(newComments);
   }
 
   function addReplyRecursively(comments, comment, parentId, ancestorId) {
@@ -63,7 +98,7 @@ const Post = ({ is_logged, post_data }) => {
             text: comment,
             author: 'John Doe',
             created_on: Date.now(),
-            points: -8,
+            score: -8,
             children: [],
           });
         } else {
@@ -78,7 +113,7 @@ const Post = ({ is_logged, post_data }) => {
             text: comment,
             author: 'John Doe',
             created_on: Date.now(),
-            points: -8,
+            score: -8,
             children: [],
           });
         } else {
@@ -105,9 +140,9 @@ const Post = ({ is_logged, post_data }) => {
 
     let newEditor = {
       editor: (
-        <CommentEditor
+        <Comment.Editor
           type="reply"
-          is_logged={is_logged}
+          isLogged={isLogged}
           toggle_comment_editor={toggleCommentEditor}
           comment_id={commentId}
           ancestor_id={ancestorId}
@@ -129,29 +164,32 @@ const Post = ({ is_logged, post_data }) => {
         <Row className="comment-first-row">
           <Col className="col-auto vote-col">
             <UpVote
-              is_logged={is_logged}
+              isLogged={isLogged}
               voted={voted}
               set_vote={setVoted}
-              points={pointsState}
-              set_points={setPointsState}
+              score={scoreState}
+              set_score={setScoreState}
+              post_id={id}
             />
           </Col>
           <Col>
             {' '}
             <h5>
-              <Badge className={`post-${post_data.type} mr-1`}>
-                {getDisplayedType(post_data.type)}
+              <Badge className={`post-${type} mr-1`}>
+                {getDisplayedType(type)}
               </Badge>
-              <span className="mr-1">{post_data.title}</span>
+              <span className="mr-1">{title}</span>
 
               <span className="text-muted title-part2">
                 {' '}
                 <a href="#" className="text-dark">
-                  {post_data.username}
+                  {author.firstname}
+                  {'  '}
+                  {author.lastname}
                 </a>{' '}
                 -{' '}
                 <Moment locale="fr" fromNow>
-                  {post_data.createdOn}
+                  {createdAt}
                 </Moment>
               </span>
             </h5>
@@ -164,62 +202,57 @@ const Post = ({ is_logged, post_data }) => {
                 voted !== 'no' && voted + '-voted'
               )}`}
             >
-              <b>{pointsState}</b>
+              <b>{scoreState}</b>
             </div>
 
             <DownVote
-              is_logged={is_logged}
+              isLogged={isLogged}
               voted={voted}
               set_vote={setVoted}
-              points={pointsState}
-              set_points={setPointsState}
+              score={scoreState}
+              set_score={setScoreState}
+              post_id={id}
             />
           </Col>
 
           <Col>
             <div className="mb-1">
-              <a
-                href="#"
-                className="mr-2 tag"
-                onClick={(e) => otherProps.tag_click(e)}
-                value="Arsenal"
-              >
-                <FaTag className="mr-1" />
-                Arsenal
-              </a>
-              <a
-                href="#"
-                className="mr-2 tag"
-                onClick={(e) => otherProps.tag_click(e)}
-                value="FacInfo"
-              >
-                <FaTag className="mr-1" />
-                FacInfo
-              </a>
-              <a
-                href="#"
-                className="mr-2 tag"
-                onClick={(e) => otherProps.tag_click(e)}
-                value="FacEco"
-              >
-                <FaTag className="mr-1" />
-                FacEco
-              </a>
+
+              {tags.map(tag => {
+                return (
+                  <a
+                    href="#"
+                    className="mr-2 tag"
+                    onClick={(e) => otherProps.tag_click(e)}
+                    value={tag}
+                  >
+                    <FaTag className="mr-1" />
+                    {tag}
+                  </a>);
+              })}
             </div>
             <br />
-            <p>{post_data.text}</p>
+            <p>{content}</p>
             <div>
               <a className="post-footer-btn mr-3" href="#">
                 <MdModeComment size="1.25em" className="mr-2" />
                 <span className="text-muted">
-                  {post_data.commentNb}{' '}
-                  {post_data.commentNb <= 1 ? 'commentaire' : 'commentaires'}
+                  {comments.length}{' '}
+                  {comments.length <= 1
+                    ? 'commentaire'
+                    : 'commentaires'}
                 </span>
               </a>
 
               <FacebookShareButton
-                url="unanimty.be"
-                quote="Vive le covid-19"
+                url={'https://unanimity.be/post/' + id}
+                quote={
+                  title +
+                  ' - ' +
+                  author.firstname +
+                  ' ' +
+                  author.lastname
+                }
                 onClick={(e) => e.stopPropagation()}
               >
                 <a className="post-footer-btn mr-3" href="#">
@@ -240,8 +273,8 @@ const Post = ({ is_logged, post_data }) => {
             </div>
             <br />
 
-            <CommentEditor
-              is_logged={is_logged}
+            <Comment.Editor
+              isLogged={isLogged}
               type="comment"
               add_comment={addComment}
             />
@@ -263,41 +296,20 @@ const Post = ({ is_logged, post_data }) => {
         </DropdownButton>
         <hr/> */}
         <Comments
-          is_logged={is_logged}
+          isLogged={isLogged}
           toggle_comment_editor={toggleCommentEditor}
           add_comment_editor={addCommentEditor}
           comment_editors={commentEditors}
-          comments={comments}
+          comments={commentList}
         />
       </div>
       <br />
     </>
   );
-};
+}
 
-const Comments = ({
-  is_logged,
-  toggle_comment_editor,
-  add_comment_editor,
-  comment_editors,
-  comments,
-}) => {
-  return (
-    <>
-      {Object.keys(comments).map((key) => {
-        return (
-          <Comment
-            key={comments[key].id}
-            comment={comments[key]}
-            is_logged={is_logged}
-            toggle_comment_editor={toggle_comment_editor}
-            add_comment_editor={add_comment_editor}
-            comment_editors={comment_editors}
-          />
-        );
-      })}
-    </>
-  );
-};
+
+Object.assign(Post, { Preview, Comment });
+
 
 export default Post;

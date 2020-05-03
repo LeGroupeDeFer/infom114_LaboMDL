@@ -11,6 +11,7 @@ import {
 import Sidebar from './Sidebar';
 import layout from '../lib/layout';
 import { useAuth } from '../context/authContext';
+import PostDetail from '../pages/PostDetail';
 
 const Stream = lazy(() => import('../pages/Stream'));
 const Profile = lazy(() => import('../pages/Profile'));
@@ -22,7 +23,6 @@ const Logout = lazy(() => import('../pages/Logout'));
 const Register = lazy(() => import('../pages/Register'));
 const Activate = lazy(() => import('../pages/Activate'));
 const CreatePost = lazy(() => import('../pages/CreatePost'));
-const Post = lazy(() => import('../pages/Post'));
 const Recover = lazy(() => import('../pages/Recover'));
 const Restore = lazy(() => import('../pages/Restore'));
 
@@ -80,7 +80,7 @@ const Content = (_) => {
                   <Activate />
                 </Route>
                 <Route path="/post/:id">
-                  <Post />
+                  <PostDetail />
                 </Route>
 
                 <Route path="/submit">

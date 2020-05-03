@@ -9,56 +9,85 @@ import { FaPlusSquare, FaTag } from 'react-icons/fa';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import InputGroup from 'react-bootstrap/InputGroup';
-
-const handleSubmit = () => console.log('submit');
+import api from '../lib/api';
+import { useRequest } from '../hooks';
+import { useHistory } from 'react-router-dom';
+import Spinner from 'react-bootstrap/Spinner';
 
 const CreatePost = () => {
+  const [error, data] = useRequest(api.tags, []);
+
+  const tags = (data ? data.tags : []).map((tag) => {
+    return {
+      id: tag.id,
+      value: tag.label,
+      label: (
+        <span>
+          <FaTag /> {tag.label}
+        </span>
+      ),
+    };
+  });
+
   return (
     <Container>
       <br />
       <h3>Créer un post</h3>
       <br />
-      <CreateForm />
+      <CreateForm tags={tags} />
     </Container>
   );
 };
 
-function CreateForm() {
-  const [category, setCategory] = useState(null);
+function CreateForm(tags) {
+  const history = useHistory();
+  const [loading, setLoading] = useState(false);
+  const [submitBtnText, setSubmitBtnText] = useState('Créer');
+  const [selectedTags, setSelectedTags] = useState(null);
+  const [selectedTypes, setSelectedTypes] = useState(null);
 
-  const cats = [
+  const [post, setPost] = useState({
+    title: '',
+    content: '',
+    type: '',
+    tags: [],
+    options: ['', ''],
+  });
+
+  const typeList = [
     { value: 'idea', label: 'Idée' },
     { value: 'info', label: 'Information' },
     { value: 'poll', label: 'Vote' },
   ];
 
-  const tags = [
-    {
-      value: 'FacInfo',
-      label: (
-        <span>
-          <FaTag /> FacInfo
-        </span>
-      ),
-    },
-    {
-      value: 'FacEco',
-      label: (
-        <span>
-          <FaTag /> FacEco
-        </span>
-      ),
-    },
-    {
-      value: 'Arsenal',
-      label: (
-        <span>
-          <FaTag /> Arsenal
-        </span>
-      ),
-    },
-  ];
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setPost({ ...post, [name]: value });
+  };
 
+  function submitHandler(e) {
+    e.preventDefault();
+
+    setLoading(true);
+    setSubmitBtnText('');
+
+    // Not updated immediately :/
+    if (post.type != 'poll') {
+      setPost({ ...post, options: [] });
+    }
+
+    const addPost = () => {
+      api
+        .addPost(post)
+        .then((newPost) => {
+          history.push(`/post/${newPost.id}`);
+        })
+        .catch((error) => {});
+    };
+    addPost();
+  }
+
+  // I didn't find another way to add styles to the select
   const primary = '#A0C55F';
   const customStyles = {
     control: (base, state) => ({
@@ -76,42 +105,85 @@ function CreateForm() {
     }),
   };
 
-  function handleCategoryChange(selectedOpttion) {
-    setCategory(selectedOpttion.value);
+  function handleSelectTypeChange(selectedOpttion) {
+    setSelectedTypes(selectedOpttion);
+    setPost({ ...post, type: selectedOpttion.value });
+  }
+
+  function handleSelectTagChange(selectedOpttion) {
+    setSelectedTags(selectedOpttion);
+    setPost({ ...post, tags: selectedOpttion.map((tag) => tag.value) });
   }
 
   return (
     <Card>
       <Card.Body>
-        <Form>
+        <Form onSubmit={submitHandler}>
           <Row>
             <Col>
               <Select
-                options={cats}
+                options={typeList}
                 placeholder={'Sélectionner une catégorie'}
                 styles={customStyles}
-                onChange={handleCategoryChange}
+                onChange={handleSelectTypeChange}
+                value={selectedTypes}
               />
             </Col>
             <Col>
-              <Form.Control type="text" placeholder="Titre du post" />
+              <Form.Control
+                type="text"
+                placeholder="Titre du post"
+                onChange={handleInputChange}
+                name="title"
+                value={post.title}
+              />
             </Col>
           </Row>
+
           <br />
+
           <Select
-            options={tags}
+            options={tags.tags}
             isMulti
             placeholder={'Sélectionner un ou plusieurs tags'}
             styles={customStyles}
+            onChange={handleSelectTagChange}
+            value={selectedTags}
           />
-          <br />
-          <Form.Group>
-            <Form.Control as="textarea" rows="5" placeholder="Texte.." />
-          </Form.Group>
-          {category == 'poll' && <PollSection />}
 
-          <Button variant="primary" className="mt-1 float-right">
-            Créer
+          <br />
+
+          <Form.Group>
+            <Form.Control
+              as="textarea"
+              rows="5"
+              placeholder="Texte.."
+              onChange={handleInputChange}
+              name="content"
+              value={post.content}
+            />
+          </Form.Group>
+
+          {post.type == 'poll' && (
+            <PollSection set_post={setPost} post={post} />
+          )}
+
+          <Button
+            variant="primary"
+            className="mt-1 float-right"
+            type="submit"
+            disabled={loading}
+          >
+            {submitBtnText}
+            {loading && (
+              <Spinner
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+              />
+            )}
           </Button>
         </Form>
       </Card.Body>
@@ -119,29 +191,33 @@ function CreateForm() {
   );
 }
 
-function PollSection() {
-  const [pollOptions, setPollOptions] = useState(['', '']);
-
-  function addPollOption() {
-    console.log('hey0');
-    setPollOptions(pollOptions.concat(['']));
+function PollSection(props) {
+  function addOption() {
+    props.set_post((post) => {
+      return { ...post, options: post.options.concat(['']) };
+    });
   }
-  function removePollOption(index) {
-    var tmp = [...pollOptions];
+
+  function removeOption(index) {
+    var tmp = [...props.post.options];
     tmp.splice(index, 1);
-    setPollOptions(tmp);
+    props.set_post((post) => {
+      return { ...post, options: tmp };
+    });
   }
 
-  function updatePollOption(index, val) {
-    var tmp = [...pollOptions];
+  function updateOption(index, val) {
+    var tmp = [...props.post.options];
     tmp[index] = val;
-    setPollOptions(tmp);
+    props.set_post((post) => {
+      return { ...post, options: tmp };
+    });
   }
 
   return (
     <>
       <Form.Group>
-        {pollOptions.map((val, index) => (
+        {props.post.options.map((val, index) => (
           <div key={index}>
             {index > 1 ? (
               <>
@@ -150,11 +226,14 @@ function PollSection() {
                     type="text"
                     placeholder={'Option ' + (index + 1)}
                     value={val}
-                    onChange={(e) => updatePollOption(index, e.target.value)}
+                    onChange={(e) => updateOption(index, e.target.value)}
                   />
                   <InputGroup.Append>
-                    <Button variant="outline-danger">
-                      <TiDelete size={20} onClick={() => removePollOption(index)} />
+                    <Button
+                      variant="outline-danger"
+                      onClick={() => removeOption(index)}
+                    >
+                      <TiDelete size={20} />
                     </Button>
                   </InputGroup.Append>
                 </InputGroup>
@@ -164,7 +243,7 @@ function PollSection() {
                 type="text"
                 placeholder={'Option ' + (index + 1)}
                 value={val}
-                onChange={(e) => updatePollOption(index, e.target.value)}
+                onChange={(e) => updateOption(index, e.target.value)}
               />
             )}
 
@@ -172,8 +251,8 @@ function PollSection() {
           </div>
         ))}
 
-        {pollOptions.length < 5 && (
-          <a href="#" onClick={addPollOption}>
+        {props.post.options.length < 5 && (
+          <a href="#" onClick={addOption}>
             <FaPlusSquare className="mr-1" size={20} />
             Ajouter une option
           </a>
