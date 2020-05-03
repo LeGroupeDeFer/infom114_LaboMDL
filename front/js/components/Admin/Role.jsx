@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import api from '../../lib/api';
 
 import Button from 'react-bootstrap/Button';
@@ -10,13 +10,15 @@ import Modal from 'react-bootstrap/Modal';
 import InputGroup from 'react-bootstrap/InputGroup';
 import FormControl from 'react-bootstrap/FormControl';
 import Form from 'react-bootstrap/Form';
+import ToggleButton from 'react-bootstrap/ToggleButton';
+import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 
+const Role = ({ roleId, roleName, roleColor, roleCapabilities, deleteRole, setNotification, allCapabilities }) => {
 
-const Role = ({ roleId, roleName, roleColor, roleCapabilities, deleteRole, setNotification }) => {
   const [renameModalShow, setRenameModalShow] = useState(false);
   const [editModalShow, setEditModalShow] = useState(false);
-  
-  const [role, setRole] = useState({id:roleId, name: roleName, color: roleColor, capabilities: roleCapabilities})
+
+  const [role, setRole] = useState({ id: roleId, name: roleName, color: roleColor, capabilities: roleCapabilities })
 
   const handleRename = async (newName) => {
 
@@ -25,14 +27,14 @@ const Role = ({ roleId, roleName, roleColor, roleCapabilities, deleteRole, setNo
       return (result);
     }
     await update(newName).then((answer) => {
-      setRole({id: role.id, name:newName, color:role.color, capabilities:role.capabilities});
-      
+      setRole({ id: role.id, name: newName, color: role.color, capabilities: role.capabilities });
+
     }).catch((error) => {
       let reason = error.reason == null ? "La demande n'a pu être traitée" : error.reason
       setNotification("");
       setNotification(reason);
       console.log(reason);
-      
+
     });
   };
 
@@ -74,6 +76,7 @@ const Role = ({ roleId, roleName, roleColor, roleCapabilities, deleteRole, setNo
         updateRole={handleEdit}
         handleClose={() => setEditModalShow(false)}
         roleToModify={ role }
+        allCapabilities={ allCapabilities }
       />
     </>
   )
@@ -99,6 +102,9 @@ function RenameModal(props) {
       aria-labelledby="contained-modal-title-vcenter"
       centered
     >
+      <Modal.Header>
+        Modifier le nom du role
+      </Modal.Header>
       <Modal.Body>
         <InputGroup>
           <InputGroup.Prepend>
@@ -121,7 +127,25 @@ function RenameModal(props) {
   );
 }
 
-function EditModal({ onHide, show, roleToModify }) {
+function EditModal({ onHide, show, roleToModify, allCapabilities }) {
+
+  const [capabilities, setCapabilities] = useState([]); //1 checked, 0 unchecked 
+
+  useEffect(() => {
+    const getCapabilities = async () => {
+      let tmp = Array.from(capabilities); //in case there is no capability to show
+      allCapabilities.forEach(capability => {
+        tmp = [...tmp, { name: capability.name, assigned: 0 }]
+      });
+
+      //FIXME : check if the capability is assigned to the role
+      
+      setCapabilities(tmp);
+    };
+    getCapabilities();
+
+
+  }, []);
 
   return (
     <Modal
@@ -131,15 +155,28 @@ function EditModal({ onHide, show, roleToModify }) {
       aria-labelledby="contained-modal-title-vcenter"
       centered
     >
+      <Modal.Header>
+        Modifier les capabilities du role {roleToModify.name}
+      </Modal.Header>
       <Modal.Body>
-        <InputGroup>
-          <InputGroup.Prepend>
-            <InputGroup.Text id="basic-addon2">TODO</InputGroup.Text>
-          </InputGroup.Prepend>
-          <FormControl
-            placeholder="TODO"
-          />
-        </InputGroup>
+        {capabilities.map(capability => {
+            return (
+              <Card>
+                <Card.Body>
+                  <Row>
+                    <Col>
+                      {capability.name}
+                    </Col>
+                    <Col md="auto">
+                      <ToggleButtonGroup type="checkbox" defaultValue={[1]} className="mb-2">
+                        <ToggleButton variant="secondary" value={capability.assigned}>Attribuer</ToggleButton>
+                      </ToggleButtonGroup>
+                    </Col>
+                  </Row>
+                </Card.Body>
+              </Card>
+            );
+          })}
       </Modal.Body>
     </Modal>
   );

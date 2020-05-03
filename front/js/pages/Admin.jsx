@@ -18,8 +18,9 @@ import 'regenerator-runtime';
 
 function Admin(props) {
 
-  const menuList = ['tags', 'roles', 'users', 'reporting']
+  const menuList = ['tags', 'roles', 'users', 'reporting'];
   const [currentMenu, setCurrentMenu] = useState('tags');
+
   const Page = () => {
     if (currentMenu == 'tags') {
       return <TagsPage />;
@@ -58,7 +59,7 @@ const MenuBar = ({ currentMenu, onClick, menuList }) => {
   
   return (
     <ButtonGroup id='menu-bar'>
-      { menuList.map((menu, i) => {
+      { menuList.map((menu, i) => {   
         return <Button key={i} variant="secondary" className={currentMenu == menu ? 'active' : ''} onClick={() => onClick(menu)}>{menu}</Button>
       })
       }
@@ -118,19 +119,16 @@ const RolesPage = () => {
     const fetchRoles = async () => {
       let roles = await api.roles()
       setRoles(roles);
-      console.log(roles);
     }
 
     const fetchCapabilities = async () => {
       let capabilities = await api.capabilities();
-      setCapabilities(capabilities);
-      console.log(capabilities);
-      
+      setCapabilities(capabilities);      
     }
     
     fetchRoles();
     fetchCapabilities();
-  }, [])
+  }, []);
 
   //Gets all information about a role
   //Useful to get missing information when creating a new role 
@@ -144,7 +142,6 @@ const RolesPage = () => {
     return roles.filter(role => role.name === roleToModify.name )[0];
   }
 
-
   //Add a new role 
   const addRole = (roleName) => {
 
@@ -152,7 +149,7 @@ const RolesPage = () => {
       await api.roles.add(roleName, "#8fd5a6", "").then(async answer => {
         let role = await fetchRoleInformation({ name: roleName });
         const newRoles = [...roles, { color: role.color, id: role.id, name: role.name, capabilities: role.capabilities }];
-        setRoles(newRoles); c
+        setRoles(newRoles);
 
       }).catch((error) => {
         let reason = error.reason == null ? "La demande n'a pu être traitée" : error.reason;
@@ -195,7 +192,7 @@ const RolesPage = () => {
           return (
             <Row key={role.id} className="mb-3">
               <Role roleId={role.id} roleName={role.name} roleColor={role.color} roleCapabilities={role.capabilities}
-                deleteRole={handleDelete} setNotification={setNotification} />
+                deleteRole={handleDelete} setNotification={setNotification} allCapabilities={capabilities} />
             </Row>
           )
         })
