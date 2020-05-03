@@ -28,7 +28,9 @@ const Stream = () => {
   const [filter, setFilter] = useState('all');
   const [posts, setPosts] = useState([]);
   const [tags, setTags] = useState(null);
-  const { login, user } = useAuth();
+  const { login, user, token } = useAuth();
+  const caps = token.cap;
+
   const [postModal, setPostModal] = useState(null);
   const [modalDisplayed, setModalDisplayed] = useState(false);
   const isLogged = user != null ? 1 : 0;

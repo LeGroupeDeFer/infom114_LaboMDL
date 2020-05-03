@@ -12,6 +12,8 @@ import {
   FaEllipsisH,
   FaEyeSlash,
   FaFlag,
+  FaTrashAlt,
+  FaLock,
 } from 'react-icons/fa';
 import clsx from 'clsx';
 import DropdownButton from 'react-bootstrap/DropdownButton';
@@ -34,20 +36,21 @@ const PostPreview = ({
   userVote,
   ...otherProps
 }) => {
-
-  let vote = "";
+  let vote = '';
   switch (userVote) {
-    case -1: vote = "down";
+    case -1:
+      vote = 'down';
       break;
-    case 1: vote = "up";
+    case 1:
+      vote = 'up';
       break;
-    default: vote = "no";
+    default:
+      vote = 'no';
       break;
   }
 
   const [voted, setVoted] = useState(vote);
   const [scoreState, setScoreState] = useState(score);
-
 
   function getDisplayedType(type) {
     switch (type) {
@@ -108,6 +111,14 @@ const PostPreview = ({
                 <FaFlag className="mr-2" />
                 Signaler
               </Dropdown.Item>
+              <Dropdown.Item as="button">
+                <FaTrashAlt className="mr-2" />
+                Supprimer
+              </Dropdown.Item>
+              <Dropdown.Item as="button">
+                <FaLock className="mr-2" />
+                Vérouiller
+              </Dropdown.Item>
             </DropdownButton>
           </h5>
         </Card.Header>
@@ -143,7 +154,6 @@ const PostPreview = ({
 
             <div className="px-3 pb-3 pt-2">
               <div className="mb-1">
-
                 {tags.map((tag, index) => {
                   return (
                     <a
@@ -155,9 +165,9 @@ const PostPreview = ({
                     >
                       <FaTag className="mr-1" />
                       {tag}
-                    </a>);
+                    </a>
+                  );
                 })}
-
               </div>
 
               <Card.Text>
