@@ -69,12 +69,24 @@ impl From<PostKind> for u8 {
     }
 }
 
+impl From<PostKind> for String {
+    fn from(kind: PostKind) -> String {
+        match kind {
+            PostKind::Info => "info".into(),
+            PostKind::Idea => "idea".into(),
+            PostKind::Poll => "poll".into(),
+            PostKind::Decision => "decision".into(),
+            PostKind::Discussion => "discussion".into()
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Post {
     pub id: u32,
     pub title: String,
     pub content: String,
-    pub kind: u8,
+    pub kind: String,
     pub created_at: String,
     pub updated_at: String,
     pub locked: bool,
@@ -385,7 +397,7 @@ impl From<PostEntity> for Post {
             id: pe.id,
             title: pe.title.to_string(),
             content: pe.content.to_string(),
-            kind: pe.kind,
+            kind: PostKind::try_from(pe.kind).unwrap().into(),
             created_at: pe.created_at.to_string(),
             updated_at: pe.updated_at.to_string(),
             locked: pe.locked_at.is_some(),
