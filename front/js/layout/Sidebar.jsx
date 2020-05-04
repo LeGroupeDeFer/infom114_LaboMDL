@@ -32,16 +32,18 @@ function Sidebar({ open, links }) {
       {/* Menu */}
       <ListGroup variant="flush" className="sidebar-nav w-100 text-center">
         {links.map(({ name, path, icon, title }, i) => (
-          <NavLink exact to={path} key={i}>
-            <ListGroup.Item>
-              <OverlayTrigger
-                placement="right"
-                overlay={<Tooltip>{title}</Tooltip>}
-              >
+          <OverlayTrigger
+            placement="right"
+            positionTop={150}
+            style={{ top: '20px !important' }}
+            overlay={<Tooltip className="nav-tooltip">{title}</Tooltip>}
+          >
+            <NavLink exact to={path} key={i}>
+              <ListGroup.Item>
                 <Icon icon={icon} />
-              </OverlayTrigger>
-            </ListGroup.Item>
-          </NavLink>
+              </ListGroup.Item>
+            </NavLink>
+          </OverlayTrigger>
         ))}
         {user ? (
           <NavLink variant="danger" exact to="/logout" className="sidebar-exit">

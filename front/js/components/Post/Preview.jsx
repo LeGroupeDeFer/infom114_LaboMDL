@@ -13,17 +13,19 @@ import {
   FaFlag,
   FaTrashAlt,
   FaLock,
+  FaEdit,
 } from 'react-icons/fa';
 import clsx from 'clsx';
 import { FacebookShareButton } from 'react-share';
 import { useAuth } from 'unanimity/context/authContext';
+import api from '../../lib/api';
 
-function getDisplayedType(type) {
-  switch (type) {
+function getDisplayedKind(kind) {
+  switch (kind) {
     case 'info':
       return 'Information';
     case 'poll':
-      return 'Vote';
+      return 'Sondage';
     case 'idea':
       return 'Idée';
   }
@@ -38,32 +40,47 @@ const Preview = ({
   onTagClick,
   ...others
 }) => {
-  const isLogged = !!useAuth().user;
+  const { user, token } = useAuth();
+  const isLogged = !!user;
+  let caps;
+  token != null ? (caps = token.cap) : (caps = []);
+
   const {
     id,
     title,
     content,
     author,
     score,
-    type,
+    kind,
     createdAt,
     comments,
     tags,
   } = post;
-  let vote = ['down', 'up', 'no'][userVote + 1];
 
+  let vote = ['down', 'up', 'no'][userVote + 1];
+  let owner = user == null ? false : author.id == user.id;
   const [voted, setVoted] = useState(vote);
   const [scoreState, setScoreState] = useState(score);
 
-  if (!['all', type].includes(currentFilter)) return <></>;
+  function deletePost() {
+    const del = () => {
+      api.posts
+        .delete(id)
+        .then(() => {})
+        .catch((error) => {});
+    };
+    del();
+  }
+
+  //if (!['all', type].includes(currentFilter)) return <></>;
 
   return (
     <div className="d-flex">
       <Card {...others} className="post" onClick={() => show_modal(id)} id={id}>
         <Card.Header>
           <h5>
-            <Badge className={`post-${type} mr-2`}>
-              {getDisplayedType(type)}
+            <Badge className={`post-${kind} mr-2`}>
+              {getDisplayedKind(kind)}
             </Badge>
             <span className="mr-2">{title}</span>
 
@@ -90,22 +107,36 @@ const Preview = ({
               className="float-right more btn-link"
               onClick={(e) => e.stopPropagation()}
             >
-              <Dropdown.Item as="button">
-                <FaEyeSlash className="mr-2" />
-                Masquer
-              </Dropdown.Item>
+              {caps.some((e) => e.name === 'post:hide') && (
+                <Dropdown.Item as="button">
+                  <FaEyeSlash className="mr-2" />
+                  Masquer
+                </Dropdown.Item>
+              )}
               <Dropdown.Item as="button">
                 <FaFlag className="mr-2" />
                 Signaler
               </Dropdown.Item>
-              <Dropdown.Item as="button">
-                <FaTrashAlt className="mr-2" />
-                Supprimer
-              </Dropdown.Item>
-              <Dropdown.Item as="button">
-                <FaLock className="mr-2" />
-                Vérouiller
-              </Dropdown.Item>
+              {/* {owner && (
+                <Dropdown.Item as="button">
+                  <FaEdit className="mr-2" />
+                  Modifier
+                </Dropdown.Item>
+              )} */}
+
+              {owner && (
+                <Dropdown.Item as="button" onClick={deletePost}>
+                  <FaTrashAlt className="mr-2" />
+                  Supprimer
+                </Dropdown.Item>
+              )}
+
+              {caps.some((e) => e.name === 'post:lock') && (
+                <Dropdown.Item as="button">
+                  <FaLock className="mr-2" />
+                  Vérouiller
+                </Dropdown.Item>
+              )}
             </DropdownButton>
           </h5>
         </Card.Header>
