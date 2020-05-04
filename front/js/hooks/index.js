@@ -1,28 +1,35 @@
 import { useEffect, useState } from 'react';
-import { debounce, identity, Action, trace } from '../lib';
+import { empty, zip, debounce, identity, Action, trace, equal } from '../lib';
 
 
 export function usePositiveEffect(f, watched) {
-  useEffect(() => {
-    if (watched.filter(identity).length)
-      f();
-  });
+  useEffect(() => watched.filter(identity).length ? f() : undefined);
 }
 
-export function useRequest(f, args) {
-  const [error, setError] = useState(null);
-  const [data, setData] = useState(null);
-  const [promise, setPromise] = useState(null);
+export function useRequest(f, args, base = null) {
 
-  useEffect(() => setPromise(f(...args)), []);
+  const [error, setError] = useState(null);
+  const [data, setData] = useState(base);
+  const [promise, setPromise] = useState(null);
+  const [localArgs, setLocalArgs] = useState([]);
+
+  let differences = [];
+  for (const [x, y] of zip(args || [], localArgs))
+    if (!equal(x, y))
+      differences.push(x);
+
+  if (!empty(differences))
+    setLocalArgs(args);
+
+  useEffect(() => setPromise(f(...args)), [localArgs]);
 
   usePositiveEffect(() => {
     let isSubscribed = true;
 
     promise.then(
-      retreivedData => isSubscribed ? setData(retreivedData || true) : undefined
+      retrievedData => isSubscribed ? setData(retrievedData || true) : undefined
     ).catch(
-      retreivedError => isSubscribed ? setError(retreivedError || true) : undefined
+      retrievedError => isSubscribed ? setError(retrievedError || true) : undefined
     ).finally(() => setPromise(null));
 
     return () => isSubscribed = false;

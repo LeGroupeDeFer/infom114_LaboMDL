@@ -119,7 +119,7 @@ impl PostEntity {
     pub fn get_all(
         conn: &MysqlConnection,
         can_see_hidden: bool,
-        tag: Option<String>,
+        tags: Vec<String>,
         search: Option<String>,
         sort: Option<SortOrder>,
         kind: Option<String>, // type
@@ -139,8 +139,8 @@ impl PostEntity {
         }
 
         // filter on tag
-        if let Some(t) = tag {
-            query = query.filter(tags::label.eq(t.to_string()));
+        if !tags.is_empty() {
+            query = query.filter(tags::label.eq_any(tags));
         }
 
         // filter on the search term given (in title)
@@ -339,7 +339,7 @@ impl Post {
     pub fn all(
         conn: &MysqlConnection,
         can_see_hidden: bool,
-        tag: Option<String>,
+        tags: Vec<String>,
         search: Option<String>,
         sort: Option<SortOrder>,
         kind: Option<String>, // type
@@ -347,7 +347,7 @@ impl Post {
         offset: Option<u32>,
     ) -> Consequence<Vec<Self>> {
         let entities =
-            PostEntity::get_all(conn, can_see_hidden, tag, search, sort, kind, limit, offset)?;
+            PostEntity::get_all(conn, can_see_hidden, tags, search, sort, kind, limit, offset)?;
         let posts = entities
             .into_iter()
             .map(move |post_entity| Post::from(post_entity))

@@ -37,7 +37,7 @@ function query(target, search = {}) {
   const params = Object.keys(snakeSearch)
     .map((key) =>
       snakeSearch[key] instanceof Array
-        ? snakeSearch[key].map((elem) => `${key}=${encode(elem)}`).join('&')
+        ? `${key}=${snakeSearch[key].map(encode).join(':')}`
         : `${key}=${encode(snakeSearch[key])}`
     )
     .filter(identity);

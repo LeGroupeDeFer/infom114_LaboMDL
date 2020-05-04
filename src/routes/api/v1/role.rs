@@ -62,6 +62,7 @@ pub fn update(
     _role_id: u32,
     data: Json<RoleData>,
 ) -> ApiResult<()> {
+
     // manage capability
     let capability = "role:manage";
     auth.check_capability(&*conn, &capability)?;

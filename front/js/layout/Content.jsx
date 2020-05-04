@@ -11,9 +11,8 @@ import {
 import Sidebar from './Sidebar';
 import layout from '../lib/layout';
 import { useAuth } from '../context/authContext';
-import PostDetail from '../pages/PostDetail';
 
-const Stream = lazy(() => import('../pages/Stream'));
+const Stream = lazy(() => import('../pages/Stream/index'));
 const Profile = lazy(() => import('../pages/Profile'));
 const Settings = lazy(() => import('../pages/Settings'));
 const About = lazy(() => import('../pages/About'));
@@ -22,15 +21,14 @@ const Login = lazy(() => import('../pages/Login'));
 const Logout = lazy(() => import('../pages/Logout'));
 const Register = lazy(() => import('../pages/Register'));
 const Activate = lazy(() => import('../pages/Activate'));
-const CreatePost = lazy(() => import('../pages/CreatePost'));
 const Recover = lazy(() => import('../pages/Recover'));
 const Restore = lazy(() => import('../pages/Restore'));
+
 
 // Content :: Object => Component
 const Content = (_) => {
   const location = useLocation();
   const { user } = useAuth();
-  const locationClass = location.pathname.split('/')[1];
 
   const layoutStyle = layout.layout(`/${location.pathname.split('/')[1]}`);
   const links = layout.links(user);
@@ -44,9 +42,6 @@ const Content = (_) => {
           <div className="content">
             <Suspense fallback={<h1>Loading...</h1>}>
               <Switch>
-                <Route exact path="/">
-                  <Stream />
-                </Route>
 
                 <Route path="/profile">
                   <Profile />
@@ -79,13 +74,7 @@ const Content = (_) => {
                 <Route path="/activate/:id?/:token?">
                   <Activate />
                 </Route>
-                <Route path="/post/:id">
-                  <PostDetail />
-                </Route>
 
-                <Route path="/submit">
-                  <CreatePost />
-                </Route>
                 <Route path="/restore">
                   <Restore />
                 </Route>
@@ -93,6 +82,11 @@ const Content = (_) => {
                 <Route path="/recover/:id?/:token?">
                   <Recover />
                 </Route>
+
+                <Route path="/">
+                  <Stream />
+                </Route>
+
               </Switch>
             </Suspense>
           </div>

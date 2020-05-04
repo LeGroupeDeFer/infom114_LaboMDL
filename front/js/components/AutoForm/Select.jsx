@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { string, arrayOf, shape } from 'prop-types';
+import { trace } from 'unanimity/lib';
 import ReSelect from 'react-select';
 import { useForm } from './formContext';
 import clsx from 'clsx';
@@ -56,13 +57,12 @@ function Select({
     valid: localValidator(defaultValue),
     edited: false
   });
-  const resetValue = isMulti ? [] : null;
   const [localValue, setLocalValue] = useState(null);
 
   const { register, onChange, error } = useForm();
   useEffect(() => register(name, state.value, state.valid), []);
 
-  const localOnChange = (value, action) => {
+  const localOnChange = (value, _) => {
     const listedValue = value || (isMulti ? [] : null);
     const valid = localValidator(listedValue);
     setLocalValue(listedValue);

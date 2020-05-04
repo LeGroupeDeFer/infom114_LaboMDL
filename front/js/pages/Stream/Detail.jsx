@@ -2,13 +2,14 @@ import React, { Suspense } from 'react';
 import Container from 'react-bootstrap/Container';
 import usePromise from 'react-promise-suspense';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '../context/authContext';
-import { Post } from '../components';
-import api from '../lib/api';
+import { useAuth } from '../../context/authContext';
+import { Post } from '../../components';
+import api from '../../lib/api';
 import Card from 'react-bootstrap/Card';
 
 
-const PostDetail = () => {
+const Detail = ({ post }) => {
+
   const { id } = useParams();
   const { user } = useAuth();
   const isLogged = !!user;
@@ -19,11 +20,11 @@ const PostDetail = () => {
   };
 
   return (
-    <Container>
+    <Container className="py-5">
       <br />
 
       <Suspense fallback={<h3>Chargement ...</h3>}>
-        <Card>
+        <Card className="my-5">
           <Card.Body>
             <FetchedPost />
           </Card.Body>
@@ -31,9 +32,10 @@ const PostDetail = () => {
       </Suspense>
     </Container>
   );
+
 };
 
-PostDetail.defaultProps = {};
+Detail.defaultProps = {};
 
 
-export default PostDetail;
+export default Detail;

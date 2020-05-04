@@ -1,16 +1,7 @@
 @use '../themes'as *;
 
-.stream-header {
+.stream-header, .writer-header {
   margin-top: 5rem;
-}
-
-#filter-bar .active {
-  background-color: $primary;
-  border-color: $primary;
-}
-
-#search-bar {
-  z-index: 2;
 }
 
 .dropdown-item:hover {
