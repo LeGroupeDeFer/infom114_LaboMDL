@@ -8,7 +8,7 @@ use crate::conf::State;
 use crate::database::models::prelude::*;
 use crate::database::DBConnection;
 use crate::guards::*;
-use crate::http::responders::{ApiResult, OK};
+use crate::http::responders::{ok, ApiResult};
 use crate::lib::consequence::*;
 use crate::lib::mail;
 
@@ -60,7 +60,7 @@ fn register(conn: DBConnection, data: Json<RegisterData>) -> ApiResult<()> {
         &vec![],
     )?;
 
-    OK()
+    ok()
 }
 
 /// Login as a user on the application
@@ -97,7 +97,7 @@ fn logout(conn: DBConnection, data: Json<LogoutData>) -> ApiResult<()> {
     } = data.into_inner();
     Auth::logout(&*conn, &email, &refresh_token)?;
 
-    OK()
+    ok()
 }
 
 /// Activate a user
@@ -131,7 +131,7 @@ fn activate(conn: DBConnection, state: State, data: Json<ActivationData>) -> Api
     user.active = true;
     user.update(&*conn)?;
 
-    OK()
+    ok()
 }
 
 #[post("/api/v1/auth/restore", format = "json", data = "<data>")]
@@ -152,7 +152,7 @@ fn restore(conn: DBConnection, data: Json<RestoreData>) -> ApiResult<()> {
         &vec![],
     )?;
 
-    OK()
+    ok()
 }
 
 #[post("/api/v1/auth/recover", format = "json", data = "<data>")]
@@ -173,7 +173,7 @@ fn recover(conn: DBConnection, data: Json<RecoveryData>) -> ApiResult<()> {
     user.set_password(&password)?;
     user.update(&conn)?;
 
-    OK()
+    ok()
 }
 
 #[post("/api/v1/auth/refresh", format = "json", data = "<data>")]

@@ -5,6 +5,8 @@ import Form from 'react-bootstrap/Form';
 import Control from './Control';
 import Submit from './Submit';
 import Switch from './Switch';
+import Select from './Select';
+import Consumer from './Consumer';
 import { FormProvider, useForm } from './formContext';
 import { trace, identity } from '../../lib';
 
@@ -111,6 +113,8 @@ Object.assign(AutoForm, {
   Switch,
   Control,
   Submit,
+  Select,
+  Consumer,
   useForm
 });
 

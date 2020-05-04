@@ -1,30 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { string } from 'prop-types';
-import Form from 'react-bootstrap/Form';
+import { string, arrayOf, shape } from 'prop-types';
+import ReSelect from 'react-select';
 import { useForm } from './formContext';
 import clsx from 'clsx';
-
-/* istanbul ignore next */
-function cast(value, type) {
-  switch (type) {
-    case 'checkbox':
-    case 'radio':
-      return Boolean(value);
-    case 'number':
-      return Number(value);
-    case 'date':
-      return Date(value);
-    case 'text':
-    case 'email':
-    case 'tel':
-    case 'password':
-    case 'url':
-      return String(value);
-    default:
-      return value;
-  }
-}
-
 
 /**
  * [Control]{@link AutoForm.Control} custom validator. Receives a casted input value, returns **true** when said input is valid, **false** otherwise.
@@ -49,9 +27,9 @@ function cast(value, type) {
  * @property { ...any }     others [Bootstrap form control props]{@link https://react-bootstrap.github.io/components/forms/#forms-controls}
  */
 
-const defaultValidator = (validator, optional) => validator
+const defaultValidator = (validator, optional, isMulti) => validator
   ? validator
-  : (optional ? (() => true) : (x => Boolean(x)));
+  : (optional ? (() => true) : (x => (isMulti ? x.length > 0 : Boolean(x))));
 
 /**
  * Automatic [Bootstrap from]{@link https://react-bootstrap.github.io/components/forms/)} aggregation.
@@ -60,40 +38,45 @@ const defaultValidator = (validator, optional) => validator
  * @param {ControlProps} props The control properties
  * @returns JSX.Element
  */
-function Control({
+function Select({
  name,
  defaultValue,
- type,
  optional,
  validator,
  eraseOnFailure,
  className,
+ options,
+ isMulti,
  ...others
 }) {
 
-  const localValidator = defaultValidator(validator, optional);
+  const localValidator = defaultValidator(validator, optional, isMulti || false);
   const [state, setState] = useState({
     value: defaultValue,
     valid: localValidator(defaultValue),
     edited: false
   });
+  const resetValue = isMulti ? [] : null;
+  const [localValue, setLocalValue] = useState(null);
 
   const { register, onChange, error } = useForm();
   useEffect(() => register(name, state.value, state.valid), []);
 
-  const localOnChange = event => {
-    const value = cast(event.target.value, type);
+  const localOnChange = (value, action) => {
     const valid = localValidator(value);
-    setState({ value, valid, edited: Boolean(value) });
+    setLocalValue(value);
+    const liftedValue = (isMulti ? value.map(v => v.value) : value.value);
+    setState({ value: liftedValue, valid, edited: Boolean(value) });
     // TODO - Debounce
-    onChange(name, value, valid);
+    onChange(name, liftedValue, valid);
   };
 
   useEffect(() => {
     if (error && eraseOnFailure) {
       const valid = localValidator('');
       setState({ value: '', valid, edited: false });
-      onChange(name, '', valid);
+      setLocalValue(null);
+      onChange(name, null, valid);
     }
   }, [error]);
 
@@ -105,31 +88,36 @@ function Control({
   }
 
   return (
-    <Form.Control
+    <ReSelect
       {...others}
+      isMulti={isMulti}
       required={!optional}
       className={css}
       onChange={localOnChange}
-      type={type}
-      value={state.value}
+      value={localValue}
+      options={options}
       {...validationState}
     />
   );
 
 }
 
-Control.propTypes = {
+Select.propTypes = {
   name: string.isRequired,
-  type: string
+  options: arrayOf(shape({
+    label: string.isRequired,
+    value: string.isRequired
+  }))
 };
 
-Control.defaultProps = {
+Select.defaultProps = {
   eraseOnFailure: false,
   optional: false,
-  type: 'text',
-  defaultValue: ''
+  defaultValue: '',
+  isMulti: false,
+  options: [],
 }
 
-Control.defaultValidator = defaultValidator;
+Select.defaultValidator = defaultValidator;
 
-export default Control;
+export default Select;

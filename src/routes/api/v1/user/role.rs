@@ -8,7 +8,7 @@ use crate::database::models::prelude::*;
 use crate::database::DBConnection;
 use crate::guards::auth::Auth;
 
-use crate::http::responders::{ApiResult, OK};
+use crate::http::responders::{ok, ApiResult};
 use crate::lib::EntityError;
 use either::Either;
 
@@ -33,7 +33,7 @@ pub fn assign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> ApiRe
     let role = RoleEntity::by_id(&*conn, &user_role_data.role_id)??;
 
     match RelUserRoleEntity::add_role_for_user(&*conn, &user, &role)? {
-        Either::Right(_) => OK(),
+        Either::Right(_) => ok(),
         Either::Left(_) => Err(EntityError::Duplicate)?,
     }
 }
@@ -51,5 +51,5 @@ pub fn unassign(conn: DBConnection, auth: Auth, data: Json<UserRoleData>) -> Api
     RelUserRoleEntity::get(&*conn, user_role_data.user_id, user_role_data.role_id)??
         .delete(&*conn)?;
 
-    OK()
+    ok()
 }

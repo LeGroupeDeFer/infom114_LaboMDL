@@ -74,6 +74,8 @@ const Stream = () => {
   const { user, token } = useAuth();
   const isLogged = !!user;
   const [posts, setPosts] = useState([]);
+  const caps = token && token.cap;
+
   const [filter, setFilter] = useState({ key: 'all', label: 'Actualité' });
   const [postModal, setPostModal] = useState(null);
   const [previewModalDisplayed, setPreviewModalDisplayed] = useState(false);
