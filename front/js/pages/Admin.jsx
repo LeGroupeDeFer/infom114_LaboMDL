@@ -258,7 +258,7 @@ const TagsPage = () => {
       }
     }).catch(e => {
       if (!isRendering) {
-        let reason = e.reason == null ? "La demande n'a pu être traitée" : error.reason
+        let reason = e.reason == null ? "La demande n'a pu être traitée" : e.reason
         setNotification("");
         setNotification(reason);
       }
@@ -309,7 +309,7 @@ const TagsPage = () => {
         ? tags.map((tag, i) => {
           return (
             <Row key={tag.id} className="mb-3">
-              <Tag name={tag.label} deleteTag={onDelete} setNotification={setNotification}></Tag>
+              <Tag name={tag.label} deleteTag={onDelete} setNotification={setNotification} tags={tags} setTags={setTags} ></Tag>
             </Row>
           )
         })

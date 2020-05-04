@@ -18,13 +18,13 @@ const Role = ({ roleId, roleName, roleColor, roleCapabilities, deleteRole, setNo
 
   const [role, setRole] = useState({ id: roleId, name: roleName, color: roleColor, capabilities: roleCapabilities })
 
-  const handleRename = async (newName) => {
+  const handleRename = (newName) => {
 
     const update = async (newName) => {
       let result = await api.roles.edit(role.id, newName, role.color, role.capabilities);
       return (result);
     }
-    await update(newName).then((answer) => {
+    update(newName).then((answer) => {
       setRole({ id: role.id, name: newName, color: role.color, capabilities: role.capabilities });
 
     }).catch((error) => {

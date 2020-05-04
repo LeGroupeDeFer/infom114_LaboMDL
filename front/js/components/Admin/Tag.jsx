@@ -12,7 +12,7 @@ import FormControl from 'react-bootstrap/FormControl';
 import Form from 'react-bootstrap/Form';
 
 
-const Tag = ({name, deleteTag, setNotification}) => {
+const Tag = ({name, deleteTag, setNotification, tags, setTags}) => {
   const [modalShow, setModalShow] = useState(false);
   const [label, setLabel] = useState(name);
 
@@ -23,10 +23,17 @@ const Tag = ({name, deleteTag, setNotification}) => {
       return(result);
     }
 
+    
+    //Update the name of the tag
     update(oldLabel, newLabel).then((answer) => {   
-      
+        let tmp = Array.from(tags);
+        tmp.map( tag => {
+          if (tag.label === oldLabel) {
+            tag.label = newLabel;
+          }
+        });
         setLabel(newLabel);
-      
+        setTags(tmp);
     }).catch((error) =>{
       let reason = error.reason == null ? "La demande n'a pu être traitée" : error.reason;
       setNotification("");
