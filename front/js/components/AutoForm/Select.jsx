@@ -28,9 +28,12 @@ import clsx from 'clsx';
  * @property { ...any }     others [Bootstrap form control props]{@link https://react-bootstrap.github.io/components/forms/#forms-controls}
  */
 
-const defaultValidator = (validator, optional, isMulti) => validator
-  ? validator
-  : (optional ? (() => true) : (x => (isMulti ? x.length > 0 : Boolean(x))));
+const defaultValidator = (validator, optional, isMulti) =>
+  validator
+    ? validator
+    : optional
+    ? () => true
+    : (x) => (isMulti ? x.length > 0 : Boolean(x));
 
 /**
  * Automatic [Bootstrap from]{@link https://react-bootstrap.github.io/components/forms/)} aggregation.
@@ -40,22 +43,25 @@ const defaultValidator = (validator, optional, isMulti) => validator
  * @returns JSX.Element
  */
 function Select({
- name,
- defaultValue,
- optional,
- validator,
- eraseOnFailure,
- className,
- options,
- isMulti,
- ...others
+  name,
+  defaultValue,
+  optional,
+  validator,
+  eraseOnFailure,
+  className,
+  options,
+  isMulti,
+  ...others
 }) {
-
-  const localValidator = defaultValidator(validator, optional, isMulti || false);
+  const localValidator = defaultValidator(
+    validator,
+    optional,
+    isMulti || false
+  );
   const [state, setState] = useState({
     value: defaultValue,
     valid: localValidator(defaultValue),
-    edited: false
+    edited: false,
   });
   const [localValue, setLocalValue] = useState(null);
 
@@ -66,7 +72,9 @@ function Select({
     const listedValue = value || (isMulti ? [] : null);
     const valid = localValidator(listedValue);
     setLocalValue(listedValue);
-    const liftedValue = (isMulti ? listedValue.map(v => v.value) : listedValue.value);
+    const liftedValue = isMulti
+      ? listedValue.map((v) => v.value)
+      : listedValue.value;
     setState({ value: liftedValue, valid, edited: Boolean(value) });
     // TODO - Debounce
     onChange(name, liftedValue, valid);
@@ -100,15 +108,16 @@ function Select({
       {...validationState}
     />
   );
-
 }
 
 Select.propTypes = {
   name: string.isRequired,
-  options: arrayOf(shape({
-    label: string.isRequired,
-    value: string.isRequired
-  }))
+  options: arrayOf(
+    shape({
+      label: string.isRequired,
+      value: string.isRequired,
+    })
+  ),
 };
 
 Select.defaultProps = {
@@ -117,7 +126,7 @@ Select.defaultProps = {
   defaultValue: '',
   isMulti: false,
   options: [],
-}
+};
 
 Select.defaultValidator = defaultValidator;
 

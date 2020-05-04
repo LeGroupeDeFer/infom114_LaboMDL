@@ -2,7 +2,7 @@ import 'regenerator-runtime';
 import React, { Suspense, useState } from 'react';
 import {
   Container, Row, Col, Button, Modal, Dropdown, DropdownButton,
-  Tooltip, OverlayTrigger
+  Tooltip, OverlayTrigger, Toast
 } from 'react-bootstrap';
 import { MdSort } from 'react-icons/md';
 import { FaSearch, FaTag, FaEdit } from 'react-icons/fa';
@@ -10,10 +10,11 @@ import { useAuth } from '../../context/authContext';
 import { Link } from 'react-router-dom';
 import { Post, SearchBar } from '../../components';
 import api from '../../lib/api';
+import DeleteModal from "unanimity/components/Post/DeleteModal";
 
 
 // InnerStream :: Object => Component
-function InnerStream({ posts, onClick, showModal, tag_click }) {
+function InnerStream({ posts, onClick, showPreview, showDelete, onTagClick }) {
 
   return (
     <>
@@ -23,8 +24,9 @@ function InnerStream({ posts, onClick, showModal, tag_click }) {
             <Post.Preview
               onClick={onClick}
               post={post}
-              show_modal={showModal}
-              onTagClick={tag_click}
+              showPreviewModal={showPreview}
+              showDeleteModal={showDelete}
+              onTagClick={onTagClick}
             />
           </Col>
         </Row>
@@ -89,25 +91,46 @@ function Stream({ kind, posts, onSort }) {
   const isLogged = !!user;
 
   const [postModal, setPostModal] = useState(null);
-  const [modalDisplayed, setModalDisplayed] = useState(false);
+  const [previewModalDisplayed, setPreviewModalDisplayed] = useState(false);
+  const [deleteModalDisplayed, setDeleteModalDisplayed] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
+  const [postToDelete, setPostToDelete] = useState(null);
 
-  function hideModal() {
-    setModalDisplayed(false);
+  /* Preview modal */
+  function hidePreviewModal() {
+    setPreviewModalDisplayed(false);
   }
 
-  function showModal(postId) {
+  function showPreviewModal(id) {
     setPostModal(null);
-    const fetchPost = () => {
-      api.posts
-        .of(postId)
-        .then((post) => {
-          setPostModal(post);
-        })
-        .catch((error) => {});
-    };
-    fetchPost();
-    setModalDisplayed(true);
+    api.posts
+      .of(id)
+      .then(setPostModal)
+      .catch(error => {});
+    setPreviewModalDisplayed(true);
   }
+
+  /* Delete modal */
+  const deletePost = () => {
+    setDeleteModalDisplayed(false);
+    api.posts
+      .delete(postToDelete)
+      .then(() => {
+        // setPosts(posts.filter(p => p.id !== postToDelete));
+        toggleNotification();
+        setPostToDelete(null);
+      })
+      .catch(error => {});
+  };
+
+  const showDeleteModal = id => {
+    setDeleteModalDisplayed(true);
+    setPostToDelete(id);
+  };
+
+  /* Notification */
+  const toggleNotification = () => setShowNotification(n => !n);
+
 
   function tagClickHandler(e) {
     e.stopPropagation();
@@ -159,15 +182,16 @@ function Stream({ kind, posts, onSort }) {
       <Suspense fallback={<h3>Chargement des posts...</h3>}>
         <InnerStream
           posts={posts}
-          showModal={showModal}
+          showPreview={showPreviewModal}
+          showDelete={showDeleteModal}
           onClick={tagClickHandler}
         />
       </Suspense>
 
-      { /* Modal */ }
+      { /* Post modal */ }
       <Modal
-        show={modalDisplayed}
-        onHide={() => hideModal()}
+        show={previewModalDisplayed}
+        onHide={hidePreviewModal}
         dialogClassName="modal-80w"
       >
         <Modal.Header closeButton></Modal.Header>
@@ -179,6 +203,24 @@ function Stream({ kind, posts, onSort }) {
           )}
         </Modal.Body>
       </Modal>
+
+      { /* Delete post modal */ }
+      <DeleteModal
+        modalDisplayed={deleteModalDisplayed}
+        setModalDisplayed={setDeleteModalDisplayed}
+        deletePost={deletePost}
+      />
+      <Toast
+        className="notification"
+        show={showNotification}
+        onClose={toggleNotification}
+        delay={4000}
+        autohide
+      >
+        <Toast.Header>
+          <strong className="mr-auto"> Votre post a bien été supprimé</strong>
+        </Toast.Header>
+      </Toast>
 
     </Container>
   );

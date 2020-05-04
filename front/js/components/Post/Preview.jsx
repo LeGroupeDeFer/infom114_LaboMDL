@@ -18,7 +18,6 @@ import {
 import clsx from 'clsx';
 import { FacebookShareButton } from 'react-share';
 import { useAuth } from 'unanimity/context/authContext';
-import api from '../../lib/api';
 
 function getDisplayedKind(kind) {
   switch (kind) {
@@ -35,8 +34,8 @@ const Preview = ({
   post,
   previewLength,
   currentFilter,
-  userVote,
-  show_modal,
+  showPreviewModal,
+  showDeleteModal,
   onTagClick,
   ...others
 }) => {
@@ -55,28 +54,24 @@ const Preview = ({
     createdAt,
     comments,
     tags,
+    userVote,
   } = post;
 
-  let vote = ['down', 'up', 'no'][userVote + 1];
+  let vote = ['down', 'no', 'up'][userVote + 1];
   let owner = user == null ? false : author.id == user.id;
   const [voted, setVoted] = useState(vote);
   const [scoreState, setScoreState] = useState(score);
 
-  function deletePost() {
-    const del = () => {
-      api.posts
-        .delete(id)
-        .then(() => {})
-        .catch((error) => {});
-    };
-    del();
-  }
-
-  //if (!['all', type].includes(currentFilter)) return <></>;
+  const deletePost = () => showDeleteModal(id);
 
   return (
     <div className="d-flex">
-      <Card {...others} className="post" onClick={() => show_modal(id)} id={id}>
+      <Card
+        {...others}
+        className="post"
+        onClick={() => showPreviewModal(id)}
+        id={id}
+      >
         <Card.Header>
           <h5>
             <Badge className={`post-${kind} mr-2`}>
