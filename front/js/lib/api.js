@@ -1,4 +1,4 @@
-import {snake, camel, empty, trace, identity} from './index';
+import { snake, camel, empty, trace, identity } from './index';
 import jwtDecode from 'jwt-decode';
 
 /* istanbul ignore next */
@@ -34,11 +34,13 @@ let currentAccessToken;
 const encode = encodeURIComponent;
 function query(target, search = {}) {
   const snakeSearch = snake(search);
-  const params = Object.keys(snakeSearch).map(key =>
-    snakeSearch[key] instanceof Array
-      ? snakeSearch[key].map(elem => `${key}=${encode(elem)}`).join('&')
-      : `${key}=${encode(snakeSearch[key])}`
-  ).filter(identity);
+  const params = Object.keys(snakeSearch)
+    .map((key) =>
+      snakeSearch[key] instanceof Array
+        ? snakeSearch[key].map((elem) => `${key}=${encode(elem)}`).join('&')
+        : `${key}=${encode(snakeSearch[key])}`
+    )
+    .filter(identity);
 
   return empty(params) ? target : `${target}?${params.join('&')}`;
 }
@@ -190,10 +192,21 @@ function posts() {
 }
 
 Object.assign(posts, {
-  of(id) { return api(`/post/${id}`); },
-  vote(id, vote) { return api(`/post/${id}/vote`, { body: { vote } }); },
-  add(post) { return api('/post', { body: post }); },
-  where(query) { return api('/posts', { method: 'GET', body: query }); }
+  of(id) {
+    return api(`/post/${id}`);
+  },
+  vote(id, vote) {
+    return api(`/post/${id}/vote`, { body: { vote } });
+  },
+  add(post) {
+    return api('/post', { body: post });
+  },
+  delete(id) {
+    return api(`/post/${id}`, { method: 'DELETE' });
+  },
+  where(query) {
+    return api('/posts', { method: 'GET', body: query });
+  },
 });
 
 /* --------------------------------- Tags --------------------------------- */
@@ -203,6 +216,5 @@ function tags(id) {
 }
 
 Object.assign(api, { query, auth, posts, tags });
-
 
 export default api;

@@ -34,7 +34,8 @@ import { useRequest } from '../hooks';
 function InnerStream({ filter, tags, onClick, show_modal, tag_click }) {
   const query = [
     ['kind', filter],
-    ['tags', tags],
+    ['tags', tags.filter((t) => t.value != t.label).map((t) => t.value)],
+    ['search', tags.filter((t) => t.value === t.label).map((t) => t.value)],
   ].reduce((a, [k, v]) => (v ? { ...a, [k]: v } : a), {});
   const posts = usePromise(api.posts.where, [query]);
 
@@ -292,16 +293,18 @@ const FilterBar = ({ currentFilter, onClick }) => {
   return (
     <ButtonGroup className="filter-bar d-flex justify-content-between">
       {options.map(({ key, icon, label }) => (
-        <Button
-          key={key}
-          className={clsx(
-            'filter-choice',
-            currentFilter.key === key && 'active'
-          )}
-          onClick={() => onClick({ key, icon, label })}
-        >
-          <Icon icon={icon} />
-        </Button>
+        <OverlayTrigger placement="down" overlay={<Tooltip>{label}</Tooltip>}>
+          <Button
+            key={key}
+            className={clsx(
+              'filter-choice',
+              currentFilter.key === key && 'active'
+            )}
+            onClick={() => onClick({ key, icon, label })}
+          >
+            <Icon icon={icon} />
+          </Button>
+        </OverlayTrigger>
       ))}
     </ButtonGroup>
   );

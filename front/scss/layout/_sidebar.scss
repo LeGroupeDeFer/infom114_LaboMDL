@@ -1,4 +1,4 @@
-@use '../themes' as *;
+@use '../themes'as *;
 
 $sidebar-dim: 60px;
 
@@ -46,7 +46,8 @@ $sidebar-dim: 60px;
         transition: opacity .2s ease-out;
     }
 
-    a.active, a:hover {
+    a.active,
+    a:hover {
         text-decoration: none;
         color: theme-color("primary");
     }
@@ -56,6 +57,11 @@ $sidebar-dim: 60px;
     position: absolute;
     top: 100%;
     transform: translateY(-100%);
+}
+
+
+.nav-tooltip {
+    top: -0.5rem !important;
 }
 
 /* ----------------------------- Media queries ----------------------------- */
