@@ -75,7 +75,7 @@ fn insert_tag_without_login() {
     let response = req.dispatch();
 
     //check the answer is forbidden
-    assert_eq!(response.status(), Status::Forbidden);
+    assert_eq!(response.status(), Status::Unauthorized);
 
     // assert there is still no tag
     assert_eq!(TagEntity::all(&conn).unwrap().len(), 0);

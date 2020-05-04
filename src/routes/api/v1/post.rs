@@ -2,7 +2,7 @@ use crate::database::models::prelude::*;
 use crate::database::{DBConnection, SortOrder};
 
 use crate::guards::{Auth, ForwardAuth, PostGuard};
-use crate::http::responders::{ApiResult, OK};
+use crate::http::responders::{ok, ApiResult};
 use crate::lib::{AuthError, Consequence, EntityError};
 
 use rocket_contrib::json::Json;
@@ -35,7 +35,8 @@ pub fn allowed_paths() -> Vec<&'static str> {
 fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult<Post> {
     let post_request = data.into_inner();
 
-    if post_request.title == "" {
+    // prevent empty title & empty content
+    if post_request.title == "" || post_request.content == "" {
         Err(EntityError::InvalidAttribute)?;
     }
 
@@ -44,7 +45,7 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult
         title: post_request.title,
         content: post_request.content,
         author_id: auth.sub,
-        kind: post_kind?.into()
+        kind: post_kind?.into(),
     };
 
     let p = PostEntity::insert_new(&*conn, &new_post)?;
@@ -167,7 +168,7 @@ fn delete_post(
 
     post_guard.post_clone().delete(&*conn)?;
 
-    OK()
+    ok()
 }
 
 /// Update a post (title/content)
@@ -191,13 +192,18 @@ fn update_post(
         Err(AuthError::MissingCapability)?;
     }
 
+    // prevent empty title & empty content
+    if a_post.title == "" || a_post.content == "" {
+        Err(EntityError::InvalidAttribute)?;
+    }
+
     let mut post = post_guard.post_clone();
     post.title = a_post.title;
     post.content = a_post.content;
 
     post.update(&*conn)?;
 
-    OK()
+    ok()
 }
 
 #[post("/api/v1/post/<_post_id>/vote", format = "json", data = "<data>")]
@@ -244,7 +250,7 @@ fn toggle_visibility(
 
     post_guard.post().toggle_visibility(&*conn)?;
 
-    OK()
+    ok()
 }
 
 #[post("/api/v1/post/<_post_id>/lock")]
@@ -263,7 +269,7 @@ fn toggle_lock(
 
     post_guard.post().toggle_lock(&*conn)?;
 
-    OK()
+    ok()
 }
 
 #[post("/api/v1/post/<_post_id>/report", format = "json", data = "<data>")]
@@ -296,5 +302,5 @@ fn manage_post_report(
         }
     }
 
-    OK()
+    ok()
 }

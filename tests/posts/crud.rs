@@ -40,6 +40,43 @@ fn get_posts_limit_and_offset(
     serde_json::from_str(&data).unwrap()
 }
 
+fn send_create_post(
+    client: &rocket::local::Client,
+    auth_token: rocket::http::Header<'static>,
+    post_title: &str,
+    post_content: &str,
+    post_kind: &str,
+    tags: &[&str],
+) -> Post {
+    let json_post = format!(
+        "{{ \
+    \"title\": \"{}\",\
+    \"content\": \"{}\",\
+    \"kind\" : \"{}\",\
+    \"tags\" : [{}]
+    }}",
+        post_title,
+        post_content,
+        post_kind,
+        tags.iter()
+            .map(|&t| format!("\"{}\"", t))
+            .collect::<Vec<String>>()
+            .join(", ")
+    );
+
+    let mut response = client
+        .post(POST_ROUTE)
+        .header(auth_token)
+        .header(ContentType::JSON)
+        .body(json_post)
+        .dispatch();
+
+    assert_eq!(response.status(), Status::Ok);
+
+    let data = response.body_string().unwrap();
+    serde_json::from_str(&data).unwrap()
+}
+
 // todo : read all post of a certain type
 
 #[test]
@@ -495,21 +532,14 @@ fn create_post() {
     let new_post_title = "new post title";
     let new_post_content = "This is a new content for the post";
 
-    let post_json_data = format!(
-        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
-        new_post_title, new_post_content
+    let p = send_create_post(
+        &client,
+        auth_token_header,
+        new_post_title,
+        new_post_content,
+        "info",
+        &[],
     );
-
-    let req = client
-        .post(POST_ROUTE)
-        .header(ContentType::JSON)
-        .header(auth_token_header)
-        .body(post_json_data);
-    let mut response = req.dispatch();
-
-    assert_eq!(response.status(), Status::Ok);
-    let data = response.body_string().unwrap();
-    let p: Post = serde_json::from_str(&data).unwrap();
 
     assert_eq!(p.title, new_post_title);
     assert_eq!(p.content, new_post_content);
@@ -522,7 +552,6 @@ fn create_post_empty_title() {
     // clean database
     let client = init::clean_client();
     init::seed();
-    let conn = init::database_connection();
 
     // login
     let auth_token_header = init::login_admin();
@@ -531,7 +560,7 @@ fn create_post_empty_title() {
     let new_post_content = "This is a new content for the post";
 
     let post_json_data = format!(
-        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
+        "{{\"title\": \"{}\",\"content\": \"{}\", \"kind\": \"info\"}}",
         new_post_title, new_post_content
     );
 
@@ -558,7 +587,7 @@ fn create_post_empty_content() {
     let new_post_content = "";
 
     let post_json_data = format!(
-        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
+        "{{\"title\": \"{}\",\"content\": \"{}\", \"kind\": \"info\" }}",
         new_post_title, new_post_content
     );
 
@@ -586,21 +615,14 @@ fn create_post_simple_user() {
     let new_post_title = "new post title";
     let new_post_content = "This is a new content for the post";
 
-    let post_json_data = format!(
-        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
-        new_post_title, new_post_content
+    let p = send_create_post(
+        &client,
+        auth_token_header,
+        new_post_title,
+        new_post_content,
+        "info",
+        &[],
     );
-
-    let req = client
-        .post(POST_ROUTE)
-        .header(ContentType::JSON)
-        .header(auth_token_header)
-        .body(post_json_data);
-    let mut response = req.dispatch();
-
-    assert_eq!(response.status(), Status::Ok);
-    let data = response.body_string().unwrap();
-    let p: Post = serde_json::from_str(&data).unwrap();
 
     assert_eq!(p.title, new_post_title);
     assert_eq!(p.content, new_post_content);
@@ -619,7 +641,7 @@ fn create_post_unauthenticated_user() {
     let new_post_content = "This is a new content for the post";
 
     let post_json_data = format!(
-        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
+        "{{\"title\": \"{}\",\"content\": \"{}\", \"kind\": \"info\"}}",
         new_post_title, new_post_content
     );
 
@@ -629,7 +651,7 @@ fn create_post_unauthenticated_user() {
         .body(post_json_data);
     let response = req.dispatch();
 
-    assert_eq!(response.status(), Status::Forbidden);
+    assert_eq!(response.status(), Status::Unauthorized);
 
     assert_eq!(
         PostEntity::by_title(&conn, &new_post_title).unwrap().len(),
@@ -713,23 +735,16 @@ fn create_duplicate_post() {
 
     let new_post_title = "new post title";
     let new_post_content = "This is a new content for the post";
+    let new_post_kind = "info";
 
-    let post_json_data = format!(
-        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
-        new_post_title, new_post_content
+    let p1 = send_create_post(
+        &client,
+        auth_token_header.clone(),
+        new_post_title,
+        new_post_content,
+        new_post_kind,
+        &[],
     );
-
-    let req1 = client
-        .post(POST_ROUTE)
-        .header(ContentType::JSON)
-        .header(auth_token_header.clone())
-        .body(post_json_data.clone());
-    let mut response1 = req1.dispatch();
-
-    assert_eq!(response1.status(), Status::Ok);
-    let data1 = response1.body_string().unwrap();
-    let p1: Post = serde_json::from_str(&data1).unwrap();
-
     assert_eq!(p1.title, new_post_title);
     assert_eq!(p1.content, new_post_content);
 
@@ -739,16 +754,14 @@ fn create_duplicate_post() {
         1
     );
 
-    let req2 = client
-        .post(POST_ROUTE)
-        .header(ContentType::JSON)
-        .header(auth_token_header.clone())
-        .body(post_json_data.clone());
-    let mut response2 = req2.dispatch();
-
-    assert_eq!(response2.status(), Status::Ok);
-    let data2 = response2.body_string().unwrap();
-    let p2: Post = serde_json::from_str(&data2).unwrap();
+    let p2 = send_create_post(
+        &client,
+        auth_token_header.clone(),
+        new_post_title,
+        new_post_content,
+        new_post_kind,
+        &[],
+    );
 
     assert_eq!(p2.title, new_post_title);
     assert_eq!(p2.content, new_post_content);
@@ -774,29 +787,17 @@ fn create_post_simple_user_with_tags() {
 
     let new_post_title = "new post title";
     let new_post_content = "This is a new content for the post";
-    let new_post_tags = vec!["even".to_string(), "odd".to_string()];
+    let new_post_kind = "info";
+    let new_post_tags = vec!["even", "odd"];
 
-    let post_json_data = format!(
-        "{{\"title\": \"{}\",\"content\": \"{}\", \"tags\": [{}]}}",
+    let p = send_create_post(
+        &client,
+        auth_token_header.clone(),
         new_post_title,
         new_post_content,
-        new_post_tags
-            .iter()
-            .map(|t| format!("\"{}\"", t))
-            .collect::<Vec<String>>()
-            .join(", ")
+        new_post_kind,
+        &new_post_tags,
     );
-
-    let req = client
-        .post(POST_ROUTE)
-        .header(ContentType::JSON)
-        .header(auth_token_header)
-        .body(post_json_data);
-    let mut response = req.dispatch();
-
-    assert_eq!(response.status(), Status::Ok);
-    let data = response.body_string().unwrap();
-    let p: Post = serde_json::from_str(&data).unwrap();
 
     assert_eq!(p.title, new_post_title);
     assert_eq!(p.content, new_post_content);
@@ -808,7 +809,11 @@ fn create_post_simple_user_with_tags() {
         .map(|t| t.label.to_string())
         .collect::<Vec<String>>();
 
-    for t in new_post_tags {
+    for t in new_post_tags
+        .iter()
+        .map(|&tag| tag.to_string())
+        .collect::<Vec<String>>()
+    {
         assert!(tags.contains(&t));
     }
 }
@@ -826,29 +831,17 @@ fn create_post_simple_user_with_new_tags() {
 
     let new_post_title = "new post title";
     let new_post_content = "This is a new content for the post";
-    let new_post_tags = vec!["frankyvincent".to_string(), "lerestaurant".to_string()];
+    let new_post_kind = "info";
+    let new_post_tags = vec!["frankyvincent", "lerestaurant"];
 
-    let post_json_data = format!(
-        "{{\"title\": \"{}\",\"content\": \"{}\", \"tags\": [{}]}}",
+    let p = send_create_post(
+        &client,
+        auth_token_header.clone(),
         new_post_title,
         new_post_content,
-        new_post_tags
-            .iter()
-            .map(|t| format!("\"{}\"", t))
-            .collect::<Vec<String>>()
-            .join(", ")
+        new_post_kind,
+        &new_post_tags,
     );
-
-    let req = client
-        .post(POST_ROUTE)
-        .header(ContentType::JSON)
-        .header(auth_token_header)
-        .body(post_json_data);
-    let mut response = req.dispatch();
-
-    assert_eq!(response.status(), Status::Ok);
-    let data = response.body_string().unwrap();
-    let p: Post = serde_json::from_str(&data).unwrap();
 
     assert_eq!(p.title, new_post_title);
     assert_eq!(p.content, new_post_content);
@@ -860,7 +853,11 @@ fn create_post_simple_user_with_new_tags() {
         .map(|t| t.label.to_string())
         .collect::<Vec<String>>();
 
-    for t in new_post_tags {
+    for t in new_post_tags
+        .iter()
+        .map(|tag| tag.to_string())
+        .collect::<Vec<String>>()
+    {
         assert!(tags.contains(&t));
     }
 }
@@ -1038,19 +1035,17 @@ fn update_post_as_author() {
     // post creation
     let new_post_title = "new post title";
     let new_post_content = "This is a new content for the post";
-    let post_json_data = format!(
-        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
-        new_post_title, new_post_content
+    let new_post_kind = "info";
+    let new_post_tags = vec![];
+
+    let p = send_create_post(
+        &client,
+        auth_token_header.clone(),
+        new_post_title,
+        new_post_content,
+        new_post_kind,
+        &new_post_tags,
     );
-    let req = client
-        .post(POST_ROUTE)
-        .header(ContentType::JSON)
-        .header(auth_token_header.clone())
-        .body(post_json_data);
-    let mut response = req.dispatch();
-    assert_eq!(response.status(), Status::Ok);
-    let data = response.body_string().unwrap();
-    let p: Post = serde_json::from_str(&data).unwrap();
     assert_eq!(p.title, new_post_title);
     assert_eq!(p.content, new_post_content);
     assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
@@ -1058,7 +1053,7 @@ fn update_post_as_author() {
     let updated_title = "updated title yo";
     let updated_content = "Les tests c'est quand même super non ?";
     let update_json_data = format!(
-        "{{\"title\": \"{}\", \"content\":\"{}\"}}",
+        "{{\"title\": \"{}\", \"content\":\"{}\", \"kind\": \"info\"}}",
         updated_title, updated_content
     );
     let update_req = client
@@ -1088,19 +1083,17 @@ fn update_post_as_admin() {
     // post creation
     let new_post_title = "new post title";
     let new_post_content = "This is a new content for the post";
-    let post_json_data = format!(
-        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
-        new_post_title, new_post_content
+    let new_post_kind = "info";
+    let new_post_tags = vec![];
+
+    let p = send_create_post(
+        &client,
+        auth_token_header.clone(),
+        new_post_title,
+        new_post_content,
+        new_post_kind,
+        &new_post_tags,
     );
-    let req = client
-        .post(POST_ROUTE)
-        .header(ContentType::JSON)
-        .header(auth_token_header.clone())
-        .body(post_json_data);
-    let mut response = req.dispatch();
-    assert_eq!(response.status(), Status::Ok);
-    let data = response.body_string().unwrap();
-    let p: Post = serde_json::from_str(&data).unwrap();
     assert_eq!(p.title, new_post_title);
     assert_eq!(p.content, new_post_content);
     assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
@@ -1109,7 +1102,7 @@ fn update_post_as_admin() {
     let updated_title = "updated title yo";
     let updated_content = "Les tests c'est quand même super non ?";
     let update_json_data = format!(
-        "{{\"title\": \"{}\", \"content\":\"{}\"}}",
+        "{{\"title\": \"{}\", \"content\":\"{}\", \"kind\": \"info\"}}",
         updated_title, updated_content
     );
     let update_req = client
@@ -1141,7 +1134,7 @@ fn update_post_as_stun_fest_random() {
     let updated_title = "updated title yo";
     let updated_content = "Les tests c'est quand même super non ?";
     let update_json_data = format!(
-        "{{\"title\": \"{}\", \"content\":\"{}\"}}",
+        "{{\"title\": \"{}\", \"content\":\"{}\", \"kind\": \"info\"}}",
         updated_title, updated_content
     );
     let update_req = client
@@ -1201,7 +1194,7 @@ fn update_post_deleted() {
     let updated_title = "updated title yo";
     let updated_content = "Les tests c'est quand même super non ?";
     let update_json_data = format!(
-        "{{\"title\": \"{}\", \"content\":\"{}\"}}",
+        "{{\"title\": \"{}\", \"content\":\"{}\", \"kind\": \"info\"}}",
         updated_title, updated_content
     );
     let update_req = client
@@ -1291,7 +1284,7 @@ fn update_post_locked_as_admin() {
     let updated_title = "updated title yo";
     let updated_content = "Les tests c'est quand même super non ?";
     let update_json_data = format!(
-        "{{\"title\": \"{}\", \"content\":\"{}\"}}",
+        "{{\"title\": \"{}\", \"content\":\"{}\", \"kind\": \"info\"}}",
         updated_title, updated_content
     );
     let update_req = client
@@ -1325,7 +1318,7 @@ fn update_post_locked_as_user() {
     let updated_title = "updated title yo";
     let updated_content = "Les tests c'est quand même super non ?";
     let update_json_data = format!(
-        "{{\"title\": \"{}\", \"content\":\"{}\"}}",
+        "{{\"title\": \"{}\", \"content\":\"{}\", \"kind\": \"info\"}}",
         updated_title, updated_content
     );
     let update_req = client
@@ -1357,19 +1350,17 @@ fn update_post_locked_as_author() {
     // post creation
     let new_post_title = "new post title";
     let new_post_content = "This is a new content for the post";
-    let post_json_data = format!(
-        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
-        new_post_title, new_post_content
+    let new_post_kind = "info";
+    let new_post_tags = vec!["even", "odd"];
+
+    let p = send_create_post(
+        &client,
+        auth_token_header.clone(),
+        new_post_title,
+        new_post_content,
+        new_post_kind,
+        &new_post_tags,
     );
-    let req = client
-        .post(POST_ROUTE)
-        .header(ContentType::JSON)
-        .header(auth_token_header.clone())
-        .body(post_json_data);
-    let mut response = req.dispatch();
-    assert_eq!(response.status(), Status::Ok);
-    let data = response.body_string().unwrap();
-    let p: Post = serde_json::from_str(&data).unwrap();
     assert_eq!(p.title, new_post_title);
     assert_eq!(p.content, new_post_content);
     assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
@@ -1381,7 +1372,7 @@ fn update_post_locked_as_author() {
     let updated_title = "updated title yo";
     let updated_content = "Les tests c'est quand même super non ?";
     let update_json_data = format!(
-        "{{\"title\": \"{}\", \"content\":\"{}\"}}",
+        "{{\"title\": \"{}\", \"content\":\"{}\", \"kind\": \"info\"}}",
         updated_title, updated_content
     );
     let update_req = client
@@ -1414,7 +1405,7 @@ fn update_post_hidden_as_admin() {
     let updated_title = "updated title yo";
     let updated_content = "Les tests c'est quand même super non ?";
     let update_json_data = format!(
-        "{{\"title\": \"{}\", \"content\":\"{}\"}}",
+        "{{\"title\": \"{}\", \"content\":\"{}\", \"kind\": \"info\"}}",
         updated_title, updated_content
     );
     let update_req = client
@@ -1448,7 +1439,7 @@ fn update_post_hidden_as_user() {
     let updated_title = "updated title yo";
     let updated_content = "Les tests c'est quand même super non ?";
     let update_json_data = format!(
-        "{{\"title\": \"{}\", \"content\":\"{}\"}}",
+        "{{\"title\": \"{}\", \"content\":\"{}\", \"kind\": \"info\"}}",
         updated_title, updated_content
     );
     let update_req = client
@@ -1480,19 +1471,17 @@ fn update_post_hidden_as_author() {
     // post creation
     let new_post_title = "new post title";
     let new_post_content = "This is a new content for the post";
-    let post_json_data = format!(
-        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
-        new_post_title, new_post_content
+    let new_post_kind = "info";
+    let new_post_tags = vec![];
+
+    let p = send_create_post(
+        &client,
+        auth_token_header.clone(),
+        new_post_title,
+        new_post_content,
+        new_post_kind,
+        &new_post_tags,
     );
-    let req = client
-        .post(POST_ROUTE)
-        .header(ContentType::JSON)
-        .header(auth_token_header.clone())
-        .body(post_json_data);
-    let mut response = req.dispatch();
-    assert_eq!(response.status(), Status::Ok);
-    let data = response.body_string().unwrap();
-    let p: Post = serde_json::from_str(&data).unwrap();
     assert_eq!(p.title, new_post_title);
     assert_eq!(p.content, new_post_content);
     assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
@@ -1504,7 +1493,7 @@ fn update_post_hidden_as_author() {
     let updated_title = "updated title yo";
     let updated_content = "Les tests c'est quand même super non ?";
     let update_json_data = format!(
-        "{{\"title\": \"{}\", \"content\":\"{}\"}}",
+        "{{\"title\": \"{}\", \"content\":\"{}\", \"kind\": \"info\"}}",
         updated_title, updated_content
     );
     let update_req = client
@@ -1537,19 +1526,17 @@ fn delete_post_as_author() {
     // post creation
     let new_post_title = "new post title";
     let new_post_content = "This is a new content for the post";
-    let post_json_data = format!(
-        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
-        new_post_title, new_post_content
+    let new_post_kind = "info";
+    let new_post_tags = vec![];
+
+    let p = send_create_post(
+        &client,
+        auth_token_header.clone(),
+        new_post_title,
+        new_post_content,
+        new_post_kind,
+        &new_post_tags,
     );
-    let req = client
-        .post(POST_ROUTE)
-        .header(ContentType::JSON)
-        .header(auth_token_header.clone())
-        .body(post_json_data);
-    let mut response = req.dispatch();
-    assert_eq!(response.status(), Status::Ok);
-    let data = response.body_string().unwrap();
-    let p: Post = serde_json::from_str(&data).unwrap();
     assert_eq!(p.title, new_post_title);
     assert_eq!(p.content, new_post_content);
     assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
@@ -1578,19 +1565,15 @@ fn delete_post_as_admin() {
     // post creation
     let new_post_title = "new post title";
     let new_post_content = "This is a new content for the post";
-    let post_json_data = format!(
-        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
-        new_post_title, new_post_content
+    let new_post_kind = "info";
+    let p = send_create_post(
+        &client,
+        auth_token_header.clone(),
+        new_post_title,
+        new_post_content,
+        new_post_kind,
+        &[],
     );
-    let req = client
-        .post(POST_ROUTE)
-        .header(ContentType::JSON)
-        .header(auth_token_header.clone())
-        .body(post_json_data);
-    let mut response = req.dispatch();
-    assert_eq!(response.status(), Status::Ok);
-    let data = response.body_string().unwrap();
-    let p: Post = serde_json::from_str(&data).unwrap();
     assert_eq!(p.title, new_post_title);
     assert_eq!(p.content, new_post_content);
     assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
@@ -1722,19 +1705,17 @@ fn delete_post_locked_by_author() {
     // post creation
     let new_post_title = "new post title";
     let new_post_content = "This is a new content for the post";
-    let post_json_data = format!(
-        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
-        new_post_title, new_post_content
+    let new_post_kind = "info";
+    let new_post_tags = vec![];
+
+    let p = send_create_post(
+        &client,
+        auth_token_header.clone(),
+        new_post_title,
+        new_post_content,
+        new_post_kind,
+        &new_post_tags,
     );
-    let req = client
-        .post(POST_ROUTE)
-        .header(ContentType::JSON)
-        .header(auth_token_header.clone())
-        .body(post_json_data);
-    let mut response = req.dispatch();
-    assert_eq!(response.status(), Status::Ok);
-    let data = response.body_string().unwrap();
-    let p: Post = serde_json::from_str(&data).unwrap();
     assert_eq!(p.title, new_post_title);
     assert_eq!(p.content, new_post_content);
     assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
@@ -1769,19 +1750,17 @@ fn delete_post_hidden_by_author() {
     // post creation
     let new_post_title = "new post title";
     let new_post_content = "This is a new content for the post";
-    let post_json_data = format!(
-        "{{\"title\": \"{}\",\"content\": \"{}\"}}",
-        new_post_title, new_post_content
+    let new_post_kind = "info";
+    let new_post_tags = vec![];
+
+    let p = send_create_post(
+        &client,
+        auth_token_header.clone(),
+        new_post_title,
+        new_post_content,
+        new_post_kind,
+        &new_post_tags,
     );
-    let req = client
-        .post(POST_ROUTE)
-        .header(ContentType::JSON)
-        .header(auth_token_header.clone())
-        .body(post_json_data);
-    let mut response = req.dispatch();
-    assert_eq!(response.status(), Status::Ok);
-    let data = response.body_string().unwrap();
-    let p: Post = serde_json::from_str(&data).unwrap();
     assert_eq!(p.title, new_post_title);
     assert_eq!(p.content, new_post_content);
     assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());

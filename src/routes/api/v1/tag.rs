@@ -2,7 +2,7 @@ use crate::database::models::prelude::*;
 use crate::database::DBConnection;
 use crate::guards::auth::Auth;
 
-use crate::http::responders::{ApiResult, OK};
+use crate::http::responders::{ok, ApiResult};
 use crate::lib::EntityError;
 use rocket_contrib::json::Json;
 
@@ -15,7 +15,7 @@ pub fn post_tag(conn: DBConnection, _auth: Auth, tag_label: String) -> ApiResult
     let new_tag = TagMinima { label: tag_label };
 
     TagEntity::insert_new(&*conn, &new_tag)?;
-    OK()
+    ok()
 }
 
 #[put("/api/v1/tag/<tag_label>", format = "json", data = "<data>")]
@@ -39,7 +39,7 @@ pub fn update_tag(
         Err(EntityError::InvalidID)?;
     }
 
-    OK()
+    ok()
 }
 
 #[delete("/api/v1/tag/<tag_label>")]
@@ -54,5 +54,5 @@ pub fn delete_tag(conn: DBConnection, auth: Auth, tag_label: String) -> ApiResul
         None => Err(EntityError::InvalidID)?,
     }
 
-    OK()
+    ok()
 }

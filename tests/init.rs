@@ -222,6 +222,7 @@ pub fn get_post_entity(locked: bool, hidden: bool, deleted: bool) -> PostEntity 
         title: "Test title".to_string(),
         content: lorem_ipsum(),
         author_id: get_admin().id,
+        kind: 0,
     };
 
     let post = PostEntity::insert_new(&conn, &p).unwrap();

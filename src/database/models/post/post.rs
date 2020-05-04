@@ -1,8 +1,8 @@
-use std::convert::{TryFrom, TryInto};
 use chrono::NaiveDateTime;
 use diesel::expression::functions::date_and_time::now;
 use diesel::prelude::*;
 use diesel::MysqlConnection;
+use std::convert::TryFrom;
 
 use crate::database;
 use crate::database::models::post::{RelPostReportEntity, RelPostReportMinima, RelPostVoteMinima};
@@ -12,7 +12,6 @@ use crate::database::schema::tags::dsl as tags;
 use crate::database::tables::{posts_table as table, posts_tags_table, tags_table};
 use crate::database::SortOrder;
 use crate::lib::{self as conseq, Consequence, EntityError};
-
 
 // TODO - Move this in app state
 const BASE: f64 = 1.414213562;
@@ -37,7 +36,7 @@ impl TryFrom<u8> for PostKind {
             2 => PostKind::Poll,
             3 => PostKind::Decision,
             4 => PostKind::Discussion,
-            _ => Err(EntityError::UnknownKind)?
+            _ => Err(EntityError::UnknownKind)?,
         })
     }
 }
@@ -52,7 +51,7 @@ impl TryFrom<String> for PostKind {
             "info" => PostKind::Info,
             "decision" => PostKind::Decision,
             "discussion" => PostKind::Discussion,
-            _ => Err(EntityError::UnknownKind)?
+            _ => Err(EntityError::UnknownKind)?,
         })
     }
 }
@@ -64,7 +63,7 @@ impl From<PostKind> for u8 {
             PostKind::Idea => 1,
             PostKind::Poll => 2,
             PostKind::Decision => 3,
-            PostKind::Discussion => 4
+            PostKind::Discussion => 4,
         }
     }
 }
@@ -76,7 +75,7 @@ impl From<PostKind> for String {
             PostKind::Idea => "idea".into(),
             PostKind::Poll => "poll".into(),
             PostKind::Decision => "decision".into(),
-            PostKind::Discussion => "discussion".into()
+            PostKind::Discussion => "discussion".into(),
         }
     }
 }
@@ -205,12 +204,7 @@ impl PostEntity {
         Ok(())
     }
 
-    pub fn upvote(
-        &mut self,
-        conn: &MysqlConnection,
-        user_id: &u32,
-        vote: i32,
-    ) -> Consequence<()> {
+    pub fn upvote(&mut self, conn: &MysqlConnection, user_id: &u32, vote: i32) -> Consequence<()> {
         let minima = RelPostVoteMinima {
             post_id: self.id,
             user_id: user_id.clone(),
@@ -342,7 +336,6 @@ impl PostEntity {
 }
 
 impl Post {
-
     pub fn all(
         conn: &MysqlConnection,
         can_see_hidden: bool,

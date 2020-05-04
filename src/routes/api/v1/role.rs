@@ -9,7 +9,7 @@ use crate::lib::consequence::*;
 
 use crate::database::models::role::forms::RoleData;
 use crate::guards::RoleGuard;
-use crate::http::responders::{ApiResult, OK};
+use crate::http::responders::{ok, ApiResult};
 use rocket_contrib::json::Json;
 
 /// Collect every routes that this module needs to share with the application
@@ -46,7 +46,7 @@ pub fn create(conn: DBConnection, auth: Auth, data: Json<RoleData>) -> ApiResult
 
     role.add_capabilities(&*conn, &role_data.capabilities)?;
 
-    OK()
+    ok()
 }
 
 /// Update an existing role
@@ -90,7 +90,7 @@ pub fn update(
 
     // add every given capability
     role.add_capabilities(&*conn, &role_data.capabilities)?;
-    OK()
+    ok()
 }
 
 /// Delete an existing role
@@ -115,5 +115,5 @@ pub fn delete(
     // delete role
     role_guard.role_clone().delete(&*conn)?;
 
-    OK()
+    ok()
 }

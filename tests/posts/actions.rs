@@ -217,7 +217,7 @@ fn upvote_post_unauthenticated() {
         .body(json_vote(1))
         .dispatch();
 
-    assert_eq!(response.status(), Status::Forbidden);
+    assert_eq!(response.status(), Status::Unauthorized);
     tmp_post = get_post(&client, init::login_admin(), &post.id);
     assert_eq!(tmp_post.score, 0);
     assert_eq!(tmp_post.user_vote.unwrap(), 0);
