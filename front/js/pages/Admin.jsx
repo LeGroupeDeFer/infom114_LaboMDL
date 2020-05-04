@@ -53,7 +53,7 @@ function Admin(props) {
       </div>
     </Container>
   );
-}
+};
 
 const MenuBar = ({ currentMenu, onClick, menuList }) => {
   
@@ -109,7 +109,7 @@ const UsersPage = () => {
       }
   </>
   )
-}
+};
 
 const RolesPage = () => {
 
@@ -317,6 +317,6 @@ const TagsPage = () => {
       }
     </>
   );
-}
+};
 
 export default Admin;

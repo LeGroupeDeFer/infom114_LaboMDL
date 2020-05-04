@@ -3,10 +3,11 @@ import React, { useState, useEffect } from 'react';
 import Toast from 'react-bootstrap/Toast';
 
 function Notification({text}) {
-    const [show, setShow] = useState(true);
+    const [show, setShow] = useState(false);
     
+    //FIXME : When the XXXPage gets rerender (by adding a tag, or a role for instance), last toast is shown again
     useEffect(() =>{ 
-        setShow(true)
+        setShow(true);
     }, [text])
 
     return (         
@@ -21,7 +22,7 @@ function Notification({text}) {
             </Toast.Header>
             <Toast.Body>{text}</Toast.Body>
         </Toast>
-    )
-}
+    );
+};
 
-export default Notification
+export default Notification;
