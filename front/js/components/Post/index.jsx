@@ -9,8 +9,7 @@ import { FacebookShareButton } from 'react-share';
 
 import Preview from './Preview';
 import Comment from './Comment';
-import { checkPropTypes } from 'prop-types';
-
+import Poll from './Poll';
 function Comments({
   isLogged,
   toggle_comment_editor,
@@ -215,7 +214,7 @@ function Post({
           </Col>
 
           <Col>
-            <div className="mb-1">
+            <div className="mb-2">
               {tags.map((tag) => {
                 return (
                   <a
@@ -231,8 +230,11 @@ function Post({
               })}
             </div>
             <br />
-            <p>{content}</p>
-            <div>
+            <p className="mb-4">{content}</p>
+
+            {kind == 'poll' && <Poll />}
+
+            <div className="mb-2">
               <a className="post-footer-btn mr-3" href="#">
                 <MdModeComment size="1.25em" className="mr-2" />
                 <span className="text-muted">
@@ -268,6 +270,7 @@ function Post({
               isLogged={isLogged}
               type="comment"
               add_comment={addComment}
+              className="mb-2"
             />
           </Col>
         </Row>
