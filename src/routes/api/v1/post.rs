@@ -36,7 +36,7 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult
     let post_request = data.into_inner();
 
     // prevent empty title & empty content
-    if post_request.title == "" || post_request.content == "" {
+    if post_request.title == "" {
         Err(EntityError::InvalidAttribute)?;
     }
 

@@ -41,14 +41,28 @@ const optionsValidator = options =>
 
 function PollOptions() {
 
-  useEffect(() => register('options', ['', ''], false), []); // Must be before useForm!
+  // Otherwise, initialize the options field if not already initialized
+  useEffect(
+    () => register('options', ['', ''], true),
+    []
+  ); // Must be before useForm!
   const { data, register, onChange } = AutoForm.useForm();
+  const options = data.options && data.options.value || [];
+
+  // For every kind change, check whether the kind is :
+  // + not a poll => allow validity,
+  // + a poll, check the values and decide on validity
+  useEffect(() => {
+    if (data.kind && data.kind.value !== 'poll')
+      onChange('options', options, true)
+    else if (data.kind && data.kind.value === 'poll' && !optionsValidator(options))
+      onChange('options', options, false);
+  }, [data.kind]);
 
   // If the post is not a poll, this component ought not to be
-  if (!data.kind || data.kind.value !== 'poll')
+  if (!data.kind || data.kind.value !== 'poll') {
     return <></>;
-
-  const options = data.options && data.options.value || [];
+  }
 
   const addOption = () => onChange('options', [...options, ''], false);
   const popOption = i => onChange(
@@ -56,11 +70,10 @@ function PollOptions() {
     options.filter((_, j) => i !== j),
     optionsValidator(options)
   );
-  const updateOption = (i, value) => onChange(
-    'options',
-    options.map((option, j) => i === j ? value : option),
-    optionsValidator(options)
-  );
+  const updateOption = (i, value) => {
+    const newOptions = options.map((option, j) => i === j ? value : option);
+    onChange('options', newOptions, optionsValidator(newOptions));
+  };
 
   return (
     <Form.Group>
@@ -134,17 +147,11 @@ function PostWriter() {
       label: Option({ icon: faTag, label: tag.label })
   }));
   const [loading, setLoading] = useState(false);
-  const [post, setPost] = useState({
-    title: '',
-    content: '',
-    type: '',
-    tags: [],
-    options: ['', ''],
-  });
 
   function onSubmit(post) {
     setLoading(true);
-    setPost(post);
+    if (post.type !== 'poll')
+      post.options = [];
 
     api.posts
       .add(post)

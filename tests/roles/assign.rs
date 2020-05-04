@@ -12,7 +12,7 @@ use super::super::init;
 use unanimitylibrary::database::models::prelude::*;
 use unanimitylibrary::lib::{EntityError, Error};
 
-const ROLE_ROUTE: &'static str = "/api/v1/user/role/";
+const ROLE_ROUTE: &'static str = "/api/v1/user/role";
 
 /**************************** TESTS ******************************************/
 
