@@ -6,13 +6,7 @@
 //! The library crate allow us to perform some documentation tests.
 
 // unstable features used by rocket
-#![feature(
-    assoc_int_consts,
-    proc_macro_hygiene,
-    decl_macro,
-    type_ascription,
-    try_trait
-)]
+#![feature(proc_macro_hygiene, decl_macro, type_ascription, try_trait)]
 /* --------------------------- Load Extern Crates -------------------------- */
 
 #[macro_use]

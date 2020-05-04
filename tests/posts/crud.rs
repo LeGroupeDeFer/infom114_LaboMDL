@@ -366,7 +366,7 @@ fn read_all_post_query_sort_by_score_desc() {
 
     let data = response.body_string().unwrap();
     let posts: Vec<Post> = serde_json::from_str(&data).unwrap();
-    let mut asc_score = i64::max;
+    let mut asc_score = i64::MAX;
 
     for post in posts {
         assert!(asc_score >= post.score);
