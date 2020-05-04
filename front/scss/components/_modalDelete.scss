@@ -1,0 +1,25 @@
+@use '../themes'as *;
+
+
+
+.modal-delete .modal-header {
+    padding: 0.5rem 1rem 0.5rem 1rem;
+}
+
+.notification {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 1500;
+    background-color: rgba(54, 181, 28, 0.85);
+    ;
+}
+
+.notification .close {
+    margin-bottom: 0 !important;
+}
+
+.notification .toast-header {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+}

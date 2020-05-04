@@ -11,6 +11,7 @@ import {
   DropdownButton,
   Tooltip,
   OverlayTrigger,
+  Toast,
 } from 'react-bootstrap';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import {
@@ -27,17 +28,27 @@ import { FaSearch, FaTag, FaEdit } from 'react-icons/fa';
 import { useAuth } from '../context/authContext';
 import { Link } from 'react-router-dom';
 import { Post, SearchBar } from '../components';
+import DeleteModal from '../components/Post/DeleteModal';
 import clsx from 'clsx';
 import api from '../lib/api';
 import { useRequest } from '../hooks';
 
-function InnerStream({ filter, tags, onClick, show_modal, tag_click }) {
+function InnerStream({
+  filter,
+  tags,
+  onClick,
+  show_delete_modal,
+  show_preview_modal,
+  tag_click,
+  set_posts,
+  posts,
+}) {
   const query = [
     ['kind', filter],
     ['tags', tags.filter((t) => t.value != t.label).map((t) => t.value)],
     ['search', tags.filter((t) => t.value === t.label).map((t) => t.value)],
   ].reduce((a, [k, v]) => (v ? { ...a, [k]: v } : a), {});
-  const posts = usePromise(api.posts.where, [query]);
+  set_posts(usePromise(api.posts.where, [query]));
 
   return (
     <>
@@ -47,7 +58,8 @@ function InnerStream({ filter, tags, onClick, show_modal, tag_click }) {
             <Post.Preview
               onClick={onClick}
               post={post}
-              show_modal={show_modal}
+              show_delete_modal={show_delete_modal}
+              show_preview_modal={show_preview_modal}
               onTagClick={tag_click}
             />
           </Col>
@@ -61,14 +73,36 @@ function InnerStream({ filter, tags, onClick, show_modal, tag_click }) {
 const Stream = () => {
   const { user, token } = useAuth();
   const isLogged = !!user;
-
+  const [posts, setPosts] = useState([]);
   const [filter, setFilter] = useState({ key: 'all', label: 'Actualité' });
   const [postModal, setPostModal] = useState(null);
-  const [modalDisplayed, setModalDisplayed] = useState(false);
-
+  const [previewModalDisplayed, setPreviewModalDisplayed] = useState(false);
+  const [deleteModalDisplayed, setDeleteModalDisplayed] = useState(false);
+  const [postToDelete, setPostToDelete] = useState(-1);
   const [tags, setTags] = useState([]);
   const [choices, setChoices] = useState([]);
   const [error, tagsData] = useRequest(api.tags, []);
+  const [showNotif, setShowNotif] = useState(false);
+
+  const deletePost = () => {
+    setDeleteModalDisplayed(false);
+    const del = () => {
+      api.posts
+        .delete(postToDelete)
+        .then(() => {
+          let index = posts.findIndex((p) => p.id == postToDelete);
+          let tmp = [...posts];
+          tmp.splice(index, 1);
+          setPosts(tmp);
+          toggleNotif();
+          setPostToDelete(-1);
+        })
+        .catch((error) => {});
+    };
+    del();
+  };
+
+  const toggleNotif = () => setShowNotif(!showNotif);
 
   useEffect(
     () =>
@@ -81,11 +115,16 @@ const Stream = () => {
     [tagsData]
   );
 
-  function hideModal() {
-    setModalDisplayed(false);
-  }
+  const showDeleteModal = (id) => {
+    setDeleteModalDisplayed(true);
+    setPostToDelete(id);
+  };
 
-  function showModal(postId) {
+  const hidePreviewModal = () => {
+    setPreviewModalDisplayed(false);
+  };
+
+  function showPreviewModal(postId) {
     setPostModal(null);
     const fetchPost = () => {
       api.posts
@@ -96,7 +135,7 @@ const Stream = () => {
         .catch((error) => {});
     };
     fetchPost();
-    setModalDisplayed(true);
+    setPreviewModalDisplayed(true);
   }
   function handleChange(selectedOptions) {
     setChoices(
@@ -118,7 +157,6 @@ const Stream = () => {
       ),
     };
     setChoices([tag]);
-
     // Scroll to the top
     //document.getElementsByTagName('main')[0].scrollTo(0, 0);
   }
@@ -200,14 +238,19 @@ const Stream = () => {
           <InnerStream
             filter={filter.key}
             tags={choices}
-            show_modal={showModal}
+            show_preview_modal={showPreviewModal}
             tag_click={tagClickHandler}
+            show_delete_modal={showDeleteModal}
+            post_to_delete={postToDelete}
+            set_posts={setPosts}
+            posts={posts}
           />
         </Suspense>
-
+        <br />
         <Modal
-          show={modalDisplayed}
-          onHide={() => hideModal()}
+          className="modal-post"
+          show={previewModalDisplayed}
+          onHide={() => hidePreviewModal()}
           dialogClassName="modal-80w"
         >
           <Modal.Header closeButton></Modal.Header>
@@ -219,9 +262,23 @@ const Stream = () => {
             )}
           </Modal.Body>
         </Modal>
+        <DeleteModal
+          modal_displayed={deleteModalDisplayed}
+          set_modal_displayed={setDeleteModalDisplayed}
+          delete_post={deletePost}
+        />
+        <Toast
+          className="notification"
+          show={showNotif}
+          onClose={toggleNotif}
+          delay={4000}
+          autohide
+        >
+          <Toast.Header>
+            <strong className="mr-auto"> Le post a bien été supprimé</strong>
+          </Toast.Header>
+        </Toast>
       </Container>
-
-      <br />
     </>
   );
 };

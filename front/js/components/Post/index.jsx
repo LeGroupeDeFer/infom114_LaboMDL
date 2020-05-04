@@ -49,12 +49,9 @@ function Post({
   userVote,
   isLogged,
 }) {
-  console.log(userVote);
   const [commentEditors, setCommentEditors] = useState({});
   const [commentList, setCommentList] = useState(comments);
-
   let vote = ['down', 'no', 'up'][userVote + 1];
-  console.log(vote);
   const [voted, setVoted] = useState(vote);
   const [scoreState, setScoreState] = useState(score);
 
