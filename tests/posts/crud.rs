@@ -1,9 +1,7 @@
-use rocket::http::Status;
-
 use super::super::init;
-
 use chrono::NaiveDateTime;
 use rocket::http::ContentType;
+use rocket::http::Status;
 use unanimitylibrary::database::models::prelude::*;
 use unanimitylibrary::lib::seeds;
 
@@ -368,7 +366,7 @@ fn read_all_post_query_sort_by_score_desc() {
 
     let data = response.body_string().unwrap();
     let posts: Vec<Post> = serde_json::from_str(&data).unwrap();
-    let mut asc_score = i64::MAX;
+    let mut asc_score = i64::max;
 
     for post in posts {
         assert!(asc_score >= post.score);
