@@ -11,7 +11,7 @@ use unanimitylibrary::database::models::prelude::UserEntity;
 
 use super::super::init;
 
-const ROUTE: &'static str = "/api/v1/auth/activate/";
+const ROUTE: &'static str = "/api/v1/auth/activate";
 
 /**************************** TESTS ******************************************/
 

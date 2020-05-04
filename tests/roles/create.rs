@@ -11,7 +11,7 @@ use rocket::http::Status;
 use super::super::init;
 use unanimitylibrary::database::models::prelude::*;
 
-const ROLE_ROUTE: &'static str = "/api/v1/role/";
+const ROLE_ROUTE: &'static str = "/api/v1/role";
 
 /**************************** TESTS ******************************************/
 

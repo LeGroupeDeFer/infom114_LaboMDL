@@ -69,10 +69,12 @@ function Select({
   useEffect(() => register(name, state.value, state.valid), []);
 
   const localOnChange = (value, action) => {
-    console.log('keke');
-    const valid = localValidator(value);
-    setLocalValue(value);
-    const liftedValue = isMulti ? value.map((v) => v.value) : value.value;
+    const listedValue = value || (isMulti ? [] : null);
+    const valid = localValidator(listedValue);
+    setLocalValue(listedValue);
+    const liftedValue = isMulti
+      ? listedValue.map((v) => v.value)
+      : listedValue.value;
     setState({ value: liftedValue, valid, edited: Boolean(value) });
     // TODO - Debounce
     onChange(name, liftedValue, valid);
@@ -80,7 +82,7 @@ function Select({
 
   useEffect(() => {
     if (error && eraseOnFailure) {
-      const valid = localValidator('');
+      const valid = localValidator(isMulti ? [] : null);
       setState({ value: '', valid, edited: false });
       setLocalValue(null);
       onChange(name, null, valid);

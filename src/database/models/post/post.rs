@@ -251,7 +251,7 @@ impl PostEntity {
     pub fn calculate_rank(&self) -> f64 {
         let elapsed = self.created_at.timestamp() as u64 - EPOCH;
         let logarithm = (self.votes as f64).log(BASE);
-        let order = logarithm;
+        let order = logarithm.max(1.0);
 
         order + (elapsed / EASING) as f64
     }

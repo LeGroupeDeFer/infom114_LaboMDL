@@ -14,7 +14,7 @@ use unanimitylibrary::database::tables::{addresses_table, users_table};
 
 use super::super::init;
 
-const ROUTE: &'static str = "/api/v1/auth/register/";
+const ROUTE: &'static str = "/api/v1/auth/register";
 
 /**************************** TESTS ******************************************/
 
