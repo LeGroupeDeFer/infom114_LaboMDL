@@ -54,30 +54,29 @@ const optionsValidator = (options) =>
   options.reduce((a, option) => a && option.length, true);
 
 function PollOptions() {
-
   // Otherwise, initialize the options field if not already initialized
-  useEffect(
-    () => register('options', ['', ''], true),
-    []
-  ); // Must be before useForm!
+  useEffect(() => register('options', ['', ''], true), []); // Must be before useForm!
   const { data, register, onChange } = AutoForm.useForm();
-  const options = data.options && data.options.value || [];
+  const options = (data.options && data.options.value) || [];
 
   // For every kind change, check whether the kind is :
   // + not a poll => allow validity,
   // + a poll, check the values and decide on validity
   useEffect(() => {
     if (data.kind && data.kind.value !== 'poll')
-      onChange('options', options, true)
-    else if (data.kind && data.kind.value === 'poll' && !optionsValidator(options))
+      onChange('options', options, true);
+    else if (
+      data.kind &&
+      data.kind.value === 'poll' &&
+      !optionsValidator(options)
+    )
       onChange('options', options, false);
   }, [data.kind]);
 
   // If the post is not a poll, this component ought not to be
-<<<<<<< HEAD
-  if (!data.kind || data.kind.value !== 'poll') return <></>;
-
-  const options = (data.options && data.options.value) || [];
+  if (!data.kind || data.kind.value !== 'poll') {
+    return <></>;
+  }
 
   const addOption = () => onChange('options', [...options, ''], false);
   const popOption = (i) =>
@@ -86,28 +85,10 @@ function PollOptions() {
       options.filter((_, j) => i !== j),
       optionsValidator(options)
     );
-  const updateOption = (i, value) =>
-    onChange(
-      'options',
-      options.map((option, j) => (i === j ? value : option)),
-      optionsValidator(options)
-    );
-=======
-  if (!data.kind || data.kind.value !== 'poll') {
-    return <></>;
-  }
-
-  const addOption = () => onChange('options', [...options, ''], false);
-  const popOption = i => onChange(
-    'options',
-    options.filter((_, j) => i !== j),
-    optionsValidator(options)
-  );
   const updateOption = (i, value) => {
-    const newOptions = options.map((option, j) => i === j ? value : option);
+    const newOptions = options.map((option, j) => (i === j ? value : option));
     onChange('options', newOptions, optionsValidator(newOptions));
   };
->>>>>>> d168d97b2543090ccbb26e8c4d91825f3e9c410a
 
   return (
     <Form.Group>
@@ -179,8 +160,7 @@ function PostWriter() {
 
   function onSubmit(post) {
     setLoading(true);
-    if (post.type !== 'poll')
-      post.options = [];
+    if (post.type !== 'poll') post.options = [];
 
     api.posts
       .add(post)

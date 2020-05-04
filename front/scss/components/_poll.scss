@@ -15,3 +15,29 @@
 .poll {
     border: 1px solid #EDEFF1;
 }
+
+.progress-bar {
+    border-radius: 5px;
+}
+
+.progress {
+    background-color: unset;
+    height: 2rem;
+}
+
+// .progress {
+//     text-align: center;
+//     width: 50%;
+//     margin: 15px auto;
+// }
+
+.progress-value {
+    position: absolute;
+    left: 5%;
+    padding-top: 0.2rem;
+    font-size: 1rem;
+}
+
+.opt-selected {
+    margin-top: -0.3rem;
+}

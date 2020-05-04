@@ -48,6 +48,7 @@ function InnerStream({
     ['tags', tags.filter((t) => t.value != t.label).map((t) => t.value)],
     ['search', tags.filter((t) => t.value === t.label).map((t) => t.value)],
   ].reduce((a, [k, v]) => (v ? { ...a, [k]: v } : a), {});
+
   set_posts(usePromise(api.posts.where, [query]));
 
   return (
@@ -73,7 +74,7 @@ function InnerStream({
 const Stream = () => {
   const { user, token } = useAuth();
   const isLogged = !!user;
-  const [posts, setPosts] = useState([]);
+  let [posts, setPosts] = useState([]);
   const caps = token && token.cap;
 
   const [filter, setFilter] = useState({ key: 'all', label: 'Actualité' });
@@ -94,8 +95,10 @@ const Stream = () => {
         .then(() => {
           let index = posts.findIndex((p) => p.id == postToDelete);
           let tmp = [...posts];
+
           tmp.splice(index, 1);
           setPosts(tmp);
+
           toggleNotif();
           setPostToDelete(-1);
         })
@@ -277,7 +280,7 @@ const Stream = () => {
           autohide
         >
           <Toast.Header>
-            <strong className="mr-auto"> Le post a bien été supprimé</strong>
+            <strong className="mr-auto"> Votre post a bien été supprimé</strong>
           </Toast.Header>
         </Toast>
       </Container>
