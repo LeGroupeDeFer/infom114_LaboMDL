@@ -99,6 +99,9 @@ function UpdateTagModal(props) {
       aria-labelledby="contained-modal-title-vcenter"
       centered
     >
+      <Modal.Header>
+        Modifier le nom du tag
+      </Modal.Header>
       <Modal.Body>
         <InputGroup>
           <InputGroup.Prepend>
