@@ -2,6 +2,10 @@
 
 @use '../abstract/mixins' as *;
 
+#menu-bar .active {
+    background-color: $primary;
+    border-color: $primary;
+}
 
 input.tag-input {
     &[disabled] {

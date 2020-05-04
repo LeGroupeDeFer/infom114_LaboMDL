@@ -9,6 +9,8 @@ import Col from 'react-bootstrap/Col';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 
+import { FaEdit, FaUser } from 'react-icons/fa';
+
 const User = ({user, roles, setNotification}) => {
 
     const [modalShow, setModalShow] = useState(false);
@@ -22,8 +24,16 @@ const User = ({user, roles, setNotification}) => {
                 <Col>
                   <Card.Title>{user.lastname} {user.firstname}</Card.Title>
                 </Col>
-                <Button variant="primary" className="mr-3" onClick={() => setModalShow(true)}>Gérer les roles</Button>    
-                <Button variant="secondary">Voir profil</Button>
+                <Col md="auto">
+                  <a className="footer-primary-btn mr-3" href="#" onClick={() => setModalShow(true)}>
+                    <FaEdit className="fa-primary mr-1" />    
+                    <span className="text-muted">Gérer les roles</span>
+                  </a>
+                  <a className="post-footer-btn mr-3" href="#">
+                    <FaUser className="fa-primary mr-1">Voir profil</FaUser>
+                    <span className="text-muted">Supprimer</span>
+                  </a>
+                </Col>
               </Row>
             </Container>
           </Card.Body>

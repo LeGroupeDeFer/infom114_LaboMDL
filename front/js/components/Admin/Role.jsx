@@ -11,6 +11,8 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import FormControl from 'react-bootstrap/FormControl';
 import Form from 'react-bootstrap/Form';
 
+import { FaPen, FaEdit, FaTrashAlt } from 'react-icons/fa';
+
 const Role = ({ roleId, roleName, roleColor, roleCapabilities, deleteRole, setNotification, allCapabilities }) => {
 
   const [renameModalShow, setRenameModalShow] = useState(false);
@@ -47,9 +49,18 @@ const Role = ({ roleId, roleName, roleColor, roleCapabilities, deleteRole, setNo
               </Col>
 
               <Col md="auto">
-                <Button variant="secondary" className="mr-3" onClick={() => setEditModalShow(true)} >Modifier</Button>
-                <Button variant="primary" className="mr-3" onClick={() => setRenameModalShow(true)} >Renommer</Button>
-                <Button variant="danger" value={role.name} onClick={() => deleteRole(role.id)} >Supprimer</Button>
+                <a className="footer-primary-btn mr-3" href="#" onClick={() => setRenameModalShow(true)}>
+                  <FaPen className="fa-primary mr-1" />
+                  <span className="text-muted">Renommer</span>
+                </a>
+                <a className="footer-primary-btn mr-3" href="#" onClick={() => setEditModalShow(true)}>
+                  <FaEdit className="fa-primary mr-1" />
+                  <span className="text-muted">Modifier</span>
+                </a>
+                <a className="footer-primary-btn mr-3" href="#" onClick={() => deleteRole(role.id)}>
+                  <FaTrashAlt className="fa-danger mr-1"/>
+                  <span className="text-muted">Supprimer</span>
+                </a>
               </Col>
             </Row>
           </Container>

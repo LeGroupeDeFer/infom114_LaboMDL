@@ -11,6 +11,7 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import FormControl from 'react-bootstrap/FormControl';
 import Form from 'react-bootstrap/Form';
 
+import { FaPen, FaTrashAlt } from 'react-icons/fa';
 
 const Tag = ({name, deleteTag, setNotification, tags, setTags}) => {
   const [modalShow, setModalShow] = useState(false);
@@ -51,10 +52,15 @@ const Tag = ({name, deleteTag, setNotification, tags, setTags}) => {
             <Col>
               <Card.Title>{label}</Card.Title>
             </Col>
-
             <Col md="auto">
-              <Button variant="secondary" className="mr-3" onClick={() => setModalShow(true)} >Renommer</Button> 
-              <Button variant="danger" value={label} onClick={deleteTag}>Supprimer</Button>
+              <a className="footer-primary-btn mr-3" href="#" onClick={() => setModalShow(true)}>
+                <FaPen className="fa-primary mr-1" /> 
+                <span className="text-muted">Renommer</span>
+              </a>
+              <a className="post-footer-btn mr-3" href="#" onClick={() => deleteTag(label)}>
+                <FaTrashAlt className="fa-danger mr-1"/>
+                <span className="text-muted">Supprimer</span>
+              </a>
             </Col>
           </Row>
         </Container>

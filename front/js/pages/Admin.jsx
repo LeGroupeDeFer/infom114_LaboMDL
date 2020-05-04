@@ -291,10 +291,9 @@ const TagsPage = () => {
     sendTag(label);
   };
 
-  const onDelete = e => {
-    e.preventDefault();
-    setDeletedTag(e.target.value);
-    setDelPromise(api.tag.remove(e.target.value));
+  const onDelete = (label) => {
+    setDeletedTag(label);
+    setDelPromise(api.tag.remove(label));
   }
 
   return (
