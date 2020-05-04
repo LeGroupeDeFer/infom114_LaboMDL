@@ -35,7 +35,7 @@ pub fn allowed_paths() -> Vec<&'static str> {
 fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult<Post> {
     let post_request = data.into_inner();
 
-    if post_request.title == "" || post_request.content == "" {
+    if post_request.title == "" {
         Err(EntityError::InvalidAttribute)?;
     }
 
@@ -97,6 +97,7 @@ fn get_all_posts_authenticated(
     .collect::<Vec<Post>>();
     Ok(Json(posts))
 }
+
 #[get(
     "/api/v1/posts?<tag>&<search>&<sort>&<kind>&<limit>&<offset>",
     rank = 2

@@ -15,7 +15,7 @@ const DropdownIndicator = (props) => {
 
 // SearchBar :: None => Component
 
-function SearchOption({ icon, label }) {
+export function Option({ icon, label }) {
   return (
     <div className="search-option">
       <span className="search-option-icon">
@@ -29,7 +29,7 @@ function SearchOption({ icon, label }) {
 function SearchBar({ tags, choices, onChange, children }) {
   const options = tags.map(({ label, id }) => ({
     value: label,
-    label: <SearchOption icon={faTag} label={label} />,
+    label: <Option icon={faTag} label={label} />,
   }));
 
   return (
@@ -55,5 +55,8 @@ function SearchBar({ tags, choices, onChange, children }) {
     </Container>
   );
 }
+
+SearchBar.Option = Option;
+
 
 export default SearchBar;

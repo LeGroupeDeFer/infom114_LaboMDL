@@ -60,7 +60,7 @@ function InnerStream({ filter, tags, onClick, show_modal, tag_click }) {
 const Stream = () => {
   const { user, token } = useAuth();
   const isLogged = !!user;
-  const caps = token.cap;
+  const caps = token && token.cap;
 
   const [filter, setFilter] = useState({ key: 'all', label: 'Actualité' });
   const [postModal, setPostModal] = useState(null);

@@ -58,7 +58,7 @@ export function FormProvider({ onSubmit, validator, children }) {
   useEffect(() => setValidity(validator(data) && assertValidity(data)), [data]);
 
   return (
-    <FormContext.Provider value={{ register, onChange, submit, validity }}>
+    <FormContext.Provider value={{ register, onChange, submit, validity, data }}>
       {children}
     </FormContext.Provider>
   );

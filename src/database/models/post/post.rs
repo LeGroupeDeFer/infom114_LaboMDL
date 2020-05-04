@@ -50,8 +50,8 @@ impl TryFrom<String> for PostKind {
             "poll" => PostKind::Poll,
             "idea" => PostKind::Idea,
             "info" => PostKind::Info,
-            "Decision" => PostKind::Decision,
-            "Discussion" => PostKind::Discussion,
+            "decision" => PostKind::Decision,
+            "discussion" => PostKind::Discussion,
             _ => Err(EntityError::UnknownKind)?
         })
     }

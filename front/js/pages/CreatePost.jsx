@@ -1,51 +1,139 @@
-import React, { useState } from 'react';
-import Form from 'react-bootstrap/Form';
-import Container from 'react-bootstrap/Container';
-import Card from 'react-bootstrap/Card';
-import Select from 'react-select';
-import Button from 'react-bootstrap/Button';
+import React, {useEffect, useState} from 'react';
+import { Form, Button, Card, Container, Row, Col, InputGroup, Spinner } from 'react-bootstrap';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+import { faBalanceScale, faInfo, faLightbulb, faPenFancy, faPlusSquare } from '@fortawesome/free-solid-svg-icons';
 import { TiDelete } from 'react-icons/ti';
-import { FaPlusSquare, FaTag } from 'react-icons/fa';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import InputGroup from 'react-bootstrap/InputGroup';
-import api from '../lib/api';
+import { faTag } from '@fortawesome/free-solid-svg-icons';
 import { useRequest } from '../hooks';
 import { useHistory } from 'react-router-dom';
-import Spinner from 'react-bootstrap/Spinner';
+import api from '../lib/api';
+import AutoForm from '../components/AutoForm';
+import { Option } from '../components/SearchBar';
+import { Simple as SimpleError } from '../components/Error';
 
-const CreatePost = () => {
-  const [error, data] = useRequest(api.tags, []);
 
-  const tags = (data ? data.tags : []).map((tag) => {
-    return {
-      id: tag.id,
-      value: tag.label,
-      label: (
-        <span>
-          <FaTag /> {tag.label}
-        </span>
-      ),
-    };
-  });
+const types = [
+  { value: 'idea', label: Option({ icon: faLightbulb, label: 'Idée' }) },
+  { value: 'info', label: Option({ icon: faInfo, label: 'Information' }) },
+  { value: 'poll', label: Option({ icon: faBalanceScale, label: 'Sondage' }) },
+];
 
-  return (
-    <Container>
-      <br />
-      <h3>Créer un post</h3>
-      <br />
-      <CreateForm tags={tags} />
-    </Container>
-  );
+// I didn't find another way to add styles to the select
+const primary = '#A0C55F';
+const customStyles = {
+  control: (base, state) => ({
+    ...base,
+    boxShadow: state.isFocused ? '0 0 0 1px ' + primary : 0,
+    borderColor: state.isFocused ? primary : base.borderColor,
+    '&:hover': {
+      borderColor: state.isFocused ? primary : primary,
+    },
+  }),
+  option: (styles, { isFocused, isSelected }) => ({
+    ...styles,
+    color: isSelected ? '' : '',
+    backgroundColor: isFocused ? primary : null,
+  }),
 };
 
-function CreateForm(tags) {
-  const history = useHistory();
-  const [loading, setLoading] = useState(false);
-  const [submitBtnText, setSubmitBtnText] = useState('Créer');
-  const [selectedTags, setSelectedTags] = useState(null);
-  const [selectedTypes, setSelectedTypes] = useState(null);
+const optionsValidator = options =>
+  options.reduce((a, option) => a && option.length, true);
 
+function PollOptions() {
+
+  useEffect(() => register('options', ['', ''], false), []); // Must be before useForm!
+  const { data, register, onChange } = AutoForm.useForm();
+
+  // If the post is not a poll, this component ought not to be
+  if (!data.kind || data.kind.value !== 'poll')
+    return <></>;
+
+  const options = data.options && data.options.value || [];
+
+  const addOption = () => onChange('options', [...options, ''], false);
+  const popOption = i => onChange(
+    'options',
+    options.filter((_, j) => i !== j),
+    optionsValidator(options)
+  );
+  const updateOption = (i, value) => onChange(
+    'options',
+    options.map((option, j) => i === j ? value : option),
+    optionsValidator(options)
+  );
+
+  return (
+    <Form.Group>
+      {options.map((value, i) => (
+        <div key={i}>
+          <InputGroup className="pb-3">
+            <Form.Control
+              type="text"
+              placeholder={`Option ${i+1}`}
+              value={value}
+              onChange={e => updateOption(i, e.target.value)}
+              isValid={value !== ''}
+            />
+            { i > 1 && (
+            <InputGroup.Append>
+              <Button
+                variant="outline-danger"
+                onClick={_ => popOption(i)}
+              >
+                <TiDelete size={20} />
+              </Button>
+            </InputGroup.Append>
+            )}
+          </InputGroup>
+        </div>
+      ))}
+
+      {options.length < 5 && (
+        <a href="#" onClick={addOption}>
+          <Icon icon={faPlusSquare} className="mr-1" />
+          <span>Ajouter une option</span>
+        </a>
+      )}
+    </Form.Group>
+  );
+
+}
+
+function Submit({ loading }) {
+
+  const InnerSubmit = loading ? (
+    <Spinner
+      as="span"
+      animation="border"
+      size="sm"
+      role="status"
+      aria-hidden="true"
+    />
+  ) : <span>Créer</span>;
+
+  return (
+    <AutoForm.Submit
+      variant="primary"
+      className="mt-1 float-right"
+      disabled={!loading}
+    >
+      {InnerSubmit}
+    </AutoForm.Submit>
+  );
+
+}
+
+function PostWriter() {
+
+  const history = useHistory();
+  const [tagError, data] = useRequest(api.tags, []);
+  const [postError, setPostError] = useState(null);
+  const tags = (data ? data.tags : []).map(tag => ({
+      id: tag.id,
+      value: tag.label,
+      label: Option({ icon: faTag, label: tag.label })
+  }));
+  const [loading, setLoading] = useState(false);
   const [post, setPost] = useState({
     title: '',
     content: '',
@@ -54,214 +142,90 @@ function CreateForm(tags) {
     options: ['', ''],
   });
 
-  const typeList = [
-    { value: 'idea', label: 'Idée' },
-    { value: 'info', label: 'Information' },
-    { value: 'poll', label: 'Sondage' },
-  ];
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setPost({ ...post, [name]: value });
-  };
-
-  function submitHandler(e) {
-    e.preventDefault();
-
+  function onSubmit(post) {
     setLoading(true);
-    setSubmitBtnText('');
-
-    post.kind = post.type;
-
-    // Not updated immediately :/
-    if (post.type != 'poll') {
-      setPost({ ...post, options: [] });
-    }
+    setPost(post);
 
     api.posts
       .add(post)
-      .then((newPost) => {
-        history.push(`/post/${newPost.id}`);
-      })
-      .catch((error) => {});
-  }
-
-  // I didn't find another way to add styles to the select
-  const primary = '#A0C55F';
-  const customStyles = {
-    control: (base, state) => ({
-      ...base,
-      boxShadow: state.isFocused ? '0 0 0 1px ' + primary : 0,
-      borderColor: state.isFocused ? primary : base.borderColor,
-      '&:hover': {
-        borderColor: state.isFocused ? primary : primary,
-      },
-    }),
-    option: (styles, { isFocused, isSelected }) => ({
-      ...styles,
-      color: isSelected ? '' : '',
-      backgroundColor: isFocused ? primary : null,
-    }),
-  };
-
-  function handleSelectTypeChange(selectedOpttion) {
-    setSelectedTypes(selectedOpttion);
-    setPost({ ...post, type: selectedOpttion.value });
-  }
-
-  function handleSelectTagChange(selectedOpttion) {
-    setSelectedTags(selectedOpttion);
-    setPost({ ...post, tags: selectedOpttion.map((tag) => tag.value) });
+      .then(newPost => history.push(`/post/${newPost.id}`))
+      .catch(e => setPostError(e) || setLoading(false));
   }
 
   return (
-    <Card>
-      <Card.Body>
-        <Form onSubmit={submitHandler}>
-          <Row>
-            <Col>
-              <Select
-                options={typeList}
-                placeholder={'Sélectionner une catégorie'}
+    <Container>
+      <Card>
+        <Card.Body>
+          <h1 className="mb-4 text-dark">
+            <Icon icon={faPenFancy} className="mr-3" />
+            <span>Ecrire une idée</span>
+          </h1>
+
+          <SimpleError error={tagError || postError} className="mb-3"/>
+
+          <AutoForm onSubmit={onSubmit}>
+            <Row>
+              <Col sm={12} md={6} className="pb-3">
+                <AutoForm.Select
+                  id="kind"
+                  name="kind"
+                  options={types}
+                  styles={customStyles}
+                  placeholder="Sélectionner une catégorie"
+                />
+              </Col>
+              <Col sm={12} md={6} className="pb-3">
+                <AutoForm.Control
+                  variant="primary"
+                  id="title"
+                  name="title"
+                  type="text"
+                  placeholder="Titre du post"
+                />
+              </Col>
+            </Row>
+
+            <Row className="pb-3"><Col>
+              <AutoForm.Select
+                id="tags"
+                name="tags"
+                options={tags}
+                isMulti
+                placeholder={'Sélectionner un ou plusieurs tags'}
                 styles={customStyles}
-                onChange={handleSelectTypeChange}
-                value={selectedTypes}
               />
-            </Col>
-            <Col>
-              <Form.Control
-                type="text"
-                placeholder="Titre du post"
-                onChange={handleInputChange}
-                name="title"
-                value={post.title}
-              />
-            </Col>
-          </Row>
+            </Col></Row>
 
-          <br />
+            <Row className="pb-3"><Col>
+              <Form.Group>
+                <AutoForm.Control
+                  optional
+                  id="content"
+                  name="content"
+                  as="textarea"
+                  rows="5"
+                  placeholder="Texte..."
+                />
+              </Form.Group>
+            </Col></Row>
 
-          <Select
-            options={tags.tags}
-            isMulti
-            placeholder={'Sélectionner un ou plusieurs tags'}
-            styles={customStyles}
-            onChange={handleSelectTagChange}
-            value={selectedTags}
-          />
+            <PollOptions />
 
-          <br />
+            <Row className="pb-3"><Col>
+              <Submit loading={loading} />
+            </Col></Row>
 
-          <Form.Group>
-            <Form.Control
-              as="textarea"
-              rows="5"
-              placeholder="Texte.."
-              onChange={handleInputChange}
-              name="content"
-              value={post.content}
-            />
-          </Form.Group>
+          </AutoForm>
 
-          {post.type == 'poll' && (
-            <PollSection set_post={setPost} post={post} />
-          )}
-
-          <Button
-            variant="primary"
-            className="mt-1 float-right"
-            type="submit"
-            disabled={loading}
-          >
-            {submitBtnText}
-            {loading && (
-              <Spinner
-                as="span"
-                animation="border"
-                size="sm"
-                role="status"
-                aria-hidden="true"
-              />
-            )}
-          </Button>
-        </Form>
-      </Card.Body>
-    </Card>
+        </Card.Body>
+      </Card>
+    </Container>
   );
+
 }
 
-function PollSection(props) {
-  console.log(props);
-  function addOption() {
-    props.set_post((post) => {
-      return { ...post, options: post.options.concat(['']) };
-    });
-  }
 
-  function removeOption(index) {
-    var tmp = [...props.post.options];
-    tmp.splice(index, 1);
-    props.set_post((post) => {
-      return { ...post, options: tmp };
-    });
-  }
+PostWriter.defaultProps = {};
 
-  function updateOption(index, val) {
-    var tmp = [...props.post.options];
-    tmp[index] = val;
-    props.set_post((post) => {
-      return { ...post, options: tmp };
-    });
-  }
 
-  return (
-    <>
-      <Form.Group>
-        {props.post.options.map((val, index) => (
-          <div key={index}>
-            {index > 1 ? (
-              <>
-                <InputGroup>
-                  <Form.Control
-                    type="text"
-                    placeholder={'Option ' + (index + 1)}
-                    value={val}
-                    onChange={(e) => updateOption(index, e.target.value)}
-                  />
-                  <InputGroup.Append>
-                    <Button
-                      variant="outline-danger"
-                      onClick={() => removeOption(index)}
-                    >
-                      <TiDelete size={20} />
-                    </Button>
-                  </InputGroup.Append>
-                </InputGroup>
-              </>
-            ) : (
-              <Form.Control
-                type="text"
-                placeholder={'Option ' + (index + 1)}
-                value={val}
-                onChange={(e) => updateOption(index, e.target.value)}
-              />
-            )}
-
-            <br />
-          </div>
-        ))}
-
-        {props.post.options.length < 5 && (
-          <a href="#" onClick={addOption}>
-            <FaPlusSquare className="mr-1" size={20} />
-            Ajouter une option
-          </a>
-        )}
-      </Form.Group>
-    </>
-  );
-}
-
-CreatePost.defaultProps = {};
-
-export default CreatePost;
+export default PostWriter;
