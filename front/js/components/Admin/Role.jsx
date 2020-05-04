@@ -150,7 +150,7 @@ function EditModal({ onHide, show, roleToModify, allCapabilities, setRole, setNo
 
   }, []);
 
-  function handleEdit(button, capability) {
+  function handleEdit(e, capability) {
     let tmp = capabilities.map(e => {
       if (e.id === capability.id) {
         let newCapabilities;

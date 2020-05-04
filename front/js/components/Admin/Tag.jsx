@@ -16,17 +16,17 @@ const Tag = ({name, deleteTag, setNotification}) => {
   const [modalShow, setModalShow] = useState(false);
   const [label, setLabel] = useState(name);
 
-  const handleEdit = async (oldLabel, newLabel) => {
+  const handleEdit = (oldLabel, newLabel) => {
 
     const update = async (oldLabel, newLabel) => {
       let result = await api.tag.edit(oldLabel, newLabel);
       return(result);
     }
 
-    await update(oldLabel, newLabel).then((answer) => {   
-      if (Object.keys(answer).length === 0 && answer.constructor === Object) {
+    update(oldLabel, newLabel).then((answer) => {   
+      
         setLabel(newLabel);
-      }
+      
     }).catch((error) =>{
       let reason = error.reason == null ? "La demande n'a pu être traitée" : error.reason;
       setNotification("");
@@ -34,7 +34,6 @@ const Tag = ({name, deleteTag, setNotification}) => {
       console.log(error);
     });
   };
-
 
   return (
     <>
@@ -67,9 +66,9 @@ const Tag = ({name, deleteTag, setNotification}) => {
 }
 
 function UpdateTagModal(props) {
-  //console.log({...props});
-  const [newLabel, setNewLabel] = useState("");
 
+  const [newLabel, setNewLabel] = useState("");
+  
   const handleEdit = (e) => {
     e.preventDefault();
 

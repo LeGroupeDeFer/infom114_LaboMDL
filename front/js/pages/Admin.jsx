@@ -73,6 +73,10 @@ const UsersPage = () => {
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
 
+  const [notification, setNotification] = useState("");
+
+  const Notification = () => notification === "" ? <></> : <Toast text={notification} />;
+
   useEffect(() => {
     const fetchUsers = async () => {
       let users = await api.users();
@@ -91,11 +95,13 @@ const UsersPage = () => {
 
   return (
   <>
+  <Notification />
+  <br/>
       {users.length
         ? users.map((user) => {
           return (
             <Row key={user.id} className="mb-3">
-              <User user={user} roles={roles}/>
+              <User user={user} roles={roles} setNotification={setNotification}/>
             </Row>
           )
         })

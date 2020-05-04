@@ -206,12 +206,12 @@ function users() {
   return api('/users');
 }
 
-function addRoleToUser() {
-  return api('/user/role', {method: 'POST', body: {}} );
+function addRoleToUser(userID, roleID) {
+  return api('/user/role', {method: 'POST', body: {user_id: userID, role_id: parseInt(roleID)}} );
 }
 
-function removeRoleFromUser() {
-  return api('user/role', {method: 'DELETE', body: {}} );
+function removeRoleFromUser(userID, roleID) {
+  return api('/user/role', {method: 'DELETE', body: {user_id: userID, role_id: parseInt(roleID)}} );
 }
 
 api.auth = auth;
@@ -219,14 +219,15 @@ api.tags = tags;
 api.tags.add = addTag;
 api.tags.remove = removeTag;
 api.tags.edit = editTag;
-api.tag = tags;
+api.tag = tags
 api.roles = roles;
 api.roles.add = addRole;
 api.roles.edit = editRole;
 api.roles.delete = deleteRole;
 api.capabilities = capabilities;
 api.users = users;
-api.user.role.add = addRoleToUser;
+api.users.addRole = addRoleToUser;
+api.users.removeRole = removeRoleFromUser;
 
 Object.assign(api, { auth /*, ...otherAPIs */ });
 
