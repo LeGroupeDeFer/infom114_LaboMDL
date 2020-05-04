@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { Row, Col, Badge } from 'react-bootstrap';
 import Moment from 'react-moment';
 import clsx from 'clsx';
@@ -9,6 +9,7 @@ import { FacebookShareButton } from 'react-share';
 
 import Preview from './Preview';
 import Comment from './Comment';
+import { checkPropTypes } from 'prop-types';
 
 function Comments({
   isLogged,
@@ -41,18 +42,19 @@ function Post({
   content,
   author,
   score,
-  type,
+  kind,
   createdAt,
   comments,
   tags,
   userVote,
-  isLogged
+  isLogged,
 }) {
-
+  console.log(userVote);
   const [commentEditors, setCommentEditors] = useState({});
   const [commentList, setCommentList] = useState(comments);
 
-  let vote = ['down', 'up', 'no'][userVote +1 ];
+  let vote = ['down', 'no', 'up'][userVote + 1];
+  console.log(vote);
   const [voted, setVoted] = useState(vote);
   const [scoreState, setScoreState] = useState(score);
 
@@ -71,12 +73,12 @@ function Post({
     );
   }
 
-  function getDisplayedType(type) {
-    switch (type) {
+  function getDisplayedKind(kind) {
+    switch (kind) {
       case 'info':
         return 'Information';
       case 'poll':
-        return 'Vote';
+        return 'Sondage';
       case 'idea':
         return 'Idée';
     }
@@ -175,8 +177,8 @@ function Post({
           <Col>
             {' '}
             <h5>
-              <Badge className={`post-${type} mr-1`}>
-                {getDisplayedType(type)}
+              <Badge className={`post-${kind} mr-1`}>
+                {getDisplayedKind(kind)}
               </Badge>
               <span className="mr-1">{title}</span>
 
@@ -217,8 +219,7 @@ function Post({
 
           <Col>
             <div className="mb-1">
-
-              {tags.map(tag => {
+              {tags.map((tag) => {
                 return (
                   <a
                     href="#"
@@ -228,7 +229,8 @@ function Post({
                   >
                     <FaTag className="mr-1" />
                     {tag}
-                  </a>);
+                  </a>
+                );
               })}
             </div>
             <br />
@@ -238,21 +240,13 @@ function Post({
                 <MdModeComment size="1.25em" className="mr-2" />
                 <span className="text-muted">
                   {comments.length}{' '}
-                  {comments.length <= 1
-                    ? 'commentaire'
-                    : 'commentaires'}
+                  {comments.length <= 1 ? 'commentaire' : 'commentaires'}
                 </span>
               </a>
 
               <FacebookShareButton
                 url={'https://unanimity.be/post/' + id}
-                quote={
-                  title +
-                  ' - ' +
-                  author.firstname +
-                  ' ' +
-                  author.lastname
-                }
+                quote={title + ' - ' + author.firstname + ' ' + author.lastname}
                 onClick={(e) => e.stopPropagation()}
               >
                 <a className="post-footer-btn mr-3" href="#">
@@ -308,8 +302,6 @@ function Post({
   );
 }
 
-
 Object.assign(Post, { Preview, Comment });
-
 
 export default Post;

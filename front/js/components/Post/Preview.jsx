@@ -35,7 +35,6 @@ const Preview = ({
   post,
   previewLength,
   currentFilter,
-  userVote,
   show_modal,
   onTagClick,
   ...others
@@ -55,9 +54,11 @@ const Preview = ({
     createdAt,
     comments,
     tags,
+    userVote,
   } = post;
 
-  let vote = ['down', 'up', 'no'][userVote + 1];
+  let vote = ['down', 'no', 'up'][userVote + 1];
+  console.log(userVote);
   let owner = user == null ? false : author.id == user.id;
   const [voted, setVoted] = useState(vote);
   const [scoreState, setScoreState] = useState(score);
