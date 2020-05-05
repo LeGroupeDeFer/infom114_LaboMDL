@@ -11,7 +11,6 @@ import Preview from './Preview';
 import Comment from './Comment';
 import Poll from './Poll';
 
-
 function Comments({
   isLogged,
   toggle_comment_editor,
@@ -49,9 +48,8 @@ function Post({
   tags,
   userVote,
   isLogged,
-  onClick
+  onClick,
 }) {
-
   const [commentEditors, setCommentEditors] = useState({});
   const [commentList, setCommentList] = useState(comments);
   let vote = ['down', 'no', 'up'][userVote + 1];

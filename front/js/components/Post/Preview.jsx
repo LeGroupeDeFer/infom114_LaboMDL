@@ -181,11 +181,11 @@ const Preview = ({
 
               <Card.Text>
                 {preview(content, previewLength)}{' '}
-                <Link to={'/post/' + id}>Lire la suite</Link>
+                <Link to={'/detail/' + id}>Lire la suite</Link>
               </Card.Text>
 
               <Link
-                to={'/post/' + id}
+                to={'/detail/' + id}
                 className="post-footer-btn mr-2"
                 href="#"
               >
@@ -197,7 +197,7 @@ const Preview = ({
               </Link>
 
               <FacebookShareButton
-                url={'https://unanimity.be/post/' + id}
+                url={'https://unanimity.be/detail/' + id}
                 quote={title + ' - ' + author.firstname + ' ' + author.lastname}
                 onClick={(e) => e.stopPropagation()}
               >

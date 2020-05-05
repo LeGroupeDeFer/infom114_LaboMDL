@@ -70,7 +70,7 @@ pub fn dynamic_routing(route: String) -> Option<Template> {
     }
 }
 
-#[get("/post/<_post_id>", rank = 2)]
+#[get("/detail/<_post_id>", rank = 2)]
 pub fn get_hollow_post(_post_id: u32) -> Template {
     Template::render("layout", &())
 }

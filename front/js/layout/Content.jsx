@@ -13,7 +13,6 @@ import layout from '../lib/layout';
 import { useAuth } from '../context/authContext';
 
 const Stream = lazy(() => import('../pages/Stream/index'));
-const Detail = lazy(() => import('../pages/Stream/Detail'));
 const Profile = lazy(() => import('../pages/Profile'));
 const Settings = lazy(() => import('../pages/Settings'));
 const About = lazy(() => import('../pages/About'));
@@ -90,10 +89,6 @@ const Content = (_) => {
                 <Route path="/">
                   <Stream />
                 </Route>
-                {/* 
-                <Route path="/post/:id">
-                  <Detail />
-                </Route> */}
               </Switch>
             </Suspense>
           </div>
