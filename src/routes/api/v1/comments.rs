@@ -61,7 +61,6 @@ fn create_comment(
         post_id: post_guard.post().id,
         content: comment_request.content,
         author_id: auth.sub,
-        votes: 0,
         parent_id: None,
     };
 

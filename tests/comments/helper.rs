@@ -9,8 +9,7 @@ pub fn send_comment_from_post(
 ) -> Comment {
     let route = format!("/api/v1/post/{}/comment", post_id);
     let data_json = format!("{{ \"content\": \"{}\" }}", comment);
-    println!("Postid: {}", post_id);
-    println!("Comment: {}", data_json);
+    
     let mut response = client
         .post(route)
         .header(ContentType::JSON)

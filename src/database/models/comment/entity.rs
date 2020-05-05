@@ -37,9 +37,6 @@ pub struct CommentMinima {
     pub post_id: u32,
     pub content: String,
     pub author_id: u32,
-    // pub created_at: Option<NaiveDateTime>,
-    // pub updated_at: Option<NaiveDateTime>,
-    pub votes: u32, 
     pub parent_id: Option<u32>,
 }
 

@@ -12,8 +12,7 @@ fn create_comment_from_post() {
     init::seed();
 
     let post = init::get_post_entity(false, false, false);
-    println!("Post: {} {}", post.id, post.author_id);
-
+    
     let comment = send_comment_from_post(&client, login_admin(), &post.id, "FIIIIIRST");
 
     let comment_entity = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
