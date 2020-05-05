@@ -8,13 +8,18 @@ use crate::database::DBConnection;
 use crate::guards::{Auth, ForwardAuth, PostGuard};
 
 use crate::http::responders::ApiResult;
+use crate::lib::EntityError;
+
 use rocket::Route;
 use rocket_contrib::json::Json;
 
 /// Collect every routes that this module needs to share with the application
 /// The name `collect` is a project convention
 pub fn collect() -> Vec<Route> {
-    routes!(get)
+    routes!(
+        get,
+        create_comment,
+    )
 }
 
 #[get("/api/v1/post/<_post_id>/comments", rank = 2)]
@@ -36,4 +41,30 @@ pub fn get(
         .map(move |entity| Comment::from(entity))
         .collect::<Vec<Comment>>(),
     ))
+}
+
+#[post("/api/v1/post/<_post_id>/comment", format = "json", data = "<data>")]
+fn create_comment(
+    conn: DBConnection, 
+    auth: Auth, 
+    post_guard: PostGuard, 
+    _post_id: u32, 
+    data:Json<NewComment>
+) -> ApiResult<Comment> {
+    let comment_request = data.into_inner();
+
+    if comment_request.content == "" {
+        Err(EntityError::InvalidAttribute)?;
+    }
+
+    let new_comment = CommentMinima {
+        post_id: post_guard.post().id,
+        content: comment_request.content,
+        author_id: auth.sub,
+        votes: 0,
+        parent_id: None,
+    };
+
+    let ce = CommentEntity::insert_either(&*conn, &new_comment)?;
+    Ok(Json(Comment::from(ce)))
 }

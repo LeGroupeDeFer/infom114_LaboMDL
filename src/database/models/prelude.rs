@@ -1,7 +1,7 @@
 pub use super::{
     address::{Address, AddressEntity, AddressMinima},
     capability::{Capability, CapabilityData, CapabilityEntity, CapabilityMinima, CAPABILITIES},
-    comment::{Comment, CommentEntity, CommentMinima, RelCommentVoteEntity},
+    comment::{Comment, CommentEntity, CommentMinima, RelCommentVoteEntity, NewComment},
     post::{
         ChangeVote, NewPost, Post, PostEntity, PostKind, PostMinima, RelPostTagEntity,
         RelPostVoteEntity, ReportData,

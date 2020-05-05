@@ -12,14 +12,15 @@ fn create_comment_from_post() {
     init::seed();
 
     let post = init::get_post_entity(false, false, false);
+    println!("Post: {} {}", post.id, post.author_id);
 
-    let comment = send_comment_from_post(&client, login_admin(), &post.id, "FIIIIIRST!!!!");
+    let comment = send_comment_from_post(&client, login_admin(), &post.id, "FIIIIIRST");
 
     let comment_entity = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
-    assert_eq!(comment_entity.id, comment.id);
-    assert_eq!(comment_entity.content, comment.content);
-    assert_eq!(comment_entity.author_id, comment.author.id);
-    assert_eq!(comment_entity.author_id, init::get_admin().id);
+    assert_eq!(comment_entity.id, comment.id, "Match comment id: {} {}", comment_entity.id, comment.id);
+    assert_eq!(comment_entity.content, comment.content, "Match comment content: {} {}", comment_entity.content, comment.content);
+    assert_eq!(comment_entity.author_id, comment.author.id, "Match comment's author id: {} {}", comment_entity.author_id, comment.author.id);
+    assert_eq!(comment_entity.author_id, init::get_admin().id, "Match comment's author actual id: {} {}", comment_entity.author_id, init::get_admin().id);
 }
 
 // create a comment to a comment from a post

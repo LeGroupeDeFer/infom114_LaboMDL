@@ -37,10 +37,10 @@ pub struct CommentMinima {
     pub post_id: u32,
     pub content: String,
     pub author_id: u32,
-    pub created_at: Option<NaiveDateTime>,
-    pub updated_at: Option<NaiveDateTime>,
-    pub votes: u32,
-    pub parent_id: u32,
+    // pub created_at: Option<NaiveDateTime>,
+    // pub updated_at: Option<NaiveDateTime>,
+    pub votes: u32, 
+    pub parent_id: Option<u32>,
 }
 
 
@@ -70,15 +70,24 @@ impl Entity for CommentEntity {
     }
 
     fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Option<Self>> {
-        table
-            .filter(
-                dsl::author_id.eq(&minima.author_id)
-                    .and(dsl::post_id.eq(&minima.post_id))
-                    .and(dsl::parent_id.eq(&minima.parent_id))
-            )
-            .first::<Self>(conn)
-            .optional()
-            .map(Ok)?
+        let filtered = table
+            .filter(dsl::author_id.eq(&minima.author_id))
+            .filter(dsl::post_id.eq(&minima.post_id))
+            .filter(dsl::content.eq(&minima.content));
+
+        match &minima.parent_id {
+            Some(id) => filtered
+                .filter(dsl::parent_id.eq(&minima.parent_id))            
+                .first::<Self>(conn)
+                .optional()
+                .map(Ok)?,
+            None => filtered
+                .filter(dsl::parent_id.is_null())            
+                .first::<Self>(conn)
+                .optional()
+                .map(Ok)?
+        }
+
     }
 
     fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {
