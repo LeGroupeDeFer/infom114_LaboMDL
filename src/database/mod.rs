@@ -7,7 +7,7 @@ pub mod tables;
 
 // ---------------- REQUIRES --------------------------------------------------
 
-use crate::conf::env_setting;
+use crate::conf::{env_setting, env_setting_or};
 use crate::diesel::Connection;
 use crate::lib::EntityError;
 use diesel::MysqlConnection;
@@ -43,19 +43,31 @@ pub fn pool(database_url: &str) -> HashMap<&str, Value> {
 pub fn url() -> String {
     dotenv().ok();
 
-    // DB settings
-    let db_adapter = "mysql"; // imposed by the use of MysqlConnection type
-    let db_host = env_setting("DB_HOST");
-    let db_port = env_setting("DB_PORT");
-    let db_user = env_setting("DB_USER");
-    let db_password = env_setting("DB_PASSWORD");
-    let db_database = env_setting("DB_DATABASE");
+    let app_env = &*env_setting_or("MODE", "DEV".into());
 
-    // DB url
-    format!(
-        "{}://{}:{}@{}:{}/{}",
-        db_adapter, db_user, db_password, db_host, db_port, db_database
-    )
+    let mut db_uri: String;
+    if vec!("DEV", "DEVELOPMENT", "PROD", "PRODUCTION").iter().any(|&m| m == app_env) {
+        db_uri = format!(
+            "mysql://{}:{}@{}:{}/{}",
+            env_setting("DB_USER"),
+            env_setting("DB_PASSWORD"),
+            env_setting("DB_HOST"),
+            env_setting("DB_PORT"),
+            env_setting("DB_DATABASE")
+        );
+    } else {
+        db_uri = format!(
+            "mysql://{}:{}@{}:{}/{}",
+            env_setting("TEST_DB_USER"),
+            env_setting("TEST_DB_PASSWORD"),
+            env_setting("TEST_DB_HOST"),
+            env_setting("TEST_DB_PORT"),
+            env_setting("TEST_DB_DATABASE")
+        );
+    }
+
+    println!("TARGET DATABASE ({}): {}", app_env, db_uri);
+    db_uri
 }
 
 /// Get a database connection.

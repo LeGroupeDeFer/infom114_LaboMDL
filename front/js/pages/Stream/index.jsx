@@ -1,12 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, {useState, useMemo, useEffect} from 'react';
 import { Switch, Route, useRouteMatch } from 'react-router-dom';
 
 import Stream from './Stream';
 import Writer from './Writer';
 import Detail from './Detail';
 import { SearchBar } from 'unanimity/components';
-import { useRequest } from 'unanimity/hooks';
-import { head, api, trace } from 'unanimity/lib';
+import { usePositiveEffect, useRequest } from 'unanimity/hooks';
+import {head, api, trace, equal} from 'unanimity/lib';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import {
   faBalanceScale,
@@ -63,14 +63,36 @@ function KindSection({ kind, onChange }) {
 }
 
 function InnerStreamContent({ tags, selectedTags, selectedKind }) {
+  console.log('RENDER');
+
   const { path } = useRouteMatch();
   const [sort, setSort] = useState(SORT.RANK.DESC);
   const [writtenPost, setWrittenPost] = useState(null);
 
+  /* Fetch posts */
+  const [promise, setPromise] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [error, setError] = useState(null);
+
   const queryTags = selectedTags.length ? { tags: selectedTags } : {};
   const queryKind = selectedKind !== KIND.ALL ? { kind: selectedKind.key } : {};
-  const currentQuery = { sort, ...queryTags, ...queryKind };
-  const [error, posts] = useRequest(api.posts.where, [currentQuery], []);
+  const query = { sort, ...queryTags, ...queryKind };
+  const [localQuery, setLocalQuery] = useState(query);
+
+  if (!equal(query, localQuery))
+    setLocalQuery(query);
+
+  useEffect(() => setPromise(api.posts.where(query)), [localQuery]);
+
+  usePositiveEffect(() => {
+    let isSubscribed = true;
+    promise
+      .then(data => isSubscribed ? setPosts(data) : undefined)
+      .catch(error => isSubscribed ? setError(error) : undefined)
+      .finally(() => setPromise(null));
+    return () => isSubscribed = false;
+  }, [promise]);
+  /* End fetch posts */
 
   return (
     <Switch>
@@ -88,8 +110,25 @@ function InnerStreamContent({ tags, selectedTags, selectedKind }) {
 }
 
 // StreamContent :: None => Component
+let j = 0;
 function StreamContent() {
-  const [error, { tags }] = useRequest(api.tags, [], { tags: [] });
+  /* Fetch tags */
+  const [promise, setPromise] = useState(null);
+  const [tags, setTags] = useState([]);
+  const [error, setError] = useState(null);
+
+  useEffect(() => setPromise(api.tags()), []);
+
+  usePositiveEffect(() => {
+    let isSubscribed = true;
+    promise
+      .then(({ tags }) => isSubscribed ? setTags(tags) : undefined)
+      .catch(error => isSubscribed ? setError(error) : undefined)
+      .finally(() => setPromise(null));
+    return () => isSubscribed = false;
+  }, [promise]);
+
+  /* End fetch tags */
 
   const [selectedTags, setSelectedTags] = useState([]);
   const [selectedKind, setSelectedKind] = useState(KIND.ALL);
