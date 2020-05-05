@@ -3,15 +3,27 @@ import { Container, Row, Col, Spinner } from 'react-bootstrap';
 import { useParams, useHistory, Link } from 'react-router-dom';
 import { faMailBulk } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { useRequest } from '../hooks';
+import { usePositiveEffect } from '../hooks';
 import { Dialog, Unauthenticated } from '../components';
 import { api, trace } from '../lib';
 
 
-function ActivationStatus() {
+function ActivationStatus({ id, token }) {
 
-  const { id, token } = useParams();
-  const [error, success] = useRequest(api.auth.activate, [id, token]);
+  const [promise, setPromise] = useState(null);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+
+  useEffect(() => setPromise(api.auth.activate(id, token)), []);
+
+  usePositiveEffect(() => {
+    let isSubscribed = true;
+    promise
+      .then(() => isSubscribed ? setSuccess(true) : undefined)
+      .catch(error => isSubscribed ? setError(error) : undefined)
+      .finally(() => setPromise(null));
+    return () => isSubscribed = false;
+  }, [promise]);
 
   if (error)
     return (
@@ -51,9 +63,10 @@ function ActivationStatus() {
 
 
 const Activate = Unauthenticated(() => {
+  const { id, token } = useParams();
   return (
     <Dialog icon={faMailBulk} title="Activation">
-      <ActivationStatus />
+      <ActivationStatus id={id} token={token} />
     </Dialog>
   );
 });
