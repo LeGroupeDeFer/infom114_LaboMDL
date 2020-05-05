@@ -28,7 +28,7 @@ pub fn collect() -> Vec<rocket::Route> {
     .concat()
 }
 
-const ALLOWED_ROUTES: [&str; 12] = [
+const ALLOWED_ROUTES: [&str; 13] = [
     "profile",
     "notifications",
     "settings",
@@ -41,6 +41,7 @@ const ALLOWED_ROUTES: [&str; 12] = [
     "activate",
     "write",
     "detail",
+    "admin",
 ];
 
 // /api/<...subpath> => /api/v<version>/<...subpath>

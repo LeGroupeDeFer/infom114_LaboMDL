@@ -121,6 +121,7 @@ Object.assign(auth, {
     });
   },
 
+  
   /**
    * Attempts to logout the currently connected user.
    *
@@ -216,5 +217,66 @@ function tags(id) {
 }
 
 Object.assign(api, { query, auth, posts, tags });
+
+/* TODO Move all tag, role & users related fns in their respective namespace */
+
+function addTag(label) {
+  return api(`/tag/${label}`, {method: 'POST'});
+}
+
+function removeTag(label) {
+  return api(`/tag/${label}`, {method: "DELETE"});
+}
+
+function editTag(oldLabel, newLabel) {
+  return api(`/tag/${oldLabel}`, {method: "PUT", body: { label: String(newLabel) } });
+}
+
+function roles() {
+  return api('/roles');
+}
+
+function addRole(name, color, capability) { 
+  return api('/role', {method: 'POST', body: {name: String(name), color: String(color), capabilities:[{name:String(capability)}]} });
+}
+
+function editRole(id, name, color, capabilities) {
+  return api(`/role/${id}`, {method: 'PUT', body: {name: String(name), color: String(color), capabilities:capabilities } });
+}
+
+function deleteRole(id) { 
+  return api(`/role/${id}`, {method: 'DELETE'} );
+}
+
+function capabilities() {
+  return api('/capabilities');
+}
+
+function users() {
+  return api('/users');
+}
+
+function addRoleToUser(userID, roleID) {
+  return api('/user/role', {method: 'POST', body: {user_id: userID, role_id: parseInt(roleID)}} );
+}
+
+function removeRoleFromUser(userID, roleID) {
+  return api('/user/role', {method: 'DELETE', body: {user_id: userID, role_id: parseInt(roleID)}} );
+}
+
+api.tags = tags;
+api.tags.add = addTag;
+api.tags.remove = removeTag;
+api.tags.edit = editTag;
+api.tag = tags
+api.roles = roles;
+api.roles.add = addRole;
+api.roles.edit = editRole;
+api.roles.delete = deleteRole;
+api.capabilities = capabilities;
+api.users = users;
+api.users.addRole = addRoleToUser;
+api.users.removeRole = removeRoleFromUser;
+
 
 export default api;

@@ -21,6 +21,7 @@ const Login = lazy(() => import('../pages/Login'));
 const Logout = lazy(() => import('../pages/Logout'));
 const Register = lazy(() => import('../pages/Register'));
 const Activate = lazy(() => import('../pages/Activate'));
+const Admin = lazy(() => import('../pages/Admin'));
 const Recover = lazy(() => import('../pages/Recover'));
 const Restore = lazy(() => import('../pages/Restore'));
 
@@ -73,6 +74,10 @@ const Content = (_) => {
 
                 <Route path="/activate/:id?/:token?">
                   <Activate />
+                </Route>
+
+                <Route path="/admin">
+                  <Admin />
                 </Route>
 
                 <Route path="/restore">

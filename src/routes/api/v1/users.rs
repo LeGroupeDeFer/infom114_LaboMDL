@@ -10,7 +10,7 @@ pub fn collect() -> Vec<rocket::Route> {
     routes!(get_all_users)
 }
 
-#[get("/api/users")]
+#[get("/api/v1/users")]
 pub fn get_all_users(conn: DBConnection, auth: Auth) -> ApiResult<Vec<User>> {
     let capability = "users:view";
 
