@@ -1,8 +1,16 @@
 import 'regenerator-runtime';
 import React, { Suspense, useState } from 'react';
 import {
-  Container, Row, Col, Button, Modal, Dropdown, DropdownButton,
-  Tooltip, OverlayTrigger, Toast
+  Container,
+  Row,
+  Col,
+  Button,
+  Modal,
+  Dropdown,
+  DropdownButton,
+  Tooltip,
+  OverlayTrigger,
+  Toast,
 } from 'react-bootstrap';
 import { MdSort } from 'react-icons/md';
 import { FaSearch, FaTag, FaEdit } from 'react-icons/fa';
@@ -10,12 +18,10 @@ import { useAuth } from '../../context/authContext';
 import { Link } from 'react-router-dom';
 import { Post, SearchBar } from '../../components';
 import api from '../../lib/api';
-import DeleteModal from "unanimity/components/Post/DeleteModal";
-
+import DeleteModal from 'unanimity/components/Post/DeleteModal';
 
 // InnerStream :: Object => Component
 function InnerStream({ posts, onClick, showPreview, showDelete, onTagClick }) {
-
   return (
     <>
       {posts.map((post) => (
@@ -24,7 +30,7 @@ function InnerStream({ posts, onClick, showPreview, showDelete, onTagClick }) {
             <Post.Preview
               onClick={onClick}
               post={post}
-              showPreviewModal={showPreview}
+              // showPreviewModal={showPreview}
               showDeleteModal={showDelete}
               onTagClick={onTagClick}
             />
@@ -33,9 +39,7 @@ function InnerStream({ posts, onClick, showPreview, showDelete, onTagClick }) {
       ))}
     </>
   );
-
 }
-
 
 // SortDropdown :: None => Component
 const SortDropdown = (props) => {
@@ -83,10 +87,8 @@ const SortDropdown = (props) => {
   );
 };
 
-
 // Stream :: None => Component
 function Stream({ kind, posts, onSort }) {
-
   const { user, token } = useAuth();
   const isLogged = !!user;
 
@@ -106,7 +108,7 @@ function Stream({ kind, posts, onSort }) {
     api.posts
       .of(id)
       .then(setPostModal)
-      .catch(error => {});
+      .catch((error) => {});
     setPreviewModalDisplayed(true);
   }
 
@@ -120,17 +122,16 @@ function Stream({ kind, posts, onSort }) {
         toggleNotification();
         setPostToDelete(null);
       })
-      .catch(error => {});
+      .catch((error) => {});
   };
 
-  const showDeleteModal = id => {
+  const showDeleteModal = (id) => {
     setDeleteModalDisplayed(true);
     setPostToDelete(id);
   };
 
   /* Notification */
-  const toggleNotification = () => setShowNotification(n => !n);
-
+  const toggleNotification = () => setShowNotification((n) => !n);
 
   function tagClickHandler(e) {
     e.stopPropagation();
@@ -151,8 +152,7 @@ function Stream({ kind, posts, onSort }) {
 
   return (
     <Container className="py-5">
-
-      { /* Header*/ }
+      {/* Header*/}
       <Row>
         <Col>
           <h1 className="text-dark stream-header">{kind.label}</h1>
@@ -160,10 +160,9 @@ function Stream({ kind, posts, onSort }) {
         </Col>
       </Row>
 
-      { /* Actions */ }
+      {/* Actions */}
       <Row className="pb-3">
         <Col className="d-flex justify-content-between">
-
           <Link to="/write" className="shape-circle">
             <OverlayTrigger overlay={<Tooltip>Créer un post</Tooltip>}>
               <Button variant="primary" className="h-100">
@@ -174,22 +173,22 @@ function Stream({ kind, posts, onSort }) {
             </OverlayTrigger>
           </Link>
           <SortDropdown sortPost={onSort} />
-
         </Col>
       </Row>
 
-      { /* Posts */ }
+      {/* Posts */}
       <Suspense fallback={<h3>Chargement des posts...</h3>}>
         <InnerStream
           posts={posts}
-          showPreview={showPreviewModal}
+          onClick={showPreviewModal}
           showDelete={showDeleteModal}
-          onClick={tagClickHandler}
+          onTagClick={tagClickHandler}
         />
       </Suspense>
 
-      { /* Post modal */ }
+      {/* Post modal */}
       <Modal
+        id="preview-modal"
         show={previewModalDisplayed}
         onHide={hidePreviewModal}
         dialogClassName="modal-80w"
@@ -204,7 +203,7 @@ function Stream({ kind, posts, onSort }) {
         </Modal.Body>
       </Modal>
 
-      { /* Delete post modal */ }
+      {/* Delete post modal */}
       <DeleteModal
         modalDisplayed={deleteModalDisplayed}
         setModalDisplayed={setDeleteModalDisplayed}
@@ -221,13 +220,10 @@ function Stream({ kind, posts, onSort }) {
           <strong className="mr-auto"> Votre post a bien été supprimé</strong>
         </Toast.Header>
       </Toast>
-
     </Container>
   );
-
 }
 
 Stream.defaultProps = {};
-
 
 export default Stream;

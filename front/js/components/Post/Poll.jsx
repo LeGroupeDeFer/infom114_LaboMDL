@@ -43,58 +43,41 @@ function Poll() {
           </Card.Header>
           <Card.Body>
             <div>
-              {/* <ProgressBar
+              <ProgressBar
                 animated
                 now={70}
                 className="mb-2"
-                label="Option 1"
-              ></ProgressBar>
-              <ProgressBar
-                animated
-                now={28}
-                className="mb-2"
-                label="Option 2"
+                label={
+                  <span className="progress-value">
+                    <span className="mr-5">35</span>
+                    <span>Option 1</span>
+                    <FaRegCheckCircle size={20} className="ml-1 opt-selected" />
+                  </span>
+                }
               />
               <ProgressBar
                 animated
                 now={2}
                 className="mb-2"
-                label="Option 3 très longue"
-              /> */}
+                label={
+                  <span className="progress-value">
+                    <span className="mr-5">1</span>
+                    <span>Option 2 avec looong label</span>
+                  </span>
+                }
+              />
 
-              <div className="progress mb-2">
-                <span className="progress-value">
-                  <span className="mr-5">8</span>
-                  <span>Option 1</span>
-                  <FaRegCheckCircle size={20} className="ml-1 opt-selected" />
-                </span>
-                <div
-                  className="progress-bar progress-bar-striped progress-bar-animated"
-                  style={{ width: '28%' }}
-                ></div>
-              </div>
-
-              <div className="progress mb-2">
-                <span className="progress-value">
-                  <span className="mr-5">1</span>
-                  <span>Option 2</span>
-                </span>
-                <div
-                  className="progress-bar progress-bar-striped progress-bar-animated"
-                  style={{ width: '2%' }}
-                ></div>
-              </div>
-
-              <div className="progress mb-2">
-                <span className="progress-value">
-                  <span className="mr-5">24</span>
-                  <span>Option 1 avec looong label</span>
-                </span>
-                <div
-                  className="progress-bar progress-bar-striped progress-bar-animated"
-                  style={{ width: '70%' }}
-                ></div>
-              </div>
+              <ProgressBar
+                animated
+                now={28}
+                className="mb-2"
+                label={
+                  <span className="progress-value">
+                    <span className="mr-5">14</span>
+                    <span>Option 3</span>
+                  </span>
+                }
+              />
             </div>
           </Card.Body>
         </Card>

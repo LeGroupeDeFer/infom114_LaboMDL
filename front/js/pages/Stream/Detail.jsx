@@ -9,7 +9,6 @@ import Card from 'react-bootstrap/Card';
 import DeleteModal from 'unanimity/components/Post/DeleteModal';
 
 const Detail = ({ post }) => {
-
   const { id } = useParams();
   const { user } = useAuth();
   const isLogged = !!user;
@@ -44,10 +43,8 @@ const Detail = ({ post }) => {
       <DeleteModal modal_displayed={deleteModalDisplayed} />
     </Container>
   );
-
 };
 
 Detail.defaultProps = {};
-
 
 export default Detail;

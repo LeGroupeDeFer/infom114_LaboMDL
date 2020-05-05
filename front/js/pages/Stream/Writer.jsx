@@ -148,7 +148,6 @@ function Submit({ loading }) {
 }
 
 function Writer() {
-
   const history = useHistory();
   const [tagError, data] = useRequest(api.tags, []);
   const [postError, setPostError] = useState(null);
@@ -165,87 +164,94 @@ function Writer() {
 
     api.posts
       .add(post)
-      .then(newPost => history.push(`/detail/${newPost.id}`))
-      .catch(e => setPostError(e) || setLoading(false));
+      .then((newPost) => history.push(`/detail/${newPost.id}`))
+      .catch((e) => setPostError(e) || setLoading(false));
   }
 
   return (
     <Container className="py-5">
-      <Row><Col>
-        <h1 className="mb-4 text-dark writer-header">
-          <Icon icon={faPenFancy} className="mr-3" />
-          <span>Ecrire une idée</span>
-          <hr />
-        </h1>
-      </Col></Row>
+      <Row>
+        <Col>
+          <h1 className="mb-4 text-dark writer-header">
+            <Icon icon={faPenFancy} className="mr-3" />
+            <span>Créer un post</span>
+            <hr />
+          </h1>
+        </Col>
+      </Row>
 
-      <Row><Col>
-        <Card>
-          <Card.Body>
-            <SimpleError error={tagError || postError} className="mb-3"/>
+      <Row>
+        <Col>
+          <Card>
+            <Card.Body>
+              <SimpleError error={tagError || postError} className="mb-3" />
 
-            <AutoForm onSubmit={onSubmit}>
-              <Row>
-                <Col sm={12} md={6} className="pb-3">
-                  <AutoForm.Select
-                    id="kind"
-                    name="kind"
-                    options={types}
-                    styles={customStyles}
-                    placeholder="Sélectionner une catégorie"
-                  />
-                </Col>
-                <Col sm={12} md={6} className="pb-3">
-                  <AutoForm.Control
-                    variant="primary"
-                    id="title"
-                    name="title"
-                    type="text"
-                    placeholder="Titre du post"
-                  />
-                </Col>
-              </Row>
+              <AutoForm onSubmit={onSubmit}>
+                <Row>
+                  <Col sm={12} md={6} className="pb-3">
+                    <AutoForm.Select
+                      id="kind"
+                      name="kind"
+                      options={types}
+                      styles={customStyles}
+                      placeholder="Sélectionner une catégorie"
+                    />
+                  </Col>
+                  <Col sm={12} md={6} className="pb-3">
+                    <AutoForm.Control
+                      variant="primary"
+                      id="title"
+                      name="title"
+                      type="text"
+                      placeholder="Titre du post"
+                    />
+                  </Col>
+                </Row>
 
-              <Row className="pb-3"><Col>
-                <AutoForm.Select
-                  id="tags"
-                  name="tags"
-                  options={tags}
-                  isMulti
-                  placeholder={'Sélectionner un ou plusieurs tags'}
-                  styles={customStyles}
-                />
-              </Col></Row>
+                <Row className="pb-3">
+                  <Col>
+                    <AutoForm.Select
+                      id="tags"
+                      name="tags"
+                      options={tags}
+                      isMulti
+                      placeholder={'Sélectionner un ou plusieurs tags'}
+                      styles={customStyles}
+                    />
+                  </Col>
+                </Row>
 
-              <Row className="pb-3"><Col>
-                <Form.Group>
-                  <AutoForm.Control
-                    optional
-                    id="content"
-                    name="content"
-                    as="textarea"
-                    rows="5"
-                    placeholder="Texte..."
-                  />
-                </Form.Group>
-              </Col></Row>
+                <Row className="pb-3">
+                  <Col>
+                    <Form.Group>
+                      <AutoForm.Control
+                        optional
+                        id="content"
+                        name="content"
+                        as="textarea"
+                        rows="5"
+                        placeholder="Texte..."
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
 
-              <PollOptions />
+                <PollOptions />
 
-              <Row className="pb-3"><Col>
-                <Submit loading={loading} />
-              </Col></Row>
-
-            </AutoForm>
-
-          </Card.Body>
-        </Card>
-      </Col></Row>
+                <Row className="pb-3">
+                  <Col>
+                    <Submit loading={loading} />
+                  </Col>
+                </Row>
+              </AutoForm>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
     </Container>
   );
 }
 
 Writer.defaultProps = {};
-
 
 export default Writer;

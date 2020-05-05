@@ -36,6 +36,7 @@ const Preview = ({
   currentFilter,
   showPreviewModal,
   showDeleteModal,
+  onClick,
   onTagClick,
   ...others
 }) => {
@@ -66,12 +67,7 @@ const Preview = ({
 
   return (
     <div className="d-flex">
-      <Card
-        {...others}
-        className="post"
-        onClick={() => showPreviewModal(id)}
-        id={id}
-      >
+      <Card {...others} className="post" onClick={() => onClick(id)} id={id}>
         <Card.Header>
           <h5>
             <Badge className={`post-${kind} mr-2`}>
