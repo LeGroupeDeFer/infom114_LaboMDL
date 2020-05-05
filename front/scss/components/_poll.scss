@@ -1,0 +1,44 @@
+.poll .btn {
+    padding: 0.25rem 0.5rem;
+}
+
+.poll .form-check-label,
+.poll .form-check-input {
+    cursor: pointer;
+}
+
+.poll .card-header {
+    background-color: white;
+    border-bottom: 1px solid #EDEFF1;
+}
+
+.poll {
+    border: 1px solid #EDEFF1;
+}
+
+.progress-bar {
+    border-radius: 5px;
+}
+
+.progress {
+    background-color: unset;
+    height: 2rem;
+}
+
+// .progress {
+//     text-align: center;
+//     width: 50%;
+//     margin: 15px auto;
+// }
+
+.progress-value {
+    position: absolute;
+    left: 5%;
+    padding-top: 0.2rem;
+    font-size: 1rem;
+    color: black;
+}
+
+.opt-selected {
+    margin-top: -0.3rem;
+}

@@ -4,6 +4,7 @@ import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { faTag, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { components } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
+import {trace} from "unanimity/lib";
 
 const DropdownIndicator = (props) => {
   return (
@@ -13,8 +14,7 @@ const DropdownIndicator = (props) => {
   );
 };
 
-// SearchBar :: None => Component
-
+// Option :: Object => Component
 export function Option({ icon, label }) {
   return (
     <div className="search-option">
@@ -26,11 +26,18 @@ export function Option({ icon, label }) {
   );
 }
 
+// SearchBar :: None => Component
 function SearchBar({ tags, choices, onChange, children }) {
   const options = tags.map(({ label, id }) => ({
     value: label,
     label: <Option icon={faTag} label={label} />,
   }));
+
+  const localOnChange = (options, action) => {
+    if (!['select-option', 'remove-value'].includes(action.action))
+      return;
+    onChange((options || []).map(o => o.value));
+  }
 
   return (
     <Container fluid className="search-container py-2">
@@ -45,8 +52,7 @@ function SearchBar({ tags, choices, onChange, children }) {
             components={{ DropdownIndicator }}
             placeholder="Rechercher"
             formatCreateLabel={(userInput) => `Rechercher "${userInput}"`}
-            value={choices}
-            onChange={onChange}
+            onChange={localOnChange}
           />
         </Col>
 

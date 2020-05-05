@@ -28,7 +28,7 @@ pub fn collect() -> Vec<rocket::Route> {
     .concat()
 }
 
-const ALLOWED_ROUTES: [&str; 11] = [
+const ALLOWED_ROUTES: [&str; 13] = [
     "profile",
     "notifications",
     "settings",
@@ -39,7 +39,9 @@ const ALLOWED_ROUTES: [&str; 11] = [
     "recover",
     "restore",
     "activate",
-    "submit",
+    "write",
+    "detail",
+    "admin",
 ];
 
 // /api/<...subpath> => /api/v<version>/<...subpath>
@@ -68,7 +70,7 @@ pub fn dynamic_routing(route: String) -> Option<Template> {
     }
 }
 
-#[get("/post/<_post_id>", rank = 2)]
+#[get("/detail/<_post_id>", rank = 2)]
 pub fn get_hollow_post(_post_id: u32) -> Template {
     Template::render("layout", &())
 }

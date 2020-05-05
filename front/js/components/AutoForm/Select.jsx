@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { string, arrayOf, shape } from 'prop-types';
+import { trace } from 'unanimity/lib';
 import ReSelect from 'react-select';
 import { useForm } from './formContext';
 import clsx from 'clsx';
@@ -27,9 +28,12 @@ import clsx from 'clsx';
  * @property { ...any }     others [Bootstrap form control props]{@link https://react-bootstrap.github.io/components/forms/#forms-controls}
  */
 
-const defaultValidator = (validator, optional, isMulti) => validator
-  ? validator
-  : (optional ? (() => true) : (x => (isMulti ? x.length > 0 : Boolean(x))));
+const defaultValidator = (validator, optional, isMulti) =>
+  validator
+    ? validator
+    : optional
+    ? () => true
+    : (x) => (isMulti ? x.length > 0 : Boolean(x));
 
 /**
  * Automatic [Bootstrap from]{@link https://react-bootstrap.github.io/components/forms/)} aggregation.
@@ -39,33 +43,38 @@ const defaultValidator = (validator, optional, isMulti) => validator
  * @returns JSX.Element
  */
 function Select({
- name,
- defaultValue,
- optional,
- validator,
- eraseOnFailure,
- className,
- options,
- isMulti,
- ...others
+  name,
+  defaultValue,
+  optional,
+  validator,
+  eraseOnFailure,
+  className,
+  options,
+  isMulti,
+  ...others
 }) {
-
-  const localValidator = defaultValidator(validator, optional, isMulti || false);
+  const localValidator = defaultValidator(
+    validator,
+    optional,
+    isMulti || false
+  );
   const [state, setState] = useState({
     value: defaultValue,
     valid: localValidator(defaultValue),
-    edited: false
+    edited: false,
   });
-  const resetValue = isMulti ? [] : null;
   const [localValue, setLocalValue] = useState(null);
 
   const { register, onChange, error } = useForm();
   useEffect(() => register(name, state.value, state.valid), []);
 
-  const localOnChange = (value, action) => {
-    const valid = localValidator(value);
-    setLocalValue(value);
-    const liftedValue = (isMulti ? value.map(v => v.value) : value.value);
+  const localOnChange = (value, _) => {
+    const listedValue = value || (isMulti ? [] : null);
+    const valid = localValidator(listedValue);
+    setLocalValue(listedValue);
+    const liftedValue = isMulti
+      ? listedValue.map((v) => v.value)
+      : listedValue.value;
     setState({ value: liftedValue, valid, edited: Boolean(value) });
     // TODO - Debounce
     onChange(name, liftedValue, valid);
@@ -73,7 +82,7 @@ function Select({
 
   useEffect(() => {
     if (error && eraseOnFailure) {
-      const valid = localValidator('');
+      const valid = localValidator(isMulti ? [] : null);
       setState({ value: '', valid, edited: false });
       setLocalValue(null);
       onChange(name, null, valid);
@@ -99,15 +108,16 @@ function Select({
       {...validationState}
     />
   );
-
 }
 
 Select.propTypes = {
   name: string.isRequired,
-  options: arrayOf(shape({
-    label: string.isRequired,
-    value: string.isRequired
-  }))
+  options: arrayOf(
+    shape({
+      label: string.isRequired,
+      value: string.isRequired,
+    })
+  ),
 };
 
 Select.defaultProps = {
@@ -116,7 +126,7 @@ Select.defaultProps = {
   defaultValue: '',
   isMulti: false,
   options: [],
-}
+};
 
 Select.defaultValidator = defaultValidator;
 

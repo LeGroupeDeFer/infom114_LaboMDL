@@ -1,16 +1,8 @@
 @use '../themes'as *;
 
-.stream-header {
+.stream-header,
+.writer-header {
   margin-top: 5rem;
-}
-
-#filter-bar .active {
-  background-color: $primary;
-  border-color: $primary;
-}
-
-#search-bar {
-  z-index: 2;
 }
 
 .dropdown-item:hover {
@@ -18,12 +10,12 @@
 }
 
 .modal-80w {
-  width: 75%;
+  width: 65%;
   max-width: none;
   margin: 0 auto;
 }
 
-.modal-header {
+#preview-modal .modal-header {
   border-bottom: none;
   padding: 0.5rem 1rem 0rem 1rem;
 }
@@ -38,4 +30,8 @@
 
 .post {
   width: 100%;
+}
+
+#sort-post {
+  color: white;
 }

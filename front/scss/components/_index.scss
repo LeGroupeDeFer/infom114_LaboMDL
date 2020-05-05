@@ -8,12 +8,17 @@
 
 @forward './comment';
 
+@forward './admin';
+
 @forward './commentEditor';
 
 @forward './image';
 
 @forward './searchbar';
 
+@forward './modalDelete';
+
+@forward './poll';
 
 /* Circles always respect a 1:1 aspect ratio */
 

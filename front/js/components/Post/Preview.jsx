@@ -18,7 +18,6 @@ import {
 import clsx from 'clsx';
 import { FacebookShareButton } from 'react-share';
 import { useAuth } from 'unanimity/context/authContext';
-import api from '../../lib/api';
 
 function getDisplayedKind(kind) {
   switch (kind) {
@@ -35,8 +34,9 @@ const Preview = ({
   post,
   previewLength,
   currentFilter,
-  userVote,
-  show_modal,
+  showPreviewModal,
+  showDeleteModal,
+  onClick,
   onTagClick,
   ...others
 }) => {
@@ -55,28 +55,19 @@ const Preview = ({
     createdAt,
     comments,
     tags,
+    userVote,
   } = post;
 
-  let vote = ['down', 'up', 'no'][userVote + 1];
+  let vote = ['down', 'no', 'up'][userVote + 1];
   let owner = user == null ? false : author.id == user.id;
   const [voted, setVoted] = useState(vote);
   const [scoreState, setScoreState] = useState(score);
 
-  function deletePost() {
-    const del = () => {
-      api.posts
-        .delete(id)
-        .then(() => {})
-        .catch((error) => {});
-    };
-    del();
-  }
-
-  //if (!['all', type].includes(currentFilter)) return <></>;
+  const deletePost = () => showDeleteModal(id);
 
   return (
     <div className="d-flex">
-      <Card {...others} className="post" onClick={() => show_modal(id)} id={id}>
+      <Card {...others} className="post" onClick={() => onClick(id)} id={id}>
         <Card.Header>
           <h5>
             <Badge className={`post-${kind} mr-2`}>
@@ -190,11 +181,11 @@ const Preview = ({
 
               <Card.Text>
                 {preview(content, previewLength)}{' '}
-                <Link to={'/post/' + id}>Lire la suite</Link>
+                <Link to={'/detail/' + id}>Lire la suite</Link>
               </Card.Text>
 
               <Link
-                to={'/post/' + id}
+                to={'/detail/' + id}
                 className="post-footer-btn mr-2"
                 href="#"
               >
@@ -206,7 +197,7 @@ const Preview = ({
               </Link>
 
               <FacebookShareButton
-                url={'https://unanimity.be/post/' + id}
+                url={'https://unanimity.be/detail/' + id}
                 quote={title + ' - ' + author.firstname + ' ' + author.lastname}
                 onClick={(e) => e.stopPropagation()}
               >

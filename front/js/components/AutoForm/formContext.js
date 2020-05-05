@@ -20,7 +20,7 @@ export function FormProvider({ onSubmit, validator, children }) {
 
   // TODO - Test Useless onChange
   const onChange = (name, value, valid) => {
-    if (data[name].value !== value)
+    if (data[name].value !== value || data[name].valid !== valid)
       setData(data => ({ ...data, [name]: { name, value, valid } }));
   }
 
