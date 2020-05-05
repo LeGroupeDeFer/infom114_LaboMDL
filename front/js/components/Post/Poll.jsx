@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Button, Card, Row } from 'react-bootstrap';
+import { Button, Card, Row, Col } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import { FaRegCheckCircle } from 'react-icons/fa';
 
 function Poll() {
-  const options = ['Option 1', 'Option2'];
+  const options = ['Option 1', 'Option 2', 'Option 3'];
   const [voted, setVoted] = useState(false);
 
   return (
@@ -13,7 +13,7 @@ function Poll() {
       {!voted && (
         <Card onClick={(e) => e.preventDefault} className="poll mb-2">
           <Card.Header>
-            <span className="ml-">12 votes</span>
+            <span className="ml-">50 votes</span>
           </Card.Header>
           <Card.Body>
             <Card.Text>
@@ -39,7 +39,7 @@ function Poll() {
       {voted && (
         <Card onClick={(e) => e.preventDefault} className="poll mb-2">
           <Card.Header>
-            <span className="ml-">12 votes</span>
+            <span className="ml-">50 votes</span>
           </Card.Header>
           <Card.Body>
             <div>
@@ -48,11 +48,20 @@ function Poll() {
                 now={70}
                 className="mb-2"
                 label={
-                  <span className="progress-value">
-                    <span className="mr-5">35</span>
-                    <span>Option 1</span>
-                    <FaRegCheckCircle size={20} className="ml-1 opt-selected" />
-                  </span>
+                  <div className="progress-value">
+                    <Row>
+                      <Col xs={1} className="text-right">
+                        35
+                      </Col>
+                      <Col xs={11} className="text-left">
+                        Option 1
+                        <FaRegCheckCircle
+                          size={20}
+                          className="ml-1 opt-selected"
+                        />
+                      </Col>
+                    </Row>
+                  </div>
                 }
               />
               <ProgressBar
@@ -60,10 +69,16 @@ function Poll() {
                 now={2}
                 className="mb-2"
                 label={
-                  <span className="progress-value">
-                    <span className="mr-5">1</span>
-                    <span>Option 2 avec looong label</span>
-                  </span>
+                  <div className="progress-value">
+                    <Row>
+                      <Col xs={1} className="text-right">
+                        1
+                      </Col>
+                      <Col xs={11} className="text-left">
+                        Option 2
+                      </Col>
+                    </Row>
+                  </div>
                 }
               />
 
@@ -72,10 +87,16 @@ function Poll() {
                 now={28}
                 className="mb-2"
                 label={
-                  <span className="progress-value">
-                    <span className="mr-5">14</span>
-                    <span>Option 3</span>
-                  </span>
+                  <div className="progress-value">
+                    <Row>
+                      <Col xs={1} className="text-right">
+                        14
+                      </Col>
+                      <Col xs={11} className="text-left">
+                        Option 3
+                      </Col>
+                    </Row>
+                  </div>
                 }
               />
             </div>
