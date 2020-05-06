@@ -188,4 +188,16 @@ impl UserEntity {
         let re = Regex::new(r"^(.*)@(student\.)?unamur\.be$").unwrap();
         re.is_match(email_address)
     }
+
+    /// Get the number of active tokens
+    /// Return an u32
+    pub fn get_number_of_active_users(&self, _conn: &MysqlConnection) -> Consequence<u32> {
+        unimplemented!()
+    }
+
+    /// Get the number of users
+    /// Return an u32
+    pub fn get_number_of_users(&self, _conn: &MysqlConnection) -> Consequence<u32> {
+        unimplemented!()
+    }
 }
