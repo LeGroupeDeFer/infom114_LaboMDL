@@ -45,29 +45,28 @@ pub fn url() -> String {
 
     let app_env = &*env_setting_or("MODE", "DEV".into());
 
-    let db_uri: String;
-    if vec!["DEV", "DEVELOPMENT", "PROD", "PRODUCTION"]
+    let db_uri = if vec!["DEV", "DEVELOPMENT", "PROD", "PRODUCTION"]
         .iter()
         .any(|&m| m == app_env)
     {
-        db_uri = format!(
+        format!(
             "mysql://{}:{}@{}:{}/{}",
             env_setting("DB_USER"),
             env_setting("DB_PASSWORD"),
             env_setting("DB_HOST"),
             env_setting("DB_PORT"),
             env_setting("DB_DATABASE")
-        );
+        )
     } else {
-        db_uri = format!(
+        format!(
             "mysql://{}:{}@{}:{}/{}",
             env_setting("TEST_DB_USER"),
             env_setting("TEST_DB_PASSWORD"),
             env_setting("TEST_DB_HOST"),
             env_setting("TEST_DB_PORT"),
             env_setting("TEST_DB_DATABASE")
-        );
-    }
+        )
+    };
 
     println!("TARGET DATABASE ({}): {}", app_env, db_uri);
     db_uri

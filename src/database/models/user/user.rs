@@ -4,7 +4,11 @@ use regex::Regex;
 
 use crate::database::models::prelude::*;
 use crate::database::models::Entity;
+use crate::database::tables::{
+    capabilities_table, roles_capabilities_table, roles_table, users_roles_table,
+};
 
+use crate::database::schema::capabilities::dsl as capabilities;
 use crate::database::schema::users::dsl::{self, users as table};
 
 use crate::database;
@@ -167,7 +171,21 @@ impl UserEntity {
     }
 
     pub fn has_capability(&self, conn: &MysqlConnection, capability: &str) -> bool {
-        false
+        table
+            .inner_join(users_roles_table.inner_join(
+                roles_table.inner_join(roles_capabilities_table.inner_join(capabilities_table)),
+            ))
+            .filter(dsl::id.eq(self.id).and(capabilities::name.eq(capability)))
+            .first::<(
+                UserEntity,
+                (
+                    RelUserRoleEntity,
+                    (RoleEntity, (RelRoleCapabilityEntity, CapabilityEntity)),
+                ),
+            )>(conn)
+            .optional()
+            .unwrap_or(None)
+            .is_some()
     }
 
     /// Validate the fact that the email given
