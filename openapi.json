@@ -3178,12 +3178,32 @@
       "PostReport": {
         "type": "object",
         "properties": {
-
+          "month": {
+            "type": "string"
+          },
+          "nouveau": {
+            "type": "integer"
+          },
+          "interaction": {
+            "type": "integer"
+          }           
+        }
       },
       "TagReport": {
         "type": "object",
         "properties": {
-
+          "tag": {
+            "type": "string"
+          },
+          "info":{
+            "type": "integer"
+          },
+          "idea": {
+            "type": "integer"
+          },
+          "poll": {
+            "type": "integer"
+          }
         }
       }
     }
