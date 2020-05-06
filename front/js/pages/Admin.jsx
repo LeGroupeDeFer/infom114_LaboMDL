@@ -191,18 +191,24 @@ const ReportingPage = () => {
     <Container>
       <Row>
         <Col md={4}>
-            <ResponsiveContainer>
-              <PieChart margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <Pie data={userData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={50} fill="#A0C55F" />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
+          <Card>
+            <Card.Title>Nombre de users</Card.Title>
+            <ResponsiveContainer height={300}>
+                <PieChart margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <Pie data={userData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={50} fill="#A0C55F" />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+          </Card>
           <hr />
         </Col>
 
 
         <Col md={8}>
-            <ResponsiveContainer>
+          <Card>
+
+            <Card.Title>Nombre de tags et leur utilisation</Card.Title>
+            <ResponsiveContainer height={300}>
               <RadarChart outerRadius={90} margin={{ top: 5, right: 30, left: 20, bottom: 5 }} data={tagData}>
                 <PolarGrid />
                 <PolarAngleAxis dataKey="tag" />
@@ -213,24 +219,29 @@ const ReportingPage = () => {
                 <Legend />
               </RadarChart>
             </ResponsiveContainer>
+          </Card>
           <hr />
         </Col>
 
 
         <Col md={12}>
-          <ResponsiveContainer>
-            <ComposedChart data={postsData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <CartesianGrid stroke="#f5f5f5" />
-              <Bar dataKey="nouveau" barSize={20} fill="#413ea0" />
-              <Line type="monotone" dataKey="interaction" stroke="#ff7300" />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </Col>
+          <Card>
+              
+              <Card.Title>Nombre de postes postés depuis le début de l'année</Card.Title>
+              <ResponsiveContainer height={250}>
+                <ComposedChart data={postsData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <CartesianGrid stroke="#f5f5f5" />
+                  <Bar dataKey="nouveau" barSize={20} fill="#413ea0" />
+                  <Line type="monotone" dataKey="interaction" stroke="#ff7300" />
+                </ComposedChart>
+              </ResponsiveContainer>
 
+          </Card>
+        </Col>
       </Row>
     </Container>
   );
