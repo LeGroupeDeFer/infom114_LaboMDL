@@ -13,16 +13,17 @@ import Toast from '../components/Admin/Notification';
 import AddForm from '../components/Admin/AddForm';
 import User from '../components/Admin/User';
 
-
-import { FaTags, FaUsers, FaChartLine, FaClipboardCheck, FaTag} from 'react-icons/fa';
+import { FaTags, FaUsers, FaChartLine, FaClipboardCheck, FaTag } from 'react-icons/fa';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 
-import { ResponsiveContainer, ComposedChart, RadarChart, PieChart, Pie, Line, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, Bar } from 'recharts';
+import { ResponsiveContainer, ComposedChart, RadarChart, PieChart, Pie, Line, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, CartesianGrid, XAxis, YAxis, Cell, Tooltip as RechartsTooltip, Legend, Bar } from 'recharts';
 
 import api from '../lib/api';
 import 'regenerator-runtime';
+import clsx from 'clsx';
 
 
 function Admin(props) {
@@ -46,9 +47,9 @@ function Admin(props) {
   }
 
   return (
-      <>
+    <>
       <Container fluid className="menu-bar-container py-2">
-      <MenuBar onClick={setCurrentMenu} currentMenu={currentMenu} menuList={menuList} />
+        <MenuBar onClick={setCurrentMenu} currentMenu={currentMenu} menuList={menuList} className="menu-bar" />
       </Container>
       <br />
       <br />
@@ -56,23 +57,32 @@ function Admin(props) {
       <Container>
         <Page />
       </Container>
-      </>
+    </>
   );
 };
 
 const MenuBar = ({ currentMenu, onClick, menuList }) => {
-  
-  const icons = [ <FaTags />, <FaClipboardCheck />, <FaUsers />, <FaChartLine />];
-  
+
+  const icons = [<FaTags />, <FaClipboardCheck />, <FaUsers />, <FaChartLine />];
+//<a key={i} className={currentMenu == menu ? 'active mr-5' : 'mr-5'} onClick={() => onClick(menu)}>{icons[i]}</a>
+
   return (
-    <ButtonGroup>
+
+    <ButtonGroup className="kind-section d-flex buttons" >
       {menuList.map((menu, i) => {
         return (
           <OverlayTrigger
-          placement="bottom"
-          overlay={<Tooltip>{menu}</Tooltip>}
+            placement="bottom"
+            overlay={<Tooltip>{menu}</Tooltip>}
           >
-          <Button key={i} className={currentMenu == menu ? 'active' : ''} onClick={() => onClick(menu)}>{icons[i]}</Button>
+            <Button
+              key={i}
+              className={'kind-choice'}
+              onClick={() => onClick(menu)}
+            >
+              {icons[i]}
+            </Button>
+
           </OverlayTrigger>
         );
       })
@@ -127,6 +137,9 @@ const UsersPage = () => {
 
 
 const ReportingPage = () => {
+
+  const colors = ["#A0C55F", "#0D6759", "#1B4079", "#FC440F"];
+
   const userData = [
     {
       name: "active",
@@ -202,55 +215,61 @@ const ReportingPage = () => {
     <Container>
       <Row>
         <Col md={4}>
-          <Card>
-            <Card.Title>Nombre de users</Card.Title>
+          <Card style={{ padding: '1rem' }}>
+            <Card.Title>Utilisateurs</Card.Title>
+            <Card.Subtitle className="mb-2 text-muted">Nombre d'utilsateurs actif et non actif</Card.Subtitle>
             <ResponsiveContainer height={300}>
-                <PieChart margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                  <Pie data={userData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={50} fill="#A0C55F" />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
+              <PieChart margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <Pie data={userData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                  {
+                    userData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={colors[index]} fillOpacity={clsx({0.6: index>0, 1:index==0})} />
+                    ))
+                  }
+                </Pie>
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
           </Card>
           <hr />
         </Col>
 
 
         <Col md={8}>
-          <Card>
-
-            <Card.Title>Nombre de tags et leur utilisation</Card.Title>
+          <Card style={{ padding: '1rem' }}>
+            <Card.Title>Tags et leur utilisation</Card.Title>
+            <Card.Subtitle className="mb-2 text-muted">Montre le nombre de citation par tag ainsi que le type de post associé</Card.Subtitle>
             <ResponsiveContainer height={300}>
               <RadarChart outerRadius={90} margin={{ top: 5, right: 30, left: 20, bottom: 5 }} data={tagData}>
                 <PolarGrid />
                 <PolarAngleAxis dataKey="tag" />
                 <PolarRadiusAxis angle={30} domain={[0, 150]} />
-                <Radar name="Informationnels" dataKey="Info" stroke="#8884d8" fill="#A0C55F" fillOpacity={0.6} />
-                <Radar name="Proposition d'idée" dataKey="Idée" stroke="#82ca9d" fill="#0D6759" fillOpacity={0.6} />
-                <Radar name="Sondages" dataKey="Sondage" stroke="#82ca9d" fill="#67va9d" fillOpacity={0.6} />
+                <Radar name="Informationnels" dataKey="Info" stroke={colors[2]} fill={colors[2]} fillOpacity={0.2} />
+                <Radar name="Proposition d'idée" dataKey="Idée" stroke={colors[1]} fill={colors[1]} fillOpacity={0.4} />
+                <Radar name="Sondages" dataKey="Sondage" stroke={colors[0]} fill={colors[0]} fillOpacity={0.6} />
                 <Legend />
               </RadarChart>
             </ResponsiveContainer>
           </Card>
           <hr />
-        </Col>  
+        </Col>
 
 
         <Col md={12}>
-          <Card>
-              
-              <Card.Title>Nombre de postes postés depuis le début de l'année</Card.Title>
-              <ResponsiveContainer height={250}>
-                <ComposedChart data={postsData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <RechartsTooltip />
-                  <Legend />
-                  <CartesianGrid stroke="#f5f5f5" />
-                  <Bar dataKey="nouveau" barSize={20} fill="#413ea0" />
-                  <Line type="monotone" dataKey="interaction" stroke="#ff7300" />
-                </ComposedChart>
-              </ResponsiveContainer>
-
+          <Card style={{ padding: '1rem' }}>
+            <Card.Title>Postes créés sur l'année</Card.Title>
+            <Card.Subtitle className="mb-2 text-muted">Nombre de nouveaux postes depuis le début de l'année, ainsi que l'interaction lié</Card.Subtitle>
+            <ResponsiveContainer height={250}>
+              <ComposedChart data={postsData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <RechartsTooltip />
+                <Legend />
+                <CartesianGrid stroke="#f5f5f5" />
+                <Bar dataKey="nouveau" barSize={20} fill={colors[0]} />
+                <Line type="monotone" dataKey="interaction" stroke={colors[1]} />
+              </ComposedChart>
+            </ResponsiveContainer>
           </Card>
         </Col>
       </Row>
