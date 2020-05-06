@@ -4,6 +4,8 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Card from 'react-bootstrap/Card';
 
 import Tag from '../components/Admin/Tag';
 import Role from '../components/Admin/Role';
@@ -19,16 +21,16 @@ import 'regenerator-runtime';
 function Admin(props) {
 
   const menuList = ['tags', 'roles', 'users', 'reporting'];
-  const [currentMenu, setCurrentMenu] = useState('tags');
+  const [currentMenu, setCurrentMenu] = useState('reporting');
 
   const Page = () => {
-    if (currentMenu == 'tags') {
+    if (currentMenu === 'tags') {
       return <TagsPage />;
     }
-    else if (currentMenu == 'users') {
+    else if (currentMenu === 'users') {
       return <UsersPage />;
     }
-    else if (currentMenu == 'reporting') {
+    else if (currentMenu === 'reporting') {
       return <ReportingPage />;
     }
     else {
@@ -114,8 +116,27 @@ const UsersPage = () => {
 
 const ReportingPage = () => {
   return(
-    <p>reporting</p>
-  );
+    <Container>
+      <Row>
+        <Col md={4}>
+          <Card body />
+          <hr />
+        </Col>
+
+
+        <Col md={8}>          
+          <Card body />
+          <hr />
+        </Col>
+
+
+        <Col md={12}>
+          <Card body />
+        </Col>
+
+      </Row>
+    </Container>
+    );
 }
 
 const RolesPage = () => {
