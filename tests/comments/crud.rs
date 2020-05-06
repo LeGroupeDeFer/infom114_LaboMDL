@@ -1,3 +1,5 @@
+use std::{thread, time};
+
 use super::super::init;
 use rocket::http::{ContentType, Status};
 use unanimitylibrary::database::models::prelude::*;
@@ -12,14 +14,30 @@ fn create_comment_from_post() {
     init::seed();
 
     let post = init::get_post_entity(false, false, false);
-    
-    let comment = send_comment_from_post(&client, login_admin(), &post.id, "FIIIIIRST");
+
+    let comment = send_comment_from_post(&client, login_admin(), &post.id, "FIIIIIRST!!!");
 
     let comment_entity = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
-    assert_eq!(comment_entity.id, comment.id, "Match comment id: {} {}", comment_entity.id, comment.id);
-    assert_eq!(comment_entity.content, comment.content, "Match comment content: {} {}", comment_entity.content, comment.content);
-    assert_eq!(comment_entity.author_id, comment.author.id, "Match comment's author id: {} {}", comment_entity.author_id, comment.author.id);
-    assert_eq!(comment_entity.author_id, init::get_admin().id, "Match comment's author actual id: {} {}", comment_entity.author_id, init::get_admin().id);
+    assert_eq!(comment_entity.id, comment.id);
+    assert_eq!(comment_entity.content, comment.content);
+    assert_eq!(comment_entity.author_id, comment.author.id);
+    assert_eq!(comment_entity.author_id, init::get_admin().id);
+}
+
+#[test]
+fn create_comment_from_post_duplicate_details() {
+    let client = init::clean_client();
+    let conn = init::database_connection();
+    init::seed();
+
+    let post = init::get_post_entity(false, false, false);
+    let token = login_admin();
+    let comment1 = send_comment_from_post(&client, token.clone(), &post.id, "There are 2 comments like this!!");
+    thread::sleep(time::Duration::from_millis(10000));
+    let comment2 = send_comment_from_post(&client, token.clone(), &post.id, "There are 2 comments like this!!");
+    println!("Created times: \n{}\n{}", comment1.created_at, comment2.created_at);
+    assert!(comment1.id != comment2.id);
+    assert!(comment1.created_at < comment2.created_at);
 }
 
 // create a comment to a comment from a post

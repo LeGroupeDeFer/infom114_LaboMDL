@@ -56,14 +56,9 @@ impl Entity for CommentEntity {
     }
 
     fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Either<Self, Self>> {
-        let past = Self::select(conn, minima)?;
-        if past.is_some() {
-            Ok(Left(past.unwrap()))
-        } else {
-            diesel::insert_into(table).values(minima).execute(conn)?;
-            let future = Self::select(conn, minima)??;
-            Ok(Right(future))
-        }
+        diesel::insert_into(table).values(minima).execute(conn)?;
+        let future = Self::select(conn, minima)??;
+        Ok(Right(future))
     }
 
     fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Option<Self>> {
@@ -73,13 +68,15 @@ impl Entity for CommentEntity {
             .filter(dsl::content.eq(&minima.content));
 
         match &minima.parent_id {
-            Some(id) => filtered
-                .filter(dsl::parent_id.eq(&minima.parent_id))            
+            Some(_id) => filtered
+                .filter(dsl::parent_id.eq(&minima.parent_id))
+                .order(dsl::created_at.desc())            
                 .first::<Self>(conn)
                 .optional()
                 .map(Ok)?,
             None => filtered
-                .filter(dsl::parent_id.is_null())            
+                .filter(dsl::parent_id.is_null())
+                .order(dsl::created_at.desc())            
                 .first::<Self>(conn)
                 .optional()
                 .map(Ok)?
