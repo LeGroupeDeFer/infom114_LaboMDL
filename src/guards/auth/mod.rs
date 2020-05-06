@@ -126,6 +126,8 @@ impl Auth {
     }
 
     /// Check if the authenticated user has the requested capability
+    /// if an error needs to be triggered, please use the `check_capability`
+    /// method
     pub fn has_capability(&self, conn: &MysqlConnection, capability: &str) -> bool {
         if let Some(capa) = CapabilityEntity::by_name(&conn, &capability).unwrap() {
             self.cap.contains(&capa)

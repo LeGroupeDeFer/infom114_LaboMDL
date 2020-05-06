@@ -379,6 +379,16 @@ impl Post {
                 .unwrap_or(None)
                 .is_some(),
         );
+
+        if let Some(user) = UserEntity::by_id(conn, user_id).unwrap_or(None) {
+            if user.has_capability(conn, "comment:view_hidden") {
+                self.comments = CommentEntity::by_post_id(conn, &self.id, true)
+                    .unwrap_or(vec![])
+                    .into_iter()
+                    .map(move |entity| Comment::from(entity))
+                    .collect::<Vec<Comment>>()
+            }
+        }
     }
 }
 
@@ -409,7 +419,7 @@ impl From<PostEntity> for Post {
                 .iter()
                 .map(|tag_entity| tag_entity.label.to_string())
                 .collect::<Vec<String>>(),
-            comments: CommentEntity::by_post_id(&conn, &pe.id)
+            comments: CommentEntity::by_post_id(&conn, &pe.id, false)
                 .unwrap()
                 .drain(..)
                 .map(|comment_entity| Comment::from(comment_entity))

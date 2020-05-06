@@ -166,6 +166,10 @@ impl UserEntity {
         Ok(tab)
     }
 
+    pub fn has_capability(&self, conn: &MysqlConnection, capability: &str) -> bool {
+        false
+    }
+
     /// Validate the fact that the email given
     ///
     /// * is a valid email

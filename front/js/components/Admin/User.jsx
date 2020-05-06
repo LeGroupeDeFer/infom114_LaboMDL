@@ -31,7 +31,7 @@ const User = ({user, roles, setNotification}) => {
                   </a>
                   <a className="post-footer-btn mr-3" href="#">
                     <FaUser className="fa-primary mr-1">Voir profil</FaUser>
-                    <span className="text-muted">Supprimer</span>
+                    <span className="text-muted">Voir profil</span>
                   </a>
                 </Col>
               </Row>

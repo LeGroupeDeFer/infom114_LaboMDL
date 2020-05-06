@@ -33,6 +33,12 @@ impl AppState {
     }
 }
 
+pub fn env_setting_or(key: &str, default: String) -> String {
+    dotenv::dotenv().ok();
+    let env_var = env::var(key).ok();
+    env_var.unwrap_or(default)
+}
+
 pub fn env_setting(key: &str) -> String {
     dotenv::dotenv().ok();
     env::var(key)

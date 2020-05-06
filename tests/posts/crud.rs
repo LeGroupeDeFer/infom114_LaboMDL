@@ -1,9 +1,7 @@
-use rocket::http::Status;
-
 use super::super::init;
-
 use chrono::NaiveDateTime;
 use rocket::http::ContentType;
+use rocket::http::Status;
 use unanimitylibrary::database::models::prelude::*;
 use unanimitylibrary::lib::seeds;
 
@@ -172,7 +170,7 @@ fn read_all_post_query_tags_even() {
     init::seed();
 
     // perform request
-    let req = client.get(format!("{}?tag=even", POSTS_ROUTE));
+    let req = client.get(format!("{}?tags=even", POSTS_ROUTE));
     let mut response = req.dispatch();
 
     //check the answer is Ok
@@ -254,7 +252,7 @@ fn read_all_post_query_tags_odd() {
     init::seed();
 
     // perform request
-    let req = client.get(format!("{}?tag=odd", POSTS_ROUTE));
+    let req = client.get(format!("{}?tags=odd", POSTS_ROUTE));
     let mut response = req.dispatch();
 
     //check the answer is Ok
@@ -598,7 +596,7 @@ fn create_post_empty_content() {
         .body(post_json_data);
     let response = req.dispatch();
 
-    assert_eq!(response.status(), Status::BadRequest);
+    assert_eq!(response.status(), Status::Ok);
 }
 
 #[test]
