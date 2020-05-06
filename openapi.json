@@ -31,6 +31,10 @@
       "description": "Everything that is related to tags"
     },
     {
+      "name":  "poll",
+      "description": "Post poll kind"
+    },
+    {
       "name": "role",
       "description": "Everything that is related to role management"
     },
@@ -2733,6 +2737,71 @@
           }
         ]
       }
+    },
+    "/api/post/{post_id}/poll": {
+      "post": {
+        "tags": [
+          "post", "poll"
+        ],
+        "summary": "Vote for an answer in a post poll",
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "description": "Id of the post",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "json": {
+              "schema": {
+                "$ref": "#/components/schemas/PollVote"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -2935,6 +3004,14 @@
             }
           },
           "self_vote": {
+            "type": "integer"
+          }
+        }
+      },
+      "PollVote": {
+        "type": "object",
+        "properties": {
+          "answer_id": {
             "type": "integer"
           }
         }

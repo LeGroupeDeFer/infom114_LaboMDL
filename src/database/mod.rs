@@ -45,8 +45,11 @@ pub fn url() -> String {
 
     let app_env = &*env_setting_or("MODE", "DEV".into());
 
-    let mut db_uri: String;
-    if vec!("DEV", "DEVELOPMENT", "PROD", "PRODUCTION").iter().any(|&m| m == app_env) {
+    let db_uri: String;
+    if vec!["DEV", "DEVELOPMENT", "PROD", "PRODUCTION"]
+        .iter()
+        .any(|&m| m == app_env)
+    {
         db_uri = format!(
             "mysql://{}:{}@{}:{}/{}",
             env_setting("DB_USER"),
@@ -96,7 +99,7 @@ pub enum SortOrder {
     HighScore,
     LowScore,
     HighRank,
-    LowRank
+    LowRank,
 }
 
 impl TryFrom<&str> for SortOrder {
