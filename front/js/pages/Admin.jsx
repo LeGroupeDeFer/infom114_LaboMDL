@@ -173,56 +173,53 @@ const ReportingPage = () => {
   ]
 
   const postsData = [
-    {name: 'Janvier', nouveau: 20, interaction: 124},
-    {name: 'Février', nouveau: 13, interaction: 40},
-    {name: 'Mars', nouveau: 24, interaction: 75},
-    {name: 'Avril', nouveau: 40, interaction: 150},
-    {name: 'Mai', nouveau: 5, interaction: 47},
-    {name: 'Juin', nouveau: 0, interaction: 0},
-    {name: 'Juillet', nouveau: 0, interaction: 0},
-    {name: 'Aout', nouveau: 0, interaction: 0},
-    {name: 'Septembre', nouveau: 0, interaction: 0},
-    {name: 'Octobre', nouveau: 0, interaction: 0},
-    {name: 'Novembre', nouveau: 0, interaction: 0},
-    {name: 'Décembre', nouveau: 0, interaction: 0}
+    { name: 'Janvier', nouveau: 20, interaction: 124 },
+    { name: 'Février', nouveau: 13, interaction: 40 },
+    { name: 'Mars', nouveau: 24, interaction: 75 },
+    { name: 'Avril', nouveau: 40, interaction: 150 },
+    { name: 'Mai', nouveau: 5, interaction: 47 },
+    { name: 'Juin', nouveau: 0, interaction: 0 },
+    { name: 'Juillet', nouveau: 0, interaction: 0 },
+    { name: 'Aout', nouveau: 0, interaction: 0 },
+    { name: 'Septembre', nouveau: 0, interaction: 0 },
+    { name: 'Octobre', nouveau: 0, interaction: 0 },
+    { name: 'Novembre', nouveau: 0, interaction: 0 },
+    { name: 'Décembre', nouveau: 0, interaction: 0 }
   ];
 
   return (
     <Container>
       <Row>
         <Col md={4}>
-          <Card body>
-            <PieChart width={200} height={100}>
-              <Pie data={userData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={50} fill="#A0C55F" />
-              <Legend />
-
-            </PieChart>
-          </Card>
+            <ResponsiveContainer>
+              <PieChart margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <Pie data={userData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={50} fill="#A0C55F" />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
           <hr />
         </Col>
 
 
         <Col md={8}>
-          <Card body>
-
-          <RadarChart outerRadius={90} width={730} height={250} data={tagData}>
-            <PolarGrid />
-            <PolarAngleAxis dataKey="tag" />
-            <PolarRadiusAxis angle={30} domain={[0, 150]} />
-            <Radar name="Informationnels" dataKey="Info" stroke="#8884d8" fill="#A0C55F" fillOpacity={0.6} />
-            <Radar name="Proposition d'idée" dataKey="Idée" stroke="#82ca9d" fill="#0D6759" fillOpacity={0.6} />
-            <Radar name="Sondages" dataKey="Sondage" stroke="#82ca9d" fill="#67va9d" fillOpacity={0.6} />
-            <Legend />
-          </RadarChart>
-
-        </Card>
+            <ResponsiveContainer>
+              <RadarChart outerRadius={90} margin={{ top: 5, right: 30, left: 20, bottom: 5 }} data={tagData}>
+                <PolarGrid />
+                <PolarAngleAxis dataKey="tag" />
+                <PolarRadiusAxis angle={30} domain={[0, 150]} />
+                <Radar name="Informationnels" dataKey="Info" stroke="#8884d8" fill="#A0C55F" fillOpacity={0.6} />
+                <Radar name="Proposition d'idée" dataKey="Idée" stroke="#82ca9d" fill="#0D6759" fillOpacity={0.6} />
+                <Radar name="Sondages" dataKey="Sondage" stroke="#82ca9d" fill="#67va9d" fillOpacity={0.6} />
+                <Legend />
+              </RadarChart>
+            </ResponsiveContainer>
           <hr />
         </Col>
 
 
         <Col md={12}>
-          <Card body>
-            <ComposedChart width={730} height={250} data={postsData}>
+          <ResponsiveContainer>
+            <ComposedChart data={postsData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
@@ -231,7 +228,7 @@ const ReportingPage = () => {
               <Bar dataKey="nouveau" barSize={20} fill="#413ea0" />
               <Line type="monotone" dataKey="interaction" stroke="#ff7300" />
             </ComposedChart>
-          </Card>
+          </ResponsiveContainer>
         </Col>
 
       </Row>
