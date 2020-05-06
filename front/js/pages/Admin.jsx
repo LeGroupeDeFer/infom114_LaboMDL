@@ -13,6 +13,7 @@ import Toast from '../components/Admin/Notification';
 import AddForm from '../components/Admin/AddForm';
 import User from '../components/Admin/User';
 
+import { ResponsiveContainer, ComposedChart, RadarChart, PieChart, Pie, Line, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar } from 'recharts';
 
 import api from '../lib/api';
 import 'regenerator-runtime';
@@ -36,7 +37,7 @@ function Admin(props) {
     else {
       return <RolesPage />;
     }
-  } 
+  }
 
   return (
     <Container
@@ -47,7 +48,7 @@ function Admin(props) {
       <div style={{ position: 'absolute', top: 0, right: 0, 'zIndex': 1 }}></div>
 
       <Row className='justify-content-md-center'>
-        <MenuBar onClick={setCurrentMenu} currentMenu={currentMenu} menuList={menuList}/>
+        <MenuBar onClick={setCurrentMenu} currentMenu={currentMenu} menuList={menuList} />
       </Row>
       <br />
       <div>
@@ -58,10 +59,10 @@ function Admin(props) {
 };
 
 const MenuBar = ({ currentMenu, onClick, menuList }) => {
-  
+
   return (
     <ButtonGroup id='menu-bar'>
-      { menuList.map((menu, i) => {   
+      {menuList.map((menu, i) => {
         return <Button key={i} variant="secondary" className={currentMenu == menu ? 'active' : ''} onClick={() => onClick(menu)}>{menu}</Button>
       })
       }
@@ -96,47 +97,146 @@ const UsersPage = () => {
   }, [])
 
   return (
-  <>
-  <Notification />
-  <br/>
+    <>
+      <Notification />
+      <br />
       {users.length
         ? users.map((user) => {
           return (
             <Row key={user.id} className="mb-3">
-              <User user={user} roles={roles} setNotification={setNotification}/>
+              <User user={user} roles={roles} setNotification={setNotification} />
             </Row>
           )
         })
         : <h1>No users</h1>
       }
-  </>
+    </>
   )
 };
 
 
 const ReportingPage = () => {
-  return(
+  const userData = [
+    {
+      name: "active",
+      value: 43
+    },
+    {
+      name: "inactive",
+      value: 236
+    }
+  ];
+
+  const tagData = [
+    {
+      "tag": "Info",
+      "Info": 120,
+      "Idée": 110,
+      "Sondage": 85,
+      "fullMark": 150
+    },
+    {
+      "tag": "Pharma",
+      "Info": 98,
+      "Idée": 130,
+      "Sondage": 56,
+      "fullMark": 150
+    },
+    {
+      "tag": "Droit",
+      "Info": 86,
+      "Idée": 130,
+      "Sondage": 120,
+      "fullMark": 150
+    },
+    {
+      "tag": "Eco",
+      "Info": 99,
+      "Idée": 100,
+      "Sondage": 54,
+      "fullMark": 150
+    },
+    {
+      "tag": "Physics",
+      "Info": 85,
+      "Idée": 90,
+      "Sondage": 67,
+      "fullMark": 150
+    },
+    {
+      "tag": "History",
+      "Info": 65,
+      "Idée": 85,
+      "Sondage": 98,
+      "fullMark": 150
+    }
+  ]
+
+  const postsData = [
+    {name: 'Janvier', nouveau: 20, interaction: 124},
+    {name: 'Février', nouveau: 13, interaction: 40},
+    {name: 'Mars', nouveau: 24, interaction: 75},
+    {name: 'Avril', nouveau: 40, interaction: 150},
+    {name: 'Mai', nouveau: 5, interaction: 47},
+    {name: 'Juin', nouveau: 0, interaction: 0},
+    {name: 'Juillet', nouveau: 0, interaction: 0},
+    {name: 'Aout', nouveau: 0, interaction: 0},
+    {name: 'Septembre', nouveau: 0, interaction: 0},
+    {name: 'Octobre', nouveau: 0, interaction: 0},
+    {name: 'Novembre', nouveau: 0, interaction: 0},
+    {name: 'Décembre', nouveau: 0, interaction: 0}
+  ];
+
+  return (
     <Container>
       <Row>
         <Col md={4}>
-          <Card body />
+          <Card body>
+            <PieChart width={200} height={100}>
+              <Pie data={userData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={50} fill="#A0C55F" />
+              <Legend />
+
+            </PieChart>
+          </Card>
           <hr />
         </Col>
 
 
-        <Col md={8}>          
-          <Card body />
+        <Col md={8}>
+          <Card body>
+
+          <RadarChart outerRadius={90} width={730} height={250} data={tagData}>
+            <PolarGrid />
+            <PolarAngleAxis dataKey="tag" />
+            <PolarRadiusAxis angle={30} domain={[0, 150]} />
+            <Radar name="Informationnels" dataKey="Info" stroke="#8884d8" fill="#A0C55F" fillOpacity={0.6} />
+            <Radar name="Proposition d'idée" dataKey="Idée" stroke="#82ca9d" fill="#0D6759" fillOpacity={0.6} />
+            <Radar name="Sondages" dataKey="Sondage" stroke="#82ca9d" fill="#67va9d" fillOpacity={0.6} />
+            <Legend />
+          </RadarChart>
+
+        </Card>
           <hr />
         </Col>
 
 
         <Col md={12}>
-          <Card body />
+          <Card body>
+            <ComposedChart width={730} height={250} data={postsData}>
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <CartesianGrid stroke="#f5f5f5" />
+              <Bar dataKey="nouveau" barSize={20} fill="#413ea0" />
+              <Line type="monotone" dataKey="interaction" stroke="#ff7300" />
+            </ComposedChart>
+          </Card>
         </Col>
 
       </Row>
     </Container>
-    );
+  );
 }
 
 const RolesPage = () => {
@@ -156,9 +256,9 @@ const RolesPage = () => {
 
     const fetchCapabilities = async () => {
       let capabilities = await api.capabilities();
-      setCapabilities(capabilities);      
+      setCapabilities(capabilities);
     }
-    
+
     fetchRoles();
     fetchCapabilities();
   }, []);
@@ -172,7 +272,7 @@ const RolesPage = () => {
       return result;
     }
     let roles = await roleInformation();
-    return roles.filter(role => role.name === roleToModify.name )[0];
+    return roles.filter(role => role.name === roleToModify.name)[0];
   }
 
   //Add a new role 
@@ -189,7 +289,7 @@ const RolesPage = () => {
         setNotification('');
         setNotification(reason);
         console.log(error);
-        
+
       });
     }
     sendRole(roleName);
@@ -309,7 +409,7 @@ const TagsPage = () => {
         const newTags = [...tags, { label, id }];
         setTags(newTags);
       }).catch((error) => {
-        let reason = error.reason == null ? "La demande n'a pu être traitée" : error.reason; 
+        let reason = error.reason == null ? "La demande n'a pu être traitée" : error.reason;
         setNotification("");
         setNotification(reason);
         console.log(error);
