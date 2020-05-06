@@ -71,7 +71,7 @@ impl Entity for TagEntity {
     }
 
     fn delete(self, conn: &MysqlConnection) -> Consequence<()> {
-        diesel::delete(table.filter(dsl::id.eq(self.id)))
+        diesel::delete(table.find(self.id))
             .execute(conn)
             .map(|_| ())
             .map(Ok)?
