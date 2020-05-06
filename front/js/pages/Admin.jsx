@@ -29,7 +29,7 @@ function Admin(props) {
       return <UsersPage />;
     }
     else if (currentMenu == 'reporting') {
-      return <p>reporting page</p>;
+      return <ReportingPage />;
     }
     else {
       return <RolesPage />;
@@ -110,6 +110,13 @@ const UsersPage = () => {
   </>
   )
 };
+
+
+const ReportingPage = () => {
+  return(
+    <p>reporting</p>
+  );
+}
 
 const RolesPage = () => {
 
