@@ -27,6 +27,34 @@ fn create_comment_from_post() {
 }
 
 #[test]
+fn create_comment_from_post_simple_user() {
+
+    let client = init::clean_client();
+    let conn = init::database_connection();
+    init::seed();
+
+    // init simple user
+    let (user, passwd) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &passwd);
+
+    let post = init::get_post_entity(false, false, false);
+    let comment = send_comment_from_post(
+        &client, 
+        auth_token_header, 
+        &post.id, 
+        "Normal user should be able to post a comment like this!!!"
+    );
+
+    let comment_entity = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert_eq!(comment_entity.id, comment.id);
+    assert_eq!(comment_entity.post_id, post.id);
+    assert_eq!(comment_entity.parent_id, None);
+    assert_eq!(comment_entity.content, comment.content);
+    assert_eq!(comment_entity.author_id, comment.author.id);
+    assert_eq!(comment_entity.author_id, init::get_admin().id);
+}
+
+#[test]
 fn create_comment_from_post_duplicate_details() {
     let client = init::clean_client();
     let conn = init::database_connection();
