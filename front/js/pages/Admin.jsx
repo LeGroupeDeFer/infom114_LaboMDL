@@ -67,29 +67,34 @@ const MenuBar = ({ currentMenu, onClick, menuList }) => {
 //<a key={i} className={currentMenu == menu ? 'active mr-5' : 'mr-5'} onClick={() => onClick(menu)}>{icons[i]}</a>
 
   return (
+    
+    <Row>
+      <Col xs={2}></Col>
+      <Col xs={8}>
+        <ButtonGroup className="kind-section d-flex justify-content-between" >
+          {menuList.map((menu, i) => {
+            return (
+              <OverlayTrigger
+                placement="bottom"
+                overlay={<Tooltip>{menu}</Tooltip>}
+              >
+                <Button
+                  key={i}
+                  className={clsx('kind-choice', menu === currentMenu && 'active')}
+                  onClick={() => onClick(menu)}
+                >
+                  {icons[i]}
+                </Button>
 
-    <ButtonGroup className="kind-section d-flex buttons" >
-      {menuList.map((menu, i) => {
-        return (
-          <OverlayTrigger
-            placement="bottom"
-            overlay={<Tooltip>{menu}</Tooltip>}
-          >
-            <Button
-              key={i}
-              className={'kind-choice'}
-              onClick={() => onClick(menu)}
-            >
-              {icons[i]}
-            </Button>
-
-          </OverlayTrigger>
-        );
-      })
-      }
-    </ButtonGroup>
+              </OverlayTrigger>
+            );
+          })
+          }
+        </ButtonGroup>
+      </Col>
+      <Col xs={2}></Col>
+    </Row>
   );
-
 };
 
 const UsersPage = () => {
