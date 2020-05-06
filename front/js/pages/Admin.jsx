@@ -13,7 +13,13 @@ import Toast from '../components/Admin/Notification';
 import AddForm from '../components/Admin/AddForm';
 import User from '../components/Admin/User';
 
-import { ResponsiveContainer, ComposedChart, RadarChart, PieChart, Pie, Line, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar } from 'recharts';
+
+import { FaTags, FaUsers, FaChartLine, FaClipboardCheck, FaTag} from 'react-icons/fa';
+
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
+
+import { ResponsiveContainer, ComposedChart, RadarChart, PieChart, Pie, Line, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, Bar } from 'recharts';
 
 import api from '../lib/api';
 import 'regenerator-runtime';
@@ -40,30 +46,35 @@ function Admin(props) {
   }
 
   return (
-    <Container
-      style={{
-        position: 'relative',
-      }}>
+      <>
+      <Container fluid className="menu-bar-container py-2">
+      <MenuBar onClick={setCurrentMenu} currentMenu={currentMenu} menuList={menuList} />
+      </Container>
       <br />
-      <div style={{ position: 'absolute', top: 0, right: 0, 'zIndex': 1 }}></div>
-
-      <Row className='justify-content-md-center'>
-        <MenuBar onClick={setCurrentMenu} currentMenu={currentMenu} menuList={menuList} />
-      </Row>
       <br />
-      <div>
+      <br />
+      <Container>
         <Page />
-      </div>
-    </Container>
+      </Container>
+      </>
   );
 };
 
 const MenuBar = ({ currentMenu, onClick, menuList }) => {
-
+  
+  const icons = [ <FaTags />, <FaClipboardCheck />, <FaUsers />, <FaChartLine />];
+  
   return (
-    <ButtonGroup id='menu-bar'>
+    <ButtonGroup>
       {menuList.map((menu, i) => {
-        return <Button key={i} variant="secondary" className={currentMenu == menu ? 'active' : ''} onClick={() => onClick(menu)}>{menu}</Button>
+        return (
+          <OverlayTrigger
+          placement="bottom"
+          overlay={<Tooltip>{menu}</Tooltip>}
+          >
+          <Button key={i} className={currentMenu == menu ? 'active' : ''} onClick={() => onClick(menu)}>{icons[i]}</Button>
+          </OverlayTrigger>
+        );
       })
       }
     </ButtonGroup>
@@ -221,7 +232,7 @@ const ReportingPage = () => {
             </ResponsiveContainer>
           </Card>
           <hr />
-        </Col>
+        </Col>  
 
 
         <Col md={12}>
@@ -232,7 +243,7 @@ const ReportingPage = () => {
                 <ComposedChart data={postsData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip />
+                  <RechartsTooltip />
                   <Legend />
                   <CartesianGrid stroke="#f5f5f5" />
                   <Bar dataKey="nouveau" barSize={20} fill="#413ea0" />

@@ -2,14 +2,22 @@
 
 @use '../abstract/mixins' as *;
 
-#menu-bar .active {
-    background-color: $primary;
-    border-color: $primary;
+//#menu-bar .active {
+//    background-color: $primary;
+//    border-color: $primary;
+//}
+
+.button-group {
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
 }
 
-input.tag-input {
-    &[disabled] {
-        border: none;
-        background: transparent;  
-    }
-}
+.menu-bar-container {
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+  
+    box-shadow: rgba(0, 0, 0, 0.1) 5px 0px 10px;
+    background: white;
+  }
