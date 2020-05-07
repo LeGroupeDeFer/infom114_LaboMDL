@@ -8,7 +8,7 @@ use crate::database::DBConnection;
 use crate::guards::{Auth, ForwardAuth, PostGuard};
 
 use crate::http::responders::ApiResult;
-use crate::lib::EntityError;
+use crate::lib::{AuthError, EntityError};
 
 use rocket::Route;
 use rocket_contrib::json::Json;
@@ -55,6 +55,13 @@ fn create_comment(
 
     if comment_request.content == "" {
         Err(EntityError::InvalidAttribute)?;
+    }
+
+    if post_guard.post().is_deleted() 
+        || post_guard.post().is_locked()
+        || post_guard.post().is_hidden()
+    {
+        Err(AuthError::MissingCapability)?;
     }
 
     let new_comment = CommentMinima {

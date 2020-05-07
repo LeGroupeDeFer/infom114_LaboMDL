@@ -51,7 +51,6 @@ fn create_comment_from_post_simple_user() {
     assert_eq!(comment_entity.parent_id, None);
     assert_eq!(comment_entity.content, comment.content);
     assert_eq!(comment_entity.author_id, comment.author.id);
-    assert_eq!(comment_entity.author_id, init::get_admin().id);
 }
 
 #[test]
@@ -166,7 +165,7 @@ fn create_comment_from_locked_post() {
         &post.id,
         comment_content
     );
-    assert_eq!(response_status, Status::BadRequest); 
+    assert_eq!(response_status, Status::Forbidden); 
 }
 
 // create a comment from an hidden post
@@ -186,7 +185,7 @@ fn create_comment_from_hidden_post() {
         &post.id,
         comment_content
     );
-    assert_eq!(response_status, Status::BadRequest); 
+    assert_eq!(response_status, Status::Forbidden); 
 }
 
 // create a comment from a soft-deleted post
@@ -205,7 +204,7 @@ fn create_comment_from_soft_deleted_post() {
         &post.id,
         comment_content
     );
-    assert_eq!(response_status, Status::BadRequest); 
+    assert_eq!(response_status, Status::Forbidden); 
 }
 
 // create a comment to a comment from a post
