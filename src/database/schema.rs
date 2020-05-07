@@ -44,6 +44,14 @@ table! {
 }
 
 table! {
+    poll_answers (id) {
+        id -> Unsigned<Integer>,
+        post_id -> Unsigned<Integer>,
+        answer -> Varchar,
+    }
+}
+
+table! {
     posts (id) {
         id -> Unsigned<Integer>,
         title -> Varchar,
@@ -74,6 +82,15 @@ table! {
     posts_tags (post_id, tag_id) {
         post_id -> Unsigned<Integer>,
         tag_id -> Unsigned<Integer>,
+    }
+}
+
+table! {
+    post_polls (id) {
+        id -> Unsigned<Integer>,
+        post_id -> Unsigned<Integer>,
+        question -> Mediumtext,
+        deadline -> Timestamp,
     }
 }
 
@@ -138,6 +155,13 @@ table! {
 }
 
 table! {
+    users_poll_answers (answer_id, user_id) {
+        answer_id -> Unsigned<Integer>,
+        user_id -> Unsigned<Integer>,
+    }
+}
+
+table! {
     users_roles (id) {
         id -> Unsigned<Integer>,
         user_id -> Unsigned<Integer>,
@@ -167,6 +191,8 @@ joinable!(comments -> posts (post_id));
 joinable!(comments -> users (author_id));
 joinable!(comments_reports -> comments (comment_id));
 joinable!(comments_reports -> users (user_id));
+joinable!(poll_answers -> posts (post_id));
+joinable!(post_polls -> posts (post_id));
 joinable!(posts -> users (author_id));
 joinable!(posts_reports -> posts (post_id));
 joinable!(posts_reports -> users (user_id));
@@ -177,6 +203,8 @@ joinable!(roles_capabilities -> roles (role_id));
 joinable!(tags_subscription -> tags (tag_id));
 joinable!(tags_subscription -> users (user_id));
 joinable!(users -> addresses (address));
+joinable!(users_poll_answers -> poll_answers (answer_id));
+joinable!(users_poll_answers -> users (user_id));
 joinable!(users_roles -> roles (role_id));
 joinable!(users_roles -> users (user_id));
 joinable!(votes_comments -> comments (comment_id));
@@ -189,15 +217,18 @@ allow_tables_to_appear_in_same_query!(
     capabilities,
     comments,
     comments_reports,
+    poll_answers,
     posts,
     posts_reports,
     posts_tags,
+    post_polls,
     roles,
     roles_capabilities,
     tags,
     tags_subscription,
     tokens,
     users,
+    users_poll_answers,
     users_roles,
     votes_comments,
     votes_posts,

@@ -1,10 +1,11 @@
 pub use super::{
     address::{Address, AddressEntity, AddressMinima},
     capability::{Capability, CapabilityData, CapabilityEntity, CapabilityMinima, CAPABILITIES},
-    comment::{Comment, CommentEntity, CommentMinima, RelCommentVoteEntity},
+    comment::{Comment, CommentEntity, CommentMinima, NewComment, RelCommentVoteEntity},
     post::{
-        ChangeVote, NewPost, Post, PostEntity, PostKind, PostMinima, RelPostTagEntity,
-        RelPostVoteEntity, ReportData,
+        ChangeVote, NewPost, PollAnswer, PollAnswerEntity, PollVote, Post, PostEntity, PostKind,
+        PostMinima, PostPoll, RelPostReportEntity, RelPostTagEntity, RelPostVoteEntity,
+        RelUserPollAnswerEntity, ReportData,
     },
     role::{RelRoleCapabilityEntity, Role, RoleData, RoleEntity, RoleMinima},
     tag::{Tag, TagData, TagEntity, TagMinima},

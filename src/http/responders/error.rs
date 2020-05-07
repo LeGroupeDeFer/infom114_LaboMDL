@@ -4,7 +4,9 @@ use rocket::response::{Responder, Response};
 use std::io::Cursor;
 use std::result::Result as StdResult;
 
-use crate::lib::consequence::{AuthError, EntityError, Error, JWTErrorKind, TokenError, UserError};
+use crate::lib::consequence::{
+    AuthError, EntityError, Error, JWTErrorKind, PostError, TokenError, UserError,
+};
 
 fn response_code(error: &Error) -> u16 {
     match error {
@@ -20,7 +22,11 @@ fn response_code(error: &Error) -> u16 {
             EntityError::EmptyAttribute => 422,
             EntityError::InvalidID => 400,
             EntityError::InvalidAttribute => 400,
-            EntityError::UnknownKind => 400
+        },
+        Error::PostError(e) => match e {
+            PostError::UnknownKind => 400,
+            PostError::InvalidKind => 400,
+            PostError::InvalidAnswer => 400,
         },
         Error::TokenError(e) => match e {
             TokenError::Collision => 500,

@@ -1,7 +1,7 @@
 use crate::database;
 use crate::database::models::prelude::*;
 use crate::database::schema::comments;
-use crate::database::tables::comments_table;
+use crate::database::tables::comments_table as table;
 use crate::lib::Consequence;
 
 use diesel::prelude::*;
@@ -51,9 +51,19 @@ impl From<CommentEntity> for Comment {
 }
 
 impl CommentEntity {
-    pub fn by_post_id(conn: &MysqlConnection, post_id: &u32) -> Consequence<Vec<Self>> {
-        Ok(comments_table
-            .filter(comments::post_id.eq(post_id))
-            .load(conn)?)
+    pub fn by_post_id(
+        conn: &MysqlConnection,
+        post_id: &u32,
+        hidden: bool,
+    ) -> Consequence<Vec<Self>> {
+        let mut query = table.into_boxed();
+        query = query.filter(comments::deleted_at.is_not_null());
+        query = query.filter(comments::post_id.eq(post_id));
+
+        if !hidden {
+            query = query.filter(comments::hidden_at.is_not_null());
+        }
+
+        Ok(query.load(conn)?)
     }
 }

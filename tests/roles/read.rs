@@ -12,7 +12,7 @@ use rocket::http::Status;
 use super::super::init;
 use unanimitylibrary::database::models::prelude::*;
 
-const CAPABILITIES_ROUTE: &'static str = "/api/v1/capability";
+const CAPABILITIES_ROUTE: &'static str = "/api/v1/capabilities";
 const ROLES_ROUTE: &'static str = "/api/v1/roles";
 
 /**************************** TESTS ******************************************/

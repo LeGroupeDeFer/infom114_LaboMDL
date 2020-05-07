@@ -17,7 +17,6 @@ pub enum EntityError {
     EmptyAttribute,
     InvalidID,
     InvalidAttribute,
-    UnknownKind, // FIXME - Move in Post Error
 }
 
 impl FmtDisplay for EntityError {
@@ -33,15 +32,39 @@ impl FmtDisplay for EntityError {
             }
             EntityError::InvalidAttribute => {
                 write!(f, "At least one of the given attributes is invalid")
-            },
-            EntityError::UnknownKind => {
-                write!(f, "Unknown post kind")
             }
         }
     }
 }
 
 impl StdError for EntityError {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        None
+    }
+}
+
+// ---------------------------------------------------------------------------------- POSTS ERRORS
+
+#[derive(Debug)]
+pub enum PostError {
+    UnknownKind,
+    InvalidKind,
+    InvalidAnswer,
+}
+
+impl FmtDisplay for PostError {
+    fn fmt(&self, f: &mut FmtFormatter) -> FmtResult {
+        match self {
+            PostError::UnknownKind => write!(f, "Unknown post kind"),
+            PostError::InvalidKind => {
+                write!(f, "The post kind is invalid for the requested operation")
+            }
+            PostError::InvalidAnswer => write!(f, "This answer is not linked to this post"),
+        }
+    }
+}
+
+impl StdError for PostError {
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         None
     }
@@ -62,7 +85,7 @@ impl FmtDisplay for TokenError {
         match self {
             TokenError::Consumed => write!(f, "This token has already been consumed"),
             TokenError::Expired => write!(f, "This token has expired"),
-            TokenError::Collision => write!(f, "Token hash collision occured"),
+            TokenError::Collision => write!(f, "Token hash collision occurred"),
             TokenError::InvalidHash => write!(f, "Invalid token hash"),
         }
     }
@@ -140,6 +163,7 @@ pub enum Error {
     UserError(UserError),
     EntityError(EntityError),
     AuthError(AuthError),
+    PostError(PostError),
 }
 
 impl FmtDisplay for Error {
@@ -153,6 +177,7 @@ impl FmtDisplay for Error {
             Error::JWTError(e) => write!(f, "{}", e),
             Error::UserError(e) => write!(f, "{}", e),
             Error::AuthError(e) => write!(f, "{}", e),
+            Error::PostError(e) => write!(f, "{}", e),
         }
     }
 }
@@ -167,6 +192,7 @@ impl StdError for Error {
             Error::UserError(ref e) => Some(e),
             Error::EntityError(ref e) => Some(e),
             Error::AuthError(ref e) => Some(e),
+            Error::PostError(ref e) => Some(e),
             _ => None,
         }
     }
@@ -230,5 +256,12 @@ impl From<UserError> for Error {
 impl From<AuthError> for Error {
     fn from(error: AuthError) -> Error {
         Error::AuthError(error)
+    }
+}
+
+// PostError -> Error
+impl From<PostError> for Error {
+    fn from(error: PostError) -> Error {
+        Error::PostError(error)
     }
 }

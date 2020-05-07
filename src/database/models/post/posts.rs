@@ -11,7 +11,7 @@ use crate::database::schema::posts::dsl;
 use crate::database::schema::tags::dsl as tags;
 use crate::database::tables::{posts_table as table, posts_tags_table, tags_table};
 use crate::database::SortOrder;
-use crate::lib::{self as conseq, Consequence, EntityError};
+use crate::lib::{self as conseq, Consequence, EntityError, PostError};
 
 // TODO - Move this in app state
 const BASE: f64 = 1.414213562;
@@ -36,7 +36,7 @@ impl TryFrom<u8> for PostKind {
             2 => PostKind::Poll,
             3 => PostKind::Decision,
             4 => PostKind::Discussion,
-            _ => Err(EntityError::UnknownKind)?,
+            _ => Err(PostError::UnknownKind)?,
         })
     }
 }
@@ -51,13 +51,18 @@ impl TryFrom<String> for PostKind {
             "info" => PostKind::Info,
             "decision" => PostKind::Decision,
             "discussion" => PostKind::Discussion,
-            _ => Err(EntityError::UnknownKind)?,
+            _ => Err(PostError::UnknownKind)?,
         })
     }
 }
 
 impl From<PostKind> for u8 {
     fn from(kind: PostKind) -> u8 {
+        u8::from(&kind)
+    }
+}
+impl From<&PostKind> for u8 {
+    fn from(kind: &PostKind) -> u8 {
         match kind {
             PostKind::Info => 0,
             PostKind::Idea => 1,
@@ -70,6 +75,11 @@ impl From<PostKind> for u8 {
 
 impl From<PostKind> for String {
     fn from(kind: PostKind) -> String {
+        String::from(&kind)
+    }
+}
+impl From<&PostKind> for String {
+    fn from(kind: &PostKind) -> String {
         match kind {
             PostKind::Info => "info".into(),
             PostKind::Idea => "idea".into(),
@@ -346,8 +356,16 @@ impl Post {
         limit: Option<u32>,
         offset: Option<u32>,
     ) -> Consequence<Vec<Self>> {
-        let entities =
-            PostEntity::get_all(conn, can_see_hidden, tags, search, sort, kind, limit, offset)?;
+        let entities = PostEntity::get_all(
+            conn,
+            can_see_hidden,
+            tags,
+            search,
+            sort,
+            kind,
+            limit,
+            offset,
+        )?;
         let posts = entities
             .into_iter()
             .map(move |post_entity| Post::from(post_entity))
@@ -379,6 +397,16 @@ impl Post {
                 .unwrap_or(None)
                 .is_some(),
         );
+
+        if let Some(user) = UserEntity::by_id(conn, user_id).unwrap_or(None) {
+            if user.has_capability(conn, "comment:view_hidden") {
+                self.comments = CommentEntity::by_post_id(conn, &self.id, true)
+                    .unwrap_or(vec![])
+                    .into_iter()
+                    .map(move |entity| Comment::from(entity))
+                    .collect::<Vec<Comment>>()
+            }
+        }
     }
 }
 
@@ -409,7 +437,7 @@ impl From<PostEntity> for Post {
                 .iter()
                 .map(|tag_entity| tag_entity.label.to_string())
                 .collect::<Vec<String>>(),
-            comments: CommentEntity::by_post_id(&conn, &pe.id)
+            comments: CommentEntity::by_post_id(&conn, &pe.id, false)
                 .unwrap()
                 .drain(..)
                 .map(|comment_entity| Comment::from(comment_entity))
