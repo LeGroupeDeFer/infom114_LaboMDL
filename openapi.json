@@ -31,6 +31,10 @@
       "description": "Everything that is related to tags"
     },
     {
+      "name":  "poll",
+      "description": "Post poll kind"
+    },
+    {
       "name": "role",
       "description": "Everything that is related to role management"
     },
@@ -2738,10 +2742,75 @@
         ]
       }
     },
+    "/api/post/{post_id}/poll": {
+      "post": {
+        "tags": [
+          "post", "poll"
+        ],
+        "summary": "Vote for an answer in a post poll",
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "description": "Id of the post",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "json": {
+              "schema": {
+                "$ref": "#/components/schemas/PollVote"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
+    },
     "/api/report/users": {
       "get": {
         "tags": [
-          "user", 
+          "user",
           "reporting"
         ],
         "summary": "Return the total number of users and the number of active one",
@@ -2751,10 +2820,7 @@
             "content": {
               "json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
                     "$ref": "#/components/schemas/UserReport"
-                  }
                 }
               }
             }
@@ -2770,7 +2836,7 @@
     "/api/report/posts": {
       "get": {
         "tags": [
-          "post", 
+          "post",
           "reporting"
         ],
         "summary": "Return the number of posts created per month of the actual year",
@@ -2799,7 +2865,7 @@
     "/api/report/tags": {
       "get": {
         "tags": [
-          "tag", 
+          "tag",
           "reporting"
         ],
         "summary": "Return the number of use of each tag",
@@ -3030,6 +3096,62 @@
           }
         }
       },
+      "PollPost": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "answers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PollAnswer"
+            }
+          },
+          "user_answer": {
+            "$ref": "#/components/schemas/PollAnswerEntity"
+          }
+        }
+      },
+      "PollVote": {
+        "type": "object",
+        "properties": {
+          "answer_id": {
+            "type": "integer"
+          }
+        }
+      },
+      "PollAnswer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "answer": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "PollAnswerEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "answer": {
+            "type": "string"
+          }
+        }
+      },
       "UpVote": {
         "type": "object",
         "properties": {
@@ -3181,12 +3303,12 @@
           "month": {
             "type": "string"
           },
-          "nouveau": {
+          "new": {
             "type": "integer"
           },
           "interaction": {
             "type": "integer"
-          }           
+          }
         }
       },
       "TagReport": {

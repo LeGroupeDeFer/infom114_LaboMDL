@@ -4,11 +4,16 @@ use regex::Regex;
 
 use crate::database::models::prelude::*;
 use crate::database::models::Entity;
+use crate::database::tables::{
+    capabilities_table, roles_capabilities_table, roles_table, users_roles_table,
+};
 
+use crate::database::schema::capabilities::dsl as capabilities;
 use crate::database::schema::users::dsl::{self, users as table};
 
 use crate::database;
 use crate::lib::consequence::*;
+use diesel::dsl::count;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct User {
@@ -63,6 +68,18 @@ impl UserEntity {
                 Error::NotFound => Ok(true),
                 other => Err(other),
             })
+    }
+
+    pub fn count_users(conn: &MysqlConnection, only_active: bool) -> Consequence<u64> {
+        let mut query = table.select(count(dsl::id)).into_boxed();
+
+        if only_active {
+            query = query.filter(dsl::active.eq(only_active));
+        }
+
+        let count = query.first::<i64>(conn).map(|c: i64| c as u64)?;
+
+        Ok(count)
     }
 
     /* --------------------------------------- DYNAMIC ---------------------------------------- */
@@ -166,6 +183,24 @@ impl UserEntity {
         Ok(tab)
     }
 
+    pub fn has_capability(&self, conn: &MysqlConnection, capability: &str) -> bool {
+        table
+            .inner_join(users_roles_table.inner_join(
+                roles_table.inner_join(roles_capabilities_table.inner_join(capabilities_table)),
+            ))
+            .filter(dsl::id.eq(self.id).and(capabilities::name.eq(capability)))
+            .first::<(
+                UserEntity,
+                (
+                    RelUserRoleEntity,
+                    (RoleEntity, (RelRoleCapabilityEntity, CapabilityEntity)),
+                ),
+            )>(conn)
+            .optional()
+            .unwrap_or(None)
+            .is_some()
+    }
+
     /// Validate the fact that the email given
     ///
     /// * is a valid email
@@ -187,17 +222,5 @@ impl UserEntity {
     pub fn check_if_email_is_unamur(email_address: &str) -> bool {
         let re = Regex::new(r"^(.*)@(student\.)?unamur\.be$").unwrap();
         re.is_match(email_address)
-    }
-
-    /// Get the number of active tokens
-    /// Return an u32
-    pub fn get_number_of_active_users(&self, _conn: &MysqlConnection) -> Consequence<u32> {
-        unimplemented!()
-    }
-
-    /// Get the number of users
-    /// Return an u32
-    pub fn get_number_of_users(&self, _conn: &MysqlConnection) -> Consequence<u32> {
-        unimplemented!()
     }
 }

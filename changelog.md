@@ -2,6 +2,15 @@
 
 Summary of implemented features classified by release (github tag)
 
+## [0.4.0] - 2020-05-06
+
+- implement "poll" posts management
+    - database migration
+    - specifications
+    - get post poll information
+    - vote for an answer
+- implement user report route + tests
+
 ## [0.3.1] - 2020-05-02
 
 - fix issue #44 : sort posts by date + tests

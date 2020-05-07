@@ -13,6 +13,7 @@ use rocket_contrib::json::Json;
 
 pub mod auth;
 pub mod capabilities;
+pub mod comments;
 pub mod post;
 pub mod role;
 pub mod roles;
@@ -27,6 +28,7 @@ pub mod reporting;
 pub fn collect() -> Vec<rocket::Route> {
     let auth_routes = auth::collect();
     let capabilities_routes = capabilities::collect();
+    let comments_routes = comments::collect();
     let roles_routes = roles::collect();
     let role_routes = role::collect();
     let tag_routes = tag::collect();
@@ -39,6 +41,7 @@ pub fn collect() -> Vec<rocket::Route> {
         &routes!(version)[..],
         auth_routes.as_ref(),
         capabilities_routes.as_ref(),
+        comments_routes.as_ref(),
         roles_routes.as_ref(),
         role_routes.as_ref(),
         tags_routes.as_ref(),
