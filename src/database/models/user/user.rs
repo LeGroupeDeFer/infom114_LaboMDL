@@ -9,6 +9,7 @@ use crate::database::schema::users::dsl::{self, users as table};
 
 use crate::database;
 use crate::lib::consequence::*;
+use diesel::dsl::count;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct User {
@@ -63,6 +64,18 @@ impl UserEntity {
                 Error::NotFound => Ok(true),
                 other => Err(other),
             })
+    }
+
+    pub fn count_users(conn: &MysqlConnection, only_active: bool) -> Consequence<u64> {
+        let mut query = table.select(count(dsl::id)).into_boxed();
+
+        if only_active {
+            query = query.filter(dsl::active.eq(only_active));
+        }
+
+        let count = query.first::<i64>(conn).map(|c: i64| c as u64)?;
+
+        Ok(count)
     }
 
     /* --------------------------------------- DYNAMIC ---------------------------------------- */
