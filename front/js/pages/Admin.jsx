@@ -29,7 +29,7 @@ import clsx from 'clsx';
 function Admin(props) {
 
   const menuList = ['tags', 'roles', 'users', 'reporting'];
-  const [currentMenu, setCurrentMenu] = useState('reporting');
+  const [currentMenu, setCurrentMenu] = useState('tags');
 
   const Page = () => {
     if (currentMenu === 'tags') {
@@ -143,18 +143,40 @@ const UsersPage = () => {
 const ReportingPage = () => {
 
   const colors = ["#A0C55F", "#0D6759", "#1B4079", "#FC440F"];
-  const [graphData, setGraphData] = useState({connect:[], active:[], tag:[], post:[]});
+  const [graphData, setGraphData] = useState({connect:[], active:[], tag:[], post:[]}); 
+  const [fullMark, setFullMark] = useState([0,50]); //ladder for the radar graph
 
   //API call here
   useEffect(() => {
     fetchData().then( answer => {
-      console.log(answer);
       setGraphData(answer);
-    });
+    }); 
+    // Update every XX seconds the graphs
+    setInterval(() => {
+      console.log('This will run every second!');
+      //Fetching and setting data for the graphs
+      fetchData().then( answer => {
+        setGraphData(answer);
+      });    
+    }, 10000); //Every ten seconds
   }, []);
 
+  //This is where
   const fetchData = async () => {
+    // Fetching Data
+    //User data
     let usersData = await api.users.report();
+    //Tags data
+    let tagsData = await api.tags.report();
+    let max = tagsData.map( tag => {
+      return Math.max(tag.poll, tag.info, tag.idea);
+    })
+    max = Math.max(...max) > 0 ? Math.max(...max) : 1 ;
+    setFullMark( [0, Math.ceil(max/10)*10] );  //Setting the ladder 
+    //Posts data
+    //FIXME - waiting for the backend
+
+    //Transorming data if required
     let connect = [
       {
         name: "Connecté",
@@ -175,50 +197,7 @@ const ReportingPage = () => {
         value: usersData.total - usersData.active
       }
     ];
-    let tag = [
-      {
-        "tag": "Info",
-        "Info": 120,
-        "Idée": 110,
-        "Sondage": 85,
-        "fullMark": 150
-      },
-      {
-        "tag": "Pharma",
-        "Info": 98,
-        "Idée": 130,
-        "Sondage": 56,
-        "fullMark": 150
-      },
-      {
-        "tag": "Droit",
-        "Info": 86,
-        "Idée": 130,
-        "Sondage": 120,
-        "fullMark": 150
-      },
-      {
-        "tag": "Eco",
-        "Info": 99,
-        "Idée": 100,
-        "Sondage": 54,
-        "fullMark": 150
-      },
-      {
-        "tag": "Physics",
-        "Info": 85,
-        "Idée": 90,
-        "Sondage": 67,
-        "fullMark": 150
-      },
-      {
-        "tag": "History",
-        "Info": 65,
-        "Idée": 85,
-        "Sondage": 98,
-        "fullMark": 150
-      }
-    ];
+    let tag = tagsData;
     let post = [
       { name: 'Janvier', nouveau: 20, interaction: 124 },
       { name: 'Février', nouveau: 13, interaction: 40 },
@@ -276,10 +255,10 @@ const ReportingPage = () => {
               <RadarChart outerRadius={90} margin={{ top: 5, right: 30, left: 20, bottom: 5 }} data={graphData.tag}>
                 <PolarGrid />
                 <PolarAngleAxis dataKey="tag" />
-                <PolarRadiusAxis angle={30} domain={[0, 150]} />
-                <Radar name="Informationnels" dataKey="Info" stroke={colors[2]} fill={colors[2]} fillOpacity={0.2} />
-                <Radar name="Proposition d'idée" dataKey="Idée" stroke={colors[1]} fill={colors[1]} fillOpacity={0.4} />
-                <Radar name="Sondages" dataKey="Sondage" stroke={colors[0]} fill={colors[0]} fillOpacity={0.6} />
+                <PolarRadiusAxis angle={30} domain={fullMark} />
+                <Radar name="Informationnels" dataKey="info" stroke={colors[2]} fill={colors[2]} fillOpacity={0.2} />
+                <Radar name="Proposition d'idée" dataKey="idea" stroke={colors[1]} fill={colors[1]} fillOpacity={0.4} />
+                <Radar name="Sondages" dataKey="poll" stroke={colors[0]} fill={colors[0]} fillOpacity={0.6} />
                 <Legend />
               </RadarChart>
             </ResponsiveContainer>
