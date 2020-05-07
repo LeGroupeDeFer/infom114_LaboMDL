@@ -86,15 +86,6 @@ table! {
 }
 
 table! {
-    post_polls (id) {
-        id -> Unsigned<Integer>,
-        post_id -> Unsigned<Integer>,
-        question -> Mediumtext,
-        deadline -> Timestamp,
-    }
-}
-
-table! {
     roles (id) {
         id -> Unsigned<Integer>,
         name -> Varchar,
@@ -192,7 +183,6 @@ joinable!(comments -> users (author_id));
 joinable!(comments_reports -> comments (comment_id));
 joinable!(comments_reports -> users (user_id));
 joinable!(poll_answers -> posts (post_id));
-joinable!(post_polls -> posts (post_id));
 joinable!(posts -> users (author_id));
 joinable!(posts_reports -> posts (post_id));
 joinable!(posts_reports -> users (user_id));
@@ -221,7 +211,6 @@ allow_tables_to_appear_in_same_query!(
     posts,
     posts_reports,
     posts_tags,
-    post_polls,
     roles,
     roles_capabilities,
     tags,

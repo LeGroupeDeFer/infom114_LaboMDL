@@ -15,3 +15,9 @@ pub struct PublicUser {
 
     pub active: bool,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CountUserForm {
+    pub total: u64,
+    pub active: u64,
+}
