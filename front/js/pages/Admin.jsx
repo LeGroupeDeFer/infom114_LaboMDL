@@ -153,7 +153,6 @@ const ReportingPage = () => {
     }); 
     // Update every XX seconds the graphs
     setInterval(() => {
-      console.log('This will run every second!');
       //Fetching and setting data for the graphs
       fetchData().then( answer => {
         setGraphData(answer);
@@ -180,11 +179,11 @@ const ReportingPage = () => {
     let connect = [
       {
         name: "Connecté",
-        value: 43
+        value: usersData.connected
       },
       {
         name: "Déconnecté",
-        value: 236
+        value: usersData.total - usersData.connected
       }
     ];
     let active = [
