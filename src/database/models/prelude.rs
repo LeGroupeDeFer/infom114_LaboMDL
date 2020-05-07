@@ -8,7 +8,7 @@ pub use super::{
         RelUserPollAnswerEntity, ReportData,
     },
     role::{RelRoleCapabilityEntity, Role, RoleData, RoleEntity, RoleMinima},
-    tag::{Tag, TagData, TagEntity, TagMinima},
+    tag::{Tag, TagData, TagEntity, TagMinima, TagReport},
     token::{TokenEntity, TokenMinima},
     user::{
         CountUserForm, PublicUser, RelUserRoleEntity, RelUserRoleMinima, RelUserTagEntity, User,
