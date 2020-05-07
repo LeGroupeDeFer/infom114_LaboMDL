@@ -16,3 +16,10 @@ pub struct ChangeVote {
 pub struct ReportData {
     pub reason: Option<String>,
 }
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+pub struct PostReport {
+    pub month: String,
+    pub new: u64,
+    pub interaction: u64,
+}

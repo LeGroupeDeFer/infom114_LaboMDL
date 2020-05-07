@@ -3,6 +3,7 @@ use crate::database::DBConnection;
 
 use crate::guards::Auth;
 use crate::http::responders::ApiResult;
+use chrono::{Datelike, NaiveDate, NaiveDateTime, NaiveTime};
 use rocket_contrib::json::Json;
 
 pub fn collect() -> Vec<rocket::Route> {
@@ -16,6 +17,7 @@ pub fn get_users_report(conn: DBConnection, auth: Auth) -> ApiResult<CountUserFo
     let response = CountUserForm {
         total: UserEntity::count_users(&*conn, false)?,
         active: UserEntity::count_users(&*conn, true)?,
+        connected: UserEntity::count_connected(&*conn)?,
     };
     Ok(Json(response))
 }
@@ -46,14 +48,17 @@ pub fn get_tags_report(conn: DBConnection, auth: Auth) -> ApiResult<Vec<TagRepor
 
     Ok(Json(tab))
 }
-//
-// #[get("/api/v1/report/posts")]
-// pub fn get_posts_report(_conn: DBConnection) -> ApiResponse {
-//     //let tags = TagEntity::all(&*conn).unwrap();
-//     ApiResponse::new(
-//         Status::Ok,
-//         json!({
-//             "todo" : "TODO"
-//         }),
-//     )
-// }
+
+#[get("/api/v1/report/posts")]
+pub fn get_posts_report(_conn: DBConnection) -> ApiResult<Vec<PostReport>> {
+    for i in 1..=12 {
+        let first_day_of_month = NaiveDateTime::new(
+            NaiveDate::from_ymd(2020, i, 1),
+            NaiveTime::from_hms(0, 0, 0),
+        );
+
+        // j'abandonne jpp
+    }
+
+    unimplemented!()
+}

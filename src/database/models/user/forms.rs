@@ -20,4 +20,5 @@ pub struct PublicUser {
 pub struct CountUserForm {
     pub total: u64,
     pub active: u64,
+    pub connected: u64,
 }
