@@ -11,7 +11,6 @@ pub struct Tag {
 }
 
 impl TagEntity {
-    // by_label :: (MysqlConnection) -> Option<Tag>
     pub fn by_label(conn: &MysqlConnection, label: &str) -> Consequence<Option<Self>> {
         table
             .filter(dsl::label.eq(label))

@@ -8,7 +8,9 @@ use crate::database;
 use crate::database::models::post::{RelPostReportEntity, RelPostReportMinima, RelPostVoteMinima};
 use crate::database::models::prelude::*;
 use crate::database::schema::posts::dsl;
+use crate::database::schema::posts_tags::dsl as posts_tags;
 use crate::database::schema::tags::dsl as tags;
+
 use crate::database::tables::{posts_table as table, posts_tags_table, tags_table};
 use crate::database::SortOrder;
 use crate::lib::{self as conseq, Consequence, EntityError, PostError};
@@ -206,6 +208,16 @@ impl PostEntity {
         Ok(table
             .filter(dsl::deleted_at.is_null().and(dsl::title.eq(title)))
             .load(conn)?)
+    }
+
+    pub fn by_tag(conn: &MysqlConnection, tag_id: &u32) -> Consequence<Vec<Self>> {
+        Ok(table
+            .inner_join(posts_tags_table)
+            .filter(dsl::deleted_at.is_null().and(posts_tags::tag_id.eq(tag_id)))
+            .load::<(Self, RelPostTagEntity)>(conn)?
+            .into_iter()
+            .map(move |(entity, _)| entity)
+            .collect::<Vec<Self>>())
     }
 
     /// Delete a post permanently (not used)
