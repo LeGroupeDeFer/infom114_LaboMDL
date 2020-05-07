@@ -36,6 +36,7 @@ const Preview = ({
   currentFilter,
   showPreviewModal,
   showDeleteModal,
+  showReportModal,
   onClick,
   onTagClick,
   ...others
@@ -64,6 +65,8 @@ const Preview = ({
   const [scoreState, setScoreState] = useState(score);
 
   const deletePost = () => showDeleteModal(id);
+
+  const reportPost = () => showReportModal(id);
 
   return (
     <div className="d-flex">
@@ -104,7 +107,7 @@ const Preview = ({
                   Masquer
                 </Dropdown.Item>
               )}
-              <Dropdown.Item as="button">
+              <Dropdown.Item as="button" onClick={reportPost}>
                 <FaFlag className="mr-2" />
                 Signaler
               </Dropdown.Item>

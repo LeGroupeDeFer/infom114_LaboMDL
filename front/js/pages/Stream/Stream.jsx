@@ -21,7 +21,14 @@ import api from '../../lib/api';
 import DeleteModal from 'unanimity/components/Post/DeleteModal';
 
 // InnerStream :: Object => Component
-function InnerStream({ posts, onClick, showPreview, showDelete, onTagClick }) {
+function InnerStream({
+  posts,
+  onClick,
+  showPreview,
+  showDeleteModal,
+  showReportModal,
+  onTagClick,
+}) {
   return (
     <>
       {posts.map((post) => (
@@ -32,6 +39,7 @@ function InnerStream({ posts, onClick, showPreview, showDelete, onTagClick }) {
               post={post}
               // showPreviewModal={showPreview}
               showDeleteModal={showDelete}
+              showReportModal={showReportModal}
               onTagClick={onTagClick}
             />
           </Col>
@@ -95,8 +103,11 @@ function Stream({ kind, posts, onSort }) {
   const [postModal, setPostModal] = useState(null);
   const [previewModalDisplayed, setPreviewModalDisplayed] = useState(false);
   const [deleteModalDisplayed, setDeleteModalDisplayed] = useState(false);
+  const [reportModalDisplayed, setReportModalDisplayed] = useState(false);
+
   const [showNotification, setShowNotification] = useState(false);
-  const [postToDelete, setPostToDelete] = useState(null);
+  const [notifMsg, setNotifMsg] = useState('');
+  const [postInModal, setPostInModal] = useState(null);
 
   /* Preview modal */
   function hidePreviewModal() {
@@ -112,22 +123,27 @@ function Stream({ kind, posts, onSort }) {
     setPreviewModalDisplayed(true);
   }
 
-  /* Delete modal */
-  const deletePost = () => {
-    setDeleteModalDisplayed(false);
-    api.posts
-      .delete(postToDelete)
-      .then(() => {
-        // setPosts(posts.filter(p => p.id !== postToDelete));
-        toggleNotification();
-        setPostToDelete(null);
-      })
-      .catch((error) => {});
+  const onPostDeleted = () => {
+    setPosts(posts.filter((p) => p.id !== postToDelete));
+    setNotifMsg('Votre post a bien été supprimé');
+    toggleNotification();
+    setPostInModal(null);
+  };
+
+  const onPostReported = () => {
+    setNotifMsg('Votre signalement a été pris en compte');
+    toggleNotification();
+    setPostInModal(null);
   };
 
   const showDeleteModal = (id) => {
     setDeleteModalDisplayed(true);
-    setPostToDelete(id);
+    setPostInModal(id);
+  };
+
+  const showReportModal = (id) => {
+    setReportModalDisplayed(true);
+    setPostInModal(id);
   };
 
   /* Notification */
@@ -181,7 +197,8 @@ function Stream({ kind, posts, onSort }) {
         <InnerStream
           posts={posts}
           onClick={showPreviewModal}
-          showDelete={showDeleteModal}
+          showDeleteModal={showDeleteModal}
+          showReportModal={showReportModal}
           onTagClick={tagClickHandler}
         />
       </Suspense>
@@ -207,7 +224,14 @@ function Stream({ kind, posts, onSort }) {
       <DeleteModal
         modalDisplayed={deleteModalDisplayed}
         setModalDisplayed={setDeleteModalDisplayed}
-        deletePost={deletePost}
+        onPostDeleted={onPostDeleted}
+        postToDelete={postToDelete}
+      />
+      <ReportModal
+        modalDisplayed={reportModalDisplayed}
+        setModalDisplayed={setReportModalDisplayed}
+        PostToReport={postToReport}
+        onPostReported={onPostReported}
       />
       <Toast
         className="notification"
@@ -217,7 +241,7 @@ function Stream({ kind, posts, onSort }) {
         autohide
       >
         <Toast.Header>
-          <strong className="mr-auto"> Votre post a bien été supprimé</strong>
+          <strong className="mr-auto">{notifMsg}</strong>
         </Toast.Header>
       </Toast>
     </Container>
