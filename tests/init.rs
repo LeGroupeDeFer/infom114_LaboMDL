@@ -15,7 +15,6 @@ use unanimitylibrary::lib::{lorem_ipsum, seeds};
 
 use diesel::query_dsl::RunQueryDsl;
 use rocket::http::{ContentType, Header};
-use unanimitylibrary::database::models::post::RelPostReportEntity;
 
 pub const ADMIN_EMAIL: &'static str = "admin@unamur.be";
 pub const ADMIN_PASSWORD: &'static str = "admin";
@@ -88,6 +87,21 @@ pub fn clean() {
     assert_eq!(
         posts_reports_table
             .load::<RelPostReportEntity>(&conn)
+            .unwrap()
+            .len(),
+        0
+    );
+
+    assert_eq!(
+        users_poll_answers_table
+            .load::<RelUserPollAnswerEntity>(&conn)
+            .unwrap()
+            .len(),
+        0
+    );
+    assert_eq!(
+        poll_answers_table
+            .load::<PollAnswerEntity>(&conn)
             .unwrap()
             .len(),
         0
