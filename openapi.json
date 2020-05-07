@@ -2820,10 +2820,7 @@
             "content": {
               "json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
                     "$ref": "#/components/schemas/UserReport"
-                  }
                 }
               }
             }
@@ -3306,7 +3303,7 @@
           "month": {
             "type": "string"
           },
-          "nouveau": {
+          "new": {
             "type": "integer"
           },
           "interaction": {
