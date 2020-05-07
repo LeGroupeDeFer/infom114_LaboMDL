@@ -140,10 +140,29 @@ const UsersPage = () => {
   )
 };
 
-
 const ReportingPage = () => {
 
   const colors = ["#A0C55F", "#0D6759", "#1B4079", "#FC440F"];
+  const [activeUsers, setActiveUsers] = useState([{}]) ;
+
+  //API call here
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const fetchUserData = async () => {
+    let data = await api.users.report();
+    setActiveUsers([
+      {
+        name: "active",
+        value: data.active
+      },
+      {
+        name: "inactive",
+        value: data.total - data.active
+      }
+    ])  
+  };
 
   const userData = [
     {
@@ -225,13 +244,14 @@ const ReportingPage = () => {
             <Card.Subtitle className="mb-2 text-muted">Nombre d'utilsateurs actif et non actif</Card.Subtitle>
             <ResponsiveContainer height={300}>
               <PieChart margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <Pie data={userData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                <Pie data={userData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60}>
                   {
                     userData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={colors[index]} fillOpacity={clsx({0.6: index>0, 1:index==0})} />
                     ))
                   }
                 </Pie>
+                <Pie data={activeUsers} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={70} outerRadius={80} fill="#82ca9d" label />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
