@@ -1,4 +1,4 @@
-import { snake, camel, empty, trace, identity } from './index';
+import { snake, camel, empty, trace, identity, clean } from './index';
 import jwtDecode from 'jwt-decode';
 
 /* istanbul ignore next */
@@ -74,8 +74,9 @@ function api(endpoint, { body, ...providedConfig } = {}) {
   };
 
   let target = `${root}${endpoint}`;
-  if (body && method === 'GET') target = query(target, body);
-  if (body && method === 'POST') config.body = JSON.stringify(snake(body));
+  if (body)
+    if (method === 'GET') target = query(target, clean(body));
+    else config.body = JSON.stringify(snake(clean(body)));
 
   return window
     .fetch(target, config)

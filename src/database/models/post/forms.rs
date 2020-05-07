@@ -1,7 +1,7 @@
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NewPost {
     pub title: String,
-    pub content: String,
+    pub content: Option<String>,
     pub tags: Option<Vec<String>>,
     pub kind: String
 }

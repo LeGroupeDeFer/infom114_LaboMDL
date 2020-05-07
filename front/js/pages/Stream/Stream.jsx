@@ -1,5 +1,5 @@
 import 'regenerator-runtime';
-import React, { Suspense, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Container,
   Row,
@@ -12,30 +12,33 @@ import {
   OverlayTrigger,
   Toast,
 } from 'react-bootstrap';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { MdSort } from 'react-icons/md';
-import { FaSearch, FaTag, FaEdit } from 'react-icons/fa';
-import { useAuth } from '../../context/authContext';
+import { FaTag, FaEdit } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import { Post, SearchBar } from '../../components';
+import { Post } from '../../components';
 import api from '../../lib/api';
 import DeleteModal from 'unanimity/components/Post/DeleteModal';
+import {useStream} from "../../context/streamContext";
+
 
 // InnerStream :: Object => Component
-function InnerStream({ posts, onClick, showPreview, showDelete, onTagClick }) {
+function InnerStream({ onClick, showDelete, onTagClick }) {
+
+  const { posts } = useStream();
+
   return (
     <>
-      {posts.map((post) => (
-        <Row key={post.id} className="mb-4">
-          <Col>
-            <Post.Preview
-              onClick={onClick}
-              post={post}
-              // showPreviewModal={showPreview}
-              showDeleteModal={showDelete}
-              onTagClick={onTagClick}
-            />
-          </Col>
-        </Row>
+      {posts.value.map(post => (
+        <Row key={post.id} className="mb-4"><Col>
+          <Post.Preview
+            onClick={onClick}
+            post={post}
+            // showPreviewModal={showPreview}
+            showDeleteModal={showDelete}
+            onTagClick={onTagClick}
+          />
+        </Col></Row>
       ))}
     </>
   );
@@ -43,7 +46,6 @@ function InnerStream({ posts, onClick, showPreview, showDelete, onTagClick }) {
 
 // SortDropdown :: None => Component
 const SortDropdown = (props) => {
-  const [criteria, setCriteria] = useState('none');
   const [title, setTitle] = useState('Trier par');
 
   return (
@@ -88,9 +90,9 @@ const SortDropdown = (props) => {
 };
 
 // Stream :: None => Component
-function Stream({ kind, posts, onSort }) {
-  const { user, token } = useAuth();
-  const isLogged = !!user;
+function Stream({ kind, onSort }) {
+
+  const stream = useStream();
 
   const [postModal, setPostModal] = useState(null);
   const [previewModalDisplayed, setPreviewModalDisplayed] = useState(false);
@@ -155,7 +157,10 @@ function Stream({ kind, posts, onSort }) {
       {/* Header*/}
       <Row>
         <Col>
-          <h1 className="text-dark stream-header">{kind.label}</h1>
+          <h1 className="text-dark stream-header">
+            <Icon icon={stream.kind.value.icon} className="mr-3" />
+            <span>{stream.kind.value.label}</span>
+          </h1>
           <hr />
         </Col>
       </Row>
@@ -177,14 +182,11 @@ function Stream({ kind, posts, onSort }) {
       </Row>
 
       {/* Posts */}
-      <Suspense fallback={<h3>Chargement des posts...</h3>}>
-        <InnerStream
-          posts={posts}
-          onClick={showPreviewModal}
-          showDelete={showDeleteModal}
-          onTagClick={tagClickHandler}
-        />
-      </Suspense>
+      <InnerStream
+        onClick={showPreviewModal}
+        showDelete={showDeleteModal}
+        onTagClick={tagClickHandler}
+      />
 
       {/* Post modal */}
       <Modal
@@ -196,7 +198,7 @@ function Stream({ kind, posts, onSort }) {
         <Modal.Header closeButton></Modal.Header>
         <Modal.Body>
           {postModal ? (
-            <Post {...postModal} isLogged={isLogged} />
+            <Post {...postModal} />
           ) : (
             'Chargement des données...'
           )}

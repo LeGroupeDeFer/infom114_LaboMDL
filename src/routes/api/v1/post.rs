@@ -43,7 +43,7 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult
     let post_kind: Consequence<PostKind> = PostKind::try_from((&post_request).kind.clone());
     let new_post = PostMinima {
         title: post_request.title,
-        content: post_request.content,
+        content: post_request.content.unwrap_or("".into()),
         author_id: auth.sub,
         kind: post_kind?.into(),
     };
@@ -193,13 +193,13 @@ fn update_post(
     }
 
     // prevent empty title & empty content
-    if a_post.title == "" || a_post.content == "" {
+    if a_post.title == "" {
         Err(EntityError::InvalidAttribute)?;
     }
 
     let mut post = post_guard.post_clone();
     post.title = a_post.title;
-    post.content = a_post.content;
+    post.content = a_post.content.unwrap_or("".into());
 
     post.update(&*conn)?;
 
