@@ -270,11 +270,11 @@ function userReport() {
 }
 
 function tagReport() {
-  return api('/report/users');
+  return api('/report/tags');
 }
 
 function postReport() {
-  return api('/report/users');
+  return api('/report/posts');
 }
 
 api.tags = tags;
