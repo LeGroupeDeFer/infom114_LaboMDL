@@ -9,6 +9,7 @@ Summary of implemented features classified by release (github tag)
     - specifications
     - get post poll information
     - vote for an answer
+- implement user report route + tests
 
 ## [0.3.1] - 2020-05-02
 

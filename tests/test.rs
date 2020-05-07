@@ -17,3 +17,4 @@ mod init;
 mod posts;
 mod roles;
 mod tags;
+mod reports;

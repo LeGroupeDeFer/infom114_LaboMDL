@@ -43,6 +43,10 @@
       "description": "Everything that is related to users"
     },
     {
+      "name": "reporting",
+      "description": "Everything related to stats about the site"
+    },
+    {
       "name": "hollow",
       "description": "Hollow routes that are managed by React"
     }
@@ -2801,56 +2805,83 @@
             "UserAuth": []
           }
         ]
-      },
+      }
+    },
+    "/api/report/users": {
       "get": {
         "tags": [
-          "post", "poll"
+          "user",
+          "reporting"
         ],
-        "summary": "Get poll information (post poll mandatory)",
-        "parameters": [
-          {
-            "name": "post_id",
-            "in": "path",
-            "description": "Id of the post",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
+        "summary": "Return the total number of users and the number of active one",
         "responses": {
           "200": {
             "description": "OK",
             "content": {
-              "application/json": {
+              "json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PollPost"
-                },
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Info"
-                },
-                "example": {
-                  "message": "Invalid ID supplied"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserReport"
+                  }
                 }
               }
             }
-          },
-          "401": {
-            "description": "Unauthorized",
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
+    },
+    "/api/report/posts": {
+      "get": {
+        "tags": [
+          "post",
+          "reporting"
+        ],
+        "summary": "Return the number of posts created per month of the actual year",
+        "responses": {
+          "200": {
+            "description": "OK",
             "content": {
               "json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Info"
-                },
-                "example": {
-                  "message": "User is not authenticated"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PostReport"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
+    },
+    "/api/report/tags": {
+      "get": {
+        "tags": [
+          "tag",
+          "reporting"
+        ],
+        "summary": "Return the number of use of each tag",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TagReport"
+                  }
                 }
               }
             }
@@ -3255,6 +3286,48 @@
         "properties": {
           "reason": {
             "type": "string"
+          }
+        }
+      },
+      "UserReport": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "active": {
+            "type": "integer"
+          }
+        }
+      },
+      "PostReport": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string"
+          },
+          "nouveau": {
+            "type": "integer"
+          },
+          "interaction": {
+            "type": "integer"
+          }
+        }
+      },
+      "TagReport": {
+        "type": "object",
+        "properties": {
+          "tag": {
+            "type": "string"
+          },
+          "info":{
+            "type": "integer"
+          },
+          "idea": {
+            "type": "integer"
+          },
+          "poll": {
+            "type": "integer"
           }
         }
       }

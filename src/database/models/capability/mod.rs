@@ -7,7 +7,7 @@ pub use entity::*;
 pub use forms::*;
 
 /// All the capability of the application
-pub const CAPABILITIES: [&str; 17] = [
+pub const CAPABILITIES: [&str; 18] = [
     "role:manage",
     "user:manage_role",
     "users:view",
@@ -25,4 +25,5 @@ pub const CAPABILITIES: [&str; 17] = [
     "comment:hide",
     "comment:view_hidden",
     "comment:edit_locked",
+    "report:view",
 ];

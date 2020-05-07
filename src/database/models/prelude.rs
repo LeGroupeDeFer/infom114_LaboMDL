@@ -11,8 +11,8 @@ pub use super::{
     tag::{Tag, TagData, TagEntity, TagMinima},
     token::{TokenEntity, TokenMinima},
     user::{
-        PublicUser, RelUserRoleEntity, RelUserRoleMinima, RelUserTagEntity, User, UserEntity,
-        UserMinima, UserRoleData,
+        CountUserForm, PublicUser, RelUserRoleEntity, RelUserRoleMinima, RelUserTagEntity, User,
+        UserEntity, UserMinima, UserRoleData,
     },
     Entity,
 };
