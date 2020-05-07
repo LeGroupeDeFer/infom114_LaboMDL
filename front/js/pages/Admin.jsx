@@ -145,18 +145,28 @@ const ReportingPage = () => {
   const colors = ["#A0C55F", "#0D6759", "#1B4079", "#FC440F"];
   const [graphData, setGraphData] = useState({connect:[], active:[], tag:[], post:[]}); 
   const [fullMark, setFullMark] = useState([0,50]); //ladder for the radar graph
+  const [notification, setNotification] = useState("");
+  const Notification = () => notification === "" ? <></> : <Toast text={notification} />;
 
   //API call here
   useEffect(() => {
-    fetchData().then( answer => {
-      setGraphData(answer);
-    }); 
+    const call = () => {
+      fetchData().then( answer => {
+        setGraphData(answer);
+      }).catch( error => {
+        let reason = error.reason == null ? "La demande n'a pu être traitée" : error.reason;
+        setNotification("");
+        setNotification(reason);
+        console.log(error);
+      }); 
+    };
+
+    call();
+    
     // Update every XX seconds the graphs
     setInterval(() => {
       //Fetching and setting data for the graphs
-      fetchData().then( answer => {
-        setGraphData(answer);
-      });    
+      call();
     }, 10000); //Every ten seconds
   }, []);
 
@@ -216,6 +226,8 @@ const ReportingPage = () => {
   };
 
   return (
+    <>
+    <Notification />
     <Container>
       <Row>
         <Col md={4}>
@@ -231,7 +243,7 @@ const ReportingPage = () => {
                     ))
                   }
                 </Pie>
-                <Pie data={graphData.connect} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={65} outerRadius={85} label>
+                <Pie data={graphData.connect} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={65} outerRadius={80} label>
                   {
                     graphData.connect.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={colors[index+2]} />
@@ -285,6 +297,7 @@ const ReportingPage = () => {
         </Col>
       </Row>
     </Container>
+    </>
   );
 }
 
@@ -475,7 +488,7 @@ const TagsPage = () => {
 
   return (
     <>
-      <Notification />
+      <Notification/>
       <br />
 
       <AddForm add={addTag} />
