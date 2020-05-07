@@ -143,97 +143,99 @@ const UsersPage = () => {
 const ReportingPage = () => {
 
   const colors = ["#A0C55F", "#0D6759", "#1B4079", "#FC440F"];
-  const [activeUsers, setActiveUsers] = useState([{}]) ;
+  const [graphData, setGraphData] = useState({connect:[], active:[], tag:[], post:[]});
 
   //API call here
   useEffect(() => {
-    fetchUserData();
+    fetchData().then( answer => {
+      console.log(answer);
+      setGraphData(answer);
+    });
   }, []);
 
-  const fetchUserData = async () => {
-    let data = await api.users.report();
-    setActiveUsers([
+  const fetchData = async () => {
+    let usersData = await api.users.report();
+    let connect = [
       {
-        name: "active",
-        value: data.active
+        name: "Connecté",
+        value: 43
       },
       {
-        name: "inactive",
-        value: data.total - data.active
+        name: "Déconnecté",
+        value: 236
       }
-    ])  
+    ];
+    let active = [
+      {
+        name: "Compte activé",
+        value: usersData.active
+      },
+      {
+        name: "Compte désactivé",
+        value: usersData.total - usersData.active
+      }
+    ];
+    let tag = [
+      {
+        "tag": "Info",
+        "Info": 120,
+        "Idée": 110,
+        "Sondage": 85,
+        "fullMark": 150
+      },
+      {
+        "tag": "Pharma",
+        "Info": 98,
+        "Idée": 130,
+        "Sondage": 56,
+        "fullMark": 150
+      },
+      {
+        "tag": "Droit",
+        "Info": 86,
+        "Idée": 130,
+        "Sondage": 120,
+        "fullMark": 150
+      },
+      {
+        "tag": "Eco",
+        "Info": 99,
+        "Idée": 100,
+        "Sondage": 54,
+        "fullMark": 150
+      },
+      {
+        "tag": "Physics",
+        "Info": 85,
+        "Idée": 90,
+        "Sondage": 67,
+        "fullMark": 150
+      },
+      {
+        "tag": "History",
+        "Info": 65,
+        "Idée": 85,
+        "Sondage": 98,
+        "fullMark": 150
+      }
+    ];
+    let post = [
+      { name: 'Janvier', nouveau: 20, interaction: 124 },
+      { name: 'Février', nouveau: 13, interaction: 40 },
+      { name: 'Mars', nouveau: 24, interaction: 75 },
+      { name: 'Avril', nouveau: 40, interaction: 150 },
+      { name: 'Mai', nouveau: 5, interaction: 47 },
+      { name: 'Juin', nouveau: 0, interaction: 0 },
+      { name: 'Juillet', nouveau: 0, interaction: 0 },
+      { name: 'Aout', nouveau: 0, interaction: 0 },
+      { name: 'Septembre', nouveau: 0, interaction: 0 },
+      { name: 'Octobre', nouveau: 0, interaction: 0 },
+      { name: 'Novembre', nouveau: 0, interaction: 0 },
+      { name: 'Décembre', nouveau: 0, interaction: 0 }
+    ];
+
+    return {connect, active, tag, post};
   };
-
-  const userData = [
-    {
-      name: "active",
-      value: 43
-    },
-    {
-      name: "inactive",
-      value: 236
-    }
-  ];
-
-  const tagData = [
-    {
-      "tag": "Info",
-      "Info": 120,
-      "Idée": 110,
-      "Sondage": 85,
-      "fullMark": 150
-    },
-    {
-      "tag": "Pharma",
-      "Info": 98,
-      "Idée": 130,
-      "Sondage": 56,
-      "fullMark": 150
-    },
-    {
-      "tag": "Droit",
-      "Info": 86,
-      "Idée": 130,
-      "Sondage": 120,
-      "fullMark": 150
-    },
-    {
-      "tag": "Eco",
-      "Info": 99,
-      "Idée": 100,
-      "Sondage": 54,
-      "fullMark": 150
-    },
-    {
-      "tag": "Physics",
-      "Info": 85,
-      "Idée": 90,
-      "Sondage": 67,
-      "fullMark": 150
-    },
-    {
-      "tag": "History",
-      "Info": 65,
-      "Idée": 85,
-      "Sondage": 98,
-      "fullMark": 150
-    }
-  ]
-
-  const postsData = [
-    { name: 'Janvier', nouveau: 20, interaction: 124 },
-    { name: 'Février', nouveau: 13, interaction: 40 },
-    { name: 'Mars', nouveau: 24, interaction: 75 },
-    { name: 'Avril', nouveau: 40, interaction: 150 },
-    { name: 'Mai', nouveau: 5, interaction: 47 },
-    { name: 'Juin', nouveau: 0, interaction: 0 },
-    { name: 'Juillet', nouveau: 0, interaction: 0 },
-    { name: 'Aout', nouveau: 0, interaction: 0 },
-    { name: 'Septembre', nouveau: 0, interaction: 0 },
-    { name: 'Octobre', nouveau: 0, interaction: 0 },
-    { name: 'Novembre', nouveau: 0, interaction: 0 },
-    { name: 'Décembre', nouveau: 0, interaction: 0 }
-  ];
 
   return (
     <Container>
@@ -244,14 +246,20 @@ const ReportingPage = () => {
             <Card.Subtitle className="mb-2 text-muted">Nombre d'utilsateurs actif et non actif</Card.Subtitle>
             <ResponsiveContainer height={300}>
               <PieChart margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <Pie data={userData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60}>
+                <Pie data={graphData.active} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={55}>
                   {
-                    userData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={colors[index]} fillOpacity={clsx({0.6: index>0, 1:index==0})} />
+                    graphData.active.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={colors[index]} />
                     ))
                   }
                 </Pie>
-                <Pie data={activeUsers} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={70} outerRadius={80} fill="#82ca9d" label />
+                <Pie data={graphData.connect} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={65} outerRadius={85} label>
+                  {
+                    graphData.connect.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={colors[index+2]} />
+                    ))
+                  }
+                </Pie>
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
@@ -265,7 +273,7 @@ const ReportingPage = () => {
             <Card.Title>Tags et leur utilisation</Card.Title>
             <Card.Subtitle className="mb-2 text-muted">Montre le nombre de citation par tag ainsi que le type de post associé</Card.Subtitle>
             <ResponsiveContainer height={300}>
-              <RadarChart outerRadius={90} margin={{ top: 5, right: 30, left: 20, bottom: 5 }} data={tagData}>
+              <RadarChart outerRadius={90} margin={{ top: 5, right: 30, left: 20, bottom: 5 }} data={graphData.tag}>
                 <PolarGrid />
                 <PolarAngleAxis dataKey="tag" />
                 <PolarRadiusAxis angle={30} domain={[0, 150]} />
@@ -285,7 +293,7 @@ const ReportingPage = () => {
             <Card.Title>Postes créés sur l'année</Card.Title>
             <Card.Subtitle className="mb-2 text-muted">Nombre de nouveaux postes depuis le début de l'année, ainsi que l'interaction liée</Card.Subtitle>
             <ResponsiveContainer height={250}>
-              <ComposedChart data={postsData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <ComposedChart data={graphData.post} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <XAxis dataKey="name" />
                 <YAxis />
                 <RechartsTooltip />
