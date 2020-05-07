@@ -263,7 +263,7 @@ const ReportingPage = () => {
         <Col md={12}>
           <Card style={{ padding: '1rem' }}>
             <Card.Title>Postes créés sur l'année</Card.Title>
-            <Card.Subtitle className="mb-2 text-muted">Nombre de nouveaux postes depuis le début de l'année, ainsi que l'interaction lié</Card.Subtitle>
+            <Card.Subtitle className="mb-2 text-muted">Nombre de nouveaux postes depuis le début de l'année, ainsi que l'interaction liée</Card.Subtitle>
             <ResponsiveContainer height={250}>
               <ComposedChart data={postsData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <XAxis dataKey="name" />
