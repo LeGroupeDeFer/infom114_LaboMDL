@@ -62,14 +62,14 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult
 
 // typo on tape is intentional : `type` is a rust reserved keyword
 #[get(
-    "/api/v1/posts?<tags>&<search>&<sort>&<kind>&<limit>&<offset>",
+    "/api/v1/posts?<tags>&<keywords>&<sort>&<kind>&<limit>&<offset>",
     rank = 1
 )]
 fn get_all_posts_authenticated(
     conn: DBConnection,
     auth: ForwardAuth,
     tags: StringVector,
-    search: Option<String>,
+    keywords: StringVector,
     sort: Option<String>,
     kind: Option<String>, // type
     limit: Option<u32>,
@@ -84,7 +84,7 @@ fn get_all_posts_authenticated(
         &*conn,
         auth.deref().has_capability(&*conn, "post:view_hidden"),
         (*tags).clone(),
-        search,
+        (*keywords).clone(),
         sort_order,
         kind,
         limit,
@@ -100,13 +100,13 @@ fn get_all_posts_authenticated(
 }
 
 #[get(
-    "/api/v1/posts?<tags>&<search>&<sort>&<kind>&<limit>&<offset>",
+    "/api/v1/posts?<tags>&<keywords>&<sort>&<kind>&<limit>&<offset>",
     rank = 2
 )]
 fn get_all_posts(
     conn: DBConnection,
     tags: StringVector,
-    search: Option<String>,
+    keywords: StringVector,
     sort: Option<String>,
     kind: Option<String>, // type
     limit: Option<u32>,
@@ -117,7 +117,7 @@ fn get_all_posts(
         sort_order = Some(SortOrder::try_from(value.as_ref())?)
     }
     Ok(Json(Post::all(
-        &*conn, false, (*tags).clone(), search, sort_order, kind, limit, offset,
+        &*conn, false, (*tags).clone(), (*keywords).clone(), sort_order, kind, limit, offset,
     )?))
 }
 

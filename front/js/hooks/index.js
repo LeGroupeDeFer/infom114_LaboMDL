@@ -80,3 +80,16 @@ export function useWindowResize(debounceTimer = 250) {
 
   return { width, height };
 }
+
+export function useEffectQueue() {
+
+  const [queue, setQueue] = useState([]);
+
+  usePositiveEffect(() => {
+    const cleanup = queue.map(([p, res, rej]) => subscribed(p, res, rej));
+    setQueue([]);
+    return () => cleanup.map(cleanup => cleanup());
+  }, queue);
+
+  return effect => setQueue(oldQueue => ([...oldQueue, effect]));
+}

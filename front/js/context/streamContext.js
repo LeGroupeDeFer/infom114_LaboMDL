@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { subscribed } from 'unanimity/hooks';
+import { useEffectQueue } from 'unanimity/hooks';
 import { KIND, ORDER, kinds, orders, api, printerr, trace } from "unanimity/lib";
 import { isEqual, remove, without } from 'lodash';
 
@@ -49,7 +49,7 @@ const query = state => ({
 
 export function StreamProvider({ children }) {
 
-  const [effectQueue, setEffectQueue] = useState([]);
+  const pushEffect = useEffectQueue();
 
   // Don't move the methods ouf the state, as this is a context, any change to
   // the values given to children will provoke a rerender, the best way to
@@ -137,33 +137,14 @@ export function StreamProvider({ children }) {
     }
   });
 
-  const pushEffect = effect => setEffectQueue(effects => [ ...effects, effect ]);
-
-  useEffect(
-    () => {
-      pushEffect([
-        api.posts.where(query(state)),
-        posts => setState(state => ({
-          ...state,
-          posts: { ...state.posts, value: posts }
-        })),
-        printerr // TODO
-      ])
-    },
-    // Watch every query component
-    [state.kind.value, state.order.value, state.tags.value, state.keywords.value]
-  );
-
-  /* Effect queue handling */
-  useEffect(() => {
-    if (!effectQueue.length)
-      return;
-
-    const cleanup = effectQueue.map(([p, res, rej]) => subscribed(p, res, rej));
-    setEffectQueue([]);
-
-    return () => cleanup.map(effectCleanup => effectCleanup());
-  }, [effectQueue]);
+  useEffect(() => pushEffect([
+    api.posts.where(query(state)),
+    posts => setState(state => ({
+      ...state,
+      posts: { ...state.posts, value: posts }
+    })),
+    printerr // TODO
+  ]), [state.kind.value, state.order.value, state.tags.value, state.keywords.value]);
 
   /* Get the tags on first mount */
   useEffect(() => pushEffect([

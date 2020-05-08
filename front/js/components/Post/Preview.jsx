@@ -59,7 +59,7 @@ const Preview = ({
   } = post;
 
   let vote = ['down', 'no', 'up'][userVote + 1];
-  let owner = user == null ? false : author.id == user.id;
+  let owner = isLogged && author.id === user.id;
   const [voted, setVoted] = useState(vote);
   const [scoreState, setScoreState] = useState(score);
 

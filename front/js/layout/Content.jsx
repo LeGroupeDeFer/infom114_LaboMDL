@@ -1,13 +1,6 @@
-import React, { useRef, useState, useEffect, lazy, Suspense } from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Route, Switch, useLocation } from 'react-router-dom';
-import {
-  faUserCircle,
-  faCogs,
-  faInfoCircle,
-  faStream,
-  faBell,
-  faPencilAlt,
-} from '@fortawesome/free-solid-svg-icons';
+import Spinner from 'react-bootstrap/Spinner';
 import Sidebar from './Sidebar';
 import layout from '../lib/layout';
 import { useAuth } from '../context/authContext';
@@ -26,6 +19,19 @@ const Recover = lazy(() => import('../pages/Recover'));
 const Restore = lazy(() => import('../pages/Restore'));
 
 // Content :: Object => Component
+
+function LocalSpinner() {
+  return (
+    <div className="abs-center">
+      <Spinner
+        animation="border"
+        variant="primary"
+        role="status"
+      />
+    </div>
+  );
+}
+
 const Content = (_) => {
   const location = useLocation();
   const { user } = useAuth();
@@ -40,7 +46,7 @@ const Content = (_) => {
       <div className={`offset ${layoutStyle}`}>
         <main role="main">
           <div className="content">
-            <Suspense fallback={<h1>Loading...</h1>}>
+            <Suspense fallback={<LocalSpinner />}>
               <Switch>
                 <Route path="/profile">
                   <Profile />

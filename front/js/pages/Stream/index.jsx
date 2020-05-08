@@ -43,7 +43,6 @@ function KindSection() {
 // StreamContent :: None => Component
 function StreamContent() {
 
-  /* Fetch tags TODO MOVE IN STREAM CONTEXT */
   const { path } = useRouteMatch();
 
   return (

@@ -120,7 +120,7 @@ impl PostEntity {
         conn: &MysqlConnection,
         can_see_hidden: bool,
         tags: Vec<String>,
-        search: Option<String>,
+        keywords: Vec<String>,
         sort: Option<SortOrder>,
         kind: Option<String>, // type
         limit: Option<u32>,
@@ -139,13 +139,16 @@ impl PostEntity {
         }
 
         // filter on tag
-        if !tags.is_empty() {
-            query = query.filter(tags::label.eq_any(tags));
+        for tag in tags {
+            query = query.filter(tags::label.eq(tag));
         }
 
         // filter on the search term given (in title)
-        if let Some(s) = search {
-            query = query.filter(dsl::title.like(format!("%{}%", s)));
+        for keyword in  keywords {
+            query = query.filter(
+                dsl::title.like(format!("%{}%", keyword))
+                    .or(dsl::content.like(format!("%{}%", keyword)))
+            );
         }
 
         // order by
@@ -340,14 +343,14 @@ impl Post {
         conn: &MysqlConnection,
         can_see_hidden: bool,
         tags: Vec<String>,
-        search: Option<String>,
+        keywords: Vec<String>,
         sort: Option<SortOrder>,
         kind: Option<String>, // type
         limit: Option<u32>,
         offset: Option<u32>,
     ) -> Consequence<Vec<Self>> {
         let entities =
-            PostEntity::get_all(conn, can_see_hidden, tags, search, sort, kind, limit, offset)?;
+            PostEntity::get_all(conn, can_see_hidden, tags, keywords, sort, kind, limit, offset)?;
         let posts = entities
             .into_iter()
             .map(move |post_entity| Post::from(post_entity))

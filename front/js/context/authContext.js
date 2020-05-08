@@ -3,100 +3,89 @@ import React, {
   useContext,
   useEffect,
   useState,
-  useLayoutEffect,
   useDebugValue
 } from 'react';
 import api from '../lib/api';
 import jwtDecode from 'jwt-decode';
+import { printerr } from 'unanimity/lib';
+import { useEffectQueue } from 'unanimity/hooks';
+import {usePositiveEffect} from "../hooks";
 
 class AuthError extends Error { }
-const AuthContext = createContext();
-const store = window.localStorage;
+const AuthContext = createContext(null);
 
-
+let i = 0;
 export function AuthProvider({ children }) {
+    /* Internal state */
+  const pushEffect = useEffectQueue();
+  const [state, setState] = useState({
+    user: null,
+    token: null,
 
-  /* Internal state */
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [request, setRequest] = useState(null);
+    login(email, password) {
+      if (this.user !== null)
+        throw new AuthError('User already connected');
+      const promise = api.auth.login(email, password);
+      pushEffect([
+        promise,
+        data => setState(state => ({
+            ...state,
+            user: data.user,
+            token: jwtDecode(data.accessToken)
+        })) || data,
+        printerr // TODO
+      ]);
+      return promise;
+    },
 
+    logout() {
+      const promise = api.auth.logout();
+      pushEffect([
+        promise,
+        setState(state => ({ ...state, user: null, token: null })),
+        printerr
+      ]);
+      return promise;
+    },
 
-  function login(email, password) {
-    if (user !== null)
-      throw new AuthError('User already connected');
-    let promise = api.auth.login(email, password);
-    setRequest({ type: 'login', promise });
-    return promise;
-  }
+    register(newUser) {
+      if (this.user !== null)
+        throw new AuthError('User already connected');
+      return api.auth.register(newUser);
+    }
 
-  function logout() {
-    let promise = api.auth.logout();
-    setRequest({ type: 'logout', promise });
-    return promise;
-  }
+  })
 
-  function register(newUser) {
-    if (user !== null)
-      throw new AuthError('User already connected');
-    return api.auth.register(newUser);
-  }
-
-
-  useEffect(() => {
-    if (!api.auth.session())
-      return;
-    const promise = api.auth.refresh();
-    setRequest({ type: 'refresh', promise });
-  }, []);
-
-  // Promises handling
-  useEffect(() => {
-    if (!request)
-      return;
-
-    let isSubscribed = true;
-    const { promise, type } = request;
-
-    promise.then(data => {
-      if (!isSubscribed)
-        return;
-
-      if (['login', 'refresh'].includes(type))
-        setUser(data.user) || setToken(jwtDecode(data.accessToken));
-
-      else if ('logout' == type)
-        setUser(null) || setToken(null);
-
-      setRequest(null);
-    });
-
-    return () => isSubscribed = false;
-  }, [request]);
+  useEffect(() => api.auth.session() && pushEffect([
+    api.auth.refresh(),
+    data => setState(state => ({
+      ...state,
+      user: data.user,
+      token: jwtDecode(data.accessToken)
+    })) || data,
+    setState(state => ({ ...state, user: null, token: null })) // TODO
+  ]), []);
 
   // Refresh loop
-  useEffect(() => {
-    if (!token)
-      return;
+  usePositiveEffect(() => {
+    const expiration = new Date(state.token.exp * 1000);
+    const now = new Date();
 
-    let expiration = new Date(token.exp * 1000);
-    let now = new Date();
-    let timeout = expiration - now;
+    setTimeout(() => pushEffect([
+      api.auth.refresh(),
+      data => setState(state => ({
+        ...state,
+        user: data.user,
+        token: jwtDecode(data.accessToken)
+      })),
+      () => setState(state => ({ ...state, user: null, token: null }))
+    ]), expiration - now);
+  }, [state.token]);
 
-    setTimeout(() => {
-      let promise = api.auth.refresh().catch(
-        () => { setUser(null); setToken(null); }
-      );
-      setRequest({ type: 'refresh', promise });
-    }, timeout);
-  }, [token]);
-
-
-  useDebugValue(user ? 'Connected' : 'Anonymous');
-
+  useDebugValue(state.user ? 'Connected' : 'Anonymous');
 
   return (
-    <AuthContext.Provider value={{ login, logout, register, user, token }}>
+    <AuthContext.Provider value={state}>
       {children}
     </AuthContext.Provider>
   );
