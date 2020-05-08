@@ -2,7 +2,7 @@ import React, { Suspense, useState } from 'react';
 import Container from 'react-bootstrap/Container';
 import usePromise from 'react-promise-suspense';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '../../context/authContext';
+import { useAuth } from '../../context';
 import { Post } from '../../components';
 import api from '../../lib/api';
 import Card from 'react-bootstrap/Card';

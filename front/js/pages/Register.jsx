@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight, faExclamationCircle, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { Container, Row, Col, Form } from 'react-bootstrap';
-import { Link, useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import { AutoForm, Flexbox, Image, Unauthenticated } from '../components';
-import { useAuth } from '../context/authContext';
 import { useAction } from '../hooks';
-import { api, trace, debounce, tee, aggregate } from '../lib';
+import { api, tee, aggregate } from '../lib';
 import { isUnamurEmail, isValidNatural, isValidPassword, isValidPhoneNumber } from '../lib/validators';
 
 

@@ -7,23 +7,21 @@ import React, {
 } from 'react';
 import api from '../lib/api';
 import jwtDecode from 'jwt-decode';
-import { printerr } from 'unanimity/lib';
-import { useEffectQueue } from 'unanimity/hooks';
-import {usePositiveEffect} from "../hooks";
+import { useEffectQueue, usePositiveEffect } from 'unanimity/hooks';
 
 class AuthError extends Error { }
 const AuthContext = createContext(null);
 
-let i = 0;
 export function AuthProvider({ children }) {
-    /* Internal state */
+  /* Internal state */
   const pushEffect = useEffectQueue();
   const [state, setState] = useState({
     user: null,
     token: null,
+    error: null,
 
     login(email, password) {
-      if (this.user !== null)
+      if (state.user !== null)
         throw new AuthError('User already connected');
       const promise = api.auth.login(email, password);
       pushEffect([
@@ -33,7 +31,7 @@ export function AuthProvider({ children }) {
             user: data.user,
             token: jwtDecode(data.accessToken)
         })) || data,
-        printerr // TODO
+        error => setState(state => ({ ...state, error }))
       ]);
       return promise;
     },
@@ -43,7 +41,7 @@ export function AuthProvider({ children }) {
       pushEffect([
         promise,
         setState(state => ({ ...state, user: null, token: null })),
-        printerr
+        error => setState(state => ({ ...state, error }))
       ]);
       return promise;
     },
@@ -63,8 +61,8 @@ export function AuthProvider({ children }) {
       user: data.user,
       token: jwtDecode(data.accessToken)
     })) || data,
-    setState(state => ({ ...state, user: null, token: null })) // TODO
-  ]), []);
+    error => setState(state => ({ ...state, error, user: null, token: null }))
+  ]) || undefined, []);
 
   // Refresh loop
   usePositiveEffect(() => {
@@ -78,8 +76,9 @@ export function AuthProvider({ children }) {
         user: data.user,
         token: jwtDecode(data.accessToken)
       })),
-      () => setState(state => ({ ...state, user: null, token: null }))
+      error => setState(state => ({ ...state, error, user: null, token: null }))
     ]), expiration - now);
+
   }, [state.token]);
 
   useDebugValue(state.user ? 'Connected' : 'Anonymous');

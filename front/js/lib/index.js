@@ -55,7 +55,16 @@ const KIND = Object.freeze({
 
 const kinds = Object.values(KIND);
 const kindOf = key =>
-  head(Object.keys(KIND).map(k => KIND[k]).filter((k) => k.key === key));
+  head(Object.keys(KIND).map(k => KIND[k]).filter(k => k.key === key));
+
+const VOTE = Object.freeze({
+  DOWN: -1,
+  NONE: 0,
+  UP: 1,
+});
+
+const voteOf =
+    v => head(Object.keys(VOTE).map(k => VOTE[k]).filter(vote => vote === v));
 
 /* ------------------------------- I/O utils ------------------------------- */
 
@@ -318,6 +327,8 @@ export {
   KIND,
   kinds,
   kindOf,
+  VOTE,
+  voteOf,
 
   println,
   printerr,

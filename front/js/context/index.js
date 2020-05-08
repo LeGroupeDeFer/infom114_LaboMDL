@@ -1,6 +1,2 @@
-import { AuthProvider, useAuth } from './authContext';
-
-export default {
-  AuthProvider,
-  useAuth
-};
+export { AuthProvider, useAuth } from './authContext';
+export { StreamProvider, useStream } from './streamContext';

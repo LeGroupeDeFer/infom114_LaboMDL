@@ -3,7 +3,7 @@ import { Route, Switch, useLocation } from 'react-router-dom';
 import Spinner from 'react-bootstrap/Spinner';
 import Sidebar from './Sidebar';
 import layout from '../lib/layout';
-import { useAuth } from '../context/authContext';
+import { useAuth } from '../context';
 
 const Stream = lazy(() => import('../pages/Stream/index'));
 const Profile = lazy(() => import('../pages/Profile'));

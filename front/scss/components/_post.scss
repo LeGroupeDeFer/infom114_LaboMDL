@@ -4,3 +4,104 @@
 .title-part2 {
     font-size: 0.95rem;
 }
+
+
+/*  Posts */
+
+.vote {
+    padding: 0 0 0 0;
+    border: none;
+    background-color: transparent !important;
+
+    &:disabled {
+        cursor: not-allowed;
+    }
+
+    &.up:hover, &.up:focus, &.up.active {
+        color: theme-color("primary") !important;;
+    }
+
+    &.down:hover, &.down:focus, &.down.active {
+        color: theme-color("danger") !important;;
+    }
+}
+
+.post-info {
+    color: $white;
+    background-color: theme-color("info");
+}
+
+.post-idea {
+    color: $white;
+    background-color: #db894d;
+}
+
+.post-poll {
+    color: $white;
+    background-color: #c15ad0;
+}
+
+.post .text-muted {
+    font-size: .85rem;
+}
+
+.post .card-header {
+    padding-left: 0.5rem !important;
+}
+
+
+.vote-section {
+    padding: 1rem 0.84rem 0 0.84rem;
+
+    background-color: rgba(0, 0, 0, 0.03);
+    border-right: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.post-footer-btn {
+    cursor: pointer;
+    color: gray("800");
+}
+
+.post {
+    .more.show {
+        visibility: visible;
+    }
+
+    .more {
+        visibility: hidden;
+    }
+
+    .more .dropdown-toggle {
+        padding: 0 0 0 0;
+    }
+
+    &:hover {
+        &.preview {
+            border-color: theme-color("primary");
+            cursor: pointer;
+        }
+
+        .more {
+            visibility: visible;
+        }
+    }
+
+    .card-header {
+        padding: 0.7rem 1.25rem 0.4rem 1.25rem;
+    }
+
+    .more .dropdown-toggle:after {
+        content: none
+    }
+
+    &:not(.preview) {
+        &, .card-header, .card-body, .vote-section {
+            background-color: transparent;
+            border: none;
+        }
+    }
+}
+
+.tag {
+    font-size: 0.9em;
+}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../context/authContext';
+import { useAuth } from '../context';
 import { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { Authenticated } from '../components';

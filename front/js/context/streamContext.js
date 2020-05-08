@@ -79,6 +79,29 @@ export function StreamProvider({ children }) {
           })),
           printerr // TODO
         ]);
+      },
+      vote(post, vote) {
+        const promise = api.posts.vote(post.id, vote);
+        pushEffect([
+          promise,
+          post => setState(state => ({
+            ...state,
+            posts: { ...this, value: this.value.map(p => p.id === post.id ? post : p) }
+          })) || post,
+          printerr // TODO
+        ])
+      },
+      comment(comment) {
+        trace('TODO - COMMENT');
+        return Promise.resolve(comment);
+      },
+      flag(post) {
+        trace('TODO - FLAG');
+        return Promise.resolve(post);
+      },
+      hide(post) {
+        trace('TODO - HIDE');
+        return Promise.resolve(post);
       }
     },
 
@@ -115,9 +138,12 @@ export function StreamProvider({ children }) {
         if (!this.value.includes(tag))
           return;
         const tags = without(this.value, tag);
-        trace(tags);
         setState(state => ({ ...state, tags: { ...this, value: tags } }));
       },
+      set(tag) {
+        const tags = (tag instanceof Array) ? tag : [tag];
+        setState(state => ({ ...state, tags: { ...this, value: tags } }));
+      }
     },
 
     keywords: {

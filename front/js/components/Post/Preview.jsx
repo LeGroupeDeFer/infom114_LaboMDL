@@ -1,217 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Moment from 'react-moment';
-import { dev, preview } from '../../lib';
-import { Badge, Card, Dropdown, DropdownButton } from 'react-bootstrap';
-import { DownVote, UpVote } from './Vote';
-import { MdModeComment, MdReport } from 'react-icons/md';
+import { Container, Row, Col, Badge, Card, Dropdown, DropdownButton } from 'react-bootstrap';
+import { MdModeComment } from 'react-icons/md';
 import {
-  FaTag,
-  FaFacebookSquare,
-  FaEllipsisH,
-  FaEyeSlash,
-  FaFlag,
-  FaTrashAlt,
-  FaLock,
-  FaEdit,
+  FaTag, FaFacebookSquare, FaEllipsisH, FaEyeSlash, FaFlag, FaTrashAlt, FaLock
 } from 'react-icons/fa';
-import clsx from 'clsx';
-import { FacebookShareButton } from 'react-share';
-import { useAuth } from 'unanimity/context/authContext';
 
-function getDisplayedKind(kind) {
-  switch (kind) {
-    case 'info':
-      return 'Information';
-    case 'poll':
-      return 'Sondage';
-    case 'idea':
-      return 'Idée';
-  }
-}
+import { preview } from 'unanimity/lib';
+import { FacebookShareButton } from 'react-share';
+import { useAuth } from 'unanimity/context';
+import { May } from "../Auth";
+import { VoteSection } from './Vote';
+import {PostContent, PostFooter, PostHeader} from './index';
 
 const Preview = ({
-  post,
-  previewLength,
-  currentFilter,
-  showPreviewModal,
-  showDeleteModal,
-  onClick,
-  onTagClick,
-  ...others
+  post, previewLength, onVote, onFlag, onDelete, onHide, onTag, onLock,
+  onPreview, ...others
 }) => {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const isLogged = !!user;
-  let caps;
-  token != null ? (caps = token.cap) : (caps = []);
 
-  const {
-    id,
-    title,
-    content,
-    author,
-    score,
-    kind,
-    createdAt,
-    comments,
-    tags,
-    userVote,
-  } = post;
+  const localOnPreview = e => e.target.classList.contains('expand-preview')
+    ? onPreview(post)
+    : null;
 
-  let vote = ['down', 'no', 'up'][userVote + 1];
-  let owner = isLogged && author.id === user.id;
-  const [voted, setVoted] = useState(vote);
-  const [scoreState, setScoreState] = useState(score);
-
-  const deletePost = () => showDeleteModal(id);
+  const owner = isLogged && author.id === user.id;
 
   return (
-    <div className="d-flex">
-      <Card {...others} className="post" onClick={() => onClick(id)} id={id}>
-        <Card.Header>
-          <h5>
-            <Badge className={`post-${kind} mr-2`}>
-              {getDisplayedKind(kind)}
-            </Badge>
-            <span className="mr-2">{title}</span>
+    <Card {...others} className="post expand-preview" onClick={localOnPreview} id={id}>
+      <Card.Header>
+        <PostHeader
+         {...post}
+         owner={owner}
+         onHide={onHide}
+         onFlag={onFlag}
+         onDelete={onDelete}
+         onLock={onLock}
+       />
+      </Card.Header>
 
-            <span className="text-muted">
-              {' '}
-              <a href="#" className="text-dark">
-                {author.firstname}
-                {'  '}
-                {author.lastname}
-              </a>{' '}
-              -{' '}
-              <Moment locale="fr" fromNow>
-                {createdAt}
-              </Moment>
-            </span>
-
-            <DropdownButton
-              title={
-                <span>
-                  <FaEllipsisH />
-                </span>
-              }
-              variant="link"
-              className="float-right more btn-link"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {caps.some((e) => e.name === 'post:hide') && (
-                <Dropdown.Item as="button">
-                  <FaEyeSlash className="mr-2" />
-                  Masquer
-                </Dropdown.Item>
-              )}
-              <Dropdown.Item as="button">
-                <FaFlag className="mr-2" />
-                Signaler
-              </Dropdown.Item>
-              {/* {owner && (
-                <Dropdown.Item as="button">
-                  <FaEdit className="mr-2" />
-                  Modifier
-                </Dropdown.Item>
-              )} */}
-
-              {owner && (
-                <Dropdown.Item as="button" onClick={deletePost}>
-                  <FaTrashAlt className="mr-2" />
-                  Supprimer
-                </Dropdown.Item>
-              )}
-
-              {caps.some((e) => e.name === 'post:lock') && (
-                <Dropdown.Item as="button">
-                  <FaLock className="mr-2" />
-                  Vérouiller
-                </Dropdown.Item>
-              )}
-            </DropdownButton>
-          </h5>
-        </Card.Header>
-
-        <Card.Body className="p-0">
-          <div className="d-flex">
-            <div className="vote-section">
-              <UpVote
-                isLogged={isLogged}
-                voted={voted}
-                set_vote={setVoted}
-                score={scoreState}
-                set_score={setScoreState}
-                post_id={id}
-              />
-              <div
-                className={`text-center ${clsx(
-                  voted !== 'no' && voted + '-voted'
-                )}`}
-              >
-                <b>{scoreState}</b>
-              </div>
-
-              <DownVote
-                isLogged={isLogged}
-                voted={voted}
-                set_vote={setVoted}
-                score={scoreState}
-                set_score={setScoreState}
-                post_id={id}
-              />
-            </div>
-
-            <div className="px-3 pb-3 pt-2">
-              <div className="mb-1">
-                {tags.map((tag, index) => {
-                  return (
-                    <a
-                      href="#"
-                      className="mr-2 tag"
-                      onClick={(e) => onTagClick(e)}
-                      value={tag}
-                      key={index}
-                    >
-                      <FaTag className="mr-1" />
-                      {tag}
-                    </a>
-                  );
-                })}
-              </div>
-
-              <Card.Text>
-                {preview(content, previewLength)}{' '}
-                <Link to={'/detail/' + id}>Lire la suite</Link>
-              </Card.Text>
-
-              <Link
-                to={'/detail/' + id}
-                className="post-footer-btn mr-2"
-                href="#"
-              >
-                <MdModeComment size="1.25em" className="mr-1" />
-                <span className="text-muted">
-                  {comments.length}{' '}
-                  {comments.length <= 1 ? 'commentaire' : 'commentaires'}
-                </span>
-              </Link>
-
-              <FacebookShareButton
-                url={'https://unanimity.be/detail/' + id}
-                quote={title + ' - ' + author.firstname + ' ' + author.lastname}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <a className="post-footer-btn mr-2" href="#">
-                  <FaFacebookSquare size="1.25em" className="mr-1" />
-                  <span className="text-muted">Partager</span>
-                </a>
-              </FacebookShareButton>
-            </div>
+      <Card.Body className="p-0 expand-preview">
+        <div className="d-flex expand-preview">
+          <VoteSection onVote={onVote} score={score} isLogged={isLogged} /> { /* TODO VOTE */}
+          <div className="px-3 pb-3 pt-2">
+            <PostTags />
+            <Card.Text><PostContent preview={true} /></Card.Text>
+            <PostFooter />
           </div>
-        </Card.Body>
-      </Card>
-    </div>
+        </div>
+      </Card.Body>
+    </Card>
   );
 };
+
 
 export default Preview;

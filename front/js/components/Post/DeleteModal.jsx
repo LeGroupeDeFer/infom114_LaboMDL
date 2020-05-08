@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
-import api from '../../lib/api';
 
-function DeleteModal({ modalDisplayed, setModalDisplayed, deletePost }) {
-  const hideModal = () => setModalDisplayed(false)
+
+export default function DeleteModal({ post, show, onHide, onDelete }) {
 
   return (
     <Modal
       className="modal-delete"
-      show={modalDisplayed}
-      onHide={hideModal}
+      show={show}
+      onHide={onHide}
       centered
     >
       <Modal.Header closeButton>
@@ -26,14 +25,14 @@ function DeleteModal({ modalDisplayed, setModalDisplayed, deletePost }) {
           <Button
             variant="light"
             className="mt-1 mr-2"
-            onClick={hideModal}
+            onClick={onHide}
           >
             Annuler
           </Button>
           <Button
             variant="danger"
             className=" mt-1"
-            onClick={deletePost}
+            onClick={() => onDelete(post)}
           >
             Supprimer
           </Button>
@@ -42,6 +41,3 @@ function DeleteModal({ modalDisplayed, setModalDisplayed, deletePost }) {
     </Modal>
   );
 }
-
-
-export default DeleteModal;

@@ -1,45 +1,95 @@
 import 'regenerator-runtime';
+
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
-  Container,
-  Row,
-  Col,
-  Button,
-  Modal,
-  Dropdown,
-  DropdownButton,
-  Tooltip,
-  OverlayTrigger,
-  Toast,
+  Container, Row, Col, Button, Modal, Dropdown, DropdownButton, Tooltip,
+  OverlayTrigger, Toast,
 } from 'react-bootstrap';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { MdSort } from 'react-icons/md';
 import { FaTag, FaEdit } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
-import { Post } from '../../components';
-import api from '../../lib/api';
-import DeleteModal from 'unanimity/components/Post/DeleteModal';
-import {useStream} from "../../context/streamContext";
+import { useStream } from 'unanimity/context/streamContext';
+import { api, trace } from 'unanimity/lib';
+import Post from 'unanimity/components/Post';
 
 
 // InnerStream :: Object => Component
-function InnerStream({ onClick, showDelete, onTagClick }) {
+function InnerStream() {
+  const stream = useStream();
 
-  const { posts } = useStream();
+  const [previewModal, setPreviewModal] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [toast, setToast] = useState(false);
+
+  const onFlag = post => stream.posts.flag(post);
+  const onHide = post => stream.posts.hide(post);
+  const onVote = (post, vote) => stream.posts.vote(trace(post), trace(vote));
+  const onTag = tag => stream.tags.set(tag);
+
+  const onPreview = post => setPreviewModal(post);
+  const onDelete = post => setDeleteModal(post);
+  const onDeleteConfirmation =
+      post => stream.posts.delete(post).then(() => setToast(true));
 
   return (
     <>
-      {posts.value.map(post => (
+      {stream.posts.value.map(post => (
         <Row key={post.id} className="mb-4"><Col>
-          <Post.Preview
-            onClick={onClick}
+          <Post
+            isPreview
             post={post}
-            // showPreviewModal={showPreview}
-            showDeleteModal={showDelete}
-            onTagClick={onTagClick}
+            onDelete={onDelete}
+            onFlag={onFlag}
+            onHide={onHide}
+            onVote={vote => onVote(post, vote)}
+            onPreview={onPreview}
+            onTag={onTag}
           />
         </Col></Row>
       ))}
+
+      {/* Preview modal */}
+      <Modal
+        id="preview-modal"
+        show={!!previewModal}
+        onHide={() => setPreviewModal(false)}
+        dialogClassName="modal-80w"
+      >
+        <Modal.Header closeButton />
+        <Modal.Body>
+          {previewModal && (
+            <Post
+              post={previewModal}
+              onDelete={onDelete}
+              onFlag={onFlag}
+              onHide={onHide}
+              onVote={vote => onVote(post, vote)}
+              onPreview={onPreview}
+              onTag={onTag}
+            />
+          )}
+        </Modal.Body>
+      </Modal>
+
+      {/* Delete post modal */}
+      <Post.Delete
+        show={!!deleteModal}
+        onHide={() => setDeleteModal(false)}
+        onDelete={onDeleteConfirmation}
+      />
+
+      <Toast
+        className="notification"
+        show={toast}
+        onClose={() => setToast(false)}
+        delay={4000}
+        autohide
+      >
+        <Toast.Header>
+          <strong className="mr-auto"> Votre post a bien été supprimé</strong>
+        </Toast.Header>
+      </Toast>
     </>
   );
 }
@@ -90,7 +140,7 @@ const SortDropdown = (props) => {
 };
 
 // Stream :: None => Component
-function Stream({ kind, onSort }) {
+function Stream({ onSort }) {
 
   const stream = useStream();
 
@@ -187,45 +237,9 @@ function Stream({ kind, onSort }) {
         showDelete={showDeleteModal}
         onTagClick={tagClickHandler}
       />
-
-      {/* Post modal */}
-      <Modal
-        id="preview-modal"
-        show={previewModalDisplayed}
-        onHide={hidePreviewModal}
-        dialogClassName="modal-80w"
-      >
-        <Modal.Header closeButton></Modal.Header>
-        <Modal.Body>
-          {postModal ? (
-            <Post {...postModal} />
-          ) : (
-            'Chargement des données...'
-          )}
-        </Modal.Body>
-      </Modal>
-
-      {/* Delete post modal */}
-      <DeleteModal
-        modalDisplayed={deleteModalDisplayed}
-        setModalDisplayed={setDeleteModalDisplayed}
-        deletePost={deletePost}
-      />
-      <Toast
-        className="notification"
-        show={showNotification}
-        onClose={toggleNotification}
-        delay={4000}
-        autohide
-      >
-        <Toast.Header>
-          <strong className="mr-auto"> Votre post a bien été supprimé</strong>
-        </Toast.Header>
-      </Toast>
     </Container>
   );
 }
 
-Stream.defaultProps = {};
 
 export default Stream;
