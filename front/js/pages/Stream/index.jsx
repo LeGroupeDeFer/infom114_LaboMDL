@@ -4,15 +4,13 @@ import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { Button, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import clsx from 'clsx';
 
-import { usePositiveEffect } from 'unanimity/hooks';
-import { StreamProvider, useStream } from 'unanimity/context/streamContext';
+import { useStream } from 'unanimity/context/streamContext';
 import { SearchBar } from 'unanimity/components';
-import { api, kinds, kindOf } from 'unanimity/lib';
+import { kinds, kindOf } from 'unanimity/lib';
 
 import Stream from './Stream';
 import Writer from './Writer';
 import Detail from './Detail';
-import {trace} from "../../lib";
 
 
 // FilterBar :: Object => Component
@@ -55,6 +53,7 @@ function StreamContent() {
     onHide: post => stream.posts.hide(post),
     onVote: (post, vote) => stream.posts.vote(post, vote),
     onTag: tag => stream.tags.set(tag),
+    onSort: order => stream.order.set(order),
     onPreview: v => setState(state => ({ ...state, previewPost: v })),
     onDelete: v => setState(state => ({ ...state, deletePost: v })),
     onToast: v => setState({ ...state, toast: v }),

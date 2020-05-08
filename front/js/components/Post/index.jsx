@@ -71,7 +71,11 @@ export function Post({
 
   const { author, kind, id, createdAt, userVote, score, tags, title, comments } = post;
 
-  const cls = clsx('post expand-preview', isPreview && 'preview', className);
+  const cls = clsx(
+    'post expand-preview',
+    isPreview && 'post-preview',
+    className
+  );
 
   return (
     <Card {...others} {...cardProps} className={cls} id={id}>
@@ -84,13 +88,13 @@ export function Post({
                 <span className="mr-1">{title}</span>
 
                 <span className="text-muted title-part2">
-              <a href="#" className="text-dark mx-1">
-                <span>{author.firstname}</span>
-                <span className="ml-1">{author.lastname}</span>
-              </a>
-              <span>-</span>
-              <Moment locale="fr" fromNow className="ml-1">{createdAt}</Moment>
-            </span>
+                  <a href="#" className="text-dark mx-1">
+                    <span>{author.firstname}</span>
+                    <span className="ml-1">{author.lastname}</span>
+                  </a>
+                  <span>-</span>
+                  <Moment locale="fr" fromNow className="ml-1">{createdAt}</Moment>
+                </span>
               </h5>
             </Col>
 

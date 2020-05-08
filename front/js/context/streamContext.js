@@ -70,7 +70,7 @@ export function StreamProvider({ children }) {
           promise,
           post => setState(state => ({
             ...state,
-            posts: { ...this, value: [...this.value, post] }
+            posts: { ...state.posts, value: [...state.posts.value, post] }
           })) || post,
           printerr // TODO
         ]);
@@ -82,7 +82,10 @@ export function StreamProvider({ children }) {
           promise,
           () => setState(state => ({
             ...state,
-            posts: { ...this, value: remove(this.value, p => p.id === post.id) }
+            posts: {
+              ...state.posts,
+              value: remove(state.posts.value, p => p.id === post.id)
+            }
           })),
           printerr // TODO
         ]);
@@ -94,7 +97,10 @@ export function StreamProvider({ children }) {
           promise,
           post => setState(state => ({
             ...state,
-            posts: { ...this, value: this.value.map(p => p.id === post.id ? post : p) }
+            posts: {
+              ...state.posts,
+              value: state.posts.value.map(p => p.id === post.id ? post : p)
+            }
           })) || post,
           printerr // TODO
         ]);
@@ -129,9 +135,10 @@ export function StreamProvider({ children }) {
       available: orders,
       value: ORDER.RANK.DESC,
       set(order) {
-        if (this.value === order)
-          return;
-        setState(state => ({ ...state, order: { ...this, value: order } }));
+        setState(state => ({
+          ...state,
+          order: { ...state.order, value: order }
+        }));
       },
     },
 

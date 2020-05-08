@@ -94,7 +94,7 @@
         content: none
     }
 
-    &:not(.preview) {
+    &:not(.post-preview, .post-detail) {
         &, .card-header, .card-body, .vote-section {
             background-color: transparent;
             border: none;

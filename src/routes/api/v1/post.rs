@@ -62,7 +62,7 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult
 
 // typo on tape is intentional : `type` is a rust reserved keyword
 #[get(
-    "/api/v1/posts?<tags>&<keywords>&<sort>&<kind>&<limit>&<offset>",
+    "/api/v1/posts?<tags>&<keywords>&<order>&<kind>&<limit>&<offset>",
     rank = 1
 )]
 fn get_all_posts_authenticated(
@@ -70,13 +70,13 @@ fn get_all_posts_authenticated(
     auth: ForwardAuth,
     tags: StringVector,
     keywords: StringVector,
-    sort: Option<String>,
+    order: Option<String>,
     kind: Option<String>, // type
     limit: Option<u32>,
     offset: Option<u32>,
 ) -> ApiResult<Vec<Post>> {
     let mut sort_order: Option<SortOrder> = None;
-    if let Some(value) = sort {
+    if let Some(value) = order {
         sort_order = Some(SortOrder::try_from(value.as_ref())?)
     }
 
@@ -100,20 +100,20 @@ fn get_all_posts_authenticated(
 }
 
 #[get(
-    "/api/v1/posts?<tags>&<keywords>&<sort>&<kind>&<limit>&<offset>",
+    "/api/v1/posts?<tags>&<keywords>&<order>&<kind>&<limit>&<offset>",
     rank = 2
 )]
 fn get_all_posts(
     conn: DBConnection,
     tags: StringVector,
     keywords: StringVector,
-    sort: Option<String>,
+    order: Option<String>,
     kind: Option<String>, // type
     limit: Option<u32>,
     offset: Option<u32>,
 ) -> ApiResult<Vec<Post>> {
     let mut sort_order: Option<SortOrder> = None;
-    if let Some(value) = sort {
+    if let Some(value) = order {
         sort_order = Some(SortOrder::try_from(value.as_ref())?)
     }
     Ok(Json(Post::all(

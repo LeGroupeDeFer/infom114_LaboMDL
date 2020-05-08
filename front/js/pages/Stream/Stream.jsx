@@ -10,6 +10,7 @@ import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { MdSort } from 'react-icons/md';
 import { FaEdit } from 'react-icons/fa';
 import { useStream } from 'unanimity/context/streamContext';
+import { ORDER } from 'unanimity/lib';
 import Post from 'unanimity/components/Post';
 
 
@@ -84,12 +85,37 @@ function InnerStream({
 
 }
 
+function SortDropdownItem({ value, label, onSort }) {
+  return (
+    <Dropdown.Item
+      as="button"
+      onClick={() => onSort(value)}
+    >
+      {label}
+    </Dropdown.Item>
+  );
+}
+
+
 // SortDropdown :: None => Component
-const SortDropdown = (props) => {
+function SortDropdown({ onSort }) {
   const [title, setTitle] = useState('Trier par');
+
+  const orders = [
+    { label: 'Rang', value: ORDER.RANK.DESC },
+    { label: 'Score', value: ORDER.SCORE.DESC },
+    { label: 'Récent', value: ORDER.AGE.DESC },
+    { label: 'Ancien', value: ORDER.AGE.ASC }
+  ];
+
+  const localOnSort = (value, label) => {
+      setTitle(`Trier par ${label}`);
+      onSort(value);
+  };
 
   return (
     <DropdownButton
+      alignRight
       title={
         <span>
           <MdSort size={20} /> {title}
@@ -98,36 +124,17 @@ const SortDropdown = (props) => {
       variant="primary"
       id="sort-post"
     >
-      <Dropdown.Item
-        as="button"
-        onClick={() => {
-          props.sortPost('top');
-          setTitle('Trier par - Top');
-        }}
-      >
-        Top
-      </Dropdown.Item>
-      <Dropdown.Item
-        as="button"
-        onClick={() => {
-          props.sortPost('new');
-          setTitle('Trier par - Récent');
-        }}
-      >
-        Récent
-      </Dropdown.Item>
-      <Dropdown.Item
-        as="button"
-        onClick={() => {
-          props.sortPost('old');
-          setTitle('Trier par - Ancien');
-        }}
-      >
-        Ancien
-      </Dropdown.Item>
+      {orders.map(order => (
+        <SortDropdownItem
+          key={order.value}
+          label={order.label}
+          value={order.value}
+          onSort={() => localOnSort(order.value, order.label)}
+        />
+      ))}
     </DropdownButton>
   );
-};
+}
 
 // Stream :: None => Component
 function Stream({ onSort, ...others }) {
@@ -158,7 +165,7 @@ function Stream({ onSort, ...others }) {
               </Button>
             </OverlayTrigger>
           </Link>
-          <SortDropdown sortPost={onSort} />
+          <SortDropdown onSort={onSort} />
         </Col>
       </Row>
 
