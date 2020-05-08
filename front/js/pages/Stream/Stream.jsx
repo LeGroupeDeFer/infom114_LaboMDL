@@ -19,7 +19,7 @@ import { Link } from 'react-router-dom';
 import { Post, SearchBar } from '../../components';
 import api from '../../lib/api';
 import DeleteModal from 'unanimity/components/Post/DeleteModal';
-
+import ReportModal from 'unanimity/components/Post/ReportModal';
 // InnerStream :: Object => Component
 function InnerStream({
   posts,
@@ -38,7 +38,7 @@ function InnerStream({
               onClick={onClick}
               post={post}
               // showPreviewModal={showPreview}
-              showDeleteModal={showDelete}
+              showDeleteModal={showDeleteModal}
               showReportModal={showReportModal}
               onTagClick={onTagClick}
             />
@@ -124,7 +124,7 @@ function Stream({ kind, posts, onSort }) {
   }
 
   const onPostDeleted = () => {
-    setPosts(posts.filter((p) => p.id !== postToDelete));
+    setPosts(posts.filter((p) => p.id !== postInModal));
     setNotifMsg('Votre post a bien été supprimé');
     toggleNotification();
     setPostInModal(null);
@@ -223,14 +223,14 @@ function Stream({ kind, posts, onSort }) {
       {/* Delete post modal */}
       <DeleteModal
         modalDisplayed={deleteModalDisplayed}
-        setModalDisplayed={setDeleteModalDisplayed}
+        setDeleteModalDisplayed={setDeleteModalDisplayed}
         onPostDeleted={onPostDeleted}
-        postToDelete={postToDelete}
+        postToDelete={postInModal}
       />
       <ReportModal
         modalDisplayed={reportModalDisplayed}
-        setModalDisplayed={setReportModalDisplayed}
-        PostToReport={postToReport}
+        setReportModalDisplayed={setReportModalDisplayed}
+        postToReport={postInModal}
         onPostReported={onPostReported}
       />
       <Toast

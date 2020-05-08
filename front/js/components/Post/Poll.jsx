@@ -13,12 +13,12 @@ function Poll() {
   ];
 
   const toltalVote = 50;
-  const [vote, setVote] = useState(null);
-  const [radioSelected, setRadioSelected] = useState(false);
+  const [userVote, setUserVote] = useState(null);
+  const [optionSelected, setOptionSelected] = useState(null);
 
   function vote(option) {
     // Api call then
-    setVote(option);
+    setUserVote(option);
   }
 
   return (
@@ -28,7 +28,7 @@ function Poll() {
           <span className="ml-">50 votes</span>
         </Card.Header>
         <Card.Body>
-          {vote == null && (
+          {userVote == null && (
             <>
               {options.map((opt, index) => {
                 return (
@@ -38,21 +38,21 @@ function Poll() {
                     id={`opt-${index + 1}`}
                     className="mb-3"
                     name="poll-options"
-                    onChange={() => setRadioSelected(true)}
+                    onChange={() => setOptionSelected(opt)}
                   />
                 );
               })}
               <Button
                 variant="primary"
-                onClick={() => vote(opt)}
-                disabled={radioSelected}
+                onClick={() => vote(optionSelected)}
+                disabled={optionSelected == null}
               >
                 Voter
               </Button>
             </>
           )}
 
-          {vote != null && (
+          {userVote != null && (
             <>
               {optionVote.map((opt, index) => {
                 return (
@@ -68,11 +68,11 @@ function Poll() {
                             {opt.vote}
                           </Col>
                           <Col xs={11} className="text-left">
-                            {opt.label}
-                            {vote == opt.label && (
+                            {opt.option}
+                            {userVote == opt.option && (
                               <FaRegCheckCircle
                                 size={20}
-                                className="ml-1 opt-selected"
+                                className="ml-2 opt-selected"
                               />
                             )}
                           </Col>
@@ -86,7 +86,6 @@ function Poll() {
           )}
         </Card.Body>
       </Card>
-      )}
     </>
   );
 }

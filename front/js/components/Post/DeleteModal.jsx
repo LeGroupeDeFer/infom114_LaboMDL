@@ -8,7 +8,7 @@ function DeleteModal({
   onPostDeleted,
   postToDelete,
 }) {
-  const hideModal = () => setModalDisplayed(false);
+  const hideModal = () => setDeleteModalDisplayed(false);
 
   const deletePost = () => {
     setDeleteModalDisplayed(false);
