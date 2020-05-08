@@ -1,7 +1,8 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useEffectQueue } from 'unanimity/hooks';
-import { KIND, ORDER, kinds, orders, api, printerr, trace } from "unanimity/lib";
+import { KIND, ORDER, kinds, orders, api, cleanHard, printerr, trace } from "unanimity/lib";
 import { isEqual, remove, without } from 'lodash';
+import {clean} from "../lib";
 
 
 export const PostsChange    = 0b00000001;
@@ -57,6 +58,12 @@ export function StreamProvider({ children }) {
   const [state, setState] = useState({
     posts: {
       value: [],
+      retrieve(id) {
+        const prefetch = this.value.filter(p => p.id === id);
+        if (prefetch.length)
+          return Promise.resolve(prefetch[0]);
+        return api.posts.of(id);
+      },
       add(post) {
         const promise = api.posts.add(post);
         pushEffect([
@@ -79,6 +86,7 @@ export function StreamProvider({ children }) {
           })),
           printerr // TODO
         ]);
+        return promise;
       },
       vote(post, vote) {
         const promise = api.posts.vote(post.id, vote);
@@ -89,7 +97,8 @@ export function StreamProvider({ children }) {
             posts: { ...this, value: this.value.map(p => p.id === post.id ? post : p) }
           })) || post,
           printerr // TODO
-        ])
+        ]);
+        return promise;
       },
       comment(comment) {
         trace('TODO - COMMENT');
@@ -103,6 +112,7 @@ export function StreamProvider({ children }) {
         trace('TODO - HIDE');
         return Promise.resolve(post);
       }
+
     },
 
     kind: {
@@ -164,7 +174,7 @@ export function StreamProvider({ children }) {
   });
 
   useEffect(() => pushEffect([
-    api.posts.where(query(state)),
+    api.posts.where(clean(query(state), true)),
     posts => setState(state => ({
       ...state,
       posts: { ...state.posts, value: posts }
@@ -177,9 +187,7 @@ export function StreamProvider({ children }) {
     api.tags(),
     ({ tags }) => setState(state => ({ ...state, tags: { ...state.tags, available: tags } })),
     printerr // TODO
-  ]),
-  []
-  );
+  ]), []);
 
   return (
     <StreamContext.Provider value={state}>

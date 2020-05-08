@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { GoReply } from 'react-icons/go';
 import Moment from 'react-moment';
-import { DownVote, UpVote } from './Vote';
+import {DownVote, UpVote, VoteSection} from './Vote';
 import { Container, Row, Col, Button, Card, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { WhenLogged } from '../Auth';
 import { useAuth } from 'unanimity/context';
+import {VOTE} from "../../lib";
 
 
 const CommentInteraction = WhenLogged(({ onResponse, onMask, onFlag }) => {
@@ -25,30 +26,26 @@ const CommentInteraction = WhenLogged(({ onResponse, onMask, onFlag }) => {
   );
 })
 
-function Comment({
-  comment,
-  onComment,
-}) {
+function Comment({ comment, onComment, onVote }) {
   const isLogged = !!useAuth().user;
-  const [voted, setVoted] = useState('no');
-  const [points, setPoints] = useState(comment.points);
+  const [reply, setReply] = useState('');
 
   return (
     <Container className="comment">
       <Row className="comment-first-row">
-        <Col className="col-auto vote-col">
-          <UpVote
+        <Col>
+          <VoteSection
+            onVote={onVote}
+            score={comment.score || 0}
             isLogged={isLogged}
-            voted={voted}
-            onVote={setVoted}
-            points={points}
+            vote={comment.userVote || VOTE.NONE}
           />
         </Col>
         <Col>
           <div>
             <span className="text-muted">
               <a href={`/profile/${comment.author.id}`} className="text-dark mr-1 ml-1">{comment.author}</a>
-              <span className=" mr-1">{points} points</span>
+              <span className=" mr-1">{comment.score} points</span>
               <span className=" mr-1">·</span>
               <Moment locale="fr" fromNow>{comment.creationDate}</Moment>
             </span>
@@ -57,17 +54,6 @@ function Comment({
       </Row>
 
       <Row className="comment-content">
-        <Col className="col-auto vote-col">
-          <div id="white-mask">
-            <DownVote
-              isLogged={isLogged}
-              voted={voted}
-              set_vote={setVoted}
-              points={points}
-              set_points={setPoints}
-            />
-          </div>
-        </Col>
         <Col>
           <div className="comment-text">{comment.text}</div>
           <CommentInteraction
@@ -78,6 +64,7 @@ function Comment({
           <CommentEditor onComment={c => console.log('Commented ' + c)} />
         </Col>
       </Row>
+
     </Container>
   );
 }

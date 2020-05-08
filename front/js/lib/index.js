@@ -276,8 +276,8 @@ const truthy = thing => (thing instanceof Array) ? thing.length : thing;
 
 const update = (o, k, v) => ({ ...o, [k]: v });
 
-const clean = o => Object.keys(o).reduce(
-  (a, k) => truthy(o[k]) ? ({ ...a, [k]: o[k] }) : a, {}
+const clean = (o, hard= false) => Object.keys(o).reduce(
+  (a, k) => (hard ? truthy : defined)(o[k]) ? ({ ...a, [k]: o[k] }) : a, {}
 );
 
 function aggregate(o, key, props) {
@@ -295,7 +295,7 @@ function aggregate(o, key, props) {
 
 const empty = xs => (xs instanceof Array) && xs.length === 0;
 
-const head = ([x,]) => x;
+const head = xs => xs.length ? xs[0] : null;
 
 const last = xs => (xs && xs.length) ? xs[xs.length - 1] : null;
 

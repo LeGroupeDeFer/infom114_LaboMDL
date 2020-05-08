@@ -1,9 +1,9 @@
 import React, { lazy, Suspense } from 'react';
 import { Route, Switch, useLocation } from 'react-router-dom';
-import Spinner from 'react-bootstrap/Spinner';
+import { Loading } from 'unanimity/components';
 import Sidebar from './Sidebar';
 import layout from '../lib/layout';
-import { useAuth } from '../context';
+import {StreamProvider, useAuth} from '../context';
 
 const Stream = lazy(() => import('../pages/Stream/index'));
 const Profile = lazy(() => import('../pages/Profile'));
@@ -18,19 +18,6 @@ const Admin = lazy(() => import('../pages/Admin'));
 const Recover = lazy(() => import('../pages/Recover'));
 const Restore = lazy(() => import('../pages/Restore'));
 
-// Content :: Object => Component
-
-function LocalSpinner() {
-  return (
-    <div className="abs-center">
-      <Spinner
-        animation="border"
-        variant="primary"
-        role="status"
-      />
-    </div>
-  );
-}
 
 const Content = (_) => {
   const location = useLocation();
@@ -46,7 +33,7 @@ const Content = (_) => {
       <div className={`offset ${layoutStyle}`}>
         <main role="main">
           <div className="content">
-            <Suspense fallback={<LocalSpinner />}>
+            <Suspense fallback={<Loading />}>
               <Switch>
                 <Route path="/profile">
                   <Profile />
@@ -93,7 +80,9 @@ const Content = (_) => {
                 </Route>
 
                 <Route path="/">
-                  <Stream />
+                  <StreamProvider>
+                    <Stream />
+                  </StreamProvider>
                 </Route>
               </Switch>
             </Suspense>

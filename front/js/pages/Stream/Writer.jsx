@@ -150,7 +150,6 @@ function Writer() {
   const stream = useStream();
   const [loading, setLoading] = useState(false);
 
-  trace(stream.posts);
   function onSubmit(post) {
     setLoading(true);
     if (post.kind !== 'poll') post.options = [];

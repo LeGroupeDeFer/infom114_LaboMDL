@@ -7,3 +7,19 @@ export { Unauthenticated, Authenticated, Dialog } from './Auth';
 export { default as SearchBar } from './SearchBar';
 export { default as Post } from './Post';
 export { Simple } from './Error';
+
+
+import React from 'react';
+import Spinner from 'react-bootstrap/Spinner';
+
+export function Loading() {
+  return (
+    <div className="abs-center">
+      <Spinner
+        animation="border"
+        variant="primary"
+        role="status"
+      />
+    </div>
+  );
+}

@@ -12,6 +12,7 @@ import { api, kinds, kindOf } from 'unanimity/lib';
 import Stream from './Stream';
 import Writer from './Writer';
 import Detail from './Detail';
+import {trace} from "../../lib";
 
 
 // FilterBar :: Object => Component
@@ -44,27 +45,47 @@ function KindSection() {
 function StreamContent() {
 
   const { path } = useRouteMatch();
+  const stream = useStream();
+  const [state, setState] = useState({
+    previewPost: false,
+    deletePost: false,
+    toast: false,
+
+    onFlag: post => stream.posts.flag(post),
+    onHide: post => stream.posts.hide(post),
+    onVote: (post, vote) => stream.posts.vote(post, vote),
+    onTag: tag => stream.tags.set(tag),
+    onPreview: v => setState(state => ({ ...state, previewPost: v })),
+    onDelete: v => setState(state => ({ ...state, deletePost: v })),
+    onToast: v => setState({ ...state, toast: v }),
+    onDeleteConfirmation: post => stream.posts.remove(post).then(
+      () => setState(state => ({
+        ...state,
+        deletePost: false,
+        toast: false
+      }))
+    )
+  });
 
   return (
-    <StreamProvider>
-
+    <>
       <SearchBar>
         <KindSection />
       </SearchBar>
 
       <Switch>
         <Route exact path={path}>
-          <Stream />
+          <Stream {...state} />
         </Route>
         <Route path={`${path}write`}>
-          <Writer />
+          <Writer {...state} />
         </Route>
         <Route path={`${path}detail/:id`}>
-          <Detail />
+          <Detail {...state} />
         </Route>
       </Switch>
 
-    </StreamProvider>
+    </>
   );
 
 }

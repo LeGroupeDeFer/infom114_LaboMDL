@@ -8,32 +8,20 @@ import {
 } from 'react-bootstrap';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { MdSort } from 'react-icons/md';
-import { FaTag, FaEdit } from 'react-icons/fa';
+import { FaEdit } from 'react-icons/fa';
 import { useStream } from 'unanimity/context/streamContext';
-import { api, trace } from 'unanimity/lib';
 import Post from 'unanimity/components/Post';
 
 
 // InnerStream :: Object => Component
-function InnerStream() {
+function InnerStream({
+  deletePost, onDelete, previewPost, onPreview, toast, onToast,
+  onFlag, onHide, onVote, onTag, onDeleteConfirmation
+}) {
   const stream = useStream();
 
-  const [previewModal, setPreviewModal] = useState(false);
-  const [deleteModal, setDeleteModal] = useState(false);
-  const [toast, setToast] = useState(false);
-
-  const onFlag = post => stream.posts.flag(post);
-  const onHide = post => stream.posts.hide(post);
-  const onVote = (post, vote) => stream.posts.vote(trace(post), trace(vote));
-  const onTag = tag => stream.tags.set(tag);
-
-  const onPreview = post => setPreviewModal(post);
-  const onDelete = post => setDeleteModal(post);
-  const onDeleteConfirmation =
-      post => stream.posts.delete(post).then(() => setToast(true));
-
   return (
-    <>
+    <div className="stream-content">
       {stream.posts.value.map(post => (
         <Row key={post.id} className="mb-4"><Col>
           <Post
@@ -42,7 +30,7 @@ function InnerStream() {
             onDelete={onDelete}
             onFlag={onFlag}
             onHide={onHide}
-            onVote={vote => onVote(post, vote)}
+            onVote={onVote}
             onPreview={onPreview}
             onTag={onTag}
           />
@@ -52,15 +40,15 @@ function InnerStream() {
       {/* Preview modal */}
       <Modal
         id="preview-modal"
-        show={!!previewModal}
-        onHide={() => setPreviewModal(false)}
+        show={!!previewPost}
+        onHide={() => onPreview(false)}
         dialogClassName="modal-80w"
       >
         <Modal.Header closeButton />
         <Modal.Body>
-          {previewModal && (
+          {previewPost && (
             <Post
-              post={previewModal}
+              post={previewPost}
               onDelete={onDelete}
               onFlag={onFlag}
               onHide={onHide}
@@ -74,15 +62,16 @@ function InnerStream() {
 
       {/* Delete post modal */}
       <Post.Delete
-        show={!!deleteModal}
-        onHide={() => setDeleteModal(false)}
+        post={deletePost}
+        show={!!deletePost}
+        onHide={() => onDelete(false)}
         onDelete={onDeleteConfirmation}
       />
 
       <Toast
         className="notification"
         show={toast}
-        onClose={() => setToast(false)}
+        onClose={() => onToast(false)}
         delay={4000}
         autohide
       >
@@ -90,8 +79,9 @@ function InnerStream() {
           <strong className="mr-auto"> Votre post a bien été supprimé</strong>
         </Toast.Header>
       </Toast>
-    </>
+    </div>
   );
+
 }
 
 // SortDropdown :: None => Component
@@ -140,67 +130,8 @@ const SortDropdown = (props) => {
 };
 
 // Stream :: None => Component
-function Stream({ onSort }) {
-
+function Stream({ onSort, ...others }) {
   const stream = useStream();
-
-  const [postModal, setPostModal] = useState(null);
-  const [previewModalDisplayed, setPreviewModalDisplayed] = useState(false);
-  const [deleteModalDisplayed, setDeleteModalDisplayed] = useState(false);
-  const [showNotification, setShowNotification] = useState(false);
-  const [postToDelete, setPostToDelete] = useState(null);
-
-  /* Preview modal */
-  function hidePreviewModal() {
-    setPreviewModalDisplayed(false);
-  }
-
-  function showPreviewModal(id) {
-    setPostModal(null);
-    api.posts
-      .of(id)
-      .then(setPostModal)
-      .catch((error) => {});
-    setPreviewModalDisplayed(true);
-  }
-
-  /* Delete modal */
-  const deletePost = () => {
-    setDeleteModalDisplayed(false);
-    api.posts
-      .delete(postToDelete)
-      .then(() => {
-        // setPosts(posts.filter(p => p.id !== postToDelete));
-        toggleNotification();
-        setPostToDelete(null);
-      })
-      .catch((error) => {});
-  };
-
-  const showDeleteModal = (id) => {
-    setDeleteModalDisplayed(true);
-    setPostToDelete(id);
-  };
-
-  /* Notification */
-  const toggleNotification = () => setShowNotification((n) => !n);
-
-  function tagClickHandler(e) {
-    e.stopPropagation();
-    let value = e.target.getAttribute('value');
-    let tag = {
-      value: value,
-      label: (
-        <span>
-          <FaTag /> {value}
-        </span>
-      ),
-    };
-    setChoices([tag]);
-
-    // Scroll to the top
-    //document.getElementsByTagName('main')[0].scrollTo(0, 0);
-  }
 
   return (
     <Container className="py-5">
@@ -232,13 +163,10 @@ function Stream({ onSort }) {
       </Row>
 
       {/* Posts */}
-      <InnerStream
-        onClick={showPreviewModal}
-        showDelete={showDeleteModal}
-        onTagClick={tagClickHandler}
-      />
+      <InnerStream {...others} />
     </Container>
   );
+
 }
 
 
