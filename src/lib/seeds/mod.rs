@@ -12,12 +12,18 @@ pub fn clean_all_table(conn: &MysqlConnection) {
     diesel::delete(roles_capabilities_table)
         .execute(conn)
         .unwrap();
+    diesel::delete(users_poll_answers_table)
+        .execute(conn)
+        .unwrap();
+    diesel::delete(poll_answers_table).execute(conn).unwrap();
     diesel::delete(capabilities_table).execute(conn).unwrap();
     diesel::delete(users_roles_table).execute(conn).unwrap();
     diesel::delete(posts_tags_table).execute(conn).unwrap();
     diesel::delete(votes_comments_table).execute(conn).unwrap();
     diesel::delete(votes_posts_table).execute(conn).unwrap();
-    diesel::delete(tags_subscription_table).execute(conn).unwrap();
+    diesel::delete(tags_subscription_table)
+        .execute(conn)
+        .unwrap();
     diesel::delete(roles_table).execute(conn).unwrap();
     diesel::delete(tags_table).execute(conn).unwrap();
     diesel::delete(capabilities_table).execute(conn).unwrap();

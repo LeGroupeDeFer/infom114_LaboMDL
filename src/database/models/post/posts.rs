@@ -8,10 +8,12 @@ use crate::database;
 use crate::database::models::post::{RelPostReportEntity, RelPostReportMinima, RelPostVoteMinima};
 use crate::database::models::prelude::*;
 use crate::database::schema::posts::dsl;
+use crate::database::schema::posts_tags::dsl as posts_tags;
 use crate::database::schema::tags::dsl as tags;
+
 use crate::database::tables::{posts_table as table, posts_tags_table, tags_table};
 use crate::database::SortOrder;
-use crate::lib::{self as conseq, Consequence, EntityError};
+use crate::lib::{self as conseq, Consequence, EntityError, PostError};
 
 // TODO - Move this in app state
 const BASE: f64 = 1.414213562;
@@ -36,7 +38,7 @@ impl TryFrom<u8> for PostKind {
             2 => PostKind::Poll,
             3 => PostKind::Decision,
             4 => PostKind::Discussion,
-            _ => Err(EntityError::UnknownKind)?,
+            _ => Err(PostError::UnknownKind)?,
         })
     }
 }
@@ -51,13 +53,18 @@ impl TryFrom<String> for PostKind {
             "info" => PostKind::Info,
             "decision" => PostKind::Decision,
             "discussion" => PostKind::Discussion,
-            _ => Err(EntityError::UnknownKind)?,
+            _ => Err(PostError::UnknownKind)?,
         })
     }
 }
 
 impl From<PostKind> for u8 {
     fn from(kind: PostKind) -> u8 {
+        u8::from(&kind)
+    }
+}
+impl From<&PostKind> for u8 {
+    fn from(kind: &PostKind) -> u8 {
         match kind {
             PostKind::Info => 0,
             PostKind::Idea => 1,
@@ -70,6 +77,11 @@ impl From<PostKind> for u8 {
 
 impl From<PostKind> for String {
     fn from(kind: PostKind) -> String {
+        String::from(&kind)
+    }
+}
+impl From<&PostKind> for String {
+    fn from(kind: &PostKind) -> String {
         match kind {
             PostKind::Info => "info".into(),
             PostKind::Idea => "idea".into(),
@@ -196,6 +208,16 @@ impl PostEntity {
         Ok(table
             .filter(dsl::deleted_at.is_null().and(dsl::title.eq(title)))
             .load(conn)?)
+    }
+
+    pub fn by_tag(conn: &MysqlConnection, tag_id: &u32) -> Consequence<Vec<Self>> {
+        Ok(table
+            .inner_join(posts_tags_table)
+            .filter(dsl::deleted_at.is_null().and(posts_tags::tag_id.eq(tag_id)))
+            .load::<(Self, RelPostTagEntity)>(conn)?
+            .into_iter()
+            .map(move |(entity, _)| entity)
+            .collect::<Vec<Self>>())
     }
 
     /// Delete a post permanently (not used)
@@ -346,8 +368,16 @@ impl Post {
         limit: Option<u32>,
         offset: Option<u32>,
     ) -> Consequence<Vec<Self>> {
-        let entities =
-            PostEntity::get_all(conn, can_see_hidden, tags, search, sort, kind, limit, offset)?;
+        let entities = PostEntity::get_all(
+            conn,
+            can_see_hidden,
+            tags,
+            search,
+            sort,
+            kind,
+            limit,
+            offset,
+        )?;
         let posts = entities
             .into_iter()
             .map(move |post_entity| Post::from(post_entity))

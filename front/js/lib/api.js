@@ -75,7 +75,8 @@ function api(endpoint, { body, ...providedConfig } = {}) {
 
   let target = `${root}${endpoint}`;
   if (body && method === 'GET') target = query(target, body);
-  if (body && method === 'POST') config.body = JSON.stringify(snake(body));
+  if (body && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) ) 
+    config.body = JSON.stringify(snake(body));
 
   return window
     .fetch(target, config)

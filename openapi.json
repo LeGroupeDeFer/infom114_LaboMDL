@@ -43,6 +43,10 @@
       "description": "Everything that is related to users"
     },
     {
+      "name": "reporting",
+      "description": "Everything related to stats about the site"
+    },
+    {
       "name": "hollow",
       "description": "Hollow routes that are managed by React"
     }
@@ -2802,6 +2806,90 @@
           }
         ]
       }
+    },
+    "/api/report/users": {
+      "get": {
+        "tags": [
+          "user",
+          "reporting"
+        ],
+        "summary": "Return the total number of users and the number of active one",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "json": {
+                "schema": {
+                    "$ref": "#/components/schemas/UserReport"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
+    },
+    "/api/report/posts": {
+      "get": {
+        "tags": [
+          "post",
+          "reporting"
+        ],
+        "summary": "Return the number of posts created per month of the actual year",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PostReport"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
+    },
+    "/api/report/tags": {
+      "get": {
+        "tags": [
+          "tag",
+          "reporting"
+        ],
+        "summary": "Return the number of use of each tag",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TagReport"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -3008,11 +3096,59 @@
           }
         }
       },
+      "PollPost": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "answers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PollAnswer"
+            }
+          },
+          "user_answer": {
+            "$ref": "#/components/schemas/PollAnswerEntity"
+          }
+        }
+      },
       "PollVote": {
         "type": "object",
         "properties": {
           "answer_id": {
             "type": "integer"
+          }
+        }
+      },
+      "PollAnswer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "answer": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "PollAnswerEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "answer": {
+            "type": "string"
           }
         }
       },
@@ -3147,6 +3283,48 @@
         "properties": {
           "reason": {
             "type": "string"
+          }
+        }
+      },
+      "UserReport": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "active": {
+            "type": "integer"
+          }
+        }
+      },
+      "PostReport": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string"
+          },
+          "new": {
+            "type": "integer"
+          },
+          "interaction": {
+            "type": "integer"
+          }
+        }
+      },
+      "TagReport": {
+        "type": "object",
+        "properties": {
+          "tag": {
+            "type": "string"
+          },
+          "info":{
+            "type": "integer"
+          },
+          "idea": {
+            "type": "integer"
+          },
+          "poll": {
+            "type": "integer"
           }
         }
       }

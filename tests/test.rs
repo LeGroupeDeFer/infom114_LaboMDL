@@ -15,5 +15,6 @@ mod auth;
 mod comments;
 mod init;
 mod posts;
+mod reports;
 mod roles;
 mod tags;

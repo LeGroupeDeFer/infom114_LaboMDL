@@ -4,6 +4,8 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Card from 'react-bootstrap/Card';
 
 import Tag from '../components/Admin/Tag';
 import Role from '../components/Admin/Role';
@@ -11,61 +13,88 @@ import Toast from '../components/Admin/Notification';
 import AddForm from '../components/Admin/AddForm';
 import User from '../components/Admin/User';
 
+import { FaTags, FaUsers, FaChartLine, FaClipboardCheck, FaTag } from 'react-icons/fa';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
+
+import { ResponsiveContainer, ComposedChart, RadarChart, PieChart, Pie, Line, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, CartesianGrid, XAxis, YAxis, Cell, Tooltip as RechartsTooltip, Legend, Bar } from 'recharts';
 
 import api from '../lib/api';
 import 'regenerator-runtime';
+import clsx from 'clsx';
 
 
 function Admin(props) {
 
   const menuList = ['tags', 'roles', 'users', 'reporting'];
-  const [currentMenu, setCurrentMenu] = useState('tags');
+  const [currentMenu, setCurrentMenu] = useState('reporting');
 
   const Page = () => {
-    if (currentMenu == 'tags') {
+    if (currentMenu === 'tags') {
       return <TagsPage />;
     }
-    else if (currentMenu == 'users') {
+    else if (currentMenu === 'users') {
       return <UsersPage />;
     }
-    else if (currentMenu == 'reporting') {
-      return <p>reporting page</p>;
+    else if (currentMenu === 'reporting') {
+      return <ReportingPage />;
     }
     else {
       return <RolesPage />;
     }
-  } 
+  }
 
   return (
-    <Container
-      style={{
-        position: 'relative',
-      }}>
+    <>
+      <Container fluid className="menu-bar-container py-2">
+        <MenuBar onClick={setCurrentMenu} currentMenu={currentMenu} menuList={menuList} className="menu-bar" />
+      </Container>
       <br />
-      <div style={{ position: 'absolute', top: 0, right: 0, 'zIndex': 1 }}></div>
-
-      <Row className='justify-content-md-center'>
-        <MenuBar onClick={setCurrentMenu} currentMenu={currentMenu} menuList={menuList}/>
-      </Row>
       <br />
-      <div>
+      <br />
+      <Container>
         <Page />
-      </div>
-    </Container>
+      </Container>
+    </>
   );
 };
 
 const MenuBar = ({ currentMenu, onClick, menuList }) => {
-  
-  return (
-    <ButtonGroup id='menu-bar'>
-      { menuList.map((menu, i) => {   
-        return <Button key={i} variant="secondary" className={currentMenu == menu ? 'active' : ''} onClick={() => onClick(menu)}>{menu}</Button>
-      })
-      }
-    </ButtonGroup>
-  );
 
+  const icons = [<FaTags />, <FaClipboardCheck />, <FaUsers />, <FaChartLine />];
+//<a key={i} className={currentMenu == menu ? 'active mr-5' : 'mr-5'} onClick={() => onClick(menu)}>{icons[i]}</a>
+
+  return (
+    
+    <Row>
+      <Col xs={2}></Col>
+      <Col xs={8}>
+        <ButtonGroup className="kind-section d-flex justify-content-between" >
+          {menuList.map((menu, i) => {
+            return (
+              <OverlayTrigger
+                placement="bottom"
+                overlay={<Tooltip>{menu}</Tooltip>}
+              >
+                <Button
+                  key={i}
+                  className={clsx('kind-choice', menu === currentMenu && 'active')}
+                  onClick={() => onClick(menu)}
+                >
+                  {icons[i]}
+                </Button>
+
+              </OverlayTrigger>
+            );
+          })
+          }
+        </ButtonGroup>
+      </Col>
+      <Col xs={2}></Col>
+    </Row>
+  );
 };
 
 const UsersPage = () => {
@@ -94,22 +123,164 @@ const UsersPage = () => {
   }, [])
 
   return (
-  <>
-  <Notification />
-  <br/>
+    <>
+      <Notification />
+      <br />
       {users.length
         ? users.map((user) => {
           return (
             <Row key={user.id} className="mb-3">
-              <User user={user} roles={roles} setNotification={setNotification}/>
+              <User user={user} roles={roles} setNotification={setNotification} />
             </Row>
           )
         })
         : <h1>No users</h1>
       }
-  </>
+    </>
   )
 };
+
+
+const ReportingPage = () => {
+
+  const colors = ["#A0C55F", "#0D6759", "#1B4079", "#FC440F"];
+
+  const userData = [
+    {
+      name: "active",
+      value: 43
+    },
+    {
+      name: "inactive",
+      value: 236
+    }
+  ];
+
+  const tagData = [
+    {
+      "tag": "Info",
+      "Info": 120,
+      "Idée": 110,
+      "Sondage": 85,
+      "fullMark": 150
+    },
+    {
+      "tag": "Pharma",
+      "Info": 98,
+      "Idée": 130,
+      "Sondage": 56,
+      "fullMark": 150
+    },
+    {
+      "tag": "Droit",
+      "Info": 86,
+      "Idée": 130,
+      "Sondage": 120,
+      "fullMark": 150
+    },
+    {
+      "tag": "Eco",
+      "Info": 99,
+      "Idée": 100,
+      "Sondage": 54,
+      "fullMark": 150
+    },
+    {
+      "tag": "Physics",
+      "Info": 85,
+      "Idée": 90,
+      "Sondage": 67,
+      "fullMark": 150
+    },
+    {
+      "tag": "History",
+      "Info": 65,
+      "Idée": 85,
+      "Sondage": 98,
+      "fullMark": 150
+    }
+  ]
+
+  const postsData = [
+    { name: 'Janvier', nouveau: 20, interaction: 124 },
+    { name: 'Février', nouveau: 13, interaction: 40 },
+    { name: 'Mars', nouveau: 24, interaction: 75 },
+    { name: 'Avril', nouveau: 40, interaction: 150 },
+    { name: 'Mai', nouveau: 5, interaction: 47 },
+    { name: 'Juin', nouveau: 0, interaction: 0 },
+    { name: 'Juillet', nouveau: 0, interaction: 0 },
+    { name: 'Aout', nouveau: 0, interaction: 0 },
+    { name: 'Septembre', nouveau: 0, interaction: 0 },
+    { name: 'Octobre', nouveau: 0, interaction: 0 },
+    { name: 'Novembre', nouveau: 0, interaction: 0 },
+    { name: 'Décembre', nouveau: 0, interaction: 0 }
+  ];
+
+  return (
+    <Container>
+      <Row>
+        <Col md={4}>
+          <Card style={{ padding: '1rem' }}>
+            <Card.Title>Utilisateurs</Card.Title>
+            <Card.Subtitle className="mb-2 text-muted">Nombre d'utilsateurs actif et non actif</Card.Subtitle>
+            <ResponsiveContainer height={300}>
+              <PieChart margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <Pie data={userData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                  {
+                    userData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={colors[index]} fillOpacity={clsx({0.6: index>0, 1:index==0})} />
+                    ))
+                  }
+                </Pie>
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </Card>
+          <hr />
+        </Col>
+
+
+        <Col md={8}>
+          <Card style={{ padding: '1rem' }}>
+            <Card.Title>Tags et leur utilisation</Card.Title>
+            <Card.Subtitle className="mb-2 text-muted">Montre le nombre de citation par tag ainsi que le type de post associé</Card.Subtitle>
+            <ResponsiveContainer height={300}>
+              <RadarChart outerRadius={90} margin={{ top: 5, right: 30, left: 20, bottom: 5 }} data={tagData}>
+                <PolarGrid />
+                <PolarAngleAxis dataKey="tag" />
+                <PolarRadiusAxis angle={30} domain={[0, 150]} />
+                <Radar name="Informationnels" dataKey="Info" stroke={colors[2]} fill={colors[2]} fillOpacity={0.2} />
+                <Radar name="Proposition d'idée" dataKey="Idée" stroke={colors[1]} fill={colors[1]} fillOpacity={0.4} />
+                <Radar name="Sondages" dataKey="Sondage" stroke={colors[0]} fill={colors[0]} fillOpacity={0.6} />
+                <Legend />
+              </RadarChart>
+            </ResponsiveContainer>
+          </Card>
+          <hr />
+        </Col>
+
+
+        <Col md={12}>
+          <Card style={{ padding: '1rem' }}>
+            <Card.Title>Postes créés sur l'année</Card.Title>
+            <Card.Subtitle className="mb-2 text-muted">Nombre de nouveaux postes depuis le début de l'année, ainsi que l'interaction lié</Card.Subtitle>
+            <ResponsiveContainer height={250}>
+              <ComposedChart data={postsData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <RechartsTooltip />
+                <Legend />
+                <CartesianGrid stroke="#f5f5f5" />
+                <Bar dataKey="nouveau" barSize={20} fill={colors[0]} />
+                <Line type="monotone" dataKey="interaction" stroke={colors[1]} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
+  );
+}
 
 const RolesPage = () => {
 
@@ -128,9 +299,9 @@ const RolesPage = () => {
 
     const fetchCapabilities = async () => {
       let capabilities = await api.capabilities();
-      setCapabilities(capabilities);      
+      setCapabilities(capabilities);
     }
-    
+
     fetchRoles();
     fetchCapabilities();
   }, []);
@@ -144,7 +315,7 @@ const RolesPage = () => {
       return result;
     }
     let roles = await roleInformation();
-    return roles.filter(role => role.name === roleToModify.name )[0];
+    return roles.filter(role => role.name === roleToModify.name)[0];
   }
 
   //Add a new role 
@@ -161,7 +332,7 @@ const RolesPage = () => {
         setNotification('');
         setNotification(reason);
         console.log(error);
-        
+
       });
     }
     sendRole(roleName);
@@ -281,7 +452,7 @@ const TagsPage = () => {
         const newTags = [...tags, { label, id }];
         setTags(newTags);
       }).catch((error) => {
-        let reason = error.reason == null ? "La demande n'a pu être traitée" : error.reason; 
+        let reason = error.reason == null ? "La demande n'a pu être traitée" : error.reason;
         setNotification("");
         setNotification(reason);
         console.log(error);
