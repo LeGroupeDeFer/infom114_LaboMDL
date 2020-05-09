@@ -11,7 +11,7 @@ function Notification({text}) {
     }, [text])
 
     return (         
-        <Toast show={show} delay={3000} autohide onClose={() => setShow(!show)} style={{position: 'absolute',top: 0,right: 0, margin: '5px'}}>
+        <Toast show={show} delay={3000} autohide onClose={() => setShow(!show)} style={{position: 'absolute', top:65, right:1, margin: '5px', zIndex:"100000"}}>
             <Toast.Header>
                 <img
                 src="holder.js/20x20?text=%20"
