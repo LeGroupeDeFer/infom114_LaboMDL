@@ -1,7 +1,26 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import {Container, Row, Col, Badge, Dropdown, DropdownButton, Card, OverlayTrigger, Tooltip} from 'react-bootstrap';
-import { FaEllipsisH, FaEyeSlash, FaFacebookSquare, FaFlag, FaLock, FaTag, FaTrashAlt, FaDove } from 'react-icons/fa';
+import {
+  Container,
+  Row,
+  Col,
+  Badge,
+  Dropdown,
+  DropdownButton,
+  Card,
+  OverlayTrigger,
+  Tooltip,
+} from 'react-bootstrap';
+import {
+  FaEllipsisH,
+  FaEyeSlash,
+  FaFacebookSquare,
+  FaFlag,
+  FaLock,
+  FaTag,
+  FaTrashAlt,
+  FaDove,
+} from 'react-icons/fa';
 import { FacebookShareButton } from 'react-share';
 import { MdModeComment } from 'react-icons/md';
 import Moment from 'react-moment';
@@ -57,27 +76,37 @@ const FlagPost = ({ post, userFlag, onFlag, onFlagCancel }) => {
   );
 };
 
-const DeletePost = ({ owner, onClick }) => owner ? (
-  <Dropdown.Item as="button" onClick={() => onClick()}>
-    <FaTrashAlt className="mr-2" />
-    <span>Supprimer</span>
-  </Dropdown.Item>
-) : <></>;
+const DeletePost = ({ owner, onClick }) =>
+  owner ? (
+    <Dropdown.Item as="button" onClick={() => onClick()}>
+      <FaTrashAlt className="mr-2" />
+      <span>Supprimer</span>
+    </Dropdown.Item>
+  ) : (
+    <></>
+  );
 
 /* --------------------------------- Utils --------------------------------- */
 
 const WatchSymbol = ({ className }) => (
   <OverlayTrigger
     placement="left"
-    overlay={<Tooltip id="watched">Une attention spéciale est portée à cette publication</Tooltip>}
+    overlay={
+      <Tooltip id="watched">
+        Une attention spéciale est portée à cette publication
+      </Tooltip>
+    }
   >
-    <Circle width="2em" className={clsx('bg-secondary', 'text-light', 'watch-symbol', className)}>
+    <Circle
+      width="2em"
+      className={clsx('bg-secondary', 'text-light', 'watch-symbol', className)}
+    >
       <FaDove />
     </Circle>
   </OverlayTrigger>
 );
 
-export function PostContent({ isPreview, post, onComment }) {
+export function PostContent({ isPreview, post, onComment, onPollVote }) {
   if (isPreview)
     return (
       <div className="post-preview">
@@ -89,7 +118,17 @@ export function PostContent({ isPreview, post, onComment }) {
   return (
     <div className="post-content">
       <p className="mb-4">{post.content}</p>
-      {post.kind === 'poll' && <Poll />}
+      {post.kind === 'poll' && (
+        <>
+          <Poll
+            postId={post.id}
+            answers={post.answers}
+            userAnswer={post.userAnswer}
+            onPollVote={onPollVote}
+          />
+          <br />
+        </>
+      )}
       <Comment.Editor onComment={(comment) => onComment(post, comment)} />
       <div className="post-comments">
         {post.comments.map((comment) => (
@@ -103,8 +142,21 @@ export function PostContent({ isPreview, post, onComment }) {
 /* --------------------------------- Post ---------------------------------- */
 
 export function Post({
-  post, onVote, onFlag, onFlagCancel, onDelete, onHide, onTag, onLock,
-  onWatch, onComment, isPreview, onPreview, className, ...others
+  post,
+  onVote,
+  onPollVote,
+  onFlag,
+  onFlagCancel,
+  onDelete,
+  onHide,
+  onTag,
+  onLock,
+  onPromote,
+  onComment,
+  isPreview,
+  onPreview,
+  className,
+  ...others
 }) {
   const { user } = useAuth();
   const isLogged = !!user;
@@ -120,7 +172,16 @@ export function Post({
     : {};
 
   const {
-    author, kind, id, createdAt, userVote, score, tags, title, comments, userFlag
+    author,
+    kind,
+    id,
+    createdAt,
+    userVote,
+    score,
+    tags,
+    title,
+    comments,
+    userFlag,
   } = post;
 
   const cls = clsx(
@@ -157,13 +218,17 @@ export function Post({
             </Col>
 
             <Col className="expand-preview">
-              <Flexbox reverse align={"center"} className="h-100">
+              <Flexbox reverse align={'center'} className="h-100">
                 {post.watched && <WatchSymbol className="px-2 ml-2 py-1" />}
 
                 <DropdownButton
                   alignRight
                   id={`post-${id}-actions`}
-                  title={<div className="px-2 py-1"><FaEllipsisH /></div>}
+                  title={
+                    <div className="px-2 py-1">
+                      <FaEllipsisH />
+                    </div>
+                  }
                   variant="link"
                   className="more btn-link"
                   onClick={() => {}}
@@ -201,19 +266,24 @@ export function Post({
 
           <div className="px-3 pb-3 pt-2 w-100">
             <div className="mb-1">
-              {tags.map(tag => (
-                <a href="#" key={tag} className="mr-2 tag" onClick={() => onTag(tag)}>
+              {tags.map((tag) => (
+                <a
+                  href="#"
+                  key={tag}
+                  className="mr-2 tag"
+                  onClick={() => onTag(tag)}
+                >
                   <FaTag className="mr-1" />
                   <span>{tag}</span>
                 </a>
               ))}
             </div>
-
             <PostContent
               isPreview={isPreview}
               post={post}
               onTag={onTag}
               onComment={onComment}
+              onPollVote={onPollVote}
             />
 
             <div className="post-footer mb-2">
@@ -240,7 +310,6 @@ export function Post({
               </FacebookShareButton>
             </div>
           </div>
-
         </div>
       </Card.Body>
     </Card>
@@ -255,6 +324,5 @@ Object.assign(Post, {
   Delete: DeleteModal,
   Report: ReportModal,
 });
-
 
 export default Post;

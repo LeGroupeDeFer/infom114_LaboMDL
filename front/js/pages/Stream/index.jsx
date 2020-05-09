@@ -61,6 +61,7 @@ function StreamContent() {
       );
     },
     onHide: (post) => stream.posts.hide(post),
+    onPollVote: (postId, answerId) => stream.posts.pollVote(postId, answerId),
     onVote: (post, vote) => stream.posts.vote(post, vote),
     onTag: tag => stream.tags.set(tag),
     onWatch: post => stream.posts.watch(post),

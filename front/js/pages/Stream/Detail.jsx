@@ -10,13 +10,16 @@ import { printerr } from 'unanimity/lib';
 function Detail(props) {
   const { id } = useParams();
   const stream = useStream();
-
   const [post, setPost] = useState(null);
   useEffect(() => {
     let isSubscribed = true;
     stream.posts
       .of(id)
-      .then((post) => (isSubscribed ? setPost(post) : undefined))
+      .then((post) => {
+        if (isSubscribed) {
+          setPost(post);
+        }
+      })
       .catch(printerr);
     return () => (isSubscribed = false);
   }, []);
