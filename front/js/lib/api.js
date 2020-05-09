@@ -207,13 +207,6 @@ Object.assign(posts, {
   delete(id) {
     return api(`/post/${id}`, { method: 'DELETE' });
   },
-  report(id, reason) {
-    console.log(id + '  ' + reason);
-    return api(`/post/${id}/report`, {
-      method: 'POST',
-      body: { reason: reason },
-    });
-  },
   hide(id) {
     return api(`/post/${id}/hide`, { method: 'POST' });
   },
@@ -223,8 +216,9 @@ Object.assign(posts, {
   where(query) {
     return api('/posts', { method: 'GET', body: query });
   },
-  flag(id) {
-    return api(`/post/${id}/report`, { method: 'POST' });
+  flag(id, reason, cancel) {
+    if (cancel) return api(`/post/${id}/report`, { method: 'POST' });
+    return api(`/post/${id}/report`, { method: 'POST', body: { reason } });
   },
   hide(id) {
     return api(`/post/${id}/hide`, { method: 'POST' });

@@ -82,6 +82,7 @@ export function Post({
   post,
   onVote,
   onFlag,
+  onFlagCancel,
   onDelete,
   onHide,
   onTag,
@@ -116,6 +117,7 @@ export function Post({
     tags,
     title,
     comments,
+    userFlag,
   } = post;
 
   const cls = clsx(
@@ -166,10 +168,17 @@ export function Post({
               >
                 <HidePost onClick={() => onHide(post)} />
 
-                <Dropdown.Item as="button" onClick={() => onFlag(post)}>
-                  <FaFlag className="mr-2" />
-                  <span>Signaler</span>
-                </Dropdown.Item>
+                {userFlag != null && !userFlag ? (
+                  <Dropdown.Item as="button" onClick={() => onFlag(post)}>
+                    <FaFlag className="mr-2" />
+                    <span>Signaler</span>
+                  </Dropdown.Item>
+                ) : (
+                  <Dropdown.Item as="button" onClick={() => onFlagCancel(post)}>
+                    <FaFlag className="mr-2" />
+                    <span>Annuler signalement</span>
+                  </Dropdown.Item>
+                )}
 
                 {owner && (
                   <Dropdown.Item as="button" onClick={() => onDelete(post)}>

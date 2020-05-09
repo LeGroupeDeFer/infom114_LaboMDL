@@ -31,6 +31,7 @@ function InnerStream({
   onDelete,
   onPreview,
   onFlag,
+  onFlagCancel,
   onHide,
   onVote,
   onTag,
@@ -51,6 +52,7 @@ function InnerStream({
               post={post}
               onDelete={onDelete}
               onFlag={onFlag}
+              onFlagCancel={onFlagCancel}
               onHide={onHide}
               onVote={onVote}
               onPreview={onPreview}
@@ -75,6 +77,7 @@ function InnerStream({
               post={previewPost}
               onDelete={onDelete}
               onFlag={onFlag}
+              onFlagCancel={onFlagCancel}
               onHide={onHide}
               onVote={(vote) => onVote(post, vote)}
               onPreview={onPreview}

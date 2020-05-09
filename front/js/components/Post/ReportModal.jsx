@@ -31,7 +31,10 @@ export default function ReportModal({ post, show, onHide, onFlag }) {
           <Button
             variant="primary"
             className=" mt-1"
-            onClick={() => onFlag(post, reason)}
+            onClick={() => {
+              onFlag(post, reason);
+              setReason('');
+            }}
           >
             Signaler
           </Button>

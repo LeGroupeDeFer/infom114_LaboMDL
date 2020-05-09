@@ -51,6 +51,15 @@ function StreamContent() {
     toast: false,
     toastMsg: '',
     onFlag: (v) => setState((state) => ({ ...state, flagPost: v })),
+    onFlagCancel: (post) => {
+      stream.posts.flag(post, '', true).then(() =>
+        setState((state) => ({
+          ...state,
+          toast: true,
+          toastMsg: 'Votre signalement a été annulé',
+        }))
+      );
+    },
     onHide: (post) => stream.posts.hide(post),
     onVote: (post, vote) => stream.posts.vote(post, vote),
     onTag: (tag) => stream.tags.set(tag),
@@ -59,8 +68,7 @@ function StreamContent() {
     onDelete: (v) => setState((state) => ({ ...state, deletePost: v })),
     onToast: (v) => setState({ ...state, toast: v }),
     onFlagConfirmation: (post, reason) => {
-      console.log(post);
-      stream.posts.flag(post, reason).then(() =>
+      stream.posts.flag(post, reason, false).then(() =>
         setState((state) => ({
           ...state,
           flagPost: false,
