@@ -57,6 +57,21 @@ export function StreamProvider({ children }) {
   // avoid that is to allow react to execute its diff algorithm.
   const [state, setState] = useState({
     posts: {
+      _updatePost(promise) {
+        pushEffect([
+          promise,
+          (post) =>
+            setState((s) => ({
+              ...s,
+              posts: {
+                ...this,
+                value: s.posts.value.map((p) => (p.id === post.id ? post : p)),
+              },
+            })) || post,
+          printerr, // TODO
+        ]);
+        return promise;
+      },
       value: [],
       of(id) {
         const prefetch = this.value.filter((p) => p.id === id);
@@ -92,32 +107,24 @@ export function StreamProvider({ children }) {
         ]);
         return promise;
       },
-      vote(post, vote) {
-        const promise = api.posts.vote(post.id, vote);
-        pushEffect([
-          promise,
-          (post) =>
-            setState((s) => ({
-              ...s,
-              posts: {
-                ...this,
-                value: s.posts.value.map((p) => (p.id === post.id ? post : p)),
-              },
-            })) || post,
-          printerr, // TODO
-        ]);
-        return promise;
-      },
-      comment(comment) {
+      comment(post, comment) {
         trace('TODO - COMMENT');
         return Promise.resolve(comment);
       },
+      vote(post, vote) {
+        return this._updatePost(api.posts.vote(post.id, vote));
+      },
       flag(post, reason) {
-        return api.posts.report(post.id, reason);
+        return this._updatePost(api.posts.flag(post.id, reason));
       },
       hide(post) {
-        trace('TODO - HIDE');
-        return Promise.resolve(post);
+        return this._updatePost(api.posts.hide(post.id));
+      },
+      lock(post) {
+        return this._updatePost(api.posts.lock(post.id));
+      },
+      watch(post) {
+        return this._updatePost(api.posts.watch(post.id));
       },
     },
 

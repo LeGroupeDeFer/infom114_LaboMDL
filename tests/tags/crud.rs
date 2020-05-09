@@ -28,10 +28,43 @@ fn add_new_tag() {
     let response = req.dispatch();
 
     //check the answer is Ok
-    assert_eq!(response.status(), Status::Ok);
+    assert_eq!(response.status(), Status::Forbidden);
 
     // check there is only one tag in db, and this tag is the one we just added
     assert_eq!(TagEntity::all(&conn).unwrap().len(), 1);
+    assert!(TagEntity::by_label(&conn, &tag).unwrap().is_some());
+}
+#[test]
+fn add_new_tag_correct_capability() {
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let tag = "test";
+
+    // login
+    let auth_token_header = init::login_admin();
+
+    // load all tags and assert there is none
+    assert!(!TagEntity::all(&conn)
+        .unwrap()
+        .iter()
+        .any(|item| item.label == tag));
+
+    // create a tag
+    let req = client
+        .post(format!("{}/{}", TAG_ROUTE, &tag))
+        .header(auth_token_header);
+    let response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::Ok);
+
+    // check there is only one tag in db, and this tag is the one we just added
+    assert!(TagEntity::all(&conn)
+        .unwrap()
+        .iter()
+        .any(|item| item.label == tag));
     assert!(TagEntity::by_label(&conn, &tag).unwrap().is_some());
 }
 
@@ -44,8 +77,7 @@ fn insert_already_existing_tag() {
     let tag = "info";
 
     // login
-    let (user, password) = init::get_user(true);
-    let auth_token_header = init::login(&user.email, &password);
+    let auth_token_header = init::login_admin();
 
     // assert the seeder did its job well
     assert!(TagEntity::by_label(&conn, &tag).unwrap().is_some());

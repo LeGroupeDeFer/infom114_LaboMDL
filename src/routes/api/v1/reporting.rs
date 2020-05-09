@@ -3,12 +3,16 @@ use crate::database::DBConnection;
 
 use crate::guards::Auth;
 use crate::http::responders::ApiResult;
-use chrono::{Datelike, NaiveDate, NaiveDateTime, NaiveTime};
+use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use rocket_contrib::json::Json;
 
 pub fn collect() -> Vec<rocket::Route> {
-    routes!(get_users_report, get_tags_report)
-    // get_posts_report
+    routes!(
+        get_users_report,
+        get_tags_report,
+        get_posts_reported,
+        get_activity_report
+    )
 }
 
 #[get("/api/v1/report/users")]
@@ -49,10 +53,10 @@ pub fn get_tags_report(conn: DBConnection, auth: Auth) -> ApiResult<Vec<TagRepor
     Ok(Json(tab))
 }
 
-#[get("/api/v1/report/posts")]
-pub fn get_posts_report(_conn: DBConnection) -> ApiResult<Vec<PostReport>> {
+#[get("/api/v1/report/activity")]
+pub fn get_activity_report(_conn: DBConnection) -> ApiResult<Vec<ActivityReport>> {
     for i in 1..=12 {
-        let first_day_of_month = NaiveDateTime::new(
+        let _first_day_of_month = NaiveDateTime::new(
             NaiveDate::from_ymd(2020, i, 1),
             NaiveTime::from_hms(0, 0, 0),
         );
@@ -61,4 +65,9 @@ pub fn get_posts_report(_conn: DBConnection) -> ApiResult<Vec<PostReport>> {
     }
 
     unimplemented!()
+}
+
+#[get("/api/v1/report/post_reported")]
+pub fn get_posts_reported(conn: DBConnection) -> ApiResult<Vec<ReportedPost>> {
+    Ok(Json(PostEntity::get_flag_report(&*conn)?))
 }

@@ -1,19 +1,20 @@
-use chrono::NaiveDateTime;
-use diesel::expression::functions::date_and_time::now;
+use chrono::Utc;
 use diesel::prelude::*;
 use diesel::MysqlConnection;
 use std::convert::TryFrom;
 
 use crate::database;
-use crate::database::models::post::{RelPostReportEntity, RelPostReportMinima, RelPostVoteMinima};
 use crate::database::models::prelude::*;
 use crate::database::schema::posts::dsl;
 use crate::database::schema::posts_tags::dsl as posts_tags;
 use crate::database::schema::tags::dsl as tags;
 
-use crate::database::tables::{posts_table as table, posts_tags_table, tags_table};
+use crate::database::tables::{
+    posts_reports_table, posts_table as table, posts_tags_table, tags_table,
+};
 use crate::database::SortOrder;
 use crate::lib::{self as conseq, Consequence, EntityError, PostError};
+use std::collections::HashMap;
 
 // TODO - Move this in app state
 const BASE: f64 = 1.414213562;
@@ -103,6 +104,7 @@ pub struct Post {
     pub locked: bool,
     pub hidden: bool,
     pub deleted: bool,
+    pub watched: bool,
     pub votes: u64,
     pub score: i64,
     pub rank: f64,
@@ -150,6 +152,7 @@ impl PostEntity {
                 dsl::deleted_at,
                 dsl::hidden_at,
                 dsl::locked_at,
+                dsl::watched_at,
                 dsl::votes,
                 dsl::score,
                 dsl::rank,
@@ -301,30 +304,34 @@ impl PostEntity {
         order + (elapsed / EASING) as f64
     }
 
-    pub fn toggle_visibility(&self, conn: &MysqlConnection) -> Consequence<()> {
-        if self.hidden_at.is_some() {
-            diesel::update(self)
-                .set(dsl::hidden_at.eq(None as Option<NaiveDateTime>))
-                .execute(conn)?;
+    pub fn toggle_visibility(&mut self, conn: &MysqlConnection) -> Consequence<()> {
+        self.hidden_at = if self.hidden_at.is_none() {
+            Some(Utc::now().naive_local())
         } else {
-            diesel::update(self)
-                .set(dsl::hidden_at.eq(now))
-                .execute(conn)?;
-        }
-
+            None
+        };
+        self.update(conn)?;
+        println!("HIDDEN {}", self.is_hidden());
         Ok(())
     }
 
-    pub fn toggle_lock(&self, conn: &MysqlConnection) -> Consequence<()> {
-        if self.locked_at.is_some() {
-            diesel::update(self)
-                .set(dsl::locked_at.eq(None as Option<NaiveDateTime>))
-                .execute(conn)?;
+    pub fn toggle_lock(&mut self, conn: &MysqlConnection) -> Consequence<()> {
+        self.locked_at = if self.locked_at.is_none() {
+            Some(Utc::now().naive_local())
         } else {
-            diesel::update(self)
-                .set(dsl::locked_at.eq(now))
-                .execute(conn)?;
-        }
+            None
+        };
+        self.update(conn)?;
+        Ok(())
+    }
+
+    pub fn toggle_watch(&mut self, conn: &MysqlConnection) -> Consequence<()> {
+        self.watched_at = if self.watched_at.is_none() {
+            Some(Utc::now().naive_local())
+        } else {
+            None
+        };
+        self.update(conn)?;
         Ok(())
     }
 
@@ -377,6 +384,42 @@ impl PostEntity {
             None => Err(EntityError::InvalidID)?,
         }
         Ok(())
+    }
+
+    pub fn all_flagged(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
+        Ok(table
+            .inner_join(posts_reports_table)
+            .filter(dsl::deleted_at.is_null())
+            .load::<(Self, RelPostReportEntity)>(conn)?
+            .into_iter()
+            .map(move |(entity, _)| entity)
+            .collect::<Vec<Self>>())
+    }
+
+    pub fn get_flag_report(conn: &MysqlConnection) -> Consequence<Vec<ReportedPost>> {
+        let mut tab: HashMap<u32, ReportedPost> = HashMap::new();
+
+        for (post_entity, rel_report_post_entity) in table
+            .inner_join(posts_reports_table)
+            .filter(dsl::deleted_at.is_null())
+            .load::<(Self, RelPostReportEntity)>(conn)?
+            .iter()
+        {
+            let post_report = tab.entry(post_entity.id).or_insert(ReportedPost {
+                post: Post::from(post_entity.clone()),
+                count_flag: 0,
+                reasons: vec![],
+            });
+            post_report.count_flag += 1;
+            if let Some(value) = &rel_report_post_entity.reason {
+                post_report.reasons.push(value.to_string());
+            }
+        }
+
+        Ok(tab
+            .into_iter()
+            .map(move |(_, entity)| entity)
+            .collect::<Vec<ReportedPost>>())
     }
 }
 
@@ -459,6 +502,7 @@ impl From<PostEntity> for Post {
             locked: pe.locked_at.is_some(),
             hidden: pe.hidden_at.is_some(),
             deleted: pe.deleted_at.is_some(),
+            watched: pe.watched_at.is_some(),
             votes: pe.votes,
             score: pe.score,
             rank: pe.rank,

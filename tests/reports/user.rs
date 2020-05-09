@@ -7,11 +7,11 @@ fn get_users_count() {
     let client = init::clean_client();
     init::seed(); // 2 users with seed : admin & alan smithee
 
-    for i in 1..=10 {
+    for _ in 1..=10 {
         init::get_user(false);
     }
 
-    for i in 1..=5 {
+    for _ in 1..=5 {
         init::get_user(true);
     }
 
@@ -35,17 +35,17 @@ fn get_users_count_without_capabilities() {
     let client = init::clean_client();
     init::seed(); // 2 users with seed : admin & alan smithee
 
-    for i in 1..=10 {
+    for _ in 1..=10 {
         init::get_user(false);
     }
 
-    for i in 1..=4 {
+    for _ in 1..=4 {
         init::get_user(true);
     }
 
     let (user, password) = init::get_user(true);
 
-    let mut response = client
+    let response = client
         .get("/api/v1/report/users")
         .header(init::login(&user.email, &password))
         .dispatch();
@@ -57,14 +57,14 @@ fn get_users_count_unauthenticatedd() {
     let client = init::clean_client();
     init::seed(); // 2 users with seed : admin & alan smithee
 
-    for i in 1..=10 {
+    for _ in 1..=10 {
         init::get_user(false);
     }
 
-    for i in 1..=5 {
+    for _ in 1..=5 {
         init::get_user(true);
     }
 
-    let mut response = client.get("/api/v1/report/users").dispatch();
+    let response = client.get("/api/v1/report/users").dispatch();
     assert_eq!(response.status(), Status::Unauthorized);
 }

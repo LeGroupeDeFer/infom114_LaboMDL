@@ -28,7 +28,7 @@ function KindSection() {
             key={kind.key}
             className={clsx(
               'kind-choice',
-              trace(stream.kind.value.key === kind.key) && 'active'
+              stream.kind.value.key === kind.key && 'active'
             )}
             onClick={() => stream.kind.set(kind)}
           >
@@ -59,6 +59,7 @@ function StreamContent() {
     onDelete: (v) => setState((state) => ({ ...state, deletePost: v })),
     onToast: (v) => setState({ ...state, toast: v }),
     onFlagConfirmation: (post, reason) => {
+      console.log(post);
       stream.posts.flag(post, reason).then(() =>
         setState((state) => ({
           ...state,

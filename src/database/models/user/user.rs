@@ -1,5 +1,5 @@
 use diesel::prelude::*;
-use diesel::{sql_query, MysqlConnection};
+use diesel::MysqlConnection;
 use regex::Regex;
 
 use crate::database::models::prelude::*;
@@ -15,7 +15,6 @@ use crate::database;
 use crate::lib::consequence::*;
 use chrono::NaiveDateTime;
 use diesel::dsl::count;
-use diesel::expression::functions::date_and_time::now;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct User {

@@ -223,6 +223,18 @@ Object.assign(posts, {
   where(query) {
     return api('/posts', { method: 'GET', body: query });
   },
+  flag(id) {
+    return api(`/post/${id}/report`, { method: 'POST' });
+  },
+  hide(id) {
+    return api(`/post/${id}/hide`, { method: 'POST' });
+  },
+  lock(id) {
+    return api(`/post/${id}/lock`, { method: 'POST' });
+  },
+  watch(id) {
+    return api(`/post/${id}/watch`, { method: 'POST' });
+  },
 });
 
 /* --------------------------------- Tags --------------------------------- */
@@ -310,6 +322,10 @@ function tagReport() {
   return api('/report/tags');
 }
 
+function postReport() {
+  return api('/report/activity');
+}
+
 api.tags = tags;
 api.tags.add = addTag;
 api.tags.remove = removeTag;
@@ -326,5 +342,6 @@ api.users.removeRole = removeRoleFromUser;
 
 api.users.report = userReport;
 api.tags.report = tagReport;
+api.posts.report = postReport;
 
 export default api;

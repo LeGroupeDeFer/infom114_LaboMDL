@@ -37,6 +37,7 @@ function InnerStream({
   onToast,
   onDeleteConfirmation,
   onFlagConfirmation,
+  onPromote,
 }) {
   const stream = useStream();
 
@@ -54,6 +55,7 @@ function InnerStream({
               onVote={onVote}
               onPreview={onPreview}
               onTag={onTag}
+              onPromote={onPromote}
             />
           </Col>
         </Row>

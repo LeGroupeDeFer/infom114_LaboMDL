@@ -3,6 +3,7 @@ import { useAuth } from '../context';
 import { Container, Row, Col } from 'react-bootstrap';
 import { useHistory, Link } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+import {trace} from "../lib";
 
 
 export function Authenticated(Component) {
@@ -40,8 +41,8 @@ export const WhenLogged = Component => props => {
 
 
 export const May = (cap, Component) => props => {
-  const caps = useAuth().token.caps || [];
-  if (caps.some(e => e.name === cap))
+  const { token } = useAuth();
+  if (token && token.cap.some(e => e.name === cap))
     return <Component {...props} />;
   return <></>;
 }
