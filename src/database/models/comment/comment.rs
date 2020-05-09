@@ -1,6 +1,5 @@
 use crate::database;
 use crate::database::models::prelude::*;
-// use crate::database::schema::comments;
 use crate::database::tables::comments_table as table;
 use crate::lib::Consequence;
 use crate::database::schema::comments::dsl;

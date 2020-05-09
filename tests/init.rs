@@ -284,6 +284,15 @@ pub fn get_comment_entity(ppost_id: u32, locked: bool, hidden: bool, deleted: bo
     CommentEntity::by_id(&conn, &id).unwrap().unwrap()
 }
 
+pub fn get_unexisting_comment_id() -> u32 {
+    let conn = database_connection();
+    let mut unexisting_id = 12;
+    while CommentEntity::by_id(&conn, &unexisting_id).unwrap().is_some() {
+        unexisting_id += 1;
+    }
+    unexisting_id
+}
+
 /// Get the admin that is generated in the seeding process
 /// The admin has by default the following characteristics :
 ///

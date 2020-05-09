@@ -19,7 +19,9 @@ pub fn collect() -> Vec<Route> {
     routes!(
         get,
         create_comment,
-        create_reply_comment,
+        create_reply_to_comment,
+        get_comment_authenticated,
+        get_comment_unauth
     )
 }
 
@@ -53,16 +55,22 @@ fn create_comment(
     data:Json<NewComment>
 ) -> ApiResult<Comment> {
     let comment_request = data.into_inner();
+    let can_view_hidden = auth.has_capability(&*conn, "comment:view_hidden");
 
     if comment_request.content == "" {
         Err(EntityError::InvalidAttribute)?;
     }
 
     if post_guard.post().is_deleted() 
-        || post_guard.post().is_locked()
-        || post_guard.post().is_hidden()
+        || (post_guard.post().is_hidden() && !can_view_hidden)
     {
-        Err(AuthError::MissingCapability)?;
+        Err(EntityError::InvalidID)?
+    } 
+    
+    if post_guard.post().is_locked() 
+        || (post_guard.post().is_hidden() && can_view_hidden)
+    {
+        Err(AuthError::MissingCapability)?
     }
 
     let new_comment = CommentMinima {
@@ -77,7 +85,7 @@ fn create_comment(
 }
 
 #[post("/api/v1/comment/<_comment_id>", format = "json", data = "<data>")]
-fn create_reply_comment(
+fn create_reply_to_comment(
     conn: DBConnection, 
     auth: Auth, 
     comment_guard: CommentGuard, 
@@ -85,21 +93,29 @@ fn create_reply_comment(
     data:Json<NewComment>
 ) -> ApiResult<Comment> {
     let comment_request = data.into_inner();
+    let can_view_hidden = auth.has_capability(&*conn, "comment:view_hidden");
 
     if comment_request.content == "" {
-        Err(EntityError::InvalidAttribute)?;
+        Err(EntityError::InvalidAttribute)?
     }
 
     if comment_guard.comment().is_deleted() 
-        || comment_guard.comment().is_locked()
-        || comment_guard.comment().is_hidden()
+        || (comment_guard.comment().is_hidden() && !can_view_hidden)
     {
-        Err(AuthError::MissingCapability)?;
+        Err(EntityError::InvalidID)?
+    } 
+    
+    if comment_guard.comment().is_locked() 
+        || (comment_guard.comment().is_hidden() && can_view_hidden)
+    {
+        Err(AuthError::MissingCapability)?
     }
 
     let post = PostEntity::by_id(&*conn, &comment_guard.comment().post_id).unwrap().unwrap();
-    if post.is_deleted() || post.is_locked() || post.is_hidden() {
-        Err(AuthError::MissingCapability)?;
+    if post.is_deleted() || (post.is_hidden() && !can_view_hidden)  {
+        Err(EntityError::InvalidID)?
+    } else if post.is_locked() || (post.is_hidden() && can_view_hidden) {
+        Err(AuthError::MissingCapability)?
     }
 
     let new_comment = CommentMinima {
@@ -111,4 +127,50 @@ fn create_reply_comment(
 
     let ce = CommentEntity::insert_either(&*conn, &new_comment)?;
     Ok(Json(Comment::from(ce)))
+}
+
+
+#[get("/api/v1/comment/<_comment_id>", rank = 1)]
+fn get_comment_authenticated(
+    conn: DBConnection,
+    auth: ForwardAuth,
+    comment_guard: CommentGuard, 
+    _comment_id: u32
+) -> ApiResult<Comment> {
+    
+    if comment_guard.comment().is_deleted() 
+        || (comment_guard.comment().is_hidden() 
+            && !auth.deref().has_capability(&*conn, "comment:view_hidden")) 
+    {
+        Err(EntityError::InvalidID)?
+    }
+
+    let post = PostEntity::by_id(&*conn, &comment_guard.comment().post_id).unwrap().unwrap();
+    if post.is_deleted() || 
+        (post.is_hidden() && !auth.deref().has_capability(&*conn, "comment:view_hidden")) 
+    {
+        Err(EntityError::InvalidID)?
+    }
+
+    let mut c = Comment::from(comment_guard.comment_clone());
+    // c.set_user_info(&*conn, &auth.deref().sub);
+    Ok(Json(c))
+}
+
+#[get("/api/v1/comment/<_comment_id>", rank = 2)] 
+fn get_comment_unauth(
+    conn: DBConnection, 
+    comment_guard: CommentGuard, 
+    _comment_id: u32
+) -> ApiResult<Comment> {
+    if comment_guard.comment().is_deleted() || comment_guard.comment().is_hidden() {
+        Err(EntityError::InvalidID)?
+    }
+
+    let post = PostEntity::by_id(&*conn, &comment_guard.comment().post_id).unwrap().unwrap();
+    if post.is_deleted() || post.is_hidden() {
+        Err(EntityError::InvalidID)?
+    }
+
+    Ok(Json(Comment::from(comment_guard.comment_clone())))
 }
