@@ -9,7 +9,7 @@ import Col from 'react-bootstrap/Col';
 import Moment from 'react-moment';
 import { FaEllipsisH, FaEyeSlash, FaFacebookSquare, FaFlag, FaLock, FaTag, FaTrashAlt } from 'react-icons/fa';
 
-const FlaggedPost = ({ post }) => {
+const FlaggedPost = ({ post, count_flag, reasons}) => {
 
     const { author, type, id, createdAt, title, tags, content } = post;
 
@@ -18,8 +18,8 @@ const FlaggedPost = ({ post }) => {
             <Card.Header>
                 <Container className="p-0">
                     <Row>
-                        <Col className="expand-preview">
-                            <h5 className="ml-1 expand-preview">
+                        <Col className="col-sm-10">
+                            <h5 className="ml-1">
                                 <Badge className={`post-${type} mr-1`}>{type}</Badge>
                                 <span className="mr-1">{title}</span>
 
@@ -32,6 +32,9 @@ const FlaggedPost = ({ post }) => {
                                     <Moment locale="fr" fromNow className="ml-1">{createdAt}</Moment>
                                 </span>
                             </h5>
+                        </Col>
+                        <Col className="mr-auto">
+                            <span>A été signalé {count_flag} fois </span><FaFlag />
                         </Col>
                     </Row>
                 </Container>
@@ -50,16 +53,23 @@ const FlaggedPost = ({ post }) => {
                                 ))}
                             </div>
 
-                            {content}                            
-                            
+                            {content}
+
                         </Card.Text>
-
-                        <div className="post-footer mb-2">
-
-                        </div>
                     </div>
                 </div>
             </Card.Body>
+            <Card.Footer>
+                {
+                    reasons.length > 1 ? <b>Raisons du signalement :</b> : <b>Raison du signalement</b> 
+                }
+                <br /><hr />
+                {
+                    reasons.map((reason, i) => {
+                        return (i + 1 === reasons.length ? <> {reason}<br /></> : <>{reason}<br /><hr /></>)
+                    })
+                }
+            </Card.Footer>
 
         </Card>
     );
