@@ -137,7 +137,6 @@ const UsersPage = () => {
     <>
       <Notification />
       <Title icon={<FaUsers />} description='Gestion des utilisateurs' />
-      <br />
       {users.length
         ? users.map((user) => {
           return (
@@ -146,7 +145,7 @@ const UsersPage = () => {
             </Row>
           )
         })
-        : <h1>No users</h1>
+        : <b>Vous n'avez pas le droit d'accéder à cette page</b>
       }
     </>
   )
@@ -316,58 +315,11 @@ const StatisticsPage = () => {
 
 const FlaggedPage = () => {
 
-  let post = 
-    {
-        post_id: 0,
-        title: "Titre",
-        type: "info",
-        content: "Lorem Ipsum mescouillus estes grandes",
-        created_on: "23/12/20",
-        updated_on: "25/12/20",
-        voteCount: 0,
-        author: {
-            id: 0,
-            firstname: "John",
-            lastname: "Doe",
-            email: "John@student.unamur.be",
-            roles: [
-                {
-                name: "admin",
-                color: "string",
-                capabilities: [
-                    {
-                    name: "string"
-                    }
-                ]
-                }
-            ]
-        },
-        tags: [
-          {
-              id: "32",
-              label: "droit"
-          },
-                  {
-              id: "23",
-              label: "arsenal"
-          },
-                  {
-              id: "12",
-              label: "info"
-          }
-      ]
-  };
-  let tmp = [{ post, count_flag: 2, reasons: ["Mais c'est de la MERDE !", "Encore un tocard de carolo"] }, 
-  { post, count_flag: 2, reasons: ["Mais c'est de la MERDE !", "Encore un tocard de carolo"] }, 
-  { post, count_flag: 2, reasons: ["Mais c'est de la MERDE !", "Encore un tocard de carolo"] }, 
-  { post, count_flag: 2, reasons: ["Mais c'est de la MERDE !", "Encore un tocard de carolo"] }, 
-             { post, count_flag: 3, reasons: ["Mais c'est de la MERDE !", "A chier !", "Encore un tocard de carolo"] }];
-
-  const [flaggedPosts, setFlaggedPosts] = useState(tmp);
+  const [flaggedPosts, setFlaggedPosts] = useState([]);
 
   const fetchFlaggedPosts = async () => {
     let posts = await api.posts.flagged();
-    //setFlaggedPosts(posts);
+    setFlaggedPosts(posts);
   };
   
   useEffect(() => {
@@ -378,20 +330,21 @@ const FlaggedPage = () => {
     <>
     <Title icon={<FaFlag />} description='Gestion des posts signalés' />
     <Container>
-          {
-            flaggedPosts.map(flaggedPost => {
-              return (
-                <>
-                <Row>
-                  <Col>
-                  <FlaggedPost post={flaggedPost.post} count_flag={flaggedPost.count_flag} reasons={flaggedPost.reasons} />
-                  </Col>
-                </Row>
-                <br />
-                </>
-                );
-            })
-          }
+
+      {
+        flaggedPosts.length !== 0 ? flaggedPosts.map(flaggedPost => {
+          return (
+            <>
+            <Row>
+              <Col>
+              <FlaggedPost post={flaggedPost.post} count_flag={flaggedPost.count_flag} reasons={flaggedPost.reasons} />
+              </Col>
+            </Row>
+            <br />
+            </>
+            )
+          }) :  <b>Pas de postes signalés</b> 
+      }
     </Container>
     </>
   );
@@ -486,7 +439,7 @@ const RolesPage = () => {
             </Row>
           )
         })
-        : <h1>No roles</h1>
+        : <b>Vous n'avez pas le droit d'accéder à cette page</b>
       }
     </>
   );
@@ -596,7 +549,7 @@ const TagsPage = () => {
             </Row>
           )
         })
-        : <h1>No tags</h1>
+        : <b>Vous n'avez pas le droit d'accéder à cette page</b>
       }
     </>
   );
