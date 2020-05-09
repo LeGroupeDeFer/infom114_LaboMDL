@@ -5,15 +5,17 @@ use diesel::MysqlConnection;
 use std::convert::TryFrom;
 
 use crate::database;
-use crate::database::models::post::{RelPostReportEntity, RelPostReportMinima, RelPostVoteMinima};
 use crate::database::models::prelude::*;
 use crate::database::schema::posts::dsl;
 use crate::database::schema::posts_tags::dsl as posts_tags;
 use crate::database::schema::tags::dsl as tags;
 
-use crate::database::tables::{posts_table as table, posts_tags_table, tags_table};
+use crate::database::tables::{
+    posts_reports_table, posts_table as table, posts_tags_table, tags_table,
+};
 use crate::database::SortOrder;
 use crate::lib::{self as conseq, Consequence, EntityError, PostError};
+use std::collections::HashMap;
 
 // TODO - Move this in app state
 const BASE: f64 = 1.414213562;
@@ -150,6 +152,7 @@ impl PostEntity {
                 dsl::deleted_at,
                 dsl::hidden_at,
                 dsl::locked_at,
+                dsl::watched_at,
                 dsl::votes,
                 dsl::score,
                 dsl::rank,
@@ -391,6 +394,42 @@ impl PostEntity {
             None => Err(EntityError::InvalidID)?,
         }
         Ok(())
+    }
+
+    pub fn all_flagged(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
+        Ok(table
+            .inner_join(posts_reports_table)
+            .filter(dsl::deleted_at.is_null())
+            .load::<(Self, RelPostReportEntity)>(conn)?
+            .into_iter()
+            .map(move |(entity, _)| entity)
+            .collect::<Vec<Self>>())
+    }
+
+    pub fn get_flag_report(conn: &MysqlConnection) -> Consequence<Vec<ReportedPost>> {
+        let mut tab: HashMap<u32, ReportedPost> = HashMap::new();
+
+        for (post_entity, rel_report_post_entity) in table
+            .inner_join(posts_reports_table)
+            .filter(dsl::deleted_at.is_null())
+            .load::<(Self, RelPostReportEntity)>(conn)?
+            .iter()
+        {
+            let post_report = tab.entry(post_entity.id).or_insert(ReportedPost {
+                post: Post::from(post_entity.clone()),
+                count_flag: 0,
+                reasons: vec![],
+            });
+            post_report.count_flag += 1;
+            if let Some(value) = &rel_report_post_entity.reason {
+                post_report.reasons.push(value.to_string());
+            }
+        }
+
+        Ok(tab
+            .into_iter()
+            .map(move |(_, entity)| entity)
+            .collect::<Vec<ReportedPost>>())
     }
 }
 
