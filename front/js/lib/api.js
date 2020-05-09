@@ -302,16 +302,20 @@ function removeRoleFromUser(userID, roleID) {
   });
 }
 
-function userReport() {
+function userStat() {
   return api('/report/users');
 }
 
-function tagReport() {
+function tagStat() {
   return api('/report/tags');
 }
 
-function postReport() {
+function postStat() {
   return api('/report/activity');
+}
+
+function postFlagged() {
+  return api('/report/post_reported');
 }
 
 api.tags = tags;
@@ -328,8 +332,10 @@ api.users = users;
 api.users.addRole = addRoleToUser;
 api.users.removeRole = removeRoleFromUser;
 
-api.users.report = userReport;
-api.tags.report = tagReport;
-api.posts.report = postReport;
+api.users.report = userStat;
+api.tags.report = tagStat;
+api.posts.report = postStat;
+
+api.posts.flagged = postFlagged;
 
 export default api;

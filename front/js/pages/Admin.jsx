@@ -12,9 +12,10 @@ import Role from '../components/Admin/Role';
 import Toast from '../components/Admin/Notification';
 import AddForm from '../components/Admin/AddForm';
 import User from '../components/Admin/User';
-import {Authenticated} from '../components/';
+import FlaggedPost from '../components/Admin/FlaggedPost';
+import { Authenticated } from '../components/';
 
-import { FaTags, FaUsers, FaChartLine, FaClipboardCheck, FaTag } from 'react-icons/fa';
+import { FaTags, FaUsers, FaChartLine, FaClipboardCheck, FaFlag } from 'react-icons/fa';
 
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -28,18 +29,21 @@ import clsx from 'clsx';
 
 function Admin(props) {
 
-  const menuList = ['tags', 'roles', 'users', 'reporting'];
-  const [currentMenu, setCurrentMenu] = useState('tags');
+  const menuList = ['Tags', 'Roles', 'Users', 'Flagged Posts', 'Statistics'];
+  const [currentMenu, setCurrentMenu] = useState('Tags');
 
   const Page = () => {
-    if (currentMenu === 'tags') {
+    if (currentMenu === 'Tags') {
       return <TagsPage />;
     }
-    else if (currentMenu === 'users') {
+    else if (currentMenu === 'Users') {
       return <UsersPage />;
     }
-    else if (currentMenu === 'reporting') {
-      return <ReportingPage />;
+    else if (currentMenu === 'Statistics') {
+      return <StatisticsPage />;
+    }
+    else if (currentMenu === 'Flagged Posts') {
+      return <FlaggedPage />;
     }
     else {
       return <RolesPage />;
@@ -61,13 +65,20 @@ function Admin(props) {
   );
 };
 
+const Title = ({icon, description}) => {
+
+  return(
+    <><h2 className="mb-3 mt-3"><span className="mr-3">{icon}</span> {description}</h2><hr/></>
+  );
+}
+
 const MenuBar = ({ currentMenu, onClick, menuList }) => {
 
-  const icons = [<FaTags />, <FaClipboardCheck />, <FaUsers />, <FaChartLine />];
-//<a key={i} className={currentMenu == menu ? 'active mr-5' : 'mr-5'} onClick={() => onClick(menu)}>{icons[i]}</a>
+  const icons = [<FaTags />, <FaClipboardCheck />, <FaUsers />, <FaFlag />, <FaChartLine />];
+  //<a key={i} className={currentMenu == menu ? 'active mr-5' : 'mr-5'} onClick={() => onClick(menu)}>{icons[i]}</a>
 
   return (
-    
+
     <Row>
       <Col xs={2}></Col>
       <Col xs={8}>
@@ -125,7 +136,7 @@ const UsersPage = () => {
   return (
     <>
       <Notification />
-      <br />
+      <Title icon={<FaUsers />} description='Gestion des utilisateurs' />
       {users.length
         ? users.map((user) => {
           return (
@@ -134,35 +145,35 @@ const UsersPage = () => {
             </Row>
           )
         })
-        : <h1>No users</h1>
+        : <b>Vous n'avez pas le droit d'accéder à cette page</b>
       }
     </>
   )
 };
 
-const ReportingPage = () => {
+const StatisticsPage = () => {
 
   const colors = ["#A0C55F", "#0D6759", "#1B4079", "#FC440F"];
-  const [graphData, setGraphData] = useState({connect:[], active:[], tag:[], post:[]}); 
-  const [fullMark, setFullMark] = useState([0,50]); //ladder for the radar graph
+  const [graphData, setGraphData] = useState({ connect: [], active: [], tag: [], post: [] });
+  const [fullMark, setFullMark] = useState([0, 50]); //ladder for the radar graph
   const [notification, setNotification] = useState("");
   const Notification = () => notification === "" ? <></> : <Toast text={notification} />;
 
   //API call here
   useEffect(() => {
     const call = () => {
-      fetchData().then( answer => {
+      fetchData().then(answer => {
         setGraphData(answer);
-      }).catch( error => {
+      }).catch(error => {
         let reason = error.reason == null ? "La demande n'a pu être traitée" : error.reason;
         setNotification("");
         setNotification(reason);
         console.log(error);
-      }); 
+      });
     };
 
     call();
-    
+
     // Update every XX seconds the graphs
     setInterval(() => {
       //Fetching and setting data for the graphs
@@ -177,11 +188,11 @@ const ReportingPage = () => {
     let usersData = await api.users.report();
     //Tags data
     let tagsData = await api.tags.report();
-    let max = tagsData.map( tag => {
+    let max = tagsData.map(tag => {
       return Math.max(tag.poll, tag.info, tag.idea);
     })
-    max = Math.max(...max) > 0 ? Math.max(...max) : 1 ;
-    setFullMark( [0, Math.ceil(max/10)*10] );  //Setting the ladder 
+    max = Math.max(...max) > 0 ? Math.max(...max) : 1;
+    setFullMark([0, Math.ceil(max / 10) * 10]);  //Setting the ladder 
     //Posts data
     //FIXME - waiting for the backend
 
@@ -222,84 +233,122 @@ const ReportingPage = () => {
       { name: 'Décembre', nouveau: 0, interaction: 0 }
     ];
 
-    return {connect, active, tag, post};
+    return { connect, active, tag, post };
   };
 
   return (
     <>
-    <Notification />
-    <Container>
-      <Row>
-        <Col md={4}>
-          <Card style={{ padding: '1rem' }}>
-            <Card.Title>Utilisateurs</Card.Title>
-            <Card.Subtitle className="mb-2 text-muted">Nombre d'utilsateurs actif et non actif</Card.Subtitle>
-            <ResponsiveContainer height={300}>
-              <PieChart margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <Pie data={graphData.active} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={55}>
-                  {
-                    graphData.active.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={colors[index]} />
-                    ))
-                  }
-                </Pie>
-                <Pie data={graphData.connect} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={65} outerRadius={80} label>
-                  {
-                    graphData.connect.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={colors[index+2]} />
-                    ))
-                  }
-                </Pie>
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </Card>
-          <hr />
-        </Col>
+      <Notification />
+      <Title icon={<FaChartLine />} description='Statistiques globales' />
+      <Container>
+        <Row>
+          <Col md={4}>
+            <Card style={{ padding: '1rem' }}>
+              <Card.Title>Utilisateurs</Card.Title>
+              <Card.Subtitle className="mb-2 text-muted">Nombre d'utilsateurs actif et non actif</Card.Subtitle>
+              <ResponsiveContainer height={300}>
+                <PieChart margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <Pie data={graphData.active} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={55}>
+                    {
+                      graphData.active.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={colors[index]} />
+                      ))
+                    }
+                  </Pie>
+                  <Pie data={graphData.connect} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={65} outerRadius={80} label>
+                    {
+                      graphData.connect.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={colors[index + 2]} />
+                      ))
+                    }
+                  </Pie>
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </Card>
+            <hr />
+          </Col>
 
 
-        <Col md={8}>
-          <Card style={{ padding: '1rem' }}>
-            <Card.Title>Tags et leur utilisation</Card.Title>
-            <Card.Subtitle className="mb-2 text-muted">Montre le nombre de citation par tag ainsi que le type de post associé</Card.Subtitle>
-            <ResponsiveContainer height={300}>
-              <RadarChart outerRadius={90} margin={{ top: 5, right: 30, left: 20, bottom: 5 }} data={graphData.tag}>
-                <PolarGrid />
-                <PolarAngleAxis dataKey="tag" />
-                <PolarRadiusAxis angle={30} domain={fullMark} />
-                <Radar name="Informationnels" dataKey="info" stroke={colors[2]} fill={colors[2]} fillOpacity={0.2} />
-                <Radar name="Proposition d'idée" dataKey="idea" stroke={colors[1]} fill={colors[1]} fillOpacity={0.4} />
-                <Radar name="Sondages" dataKey="poll" stroke={colors[0]} fill={colors[0]} fillOpacity={0.6} />
-                <Legend />
-              </RadarChart>
-            </ResponsiveContainer>
-          </Card>
-          <hr />
-        </Col>
+          <Col md={8}>
+            <Card style={{ padding: '1rem' }}>
+              <Card.Title>Tags et leur utilisation</Card.Title>
+              <Card.Subtitle className="mb-2 text-muted">Montre le nombre de citation par tag ainsi que le type de post associé</Card.Subtitle>
+              <ResponsiveContainer height={300}>
+                <RadarChart outerRadius={90} margin={{ top: 5, right: 30, left: 20, bottom: 5 }} data={graphData.tag}>
+                  <PolarGrid />
+                  <PolarAngleAxis dataKey="tag" />
+                  <PolarRadiusAxis angle={30} domain={fullMark} />
+                  <Radar name="Informationnels" dataKey="info" stroke={colors[2]} fill={colors[2]} fillOpacity={0.2} />
+                  <Radar name="Proposition d'idée" dataKey="idea" stroke={colors[1]} fill={colors[1]} fillOpacity={0.4} />
+                  <Radar name="Sondages" dataKey="poll" stroke={colors[0]} fill={colors[0]} fillOpacity={0.6} />
+                  <Legend />
+                </RadarChart>
+              </ResponsiveContainer>
+            </Card>
+            <hr />
+          </Col>
 
 
-        <Col md={12}>
-          <Card style={{ padding: '1rem' }}>
-            <Card.Title>Postes créés sur l'année</Card.Title>
-            <Card.Subtitle className="mb-2 text-muted">Nombre de nouveaux postes depuis le début de l'année, ainsi que l'interaction liée</Card.Subtitle>
-            <ResponsiveContainer height={250}>
-              <ComposedChart data={graphData.post} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <RechartsTooltip />
-                <Legend />
-                <CartesianGrid stroke="#f5f5f5" />
-                <Bar dataKey="nouveau" barSize={20} fill={colors[0]} />
-                <Line type="monotone" dataKey="interaction" stroke={colors[1]} />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+          <Col md={12}>
+            <Card style={{ padding: '1rem' }}>
+              <Card.Title>Postes créés sur l'année</Card.Title>
+              <Card.Subtitle className="mb-2 text-muted">Nombre de nouveaux postes depuis le début de l'année, ainsi que l'interaction liée</Card.Subtitle>
+              <ResponsiveContainer height={250}>
+                <ComposedChart data={graphData.post} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <RechartsTooltip />
+                  <Legend />
+                  <CartesianGrid stroke="#f5f5f5" />
+                  <Bar dataKey="nouveau" barSize={20} fill={colors[0]} />
+                  <Line type="monotone" dataKey="interaction" stroke={colors[1]} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
     </>
   );
 }
+
+const FlaggedPage = () => {
+
+  const [flaggedPosts, setFlaggedPosts] = useState([]);
+
+  const fetchFlaggedPosts = async () => {
+    let posts = await api.posts.flagged();
+    setFlaggedPosts(posts);
+  };
+  
+  useEffect(() => {
+    fetchFlaggedPosts();
+  }, []);
+
+  return (
+    <>
+    <Title icon={<FaFlag />} description='Gestion des posts signalés' />
+    <Container>
+
+      {
+        flaggedPosts.length !== 0 ? flaggedPosts.map(flaggedPost => {
+          return (
+            <>
+            <Row>
+              <Col>
+              <FlaggedPost post={flaggedPost.post} count_flag={flaggedPost.count_flag} reasons={flaggedPost.reasons} />
+              </Col>
+            </Row>
+            <br />
+            </>
+            )
+          }) :  <b>Pas de postes signalés</b> 
+      }
+    </Container>
+    </>
+  );
+};
 
 const RolesPage = () => {
 
@@ -377,11 +426,10 @@ const RolesPage = () => {
   return (
     <>
       <Notification />
-      <br />
+      <Title icon={<FaClipboardCheck />} description='Gestion des roles' />
 
       <AddForm add={addRole} />
       <br />
-
       {roles.length
         ? roles.map((role, i) => {
           return (
@@ -391,7 +439,7 @@ const RolesPage = () => {
             </Row>
           )
         })
-        : <h1>No roles</h1>
+        : <b>Vous n'avez pas le droit d'accéder à cette page</b>
       }
     </>
   );
@@ -488,12 +536,11 @@ const TagsPage = () => {
 
   return (
     <>
-      <Notification/>
-      <br />
+      <Notification />
+      <Title icon={<FaTags />} description='Gestion des tags' />
 
       <AddForm add={addTag} />
       <br />
-
       {tags.length
         ? tags.map((tag, i) => {
           return (
@@ -502,7 +549,7 @@ const TagsPage = () => {
             </Row>
           )
         })
-        : <h1>No tags</h1>
+        : <b>Vous n'avez pas le droit d'accéder à cette page</b>
       }
     </>
   );
