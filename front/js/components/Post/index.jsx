@@ -1,7 +1,7 @@
 import React  from 'react';
 import { Link } from 'react-router-dom';
-import {Container, Row, Col, Badge, Dropdown, DropdownButton, Card} from 'react-bootstrap';
-import { FaEllipsisH, FaEyeSlash, FaFacebookSquare, FaFlag, FaLock, FaTag, FaTrashAlt, FaCrown } from 'react-icons/fa';
+import {Container, Row, Col, Badge, Dropdown, DropdownButton, Card, OverlayTrigger, Tooltip} from 'react-bootstrap';
+import { FaEllipsisH, FaEyeSlash, FaFacebookSquare, FaFlag, FaLock, FaTag, FaTrashAlt, FaDove } from 'react-icons/fa';
 import { FacebookShareButton } from "react-share";
 import { MdModeComment } from "react-icons/md";
 import Moment from 'react-moment';
@@ -14,6 +14,7 @@ import Comment from './Comment';
 import DeleteModal from './DeleteModal';
 import Poll from "./Poll";
 import clsx from "clsx";
+import { Circle, Flexbox } from "../";
 
 
 const HidePost = May('post:hide', ({ onClick }) => (
@@ -32,14 +33,24 @@ const LockPost = May('post:lock', ({ onClick }) => (
 
 const WatchPost = May('post:watch', ({ onClick }) => (
   <Dropdown.Item as="button" onClick={onClick}>
-    <FaCrown className="mr-2" />
+    <FaDove className="mr-2" />
     <span>Promouvoir</span>
   </Dropdown.Item>
 ));
 
 
-export function PostContent({ isPreview, post, onComment }) {
+const WatchSymbol = ({ className }) => (
+  <OverlayTrigger
+    placement="left"
+    overlay={<Tooltip>Une attention spéciale est portée à cette publication</Tooltip>}
+  >
+    <Circle width="2em" className={clsx('bg-secondary', 'text-light', 'watch-symbol', className)}>
+      <FaDove />
+    </Circle>
+  </OverlayTrigger>
+);
 
+export function PostContent({ isPreview, post, onComment }) {
   if (isPreview)
     return (
       <div className="post-preview">
@@ -109,33 +120,37 @@ export function Post({
             </Col>
 
             <Col className="expand-preview">
-              <DropdownButton
-                alignRight
-                id={`post-${id}-actions`}
-                title={<div className="px-2 py-1"><FaEllipsisH /></div>}
-                variant="link"
-                className="float-right more btn-link"
-                onClick={() => {}}
-                href="#"
-              >
-                <HidePost onClick={() => onHide(post)} />
+              <Flexbox reverse align={"center"} className="h-100">
+                {post.watched && <WatchSymbol className="px-2 ml-2 py-1" />}
 
-                <Dropdown.Item as="button" onClick={() => onFlag(post)}>
-                  <FaFlag className="mr-2" />
-                  <span>Signaler</span>
-                </Dropdown.Item>
+                <DropdownButton
+                  alignRight
+                  id={`post-${id}-actions`}
+                  title={<div className="px-2 py-1"><FaEllipsisH /></div>}
+                  variant="link"
+                  className="more btn-link"
+                  onClick={() => {}}
+                  href="#"
+                >
+                  <HidePost onClick={() => onHide(post)} />
 
-                {owner && (
-                  <Dropdown.Item as="button" onClick={() => onDelete(post)}>
-                    <FaTrashAlt className="mr-2" />
-                    <span>Supprimer</span>
+                  <Dropdown.Item as="button" onClick={() => onFlag(post)}>
+                    <FaFlag className="mr-2" />
+                    <span>Signaler</span>
                   </Dropdown.Item>
-                )}
 
-                <LockPost onClick={() => onLock(post)} />
+                  {owner && (
+                    <Dropdown.Item as="button" onClick={() => onDelete(post)}>
+                      <FaTrashAlt className="mr-2" />
+                      <span>Supprimer</span>
+                    </Dropdown.Item>
+                  )}
 
-                <WatchPost onClick={() => onWatch(post)} />
-              </DropdownButton>
+                  <LockPost onClick={() => onLock(post)} />
+
+                  <WatchPost onClick={() => onWatch(post)} />
+                </DropdownButton>
+              </Flexbox>
             </Col>
           </Row>
         </Container>

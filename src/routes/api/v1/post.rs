@@ -28,7 +28,6 @@ pub fn collect() -> Vec<rocket::Route> {
         get_poll_post_authenticated,
         get_poll_post,
         vote_poll_post,
-        watch_post
     )
 }
 
