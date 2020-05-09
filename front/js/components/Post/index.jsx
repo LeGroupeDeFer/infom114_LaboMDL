@@ -1,20 +1,22 @@
-import React  from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import {Container, Row, Col, Badge, Dropdown, DropdownButton, Card, OverlayTrigger, Tooltip} from 'react-bootstrap';
 import { FaEllipsisH, FaEyeSlash, FaFacebookSquare, FaFlag, FaLock, FaTag, FaTrashAlt, FaDove } from 'react-icons/fa';
-import { FacebookShareButton } from "react-share";
-import { MdModeComment } from "react-icons/md";
+import { FacebookShareButton } from 'react-share';
+import { MdModeComment } from 'react-icons/md';
 import Moment from 'react-moment';
+import clsx from 'clsx';
 
 import { useAuth } from 'unanimity/context';
 import { May } from '../Auth';
 import { UpVote, DownVote, Vote, VoteSection } from './Vote';
 import { preview, previewLength } from 'unanimity/lib';
+import { Circle, Flexbox } from '../';
+
 import Comment from './Comment';
+import Poll from './Poll';
 import DeleteModal from './DeleteModal';
-import Poll from "./Poll";
-import clsx from "clsx";
-import { Circle, Flexbox } from "../";
+import ReportModal from './ReportModal';
 
 
 const HidePost = May('post:hide', ({ onClick }) => (
@@ -38,11 +40,10 @@ const WatchPost = May('post:watch', ({ onClick }) => (
   </Dropdown.Item>
 ));
 
-
 const WatchSymbol = ({ className }) => (
   <OverlayTrigger
     placement="left"
-    overlay={<Tooltip>Une attention spéciale est portée à cette publication</Tooltip>}
+    overlay={<Tooltip id="watched">Une attention spéciale est portée à cette publication</Tooltip>}
   >
     <Circle width="2em" className={clsx('bg-secondary', 'text-light', 'watch-symbol', className)}>
       <FaDove />
@@ -57,15 +58,17 @@ export function PostContent({ isPreview, post, onComment }) {
         <span className="pr-1">{preview(post.content, previewLength)}</span>
         <Link to={`/detail/${post.id}`}>Lire la suite</Link>
       </div>
-  );
+    );
 
   return (
     <div className="post-content">
       <p className="mb-4">{post.content}</p>
       {post.kind === 'poll' && <Poll />}
-      <Comment.Editor onComment={comment => onComment(post, comment) } />
+      <Comment.Editor onComment={(comment) => onComment(post, comment)} />
       <div className="post-comments">
-        {post.comments.map(comment => <Comment comment={comment} onComment={onComment} />)}
+        {post.comments.map((comment) => (
+          <Comment comment={comment} onComment={onComment} />
+        ))}
       </div>
     </div>
   );
@@ -75,16 +78,18 @@ export function Post({
   post, onVote, onFlag, onDelete, onHide, onTag, onLock, onWatch, onComment,
   isPreview, onPreview, className, ...others
 }) {
-
   const { user } = useAuth();
   const isLogged = !!user;
   const owner = isLogged && post.author.id === user.id;
 
   const cardProps = isPreview
-    ? { onClick: e => e.target.classList.contains('expand-preview')
-        ? onPreview(post)
-        : null
-    } : {};
+    ? {
+        onClick: (e) =>
+          e.target.classList.contains('expand-preview')
+            ? onPreview(post)
+            : null,
+      }
+    : {};
 
   const { author, kind, id, createdAt, userVote, score, tags, title, comments } = post;
 
@@ -114,7 +119,9 @@ export function Post({
                     <span className="ml-1">{author.lastname}</span>
                   </a>
                   <span>-</span>
-                  <Moment locale="fr" fromNow className="ml-1">{createdAt}</Moment>
+                  <Moment locale="fr" fromNow className="ml-1">
+                    {createdAt}
+                  </Moment>
                 </span>
               </h5>
             </Col>
@@ -159,7 +166,7 @@ export function Post({
       <Card.Body className="post-body p-0 expand-preview">
         <div className="d-flex expand-preview">
           <VoteSection
-            onVote={vote => onVote(post, vote)}
+            onVote={(vote) => onVote(post, vote)}
             score={score}
             isLogged={isLogged}
             vote={userVote}
@@ -183,8 +190,11 @@ export function Post({
             />
 
             <div className="post-footer mb-2">
-
-              <Link to={`/detail/${id}`} className="post-footer-btn mr-2" href="#">
+              <Link
+                to={`/detail/${id}`}
+                className="post-footer-btn mr-2"
+                href="#"
+              >
                 <MdModeComment size="1.25em" className="mr-1" />
                 <span className="text-muted">
                   <span className="pr-1">{comments.length}</span>
@@ -201,7 +211,6 @@ export function Post({
                   <span className="text-muted">Partager</span>
                 </a>
               </FacebookShareButton>
-
             </div>
           </div>
 
@@ -212,8 +221,12 @@ export function Post({
 }
 
 Object.assign(Post, {
-  Delete: DeleteModal, Comment, Vote, UpVote, DownVote
+  Delete: DeleteModal,
+  Comment,
+  Vote,
+  UpVote,
+  DownVote,
+  Report: ReportModal,
 });
-
 
 export default Post;

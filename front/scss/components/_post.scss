@@ -81,6 +81,7 @@
 
     &.post-preview.post-hidden {
         filter: brightness(90%);
+        opacity: .7;
         transition: filter .2s;
     }
 
