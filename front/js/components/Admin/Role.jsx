@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from '../../lib/api';
+import { prevent } from '../../lib';
 
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
@@ -49,15 +50,15 @@ const Role = ({ roleId, roleName, roleColor, roleCapabilities, deleteRole, setNo
               </Col>
 
               <Col md="auto">
-                <a className="footer-primary-btn mr-3" href="#" onClick={() => setRenameModalShow(true)}>
+                <a className="footer-primary-btn mr-3" href="#" onClick={e => prevent(e, () => setRenameModalShow(true))}>
                   <FaPen className="fa-primary mr-1" />
                   <span className="text-muted">Renommer</span>
                 </a>
-                <a className="footer-primary-btn mr-3" href="#" onClick={() => setEditModalShow(true)}>
+                <a className="footer-primary-btn mr-3" href="#" onClick={e => prevent(e, () => setEditModalShow(true))}>
                   <FaEdit className="fa-primary mr-1" />
                   <span className="text-muted">Modifier</span>
                 </a>
-                <a className="footer-primary-btn mr-3" href="#" onClick={() => deleteRole(role.id)}>
+                <a className="footer-primary-btn mr-3" href="#" onClick={e => prevent(e, () => deleteRole(role.id))}>
                   <FaTrashAlt className="fa-danger mr-1"/>
                   <span className="text-muted">Supprimer</span>
                 </a>

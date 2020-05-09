@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from "react";
 import api from '../../lib/api';
+import { prevent } from '../../lib';
 
-import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -25,11 +25,11 @@ const User = ({user, roles, setNotification}) => {
                   <Card.Title>{user.lastname} {user.firstname}</Card.Title>
                 </Col>
                 <Col md="auto">
-                  <a className="footer-primary-btn mr-3" href="#" onClick={() => setModalShow(true)}>
+                  <a className="footer-primary-btn mr-3" href="#" onClick={e => prevent(e, () => setModalShow(true))}>
                     <FaEdit className="fa-primary mr-1" />    
                     <span className="text-muted">Gérer les roles</span>
                   </a>
-                  <a className="post-footer-btn mr-3" href="#">
+                  <a className="post-footer-btn mr-3 text-muted">
                     <FaUser className="fa-primary mr-1">Voir profil</FaUser>
                     <span className="text-muted">Voir profil</span>
                   </a>

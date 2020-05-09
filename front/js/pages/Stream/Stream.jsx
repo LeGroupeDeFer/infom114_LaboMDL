@@ -3,42 +3,66 @@ import 'regenerator-runtime';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Container, Row, Col, Button, Modal, Dropdown, DropdownButton, Tooltip,
-  OverlayTrigger, Toast
+  Container,
+  Row,
+  Col,
+  Button,
+  Modal,
+  Dropdown,
+  DropdownButton,
+  Tooltip,
+  OverlayTrigger,
+  Toast,
 } from 'react-bootstrap';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { MdSort } from 'react-icons/md';
-import { FaEdit } from 'react-icons/fa';
+import { MdSort } from 'react-icons/md/index.esm';
+import { FaEdit } from 'react-icons/fa/index.esm';
 import { useStream } from 'unanimity/context/streamContext';
 import { ORDER } from 'unanimity/lib';
 import Post from 'unanimity/components/Post';
 
-
 // InnerStream :: Object => Component
 function InnerStream({
-  deletePost, flagPost, onDelete, previewPost, onPreview, toast, onToast,
-  toastMsg, onFlag, onFlagCancel, onHide, onVote, onTag, onDeleteConfirmation,
-  onFlagConfirmation, onWatch
+  deletePost,
+  flagPost,
+  onDelete,
+  previewPost,
+  onPreview,
+  toast,
+  onToast,
+  toastMsg,
+  onFlag,
+  onFlagCancel,
+  onHide,
+  onVote,
+  onPollVote,
+  onTag,
+  onDeleteConfirmation,
+  onFlagConfirmation,
+  onWatch,
 }) {
   const stream = useStream();
 
   return (
     <div className="stream-content">
-      {stream.posts.value.map(post => (
-        <Row key={post.id} className="mb-4 post-row"><Col>
-          <Post
-            isPreview
-            post={post}
-            onDelete={onDelete}
-            onFlag={onFlag}
-            onFlagCancel={onFlagCancel}
-            onHide={onHide}
-            onVote={onVote}
-            onPreview={onPreview}
-            onTag={onTag}
-            onWatch={onWatch}
-          />
-        </Col></Row>
+      {stream.posts.value.map((post) => (
+        <Row key={post.id} className="mb-4 post-row">
+          <Col>
+            <Post
+              isPreview
+              post={post}
+              onDelete={onDelete}
+              onFlag={onFlag}
+              onFlagCancel={onFlagCancel}
+              onHide={onHide}
+              onVote={onVote}
+              onPollVote={onPollVote}
+              onPreview={onPreview}
+              onTag={onTag}
+              onWatch={onWatch}
+            />
+          </Col>
+        </Row>
       ))}
 
       {/* Preview modal */}
@@ -182,6 +206,5 @@ function Stream({ onSort, ...others }) {
     </Container>
   );
 }
-
 
 export default Stream;

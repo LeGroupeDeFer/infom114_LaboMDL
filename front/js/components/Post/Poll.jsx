@@ -4,47 +4,46 @@ import Form from 'react-bootstrap/Form';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import { FaRegCheckCircle } from 'react-icons/fa';
 
-function Poll() {
-  const options = ['Option 1', 'Option 2', 'Option 3'];
-  const optionVote = [
-    { option: 'Option 1', vote: '14' },
-    { option: 'Option 2', vote: '1' },
-    { option: 'Option 3', vote: '35' },
-  ];
-
-  const toltalVote = 50;
-  const [userVote, setUserVote] = useState(null);
+function Poll({ postId, answers, userAnswer, onPollVote }) {
+  const [userVote, setUserVote] = useState(
+    userAnswer == null ? null : userAnswer.id
+  );
   const [optionSelected, setOptionSelected] = useState(null);
+  let toltalVote = 0;
+  answers.forEach((a) => (toltalVote += a.count));
 
-  function vote(option) {
-    // Api call then
-    setUserVote(option);
+  function vote() {
+    onPollVote(postId, optionSelected);
+    setUserVote(optionSelected);
   }
 
   return (
     <>
       <Card onClick={(e) => e.preventDefault} className="poll mb-2">
         <Card.Header>
-          <span className="ml-">50 votes</span>
+          <span className="ml-3">
+            {toltalVote} {toltalVote > 1 ? ' votes' : ' vote'}
+          </span>
         </Card.Header>
         <Card.Body>
           {userVote == null && (
             <>
-              {options.map((opt, index) => {
+              {answers.map((opt, index) => {
                 return (
                   <Form.Check
                     type="radio"
-                    label={opt}
-                    id={`opt-${index + 1}`}
+                    label={opt.answer}
+                    id={`opt-${opt.id}`}
                     className="mb-3"
                     name="poll-options"
-                    onChange={() => setOptionSelected(opt)}
+                    onChange={() => setOptionSelected(opt.id)}
+                    key={index}
                   />
                 );
               })}
               <Button
                 variant="primary"
-                onClick={() => vote(optionSelected)}
+                onClick={() => vote()}
                 disabled={optionSelected == null}
               >
                 Voter
@@ -54,22 +53,22 @@ function Poll() {
 
           {userVote != null && (
             <>
-              {optionVote.map((opt, index) => {
+              {answers.map((opt, index) => {
                 return (
                   <ProgressBar
                     animated
                     key={index}
-                    now={(opt.vote * 100) / toltalVote}
+                    now={opt.count == 0 ? 0.5 : (opt.count * 100) / toltalVote}
                     className="mb-2"
                     label={
                       <div className="progress-value">
                         <Row>
                           <Col xs={1} className="text-right">
-                            {opt.vote}
+                            {opt.count}
                           </Col>
                           <Col xs={11} className="text-left">
-                            {opt.option}
-                            {userVote == opt.option && (
+                            {opt.answer}
+                            {userVote == opt.id && (
                               <FaRegCheckCircle
                                 size={20}
                                 className="ml-2 opt-selected"

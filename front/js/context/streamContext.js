@@ -9,7 +9,9 @@ import {
   printerr,
   trace,
 } from 'unanimity/lib';
-import { isEqual, remove, without } from 'lodash';
+import isEqual from 'lodash/isEqual';
+import remove from 'lodash/remove';
+import without from 'lodash/without';
 import { clean } from '../lib';
 
 export const PostsChange = 0b00000001;
@@ -74,9 +76,24 @@ export function StreamProvider({ children }) {
       },
       value: [],
       of(id) {
-        const prefetch = this.value.filter((p) => p.id === id);
-        if (prefetch.length) return Promise.resolve(prefetch[0]);
-        return api.posts.of(id);
+        const prefetch = this.value.filter((p) => p.id == id);
+        let promise;
+        if (prefetch.length) {
+          promise = Promise.resolve(prefetch[0]);
+        } else {
+          promise = api.posts.of(id);
+        }
+
+        return promise.then((post) => {
+          if (post.kind == 'poll') {
+            return api.posts.pollData(id).then((pollData) => {
+              post.answers = pollData.answers;
+              post.userAnswer = pollData.userAnswer;
+              return post;
+            });
+          }
+          return post;
+        });
       },
       add(post) {
         const promise = api.posts.add(post);
@@ -125,6 +142,12 @@ export function StreamProvider({ children }) {
       },
       watch(post) {
         return this._updatePost(api.posts.watch(post.id));
+      },
+      pollData(id) {
+        return api.posts.pollData(id);
+      },
+      pollVote(postId, answerId) {
+        return this._updatePost(api.posts.pollVote(postId, answerId));
       },
     },
 

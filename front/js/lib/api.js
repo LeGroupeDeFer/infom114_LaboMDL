@@ -223,6 +223,12 @@ Object.assign(posts, {
   watch(id) {
     return api(`/post/${id}/watch`, { method: 'POST' });
   },
+  pollData(id) {
+    return api(`/post/${id}/poll`);
+  },
+  pollVote(postId, answerId) {
+    return api(`/post/${postId}/poll`, { method: 'POST', body: { answerId } });
+  },
 });
 
 /* --------------------------------- Tags --------------------------------- */

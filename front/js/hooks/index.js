@@ -1,6 +1,6 @@
-import {useContext, useEffect, useState} from 'react';
-import { debounce, identity, Action, trace } from '../lib';
-import { isEqual } from 'lodash';
+import { useEffect, useState } from 'react';
+import { debounce, identity, Action } from '../lib';
+import isEqual from 'lodash/isEqual';
 
 export function usePositiveEffect(f, watched) {
   useEffect(() => watched.filter(identity).length ? f() : undefined);
