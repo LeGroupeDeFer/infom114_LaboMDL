@@ -3,6 +3,7 @@
 //! Here will be stored everything that is related to the commentaries
 //! The post linked to them, the user that writes them, the number of replies, ...
 use chrono::NaiveDateTime;
+use diesel::expression::functions::date_and_time::now;
 use diesel::prelude::*;
 use either::*;
 
@@ -85,13 +86,22 @@ impl Entity for CommentEntity {
     }
 
     fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {
-        diesel::update(table).set(self).execute(conn).map(|_| self).map(Ok)?
+        diesel::update(table)
+            .set(self)
+            .execute(conn)
+            .map(|_| self)
+            .map(Ok)?
     }
 
     fn delete(self, conn: &MysqlConnection) -> Consequence<()> {
-        diesel::delete(table.filter(dsl::id.eq(self.id)))
+        diesel::update(&self)
+            .set(dsl::deleted_at.eq(now))
             .execute(conn)
             .map(|_| ())
             .map(Ok)?
+        // diesel::delete(table.filter(dsl::id.eq(self.id)))
+        //     .execute(conn)
+        //     .map(|_| ())
+        //     .map(Ok)?
     }
 }

@@ -1,11 +1,14 @@
 use crate::database;
 use crate::database::models::prelude::*;
-use crate::database::schema::comments;
+// use crate::database::schema::comments;
 use crate::database::tables::comments_table as table;
 use crate::lib::Consequence;
+use crate::database::schema::comments::dsl;
 
 use diesel::prelude::*;
 use diesel::MysqlConnection;
+use diesel::expression::functions::date_and_time::now;
+use chrono::NaiveDateTime;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Comment {
@@ -57,13 +60,57 @@ impl CommentEntity {
         hidden: bool,
     ) -> Consequence<Vec<Self>> {
         let mut query = table.into_boxed();
-        query = query.filter(comments::deleted_at.is_not_null());
-        query = query.filter(comments::post_id.eq(post_id));
+        query = query.filter(dsl::deleted_at.is_not_null());
+        query = query.filter(dsl::post_id.eq(post_id));
 
         if !hidden {
-            query = query.filter(comments::hidden_at.is_not_null());
+            query = query.filter(dsl::hidden_at.is_not_null());
         }
 
         Ok(query.load(conn)?)
     }
+    
+    pub fn by_comment_id(
+        conn: &MysqlConnection,
+        comment_id: &u32,
+        hidden: bool
+    ) -> Consequence<Vec<Self>> { 
+        let mut query = table.into_boxed();
+        query = query.filter(dsl::deleted_at.is_not_null());
+        query = query.filter(dsl::parent_id.eq(comment_id));
+
+        if !hidden {
+            query = query.filter(dsl::hidden_at.is_not_null());
+        }
+
+        Ok(query.load(conn)?)
+    }
+
+    pub fn toggle_visibility(&self, conn: &MysqlConnection) -> Consequence<()> {
+        if self.hidden_at.is_some() {
+            diesel::update(self)
+                .set(dsl::hidden_at.eq(None as Option<NaiveDateTime>))
+                .execute(conn)?;
+        } else {
+            diesel::update(self)
+                .set(dsl::hidden_at.eq(now))
+                .execute(conn)?;
+        }
+
+        Ok(())
+    }
+    pub fn toggle_lock(&self, conn: &MysqlConnection) -> Consequence<()> {
+        if self.locked_at.is_some() {
+            diesel::update(self)
+                .set(dsl::locked_at.eq(None as Option<NaiveDateTime>))
+                .execute(conn)?;
+        } else {
+            diesel::update(self)
+                .set(dsl::locked_at.eq(now))
+                .execute(conn)?;
+        }
+        Ok(())
+    }
+
+
 }

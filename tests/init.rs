@@ -257,6 +257,33 @@ pub fn get_post_entity(locked: bool, hidden: bool, deleted: bool) -> PostEntity 
     PostEntity::by_id(&conn, &id).unwrap().unwrap()
 }
 
+pub fn get_comment_entity(ppost_id: u32, locked: bool, hidden: bool, deleted: bool) -> CommentEntity {
+    let conn = database_connection();
+    let cm = CommentMinima {
+        post_id: ppost_id,
+        content: lorem_ipsum(),
+        author_id: get_admin().id,
+        parent_id: None
+    };
+
+    let comment = CommentEntity::insert_new(&conn, &cm).unwrap();
+    let id = comment.id;
+
+    if locked {
+        comment.toggle_lock(&conn).unwrap();
+    }
+
+    if hidden {
+        comment.toggle_visibility(&conn).unwrap();
+    }
+
+    if deleted {
+        comment.delete(&conn).unwrap();
+    }
+
+    CommentEntity::by_id(&conn, &id).unwrap().unwrap()
+}
+
 /// Get the admin that is generated in the seeding process
 /// The admin has by default the following characteristics :
 ///

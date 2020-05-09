@@ -54,7 +54,7 @@ fn create_comment_from_post_simple_user() {
 }
 
 #[test]
-fn create_comment_from_post_duplicate_details() {
+fn create_duplicate_comments_from_post() {
     let client = init::clean_client();
     let conn = init::database_connection();
     init::seed();
@@ -156,7 +156,6 @@ fn create_comment_from_locked_post() {
     init::seed();
     
     let post = init::get_post_entity(true, false, false);
-    let route = format!("/api/v1/post/{}/comment", post.id);
     let comment_content = "I am a comment, I cannot be submitted to a hidden post.";
 
     let response_status = send_comment_from_unavailable_post(
@@ -168,15 +167,12 @@ fn create_comment_from_locked_post() {
     assert_eq!(response_status, Status::Forbidden); 
 }
 
-// create a comment from an hidden post
 #[test]
 fn create_comment_from_hidden_post() {
     let client = init::clean_client();
     init::seed();
-    
 
     let post = init::get_post_entity(false, true, false);
-    let route = format!("/api/v1/post/{}/comment", post.id);
     let comment_content = "I am a comment, I cannot be submitted to a hidden post.";
 
     let response_status = send_comment_from_unavailable_post(
@@ -195,7 +191,6 @@ fn create_comment_from_soft_deleted_post() {
     init::seed();
     
     let post = init::get_post_entity(false, false, true);
-    let route = format!("/api/v1/post/{}/comment", post.id);
     let comment_content = "I am a comment, I cannot be submitted to a soft-deleted post.";
 
     let response_status = send_comment_from_unavailable_post(
@@ -207,9 +202,263 @@ fn create_comment_from_soft_deleted_post() {
     assert_eq!(response_status, Status::Forbidden); 
 }
 
-// create a comment to a comment from a post
+#[test]
+fn create_comment_from_comment() {
+    let client = init::clean_client();
+    let conn = init::database_connection();
+    init::seed();
+
+    let post = init::get_post_entity(false, false, false);
+    let comment = init::get_comment_entity(post.id, false, false, false);
+
+    let reply = send_comment_from_comment(&client, login_admin(), &comment.id, "Test <<positive>> :D");
+
+    let comment_entity = CommentEntity::by_id(&conn, &reply.id).unwrap().unwrap();
+    assert_eq!(comment_entity.id, reply.id);
+    assert_eq!(comment_entity.post_id, post.id);
+    assert_eq!(comment_entity.parent_id, Some(comment.id));
+    assert_eq!(comment_entity.content, reply.content);
+    assert_eq!(comment_entity.author_id, reply.author.id);
+    assert_eq!(comment_entity.author_id, init::get_admin().id);
+}
+
+#[test]
+fn create_comment_from_comment_simple_user() {
+
+    let client = init::clean_client();
+    let conn = init::database_connection();
+    init::seed();
+
+    // init simple user
+    let (user, passwd) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &passwd);
+
+    let post = init::get_post_entity(false, false, false);
+    let comment = init::get_comment_entity(post.id, false, false, false);
+
+    let reply = send_comment_from_comment(&client, auth_token_header, &comment.id, "Test <<positive>> too :D");
+
+    let comment_entity = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert_eq!(comment_entity.id, reply.id);
+    assert_eq!(comment_entity.post_id, post.id);
+    assert_eq!(comment_entity.parent_id, Some(comment.id));
+    assert_eq!(comment_entity.content, reply.content);
+    assert_eq!(comment_entity.author_id, reply.author.id);
+}
+
+#[test]
+fn create_duplicate_comments_from_comment() {
+    let client = init::clean_client();
+    let conn = init::database_connection();
+    init::seed();
+
+    let post = init::get_post_entity(false, false, false);
+    let comment = init::get_comment_entity(post.id, false, false, false);
+    let token = login_admin();
+    let reply_content = "There are 2 comments like this!!";
+    
+    let reply1 = send_comment_from_comment(&client, token.clone(), &comment.id, reply_content);
+    assert!(CommentEntity::by_id(&conn, &reply1.id).unwrap().is_some());
+    
+    thread::sleep(time::Duration::from_millis(1000));
+
+    let reply2 = send_comment_from_comment(&client, token.clone(), &comment.id, reply_content);
+    assert!(CommentEntity::by_id(&conn, &reply2.id).unwrap().is_some());
+
+    assert_ne!(reply1.id, reply2.id);
+    assert!(reply1.created_at < reply2.created_at);
+}
+
 // create a comment to a comment from a post (unauthenticated)
+#[test]
+fn create_comment_from_comment_unauthenticated() {
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let post = init::get_post_entity(false, false, false);
+    let comment = init::get_comment_entity(post.id, false, false, false);
+    let route = format!("/api/v1/comment/{}", comment.id);
+
+    let reply_content = "Don't panic! Try your best!";
+    let json_data = format!("{{ \"content\": \"{}\" }}", reply_content);
+
+    let req = client
+        .post(route)
+        .header(ContentType::JSON)
+        .body(json_data);
+
+    let response = req.dispatch();
+
+    assert_eq!(response.status(), Status::Unauthorized);
+
+    assert_eq!(
+        CommentEntity::by_comment_id(&conn, &comment.id, false).unwrap().len(), 
+        0
+    );
+}
+
+#[test]
+fn create_comment_from_comment_bad_json() {
+    let client = init::clean_client();
+    init::seed();
+
+    let conn = init::database_connection();
+    let auth_header = init::login_admin();
+    let post = init::get_post_entity(false, false, false);
+    let comment = init::get_comment_entity(post.id, false, false, false);
+    let route = format!("/api/v1/comment/{}", comment.id);
+
+    let reply_content = "Don't panic! Try your best!";
+    let json_data = format!("{{ \"content\": \"{} }}", reply_content);
+
+    let req = client
+        .post(route)
+        .header(ContentType::JSON)
+        .header(auth_header)
+        .body(json_data);
+
+    let response = req.dispatch();
+
+    assert_eq!(response.status(), Status::BadRequest);
+
+    assert_eq!(
+        CommentEntity::by_comment_id(&conn, &comment.id, false).unwrap().len(), 
+        0
+    );
+}
+
 // create a comment to an unexisting comment from a post
+#[test]
+fn create_comment_from_unexisting_comment() {
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+    
+    let mut unexisting_id = 12;
+    while CommentEntity::by_id(&conn, &unexisting_id).unwrap().is_some() {
+        unexisting_id += 1;
+    }
+    let reply_content = "I should not be sucessfully submitted!.";
+    let response_status = send_comment_from_unavailable_comment(
+        &client,
+        init::login_admin(),
+        &unexisting_id,
+        reply_content
+    );
+    assert_eq!(response_status, Status::BadRequest); 
+}
+
+// create a comment to a locked comment
+#[test]
+fn create_comment_from_locked_comment() {
+    let client = init::clean_client();
+    init::seed();
+    
+    let post = init::get_post_entity(false, false, false);
+    let comment = init::get_comment_entity(post.id, true, false, false);
+    let reply_content = "Don't panic! Try your best!";
+
+    let response_status = send_comment_from_unavailable_comment(
+        &client,
+        init::login_admin(),
+        &comment.id,
+        reply_content
+    );
+    assert_eq!(response_status, Status::Forbidden); 
+}
+
+// create a comment to a hidden comment from a post
+#[test]
+fn create_comment_from_hidden_comment() {
+    let client = init::clean_client();
+    init::seed();
+    
+    let post = init::get_post_entity(false, false, false);
+    let comment = init::get_comment_entity(post.id, false, true, false);
+    let reply_content = "Don't panic! Try your best!";
+
+    let response_status = send_comment_from_unavailable_comment(
+        &client,
+        init::login_admin(),
+        &comment.id,
+        reply_content
+    );
+    assert_eq!(response_status, Status::Forbidden); 
+}
+
+// create a comment to a soft-deleted comment from a post
+#[test]
+fn create_comment_from_deleted_comment() {
+    let client = init::clean_client();
+    init::seed();
+    
+    let post = init::get_post_entity(false, false, false);
+    let comment = init::get_comment_entity(post.id, false, false, true);
+    let reply_content = "Don't panic! Try your best!";
+
+    let response_status = send_comment_from_unavailable_comment(
+        &client,
+        init::login_admin(),
+        &comment.id,
+        reply_content
+    );
+    assert_eq!(response_status, Status::Forbidden); 
+}
+
+#[test]
+fn create_comment_from_comment_in_locked_post() {
+    let client = init::clean_client();
+    init::seed();
+    
+    let post = init::get_post_entity(true, false, false);
+    let comment = init::get_comment_entity(post.id, false, false, false);
+    let reply_content = "Don't panic! Try your best!";
+
+    let response_status = send_comment_from_unavailable_comment(
+        &client,
+        init::login_admin(),
+        &comment.id,
+        reply_content
+    );
+    assert_eq!(response_status, Status::Forbidden); 
+}
+
+#[test]
+fn create_comment_from_comment_in_hidden_post() {
+    let client = init::clean_client();
+    init::seed();
+    
+    let post = init::get_post_entity(false, true, false);
+    let comment = init::get_comment_entity(post.id, false, false, false);
+    let reply_content = "Don't panic! Try your best!";
+
+    let response_status = send_comment_from_unavailable_comment(
+        &client,
+        init::login_admin(),
+        &comment.id,
+        reply_content
+    );
+    assert_eq!(response_status, Status::Forbidden); 
+}
+
+#[test]
+fn create_comment_from_comment_in_deleted_post() {
+    let client = init::clean_client();
+    init::seed();
+    
+    let post = init::get_post_entity(false, false, true);
+    let comment = init::get_comment_entity(post.id, false, false, false);
+    let reply_content = "Don't panic! Try your best!";
+
+    let response_status = send_comment_from_unavailable_comment(
+        &client,
+        init::login_admin(),
+        &comment.id,
+        reply_content
+    );
+    assert_eq!(response_status, Status::Forbidden); 
+}
 
 // get all comments from a post
 // get all comments from an unexisting post
