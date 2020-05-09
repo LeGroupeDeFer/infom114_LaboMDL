@@ -26,7 +26,8 @@ pub fn collect() -> Vec<rocket::Route> {
         manage_post_report,
         get_poll_post_authenticated,
         get_poll_post,
-        vote_poll_post
+        vote_poll_post,
+        watch_post
     )
 }
 
@@ -330,7 +331,7 @@ fn manage_post_report(
         Err(AuthError::MissingCapability)?;
     }
 
-    let mut post = post_guard.post_clone();
+    let post = post_guard.post_clone();
     match data {
         Some(json_data) => {
             let report_data = json_data.into_inner();

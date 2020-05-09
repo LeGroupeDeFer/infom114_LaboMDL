@@ -1,5 +1,4 @@
-use chrono::{NaiveDateTime, Utc};
-use diesel::expression::functions::date_and_time::now;
+use chrono::Utc;
 use diesel::prelude::*;
 use diesel::MysqlConnection;
 use std::convert::TryFrom;
@@ -105,6 +104,7 @@ pub struct Post {
     pub locked: bool,
     pub hidden: bool,
     pub deleted: bool,
+    pub watched: bool,
     pub votes: u64,
     pub score: i64,
     pub rank: f64,
@@ -151,7 +151,6 @@ impl PostEntity {
                 dsl::updated_at,
                 dsl::deleted_at,
                 dsl::hidden_at,
-                dsl::watched_at,
                 dsl::locked_at,
                 dsl::watched_at,
                 dsl::votes,
@@ -319,7 +318,9 @@ impl PostEntity {
     pub fn toggle_lock(&mut self, conn: &MysqlConnection) -> Consequence<()> {
         self.locked_at = if self.locked_at.is_none() {
             Some(Utc::now().naive_local())
-        } else { None };
+        } else {
+            None
+        };
         self.update(conn)?;
         Ok(())
     }
@@ -327,7 +328,9 @@ impl PostEntity {
     pub fn toggle_watch(&mut self, conn: &MysqlConnection) -> Consequence<()> {
         self.watched_at = if self.watched_at.is_none() {
             Some(Utc::now().naive_local())
-        } else { None };
+        } else {
+            None
+        };
         self.update(conn)?;
         Ok(())
     }
@@ -499,6 +502,7 @@ impl From<PostEntity> for Post {
             locked: pe.locked_at.is_some(),
             hidden: pe.hidden_at.is_some(),
             deleted: pe.deleted_at.is_some(),
+            watched: pe.watched_at.is_some(),
             votes: pe.votes,
             score: pe.score,
             rank: pe.rank,
