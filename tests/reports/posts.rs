@@ -8,7 +8,7 @@ fn get_post_report() {
     init::seed();
 
     let mut response = client
-        .get("/api/v1/report/posts")
+        .get("/api/v1/report/activity")
         .header(init::login_admin())
         .dispatch();
     assert_eq!(response.status(), Status::Ok);

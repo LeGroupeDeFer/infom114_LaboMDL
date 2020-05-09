@@ -275,7 +275,7 @@ fn toggle_visibility(
     auth: Auth,
     post_guard: PostGuard,
     _post_id: u32,
-) -> ApiResult<()> {
+) -> ApiResult<Post> {
     if post_guard.post().is_deleted() {
         Err(EntityError::InvalidID)?;
     } else if post_guard.post().is_locked() && !auth.has_capability(&*conn, "post:edit_locked") {
@@ -285,7 +285,9 @@ fn toggle_visibility(
 
     post_guard.post().toggle_visibility(&*conn)?;
 
-    ok()
+    let mut p = Post::from(post_guard.post_clone());
+    p.set_user_info(&*conn, &auth.sub);
+    Ok(Json(p))
 }
 
 #[post("/api/v1/post/<_post_id>/lock")]
@@ -294,7 +296,7 @@ fn toggle_lock(
     auth: Auth,
     post_guard: PostGuard,
     _post_id: u32,
-) -> ApiResult<()> {
+) -> ApiResult<Post> {
     if post_guard.post().is_deleted() {
         Err(EntityError::InvalidID)?;
     } else if post_guard.post().is_hidden() && !auth.has_capability(&*conn, "post:view_hidden") {
@@ -304,7 +306,9 @@ fn toggle_lock(
 
     post_guard.post().toggle_lock(&*conn)?;
 
-    ok()
+    let mut p = Post::from(post_guard.post_clone());
+    p.set_user_info(&*conn, &auth.sub);
+    Ok(Json(p))
 }
 
 #[post("/api/v1/post/<_post_id>/report", format = "json", data = "<data>")]
@@ -314,7 +318,7 @@ fn manage_post_report(
     post_guard: PostGuard,
     _post_id: u32,
     data: Option<Json<ReportData>>,
-) -> ApiResult<()> {
+) -> ApiResult<Post> {
     if post_guard.post().is_deleted() {
         Err(EntityError::InvalidID)?;
     } else if false
@@ -337,7 +341,32 @@ fn manage_post_report(
         }
     }
 
-    ok()
+    let mut p = Post::from(post_guard.post_clone());
+    p.set_user_info(&*conn, &auth.sub);
+    Ok(Json(p))
+}
+
+#[post("/api/v1/post/<_post_id>/watch")]
+fn watch_post(
+    conn: DBConnection,
+    auth: Auth,
+    post_guard: PostGuard,
+    _post_id: u32,
+) -> ApiResult<Post> {
+    if post_guard.post().is_deleted() {
+        Err(EntityError::InvalidID)?;
+    } else if false
+        || (post_guard.post().is_locked() && !auth.has_capability(&*conn, "post:edit_locked"))
+        || (post_guard.post().is_hidden() && !auth.has_capability(&*conn, "post:view_hidden"))
+    {
+        Err(AuthError::MissingCapability)?;
+    }
+
+    post_guard.post().toggle_watch(&*conn)?;
+
+    let mut p = Post::from(post_guard.post_clone());
+    p.set_user_info(&*conn, &auth.sub);
+    Ok(Json(p))
 }
 
 #[get("/api/v1/post/<_post_id>/poll", rank = 1)]

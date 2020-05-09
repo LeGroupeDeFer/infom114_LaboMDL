@@ -49,7 +49,7 @@ pub fn get_tags_report(conn: DBConnection, auth: Auth) -> ApiResult<Vec<TagRepor
     Ok(Json(tab))
 }
 
-#[get("/api/v1/report/posts")]
+#[get("/api/v1/report/activity")]
 pub fn get_posts_report(_conn: DBConnection) -> ApiResult<Vec<PostReport>> {
     for i in 1..=12 {
         let first_day_of_month = NaiveDateTime::new(

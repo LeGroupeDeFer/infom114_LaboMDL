@@ -9,18 +9,10 @@ use crate::lib::consequence::*;
 
 use crate::database::schema::posts;
 use crate::database::schema::posts::dsl::{self, posts as table};
-use std::hash::{Hasher, Hash};
-
+use std::hash::{Hash, Hasher};
 
 #[derive(
-    Identifiable,
-    Queryable,
-    AsChangeset,
-    Associations,
-    Serialize,
-    Deserialize,
-    Clone,
-    Debug,
+    Identifiable, Queryable, AsChangeset, Associations, Serialize, Deserialize, Clone, Debug,
 )]
 #[table_name = "posts"]
 pub struct PostEntity {
@@ -33,6 +25,7 @@ pub struct PostEntity {
     pub deleted_at: Option<NaiveDateTime>,
     pub hidden_at: Option<NaiveDateTime>,
     pub locked_at: Option<NaiveDateTime>,
+    pub watched_at: Option<NaiveDateTime>,
     pub votes: u64,
     pub score: i64,
     pub rank: f64,
@@ -45,7 +38,7 @@ pub struct PostMinima {
     pub title: String,
     pub content: String,
     pub author_id: u32,
-    pub kind: u8
+    pub kind: u8,
 }
 
 impl Entity for PostEntity {

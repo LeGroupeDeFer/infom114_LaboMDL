@@ -276,7 +276,7 @@ function tagReport() {
 }
 
 function postReport() {
-  return api('/report/posts');
+  return api('/report/activity');
 }
 
 api.tags = tags;
