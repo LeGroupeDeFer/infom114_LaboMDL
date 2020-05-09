@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Switch, Route, useRouteMatch } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { Button, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
@@ -6,7 +6,7 @@ import clsx from 'clsx';
 
 import { useStream } from 'unanimity/context/streamContext';
 import { SearchBar } from 'unanimity/components';
-import { kinds, trace } from 'unanimity/lib';
+import { kinds } from 'unanimity/lib';
 
 import Stream from './Stream';
 import Writer from './Writer';
@@ -51,6 +51,15 @@ function StreamContent() {
     toast: false,
     toastMsg: '',
     onFlag: (v) => setState((state) => ({ ...state, flagPost: v })),
+    onFlagCancel: (post) => {
+      stream.posts.flag(post, '', true).then(() =>
+        setState((state) => ({
+          ...state,
+          toast: true,
+          toastMsg: 'Votre signalement a été annulé',
+        }))
+      );
+    },
     onHide: (post) => stream.posts.hide(post),
     onVote: (post, vote) => stream.posts.vote(post, vote),
     onTag: tag => stream.tags.set(tag),
@@ -67,7 +76,7 @@ function StreamContent() {
       }))
     ),
     onFlagConfirmation: (post, reason) =>
-      stream.posts.flag(post, reason).then(() =>
+      stream.posts.flag(post, reason, false).then(() =>
         setState((state) => ({
           ...state,
           flagPost: false,

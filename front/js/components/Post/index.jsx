@@ -18,6 +18,7 @@ import Poll from './Poll';
 import DeleteModal from './DeleteModal';
 import ReportModal from './ReportModal';
 
+/* ------------------------------ Post actions ----------------------------- */
 
 const HidePost = May('post:hide', ({ onClick }) => (
   <Dropdown.Item as="button" onClick={onClick}>
@@ -39,6 +40,31 @@ const WatchPost = May('post:watch', ({ onClick }) => (
     <span>Promouvoir</span>
   </Dropdown.Item>
 ));
+
+const FlagPost = ({ post, userFlag, onFlag, onFlagCancel }) => {
+  if (userFlag != null && !userFlag)
+    return (
+      <Dropdown.Item as="button" onClick={() => onFlag(post)}>
+        <FaFlag className="mr-2" />
+        <span>Signaler</span>
+      </Dropdown.Item>
+    );
+  return (
+    <Dropdown.Item as="button" onClick={() => onFlagCancel(post)}>
+      <FaFlag className="mr-2" />
+      <span>Annuler signalement</span>
+    </Dropdown.Item>
+  );
+};
+
+const DeletePost = ({ owner }) => owner ? (
+  <Dropdown.Item as="button" onClick={() => onDelete(post)}>
+    <FaTrashAlt className="mr-2" />
+    <span>Supprimer</span>
+  </Dropdown.Item>
+) : <></>;
+
+/* --------------------------------- Utils --------------------------------- */
 
 const WatchSymbol = ({ className }) => (
   <OverlayTrigger
@@ -74,9 +100,11 @@ export function PostContent({ isPreview, post, onComment }) {
   );
 }
 
+/* --------------------------------- Post ---------------------------------- */
+
 export function Post({
-  post, onVote, onFlag, onDelete, onHide, onTag, onLock, onWatch, onComment,
-  isPreview, onPreview, className, ...others
+  post, onVote, onFlag, onFlagCancel, onDelete, onHide, onTag, onLock,
+  onWatch, onComment, isPreview, onPreview, className, ...others
 }) {
   const { user } = useAuth();
   const isLogged = !!user;
@@ -91,7 +119,9 @@ export function Post({
       }
     : {};
 
-  const { author, kind, id, createdAt, userVote, score, tags, title, comments } = post;
+  const {
+    author, kind, id, createdAt, userVote, score, tags, title, comments, userFlag
+  } = post;
 
   const cls = clsx(
     'post expand-preview',
@@ -141,17 +171,14 @@ export function Post({
                 >
                   <HidePost onClick={() => onHide(post)} />
 
-                  <Dropdown.Item as="button" onClick={() => onFlag(post)}>
-                    <FaFlag className="mr-2" />
-                    <span>Signaler</span>
-                  </Dropdown.Item>
+                  <FlagPost
+                    post={post}
+                    onFlag={onFlag}
+                    userFlag={userFlag}
+                    onFlagCancel={onFlagCancel}
+                  />
 
-                  {owner && (
-                    <Dropdown.Item as="button" onClick={() => onDelete(post)}>
-                      <FaTrashAlt className="mr-2" />
-                      <span>Supprimer</span>
-                    </Dropdown.Item>
-                  )}
+                  <DeletePost owner={owner} onClick={() => onDelete(post)} />
 
                   <LockPost onClick={() => onLock(post)} />
 
@@ -221,12 +248,13 @@ export function Post({
 }
 
 Object.assign(Post, {
-  Delete: DeleteModal,
   Comment,
   Vote,
   UpVote,
   DownVote,
+  Delete: DeleteModal,
   Report: ReportModal,
 });
+
 
 export default Post;

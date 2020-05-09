@@ -6,7 +6,16 @@
 }
 
 
+
 /*  Posts */
+
+.post-content p {
+    overflow-wrap: anywhere;
+}
+
+.post-preview {
+    overflow-wrap: anywhere;
+}
 
 .vote {
     padding: 0 0 0 0;
@@ -17,12 +26,18 @@
         cursor: not-allowed;
     }
 
-    &.up:hover, &.up:focus, &.up.active {
-        color: theme-color("primary") !important;;
+    &.up:hover,
+    &.up:focus,
+    &.up.active {
+        color: theme-color("primary") !important;
+        ;
     }
 
-    &.down:hover, &.down:focus, &.down.active {
-        color: theme-color("danger") !important;;
+    &.down:hover,
+    &.down:focus,
+    &.down.active {
+        color: theme-color("danger") !important;
+        ;
     }
 }
 
@@ -116,7 +131,11 @@
     }
 
     &:not(.post-preview, .post-detail) {
-        &, .card-header, .card-body, .vote-section {
+
+        &,
+        .card-header,
+        .card-body,
+        .vote-section {
             background-color: transparent;
             border: none;
         }
