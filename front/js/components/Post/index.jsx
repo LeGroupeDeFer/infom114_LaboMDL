@@ -30,7 +30,7 @@ const LockPost = May('post:lock', ({ onClick }) => (
   </Dropdown.Item>
 ));
 
-const PromotePost = May('post:promote', ({ onClick }) => (
+const WatchPost = May('post:watch', ({ onClick }) => (
   <Dropdown.Item as="button" onClick={onClick}>
     <FaCrown className="mr-2" />
     <span>Promouvoir</span>
@@ -133,7 +133,7 @@ export function Post({
 
                 <LockPost onClick={() => onLock(post)} />
 
-                <PromotePost onClick={() => onPromote(post)} />
+                <WatchPost onClick={() => onPromote(post)} />
               </DropdownButton>
             </Col>
           </Row>
