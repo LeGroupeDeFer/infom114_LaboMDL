@@ -12,9 +12,9 @@ import Role from '../components/Admin/Role';
 import Toast from '../components/Admin/Notification';
 import AddForm from '../components/Admin/AddForm';
 import User from '../components/Admin/User';
+import {Authenticated} from '../components/';
 
 import { FaTags, FaUsers, FaChartLine, FaClipboardCheck, FaTag } from 'react-icons/fa';
-import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -508,4 +508,6 @@ const TagsPage = () => {
   );
 };
 
-export default Admin;
+const AuthenticatedAdmin = Authenticated(Admin);
+
+export default AuthenticatedAdmin;
