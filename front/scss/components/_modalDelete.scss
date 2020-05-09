@@ -6,6 +6,10 @@
     padding: 0.5rem 1rem 0.5rem 1rem;
 }
 
+.modal-report .modal-header {
+    padding: 0.5rem 1rem 0.5rem 1rem;
+}
+
 .notification {
     position: fixed;
     top: 12px;
@@ -22,4 +26,9 @@
 .notification .toast-header {
     padding: 0.5rem 0.75rem;
     border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+}
+
+.modal-delete .btn-light,
+.modal-report .btn-light {
+    border: 1px solid #dbdbdb;
 }

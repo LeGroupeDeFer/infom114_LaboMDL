@@ -20,6 +20,7 @@ use std::collections::HashMap;
 const BASE: f64 = 1.414213562;
 const EPOCH: u32 = 1577840400; // 01/01/2020
 const EASING: u32 = 24 * 3600; // 1 day
+const WATCH_BONUS: u32 = 200;
 
 pub enum PostKind {
     Info,
@@ -300,8 +301,12 @@ impl PostEntity {
         let elapsed = self.created_at.timestamp() as u32 - EPOCH;
         let logarithm = (self.votes as f64).log(BASE);
         let order = logarithm.max(1.0);
-
-        order + (elapsed / EASING) as f64
+        let bonus = if self.watched_at.is_some() {
+            WATCH_BONUS
+        } else {
+            0
+        };
+        order + (elapsed / EASING) as f64 + bonus as f64
     }
 
     pub fn toggle_visibility(&mut self, conn: &MysqlConnection) -> Consequence<()> {

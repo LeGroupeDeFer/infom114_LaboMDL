@@ -3,8 +3,16 @@ import 'regenerator-runtime';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Container, Row, Col, Button, Modal, Dropdown, DropdownButton, Tooltip,
-  OverlayTrigger, Toast,
+  Container,
+  Row,
+  Col,
+  Button,
+  Modal,
+  Dropdown,
+  DropdownButton,
+  Tooltip,
+  OverlayTrigger,
+  Toast,
 } from 'react-bootstrap';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { MdSort } from 'react-icons/md';
@@ -13,30 +21,46 @@ import { useStream } from 'unanimity/context/streamContext';
 import { ORDER } from 'unanimity/lib';
 import Post from 'unanimity/components/Post';
 
-
 // InnerStream :: Object => Component
 function InnerStream({
-  deletePost, onDelete, previewPost, onPreview, toast, onToast,
-  onFlag, onHide, onVote, onTag, onDeleteConfirmation, onPromote
+  deletePost,
+  flagPost,
+  previewPost,
+  toastMsg,
+  toast,
+  onDelete,
+  onPreview,
+  onFlag,
+  onFlagCancel,
+  onHide,
+  onVote,
+  onTag,
+  onToast,
+  onDeleteConfirmation,
+  onFlagConfirmation,
+  onPromote,
 }) {
   const stream = useStream();
 
   return (
     <div className="stream-content">
-      {stream.posts.value.map(post => (
-        <Row key={post.id} className="mb-4"><Col>
-          <Post
-            isPreview
-            post={post}
-            onDelete={onDelete}
-            onFlag={onFlag}
-            onHide={onHide}
-            onVote={onVote}
-            onPreview={onPreview}
-            onTag={onTag}
-            onPromote={onPromote}
-          />
-        </Col></Row>
+      {stream.posts.value.map((post) => (
+        <Row key={post.id} className="mb-4">
+          <Col>
+            <Post
+              isPreview
+              post={post}
+              onDelete={onDelete}
+              onFlag={onFlag}
+              onFlagCancel={onFlagCancel}
+              onHide={onHide}
+              onVote={onVote}
+              onPreview={onPreview}
+              onTag={onTag}
+              onPromote={onPromote}
+            />
+          </Col>
+        </Row>
       ))}
 
       {/* Preview modal */}
@@ -53,8 +77,9 @@ function InnerStream({
               post={previewPost}
               onDelete={onDelete}
               onFlag={onFlag}
+              onFlagCancel={onFlagCancel}
               onHide={onHide}
-              onVote={vote => onVote(post, vote)}
+              onVote={(vote) => onVote(post, vote)}
               onPreview={onPreview}
               onTag={onTag}
             />
@@ -68,8 +93,17 @@ function InnerStream({
         show={!!deletePost}
         onHide={() => onDelete(false)}
         onDelete={onDeleteConfirmation}
+        onToast={onToast}
       />
 
+      {/* Report post modal */}
+      <Post.Report
+        post={flagPost}
+        show={!!flagPost}
+        onHide={() => onFlag(false)}
+        onFlag={onFlagConfirmation}
+        onToast={onToast}
+      />
       <Toast
         className="notification"
         show={toast}
@@ -78,20 +112,16 @@ function InnerStream({
         autohide
       >
         <Toast.Header>
-          <strong className="mr-auto"> Votre post a bien été supprimé</strong>
+          <strong className="mr-auto"> {toastMsg}</strong>
         </Toast.Header>
       </Toast>
     </div>
   );
-
 }
 
 function SortDropdownItem({ value, label, onSort }) {
   return (
-    <Dropdown.Item
-      as="button"
-      onClick={() => onSort(value)}
-    >
+    <Dropdown.Item as="button" onClick={() => onSort(value)}>
       {label}
     </Dropdown.Item>
   );
@@ -105,12 +135,12 @@ function SortDropdown({ onSort }) {
     { label: 'Rang', value: ORDER.RANK.DESC },
     { label: 'Score', value: ORDER.SCORE.DESC },
     { label: 'Récent', value: ORDER.AGE.DESC },
-    { label: 'Ancien', value: ORDER.AGE.ASC }
+    { label: 'Ancien', value: ORDER.AGE.ASC },
   ];
 
   const localOnSort = (value, label) => {
-      setTitle(`Trier par ${label}`);
-      onSort(value);
+    setTitle(`Trier par ${label}`);
+    onSort(value);
   };
 
   return (
@@ -124,7 +154,7 @@ function SortDropdown({ onSort }) {
       variant="primary"
       id="sort-post"
     >
-      {orders.map(order => (
+      {orders.map((order) => (
         <SortDropdownItem
           key={order.value}
           label={order.label}
@@ -173,8 +203,6 @@ function Stream({ onSort, ...others }) {
       <InnerStream {...others} />
     </Container>
   );
-
 }
-
 
 export default Stream;

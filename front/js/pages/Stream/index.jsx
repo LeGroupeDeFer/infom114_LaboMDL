@@ -12,14 +12,13 @@ import Stream from './Stream';
 import Writer from './Writer';
 import Detail from './Detail';
 
-
 // FilterBar :: Object => Component
 function KindSection() {
   const stream = useStream();
 
   return (
     <ButtonGroup className="kind-section d-flex justify-content-between">
-      {kinds.map(kind => (
+      {kinds.map((kind) => (
         <OverlayTrigger
           key={kind.key}
           placement="bottom"
@@ -27,7 +26,10 @@ function KindSection() {
         >
           <Button
             key={kind.key}
-            className={clsx('kind-choice', stream.kind.value.key === kind.key && 'active')}
+            className={clsx(
+              'kind-choice',
+              stream.kind.value.key === kind.key && 'active'
+            )}
             onClick={() => stream.kind.set(kind)}
           >
             <Icon icon={kind.icon} />
@@ -36,35 +38,54 @@ function KindSection() {
       ))}
     </ButtonGroup>
   );
-
 }
 
 // StreamContent :: None => Component
 function StreamContent() {
-
   const { path } = useRouteMatch();
   const stream = useStream();
   const [state, setState] = useState({
     previewPost: false,
     deletePost: false,
+    flagPost: false,
     toast: false,
-
-    onFlag: (post, reason) => stream.posts.flag(post, reason),
-    onHide: post => stream.posts.hide(post),
+    toastMsg: '',
+    onFlag: (v) => setState((state) => ({ ...state, flagPost: v })),
+    onFlagCancel: (post) => {
+      stream.posts.flag(post, '', true).then(() =>
+        setState((state) => ({
+          ...state,
+          toast: true,
+          toastMsg: 'Votre signalement a été annulé',
+        }))
+      );
+    },
+    onHide: (post) => stream.posts.hide(post),
     onVote: (post, vote) => stream.posts.vote(post, vote),
-    onTag: tag => stream.tags.set(tag),
-    onPromote: post => stream.posts.promote(post),
-    onSort: order => stream.order.set(order),
-    onPreview: v => setState(state => ({ ...state, previewPost: v })),
-    onDelete: v => setState(state => ({ ...state, deletePost: v })),
-    onToast: v => setState({ ...state, toast: v }),
-    onDeleteConfirmation: post => stream.posts.remove(post).then(
-      () => setState(state => ({
-        ...state,
-        deletePost: false,
-        toast: false
-      }))
-    )
+    onTag: (tag) => stream.tags.set(tag),
+    onSort: (order) => stream.order.set(order),
+    onPreview: (v) => setState((state) => ({ ...state, previewPost: v })),
+    onDelete: (v) => setState((state) => ({ ...state, deletePost: v })),
+    onToast: (v) => setState({ ...state, toast: v }),
+    onFlagConfirmation: (post, reason) => {
+      stream.posts.flag(post, reason, false).then(() =>
+        setState((state) => ({
+          ...state,
+          flagPost: false,
+          toast: true,
+          toastMsg: 'Votre signalement a été enregistré',
+        }))
+      );
+    },
+    onDeleteConfirmation: (post) =>
+      stream.posts.remove(post).then(() =>
+        setState((state) => ({
+          ...state,
+          deletePost: false,
+          toast: true,
+          toastMsg: 'Votre post a bien été supprimé',
+        }))
+      ),
   });
 
   return (
@@ -84,11 +105,8 @@ function StreamContent() {
           <Detail {...state} />
         </Route>
       </Switch>
-
     </>
   );
-
 }
-
 
 export default StreamContent;
