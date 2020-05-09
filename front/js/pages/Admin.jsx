@@ -12,9 +12,10 @@ import Role from '../components/Admin/Role';
 import Toast from '../components/Admin/Notification';
 import AddForm from '../components/Admin/AddForm';
 import User from '../components/Admin/User';
+import FlaggedPost from '../components/Admin/FlaggedPost';
 import {Authenticated} from '../components/';
 
-import { FaTags, FaUsers, FaChartLine, FaClipboardCheck, FaTag } from 'react-icons/fa';
+import { FaTags, FaUsers, FaChartLine, FaClipboardCheck, FaFlag } from 'react-icons/fa';
 
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -28,18 +29,21 @@ import clsx from 'clsx';
 
 function Admin(props) {
 
-  const menuList = ['tags', 'roles', 'users', 'reporting'];
-  const [currentMenu, setCurrentMenu] = useState('tags');
+  const menuList = ['Tags', 'Roles', 'Users', 'Flagged Posts', 'Statistics'];
+  const [currentMenu, setCurrentMenu] = useState('Flagged Posts');
 
   const Page = () => {
-    if (currentMenu === 'tags') {
+    if (currentMenu === 'Tags') {
       return <TagsPage />;
     }
-    else if (currentMenu === 'users') {
+    else if (currentMenu === 'Users') {
       return <UsersPage />;
     }
-    else if (currentMenu === 'reporting') {
-      return <ReportingPage />;
+    else if (currentMenu === 'Statistics') {
+      return <StatisticsPage />;
+    }
+    else if (currentMenu === 'Flagged Posts') {
+      return <FlaggedPage />;
     }
     else {
       return <RolesPage />;
@@ -63,7 +67,7 @@ function Admin(props) {
 
 const MenuBar = ({ currentMenu, onClick, menuList }) => {
 
-  const icons = [<FaTags />, <FaClipboardCheck />, <FaUsers />, <FaChartLine />];
+  const icons = [<FaTags />, <FaClipboardCheck />, <FaUsers />, <FaFlag />, <FaChartLine />];
 //<a key={i} className={currentMenu == menu ? 'active mr-5' : 'mr-5'} onClick={() => onClick(menu)}>{icons[i]}</a>
 
   return (
@@ -140,7 +144,7 @@ const UsersPage = () => {
   )
 };
 
-const ReportingPage = () => {
+const StatisticsPage = () => {
 
   const colors = ["#A0C55F", "#0D6759", "#1B4079", "#FC440F"];
   const [graphData, setGraphData] = useState({connect:[], active:[], tag:[], post:[]}); 
@@ -300,6 +304,55 @@ const ReportingPage = () => {
     </>
   );
 }
+
+const FlaggedPage = () => {
+  let post = 
+  {
+      post_id: 0,
+      title: "JE SUIS LE TTITRE",
+      type: "info",
+      content: "COUCOU JE SUIS LE CONTENU DU POSTE",
+      created_on: "23/12/20",
+      updated_on: "25/12/20",
+      voteCount: 0,
+      author: {
+          id: 0,
+          firstname: "John",
+          lastname: "Doe",
+          email: "John@student.unamur.be",
+          roles: [
+              {
+              name: "admin",
+              color: "string",
+              capabilities: [
+                  {
+                  name: "string"
+                  }
+              ]
+              }
+          ]
+      },
+      tags: [
+        {
+            id: "32",
+            label: "droit"
+        },
+                {
+            id: "23",
+            label: "arsenal"
+        },
+                {
+            id: "12",
+            label: "info"
+        }
+    ]
+  };
+  
+
+  return (
+        <FlaggedPost post={post} />
+  );
+};
 
 const RolesPage = () => {
 
