@@ -62,6 +62,7 @@ table! {
         deleted_at -> Nullable<Timestamp>,
         hidden_at -> Nullable<Timestamp>,
         locked_at -> Nullable<Timestamp>,
+        watched_at -> Nullable<Timestamp>,
         votes -> Unsigned<Bigint>,
         score -> Bigint,
         rank -> Double,

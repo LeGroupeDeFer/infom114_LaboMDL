@@ -328,6 +328,20 @@ impl PostEntity {
         Ok(())
     }
 
+    pub fn toggle_watch(&self, conn: &MysqlConnection) -> Consequence<()> {
+        if self.watched_at.is_some() {
+            diesel::update(self)
+                .set(dsl::watched_at.eq(None as Option<NaiveDateTime>))
+                .execute(conn)?;
+        } else {
+            diesel::update(self)
+                .set(dsl::watched_at.eq(now))
+                .execute(conn)?;
+        }
+
+        Ok(())
+    }
+
     pub fn add_tag(&self, conn: &MysqlConnection, tag_id: &u32) -> Consequence<()> {
         let minima = RelPostTagEntity {
             post_id: self.id,

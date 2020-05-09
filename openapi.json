@@ -1167,6 +1167,74 @@
         ]
       }
     },
+    "/api/post/{post_id}/watch": {
+      "post": {
+        "tags": [
+          "post"
+        ],
+        "summary": "Watch a post, marking it in a special way",
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "description": "Id of the post",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User cannot do this"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
+    },
     "/api/post/{post_id}/report": {
       "post": {
         "tags": [
@@ -2833,7 +2901,7 @@
         ]
       }
     },
-    "/api/report/posts": {
+    "/api/report/activity": {
       "get": {
         "tags": [
           "post",
@@ -2849,6 +2917,35 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/PostReport"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
+    },
+    "/api/report/post_reported": {
+      "get": {
+        "tags": [
+          "post",
+          "reporting"
+        ],
+        "summary": "Return the flagged posts & the reason",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PostReportedReport"
                   }
                 }
               }
@@ -3308,6 +3405,23 @@
           },
           "interaction": {
             "type": "integer"
+          }
+        }
+      },
+      "PostReportedReport": {
+        "type": "object",
+        "properties": {
+          "post": {
+            "$ref": "#/components/schemas/Post"
+          },
+          "count_flag": {
+            "type": "integer"
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
