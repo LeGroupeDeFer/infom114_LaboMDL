@@ -6,7 +6,7 @@ import { faDoorOpen } from '@fortawesome/free-solid-svg-icons';
 import { useLocation } from 'react-router-dom';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import { useAuth } from '../context/authContext';
+import { useAuth } from '../context';
 import { Link } from 'react-router-dom';
 import layout from '../lib/layout';
 

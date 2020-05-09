@@ -49,7 +49,7 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult
     let post_kind = PostKind::try_from((&post_request).kind.clone())?;
     let new_post = PostMinima {
         title: post_request.title,
-        content: post_request.content,
+        content: post_request.content.unwrap_or("".into()),
         author_id: auth.sub,
         kind: (&post_kind).into(),
     };
@@ -90,21 +90,21 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult
 
 // typo on tape is intentional : `type` is a rust reserved keyword
 #[get(
-    "/api/v1/posts?<tags>&<search>&<sort>&<kind>&<limit>&<offset>",
+    "/api/v1/posts?<tags>&<keywords>&<order>&<kind>&<limit>&<offset>",
     rank = 1
 )]
 fn get_all_posts_authenticated(
     conn: DBConnection,
     auth: ForwardAuth,
     tags: StringVector,
-    search: Option<String>,
-    sort: Option<String>,
-    kind: Option<String>, // type
+    keywords: StringVector,
+    order: Option<String>,
+    kind: Option<String>,
     limit: Option<u32>,
     offset: Option<u32>,
 ) -> ApiResult<Vec<Post>> {
     let mut sort_order: Option<SortOrder> = None;
-    if let Some(value) = sort {
+    if let Some(value) = order {
         sort_order = Some(SortOrder::try_from(value.as_ref())?)
     }
 
@@ -112,7 +112,7 @@ fn get_all_posts_authenticated(
         &*conn,
         auth.deref().has_capability(&*conn, "post:view_hidden"),
         (*tags).clone(),
-        search,
+        (*keywords).clone(),
         sort_order,
         kind,
         limit,
@@ -128,27 +128,27 @@ fn get_all_posts_authenticated(
 }
 
 #[get(
-    "/api/v1/posts?<tags>&<search>&<sort>&<kind>&<limit>&<offset>",
+    "/api/v1/posts?<tags>&<keywords>&<order>&<kind>&<limit>&<offset>",
     rank = 2
 )]
 fn get_all_posts(
     conn: DBConnection,
     tags: StringVector,
-    search: Option<String>,
-    sort: Option<String>,
+    keywords: StringVector,
+    order: Option<String>,
     kind: Option<String>, // type
     limit: Option<u32>,
     offset: Option<u32>,
 ) -> ApiResult<Vec<Post>> {
     let mut sort_order: Option<SortOrder> = None;
-    if let Some(value) = sort {
+    if let Some(value) = order {
         sort_order = Some(SortOrder::try_from(value.as_ref())?)
     }
     Ok(Json(Post::all(
         &*conn,
         false,
         (*tags).clone(),
-        search,
+        (*keywords).clone(),
         sort_order,
         kind,
         limit,
@@ -228,13 +228,13 @@ fn update_post(
     }
 
     // prevent empty title & empty content
-    if a_post.title == "" || a_post.content == "" {
+    if a_post.title == "" {
         Err(EntityError::InvalidAttribute)?;
     }
 
     let mut post = post_guard.post_clone();
     post.title = a_post.title;
-    post.content = a_post.content;
+    post.content = a_post.content.unwrap_or("".into());
 
     post.update(&*conn)?;
 

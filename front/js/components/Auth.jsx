@@ -1,7 +1,7 @@
 import React from 'react';
-import { useAuth } from '../context/authContext';
+import { useAuth } from '../context';
 import { Container, Row, Col } from 'react-bootstrap';
-import { useParams, useHistory, Link } from 'react-router-dom';
+import { useHistory, Link } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 
 
@@ -32,6 +32,19 @@ export function Unauthenticated(Component) {
   }
 }
 
+
+export const WhenLogged = Component => props => {
+  const isLogged = !!useAuth().user;
+  return isLogged ? <Component {...props} /> : null;
+}
+
+
+export const May = (cap, Component) => props => {
+  const caps = useAuth().token.caps || [];
+  if (caps.some(e => e.name === cap))
+    return <Component {...props} />;
+  return <></>;
+}
 
 export const Dialog = Unauthenticated(({ icon, title, children }) => {
   return (

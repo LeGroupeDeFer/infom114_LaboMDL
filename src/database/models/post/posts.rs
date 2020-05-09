@@ -17,8 +17,8 @@ use crate::lib::{self as conseq, Consequence, EntityError, PostError};
 
 // TODO - Move this in app state
 const BASE: f64 = 1.414213562;
-const EPOCH: u64 = 1577840400; // 01/01/2020
-const EASING: u64 = 24 * 3600; // 1 day
+const EPOCH: u32 = 1577840400; // 01/01/2020
+const EASING: u32 = 24 * 3600; // 1 day
 
 pub enum PostKind {
     Info,
@@ -132,14 +132,29 @@ impl PostEntity {
         conn: &MysqlConnection,
         can_see_hidden: bool,
         tags: Vec<String>,
-        search: Option<String>,
+        keywords: Vec<String>,
         sort: Option<SortOrder>,
         kind: Option<String>, // type
         limit: Option<u32>,
         offset: Option<u32>,
     ) -> Consequence<Vec<Self>> {
         let mut query = table
-            .left_join(posts_tags_table.inner_join(tags_table))
+            .inner_join(posts_tags_table.inner_join(tags_table))
+            .select((
+                dsl::id,
+                dsl::title,
+                dsl::content,
+                dsl::author_id,
+                dsl::created_at,
+                dsl::updated_at,
+                dsl::deleted_at,
+                dsl::hidden_at,
+                dsl::locked_at,
+                dsl::votes,
+                dsl::score,
+                dsl::rank,
+                dsl::kind,
+            ))
             .into_boxed();
 
         // filter out deleted
@@ -151,25 +166,17 @@ impl PostEntity {
         }
 
         // filter on tag
-        if !tags.is_empty() {
-            query = query.filter(tags::label.eq_any(tags));
+        for tag in tags {
+            query = query.filter(tags::label.eq(tag));
         }
 
         // filter on the search term given (in title)
-        if let Some(s) = search {
-            query = query.filter(dsl::title.like(format!("%{}%", s)));
-        }
-
-        // order by
-        if let Some(s) = sort {
-            query = match s {
-                SortOrder::New => query.order(dsl::created_at.desc()),
-                SortOrder::Old => query.order(dsl::created_at.asc()),
-                SortOrder::HighScore => query.order(dsl::score.desc()),
-                SortOrder::LowScore => query.order(dsl::score.asc()),
-                SortOrder::HighRank => query.order(dsl::rank.desc()),
-                SortOrder::LowRank => query.order(dsl::rank.asc()),
-            }
+        for keyword in keywords {
+            query = query.filter(
+                dsl::title
+                    .like(format!("%{}%", keyword))
+                    .or(dsl::content.like(format!("%{}%", keyword))),
+            );
         }
 
         let post_kind = kind
@@ -193,11 +200,26 @@ impl PostEntity {
             query = query.offset(o as i64);
         }
 
-        Ok(query
-            .load::<(PostEntity, Option<(RelPostTagEntity, TagEntity)>)>(conn)?
-            .into_iter()
-            .map(move |(post_entity, _)| post_entity)
-            .collect::<Vec<Self>>())
+        // order by
+        if let Some(s) = sort {
+            query = match s {
+                SortOrder::New => query.order(dsl::created_at.desc()),
+                SortOrder::Old => query.order(dsl::created_at.asc()),
+                SortOrder::HighScore => query.order((dsl::score.desc(), dsl::created_at.desc())),
+                SortOrder::LowScore => query.order((dsl::score.asc(), dsl::created_at.desc())),
+                SortOrder::HighRank => {
+                    query.order((dsl::rank.desc(), dsl::score.desc(), dsl::created_at.desc()))
+                }
+                SortOrder::LowRank => {
+                    query.order((dsl::rank.asc(), dsl::score.asc(), dsl::created_at.desc()))
+                }
+            }
+        } else {
+            query = query.order((dsl::rank.desc(), dsl::score.desc(), dsl::created_at.desc()));
+        }
+
+        let results = query.distinct().load::<PostEntity>(conn)?;
+        Ok(results)
     }
 
     pub fn get_deleted(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
@@ -256,6 +278,7 @@ impl PostEntity {
         self.score = self.calculate_score(&conn)?;
         self.votes = self.count_votes(&conn)?;
         self.rank = self.calculate_rank();
+        println!("NEW RANK: {}", self.rank);
 
         // update self
         self.update(&conn)?;
@@ -271,7 +294,7 @@ impl PostEntity {
     }
 
     pub fn calculate_rank(&self) -> f64 {
-        let elapsed = self.created_at.timestamp() as u64 - EPOCH;
+        let elapsed = self.created_at.timestamp() as u32 - EPOCH;
         let logarithm = (self.votes as f64).log(BASE);
         let order = logarithm.max(1.0);
 
@@ -362,7 +385,7 @@ impl Post {
         conn: &MysqlConnection,
         can_see_hidden: bool,
         tags: Vec<String>,
-        search: Option<String>,
+        keywords: Vec<String>,
         sort: Option<SortOrder>,
         kind: Option<String>, // type
         limit: Option<u32>,
@@ -372,7 +395,7 @@ impl Post {
             conn,
             can_see_hidden,
             tags,
-            search,
+            keywords,
             sort,
             kind,
             limit,
@@ -459,3 +482,11 @@ impl From<PostEntity> for Post {
         }
     }
 }
+
+impl PartialEq for Post {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for Post {}

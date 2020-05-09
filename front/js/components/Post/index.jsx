@@ -1,256 +1,177 @@
-import React, { useState } from 'react';
-import { Row, Col, Badge } from 'react-bootstrap';
+import React  from 'react';
+import { Link } from 'react-router-dom';
+import {Container, Row, Col, Badge, Dropdown, DropdownButton, Card} from 'react-bootstrap';
+import { FaEllipsisH, FaEyeSlash, FaFacebookSquare, FaFlag, FaLock, FaTag, FaTrashAlt } from 'react-icons/fa';
+import { FacebookShareButton } from "react-share";
+import { MdModeComment } from "react-icons/md";
 import Moment from 'react-moment';
-import clsx from 'clsx';
-import { UpVote, DownVote } from './Vote';
-import { FaEyeSlash, FaFacebookSquare, FaFlag, FaTag } from 'react-icons/fa';
-import { MdModeComment } from 'react-icons/md';
-import { FacebookShareButton } from 'react-share';
 
-import Preview from './Preview';
+import { useAuth } from 'unanimity/context';
+import { May } from '../Auth';
+import { UpVote, DownVote, Vote, VoteSection } from './Vote';
+import { preview, previewLength } from 'unanimity/lib';
 import Comment from './Comment';
-import Poll from './Poll';
+import DeleteModal from './DeleteModal';
+import Poll from "./Poll";
+import clsx from "clsx";
+import {trace} from "../../lib";
 
-function Comments({
-  isLogged,
-  toggle_comment_editor,
-  add_comment_editor,
-  comment_editors,
-  comments,
-}) {
+
+const HidePost = May('post:hide', ({ onClick }) => (
+  <Dropdown.Item as="button" onClick={onClick}>
+    <FaEyeSlash className="mr-2" />
+    <span>Masquer</span>
+  </Dropdown.Item>
+));
+
+const LockPost = May('post:lock', ({ onClick }) => (
+  <Dropdown.Item as="button" onClick={onClick}>
+    <FaLock className="mr-2" />
+    <span>Vérouiller</span>
+  </Dropdown.Item>
+));
+
+
+export function PostContent({ isPreview, post, onComment }) {
+
+  if (isPreview)
+    return (
+      <div className="post-preview">
+        <span className="pr-1">{preview(post.content, previewLength)}</span>
+        <Link to={`/detail/${post.id}`}>Lire la suite</Link>
+      </div>
+  );
+
   return (
-    <>
-      {Object.keys(comments).map((key) => {
-        return (
-          <Comment
-            key={comments[key].id}
-            comment={comments[key]}
-            isLogged={isLogged}
-            toggle_comment_editor={toggle_comment_editor}
-            add_comment_editor={add_comment_editor}
-            comment_editors={comment_editors}
-          />
-        );
-      })}
-    </>
+    <div className="post-content">
+      <p className="mb-4">{post.content}</p>
+      {post.kind === 'poll' && <Poll />}
+      <Comment.Editor onComment={comment => onComment(post, comment) } />
+      <div className="post-comments">
+        {post.comments.map(comment => <Comment comment={comment} onComment={onComment} />)}
+      </div>
+    </div>
   );
 }
 
-function Post({
-  id,
-  title,
-  content,
-  author,
-  score,
-  kind,
-  createdAt,
-  comments,
-  tags,
-  userVote,
-  isLogged,
-  onClick,
+export function Post({
+  post, onVote, onFlag, onDelete, onHide, onTag, onLock, onComment,
+  isPreview, onPreview, className, ...others
 }) {
-  const [commentEditors, setCommentEditors] = useState({});
-  const [commentList, setCommentList] = useState(comments);
-  let vote = ['down', 'no', 'up'][userVote + 1];
-  const [voted, setVoted] = useState(vote);
-  const [scoreState, setScoreState] = useState(score);
 
-  function addComment(comment) {
-    setCommentList((cmmt) =>
-      [
-        {
-          id: Date.now(),
-          text: comment,
-          author: 'John Doe',
-          created_on: Date.now(),
-          score: -8,
-          children: [],
-        },
-      ].concat(cmmt)
-    );
-  }
+  const { user } = useAuth();
+  const isLogged = !!user;
+  const owner = isLogged && post.author.id === user.id;
 
-  function getDisplayedKind(kind) {
-    switch (kind) {
-      case 'info':
-        return 'Information';
-      case 'poll':
-        return 'Sondage';
-      case 'idea':
-        return 'Idée';
-    }
-  }
+  const cardProps = isPreview
+    ? { onClick: e => e.target.classList.contains('expand-preview')
+        ? onPreview(post)
+        : null
+    } : {};
 
-  function addReply(comment, parentId, ancestorId) {
-    let newComments = [...commentList];
-    addReplyRecursively(newComments, comment, parentId, ancestorId);
-    setCommentList(newComments);
-  }
+  const { author, kind, id, createdAt, userVote, score, tags, title, comments } = post;
 
-  function addReplyRecursively(comments, comment, parentId, ancestorId) {
-    comments.forEach((o) => {
-      // Reply of reply
-      if (ancestorId == null) {
-        if (o.id == parentId) {
-          o.children.unshift({
-            id: Date.now(),
-            text: comment,
-            author: 'John Doe',
-            created_on: Date.now(),
-            score: -8,
-            children: [],
-          });
-        } else {
-          addReplyRecursively(o.children, comment, parentId, null);
-        }
-      }
-
-      if (o.id == ancestorId) {
-        if (ancestorId == parentId) {
-          o.children.unshift({
-            id: Date.now(),
-            text: comment,
-            author: 'John Doe',
-            created_on: Date.now(),
-            score: -8,
-            children: [],
-          });
-        } else {
-          addReplyRecursively(o.children, comment, parentId, null);
-        }
-      }
-    });
-  }
-
-  function toggleCommentEditor(commentId) {
-    setCommentEditors((commentEditors) => {
-      return {
-        ...commentEditors,
-        [commentId]: {
-          ...commentEditors[commentId],
-          isVisible: !commentEditors[commentId].isVisible,
-        },
-      };
-    });
-  }
-
-  function addCommentEditor(commentId, ancestorId) {
-    if (commentId in commentEditors) return;
-
-    let newEditor = {
-      editor: (
-        <Comment.Editor
-          type="reply"
-          isLogged={isLogged}
-          toggle_comment_editor={toggleCommentEditor}
-          comment_id={commentId}
-          ancestor_id={ancestorId}
-          add_reply={addReply}
-        />
-      ),
-      isVisible: true,
-    };
-
-    // Merge previous values with a new one
-    setCommentEditors((commentEditors) => {
-      return { ...commentEditors, [commentId]: newEditor };
-    });
-  }
+  const cls = clsx(
+    'post expand-preview',
+    isPreview && 'post-preview',
+    className
+  );
 
   return (
-    <>
-      <div className="mr-3 ml-3">
-        <Row className="comment-first-row">
-          <Col className="col-auto vote-col">
-            <UpVote
-              isLogged={isLogged}
-              voted={voted}
-              set_vote={setVoted}
-              score={scoreState}
-              set_score={setScoreState}
-              post_id={id}
-            />
-          </Col>
-          <Col>
-            {' '}
-            <h5>
-              <Badge className={`post-${kind} mr-1`}>
-                {getDisplayedKind(kind)}
-              </Badge>
-              <span className="mr-1">{title}</span>
+    <Card {...others} {...cardProps} className={cls} id={id}>
+      <Card.Header className="post-header">
+        <Container className="p-0">
+          <Row>
+            <Col className="expand-preview">
+              <h5 className="ml-1 expand-preview">
+                <Badge className={`post-${kind} mr-1`}>{kind}</Badge>
+                <span className="mr-1">{title}</span>
 
-              <span className="text-muted title-part2">
-                {' '}
-                <a href="#" className="text-dark">
-                  {author.firstname}
-                  {'  '}
-                  {author.lastname}
-                </a>{' '}
-                -{' '}
-                <Moment locale="fr" fromNow>
-                  {createdAt}
-                </Moment>
-              </span>
-            </h5>
-          </Col>{' '}
-        </Row>
-        <Row>
-          <Col className="col-auto vote-col">
-            <div
-              className={`text-center ${clsx(
-                voted !== 'no' && voted + '-voted'
-              )}`}
-            >
-              <b>{scoreState}</b>
-            </div>
-
-            <DownVote
-              isLogged={isLogged}
-              voted={voted}
-              set_vote={setVoted}
-              score={scoreState}
-              set_score={setScoreState}
-              post_id={id}
-            />
-          </Col>
-
-          <Col>
-            <div className="mb-2">
-              {tags.map((tag) => {
-                return (
-                  <a
-                    href="#"
-                    className="mr-2 tag"
-                    onClick={onClick}
-                    value={tag}
-                  >
-                    <FaTag className="mr-1" />
-                    {tag}
+                <span className="text-muted title-part2">
+                  <a href="#" className="text-dark mx-1">
+                    <span>{author.firstname}</span>
+                    <span className="ml-1">{author.lastname}</span>
                   </a>
-                );
-              })}
-            </div>
-            <br />
-            <p className="mb-4">{content}</p>
-
-            {kind === 'poll' && <Poll />}
-
-            <div className="mb-2">
-              <a className="post-footer-btn mr-3" href="#">
-                <MdModeComment size="1.25em" className="mr-2" />
-                <span className="text-muted">
-                  {comments.length}{' '}
-                  {comments.length <= 1 ? 'commentaire' : 'commentaires'}
+                  <span>-</span>
+                  <Moment locale="fr" fromNow className="ml-1">{createdAt}</Moment>
                 </span>
-              </a>
+              </h5>
+            </Col>
+
+            <Col className="expand-preview">
+              <DropdownButton
+                alignRight
+                id={`post-${id}-actions`}
+                title={<div className="px-2 py-1"><FaEllipsisH /></div>}
+                variant="link"
+                className="float-right more btn-link"
+                onClick={() => {}}
+                href="#"
+              >
+                <HidePost onClick={onHide} />
+
+                <Dropdown.Item as="button" onClick={onFlag}>
+                  <FaFlag className="mr-2" />
+                  <span>Signaler</span>
+                </Dropdown.Item>
+
+                {owner && (
+                  <Dropdown.Item as="button" onClick={() => onDelete(post)}>
+                    <FaTrashAlt className="mr-2" />
+                    <span>Supprimer</span>
+                  </Dropdown.Item>
+                )}
+
+                <LockPost onClick={onLock}/>
+              </DropdownButton>
+            </Col>
+          </Row>
+        </Container>
+      </Card.Header>
+
+      <Card.Body className="post-body p-0 expand-preview">
+        <div className="d-flex expand-preview">
+          <VoteSection
+            onVote={vote => onVote(post, vote)}
+            score={score}
+            isLogged={isLogged}
+            vote={userVote}
+          />
+
+          <div className="px-3 pb-3 pt-2 w-100">
+            <Card.Text>
+              <div className="mb-1">
+                {tags.map(tag => (
+                  <a href="#" key={tag} className="mr-2 tag" onClick={() => onTag(tag)}>
+                    <FaTag className="mr-1" />
+                    <span>{tag}</span>
+                  </a>
+                ))}
+              </div>
+
+              <PostContent
+                isPreview={isPreview}
+                post={post}
+                onTag={onTag}
+                onComment={onComment}
+              />
+            </Card.Text>
+
+            <div className="post-footer mb-2">
+
+              <Link to={`/detail/${id}`} className="post-footer-btn mr-2" href="#">
+                <MdModeComment size="1.25em" className="mr-1" />
+                <span className="text-muted">
+                  <span className="pr-1">{comments.length}</span>
+                  {`commentaire${comments.length > 1 ? 's' : ''}`}
+                </span>
+              </Link>
 
               <FacebookShareButton
-                url={'https://unanimity.be/detail/' + id}
-                quote={title + ' - ' + author.firstname + ' ' + author.lastname}
-                onClick={(e) => e.stopPropagation()}
+                url={`https://unanimity.be/detail/${id}`}
+                quote={`${title}  - ${author.firstname} ${author.lastname}`}
               >
-                <a className="post-footer-btn mr-3" href="#">
+                <a className="post-footer-btn mr-2" href="#">
                   <FaFacebookSquare size="1.25em" className="mr-1" />
                   <span className="text-muted">Partager</span>
                 </a>
@@ -265,31 +186,18 @@ function Post({
                 <FaFlag size="1.25em" className="mr-1" />
                 <span className="text-muted">Signaler</span>
               </a>
+
             </div>
-            <br />
-
-            <Comment.Editor
-              isLogged={isLogged}
-              type="comment"
-              add_comment={addComment}
-              className="mb-2"
-            />
-          </Col>
-        </Row>
-
-        <Comments
-          isLogged={isLogged}
-          toggle_comment_editor={toggleCommentEditor}
-          add_comment_editor={addCommentEditor}
-          comment_editors={commentEditors}
-          comments={commentList}
-        />
-      </div>
-      <br />
-    </>
+          </div>
+        </div>
+      </Card.Body>
+    </Card>
   );
 }
 
-Object.assign(Post, { Preview, Comment });
+Object.assign(Post, {
+  Delete: DeleteModal, Comment, Vote, UpVote, DownVote
+});
+
 
 export default Post;

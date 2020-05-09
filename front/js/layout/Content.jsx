@@ -1,16 +1,9 @@
-import React, { useRef, useState, useEffect, lazy, Suspense } from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Route, Switch, useLocation } from 'react-router-dom';
-import {
-  faUserCircle,
-  faCogs,
-  faInfoCircle,
-  faStream,
-  faBell,
-  faPencilAlt,
-} from '@fortawesome/free-solid-svg-icons';
+import { Loading } from 'unanimity/components';
 import Sidebar from './Sidebar';
 import layout from '../lib/layout';
-import { useAuth } from '../context/authContext';
+import {StreamProvider, useAuth} from '../context';
 
 const Stream = lazy(() => import('../pages/Stream/index'));
 const Profile = lazy(() => import('../pages/Profile'));
@@ -21,11 +14,11 @@ const Login = lazy(() => import('../pages/Login'));
 const Logout = lazy(() => import('../pages/Logout'));
 const Register = lazy(() => import('../pages/Register'));
 const Activate = lazy(() => import('../pages/Activate'));
-const Admin = lazy(() => import('../pages/Admin'));
+const AuthenticatedAdmin = lazy(() => import('../pages/Admin'));
 const Recover = lazy(() => import('../pages/Recover'));
 const Restore = lazy(() => import('../pages/Restore'));
 
-// Content :: Object => Component
+
 const Content = (_) => {
   const location = useLocation();
   const { user } = useAuth();
@@ -40,7 +33,7 @@ const Content = (_) => {
       <div className={`offset ${layoutStyle}`}>
         <main role="main">
           <div className="content">
-            <Suspense fallback={<h1>Loading...</h1>}>
+            <Suspense fallback={<Loading />}>
               <Switch>
                 <Route path="/profile">
                   <Profile />
@@ -75,7 +68,7 @@ const Content = (_) => {
                 </Route>
 
                 <Route path="/admin">
-                  <Admin />
+                  <AuthenticatedAdmin />
                 </Route>
 
                 <Route path="/restore">
@@ -87,7 +80,9 @@ const Content = (_) => {
                 </Route>
 
                 <Route path="/">
-                  <Stream />
+                  <StreamProvider>
+                    <Stream />
+                  </StreamProvider>
                 </Route>
               </Switch>
             </Suspense>

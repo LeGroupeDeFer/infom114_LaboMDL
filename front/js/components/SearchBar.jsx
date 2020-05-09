@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { faTag, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { components } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
-import {trace} from "unanimity/lib";
+import { useStream } from "../context/streamContext";
+import { trace, last } from "../lib";
+
 
 const DropdownIndicator = (props) => {
   return (
@@ -27,16 +29,26 @@ export function Option({ icon, label }) {
 }
 
 // SearchBar :: None => Component
-function SearchBar({ tags, choices, onChange, children }) {
-  const options = tags.map(({ label, id }) => ({
+function SearchBar({ children }) {
+  const stream = useStream();
+
+  const options = stream.tags.available.map(({ label, id }) => ({
     value: label,
     label: <Option icon={faTag} label={label} />,
   }));
 
-  const localOnChange = (options, action) => {
-    if (!['select-option', 'remove-value'].includes(action.action))
-      return;
-    onChange((options || []).map(o => o.value));
+  const localOnChange = (options, meta) => {
+    // The new option is always the last of react-select values
+    const option = last(options);
+
+    if (meta.action === 'create-option')
+      stream.keywords.add(option.value);
+    else if (meta.action === 'select-option')
+      stream.tags.add(option.value);
+    else if (meta.action === 'remove-value') {
+      const v = meta.removedValue.value;
+      (stream.tags.value.includes(v) ? stream.tags : stream.keywords).remove(v)
+    }
   }
 
   return (

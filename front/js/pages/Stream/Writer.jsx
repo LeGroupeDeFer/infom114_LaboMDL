@@ -15,16 +15,14 @@ import {
   faInfo,
   faLightbulb,
   faPenFancy,
-  faPlusSquare,
+  faPlusSquare, faTag,
 } from '@fortawesome/free-solid-svg-icons';
 import { TiDelete } from 'react-icons/ti';
-import { faTag } from '@fortawesome/free-solid-svg-icons';
-import { useRequest } from '../../hooks';
 import { useHistory } from 'react-router-dom';
-import api from '../../lib/api';
 import AutoForm from '../../components/AutoForm';
 import { Option } from '../../components/SearchBar';
-import { Simple as SimpleError } from '../../components/Error';
+import {useStream} from "../../context/streamContext";
+import {trace} from "../../lib";
 
 const types = [
   { value: 'idea', label: Option({ icon: faLightbulb, label: 'Idée' }) },
@@ -149,24 +147,22 @@ function Submit({ loading }) {
 
 function Writer() {
   const history = useHistory();
-  const [tagError, data] = useRequest(api.tags, []);
-  const [postError, setPostError] = useState(null);
-  const tags = (data ? data.tags : []).map((tag) => ({
-    id: tag.id,
-    value: tag.label,
-    label: Option({ icon: faTag, label: tag.label }),
-  }));
+  const stream = useStream();
   const [loading, setLoading] = useState(false);
 
   function onSubmit(post) {
     setLoading(true);
-    if (post.type !== 'poll') post.options = [];
-
-    api.posts
-      .add(post)
-      .then((newPost) => history.push(`/detail/${newPost.id}`))
-      .catch((e) => setPostError(e) || setLoading(false));
+    if (post.kind !== 'poll') post.options = [];
+    stream.posts.add(post).then(p => history.push(`/detail/${p.id}`));
   }
+
+  const tags = stream.tags.available.map(
+    t => ({ value: t.label, label: Option({ label: t.label, icon: faTag }) })
+  );
+
+  const kinds = stream.kind.available.map(
+    kind => ({ value: kind.value, label: Option(kind) })
+  );
 
   return (
     <Container className="py-5">
@@ -184,15 +180,13 @@ function Writer() {
         <Col>
           <Card>
             <Card.Body>
-              <SimpleError error={tagError || postError} className="mb-3" />
-
               <AutoForm onSubmit={onSubmit}>
                 <Row>
                   <Col sm={12} md={6} className="pb-3">
                     <AutoForm.Select
                       id="kind"
                       name="kind"
-                      options={types}
+                      options={kinds}
                       styles={customStyles}
                       placeholder="Sélectionner une catégorie"
                     />

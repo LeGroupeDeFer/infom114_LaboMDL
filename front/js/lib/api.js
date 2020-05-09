@@ -1,4 +1,4 @@
-import { snake, camel, empty, trace, identity } from './index';
+import { snake, camel, empty, trace, identity, clean } from './index';
 import jwtDecode from 'jwt-decode';
 
 /* istanbul ignore next */
@@ -74,16 +74,18 @@ function api(endpoint, { body, ...providedConfig } = {}) {
   };
 
   let target = `${root}${endpoint}`;
-  if (body && method === 'GET') target = query(target, body);
-  if (body && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) ) 
-    config.body = JSON.stringify(snake(body));
+  if (body)
+    if (method === 'GET') target = query(target, clean(body));
+    else config.body = JSON.stringify(snake(clean(body)));
 
   return window
     .fetch(target, config)
     .then((response) =>
       Promise.all([
         new Promise((resolve, _) => resolve(response.status)),
-        response.json(),
+        response.headers.get('Content-Type').includes('application/json')
+          ? response.json()
+          : response.text(),
       ])
     )
     .then(([status, data]) => {
@@ -299,6 +301,18 @@ function removeRoleFromUser(userID, roleID) {
   });
 }
 
+function userReport() {
+  return api('/report/users');
+}
+
+function tagReport() {
+  return api('/report/tags');
+}
+
+function postReport() {
+  return api('/report/posts');
+}
+
 api.tags = tags;
 api.tags.add = addTag;
 api.tags.remove = removeTag;
@@ -312,5 +326,9 @@ api.capabilities = capabilities;
 api.users = users;
 api.users.addRole = addRoleToUser;
 api.users.removeRole = removeRoleFromUser;
+
+api.users.report = userReport;
+api.tags.report = tagReport;
+api.posts.report = postReport;
 
 export default api;

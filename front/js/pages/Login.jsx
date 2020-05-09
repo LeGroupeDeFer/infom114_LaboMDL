@@ -3,12 +3,13 @@ import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Form } from 'react-bootstrap';
 import { Link, useHistory } from 'react-router-dom';
-import { useAuth } from '../context/authContext';
+import { useAuth } from '../context';
 import { AutoForm, Flexbox, Unauthenticated } from '../components';
 import { isUnamurEmail, isValidPassword } from '../lib/validators';
+import { Simple as SimpleError } from 'unanimity/components';
 
 
-function Header(props) {
+function Header() {
 
   return (
     <Flexbox justify="center" align="end" className='mb-3 form-header'>
@@ -74,7 +75,7 @@ function LoginForm() {
 
 const Login = Unauthenticated(() => {
 
-  const { login } = useAuth();
+  const { login, error } = useAuth();
   const history = useHistory();
 
   const handleSubmit = data =>
@@ -88,6 +89,8 @@ const Login = Unauthenticated(() => {
           <AutoForm onSubmit={handleSubmit} autoComplete="off">
             <Header />
             <hr />
+
+            <SimpleError error={error} />
 
             <LoginForm />
             <hr />
