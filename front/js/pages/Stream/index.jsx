@@ -27,7 +27,7 @@ function KindSection() {
         >
           <Button
             key={kind.key}
-            className={clsx('kind-choice', trace(stream.kind.value.key === kind.key) && 'active')}
+            className={clsx('kind-choice', stream.kind.value.key === kind.key && 'active')}
             onClick={() => stream.kind.set(kind)}
           >
             <Icon icon={kind.icon} />
@@ -49,10 +49,11 @@ function StreamContent() {
     deletePost: false,
     toast: false,
 
-    onFlag: post => stream.posts.flag(post),
+    onFlag: (post, reason) => stream.posts.flag(post, reason),
     onHide: post => stream.posts.hide(post),
     onVote: (post, vote) => stream.posts.vote(post, vote),
     onTag: tag => stream.tags.set(tag),
+    onPromote: post => stream.posts.promote(post),
     onSort: order => stream.order.set(order),
     onPreview: v => setState(state => ({ ...state, previewPost: v })),
     onDelete: v => setState(state => ({ ...state, deletePost: v })),

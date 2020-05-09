@@ -283,9 +283,10 @@ fn toggle_visibility(
     }
     auth.check_capability(&*conn, "post:hide")?;
 
-    post_guard.post().toggle_visibility(&*conn)?;
+    let mut post = post_guard.post_clone();
+    post.toggle_visibility(&*conn)?;
 
-    let mut p = Post::from(post_guard.post_clone());
+    let mut p = Post::from(post);
     p.set_user_info(&*conn, &auth.sub);
     Ok(Json(p))
 }
@@ -304,9 +305,10 @@ fn toggle_lock(
     }
     auth.check_capability(&*conn, "post:lock")?;
 
-    post_guard.post().toggle_lock(&*conn)?;
+    let mut post = post_guard.post_clone();
+    post.toggle_lock(&*conn)?;
 
-    let mut p = Post::from(post_guard.post_clone());
+    let mut p = Post::from(post);
     p.set_user_info(&*conn, &auth.sub);
     Ok(Json(p))
 }
@@ -328,20 +330,18 @@ fn manage_post_report(
         Err(AuthError::MissingCapability)?;
     }
 
+    let mut post = post_guard.post_clone();
     match data {
         Some(json_data) => {
             let report_data = json_data.into_inner();
-
-            post_guard
-                .post()
-                .report(&*conn, &auth.sub, report_data.reason)?;
+            post.report(&*conn, &auth.sub, report_data.reason)?;
         }
         None => {
-            post_guard.post().remove_report(&*conn, &auth.sub)?;
+            post.remove_report(&*conn, &auth.sub)?;
         }
     }
 
-    let mut p = Post::from(post_guard.post_clone());
+    let mut p = Post::from(post);
     p.set_user_info(&*conn, &auth.sub);
     Ok(Json(p))
 }
@@ -362,9 +362,10 @@ fn watch_post(
         Err(AuthError::MissingCapability)?;
     }
 
-    post_guard.post().toggle_watch(&*conn)?;
+    let mut post = post_guard.post_clone();
+    post.toggle_watch(&*conn)?;
 
-    let mut p = Post::from(post_guard.post_clone());
+    let mut p = Post::from(post);
     p.set_user_info(&*conn, &auth.sub);
     Ok(Json(p))
 }

@@ -21,15 +21,13 @@ const Matter = lazy(() => import('./layout/Content'));
 function App(_) {
 
   return (
-    <React.StrictMode>
-      <AuthProvider>
-        <Suspense fallback={<Loading />}>
-          <Router>
-            <Matter />
-          </Router>
-        </Suspense>
-      </AuthProvider>
-    </React.StrictMode>
+    <AuthProvider>
+      <Suspense fallback={<Loading />}>
+        <Router>
+          <Matter />
+        </Router>
+      </Suspense>
+    </AuthProvider>
   );
 
 }
