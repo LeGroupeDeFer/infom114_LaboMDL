@@ -52,10 +52,12 @@ export function VoteSection({ isLogged, vote, score, className, onVote, ...other
   const localOnVote = (direction, vote) => onVote(vote ? direction : VOTE.NONE);
 
   return (
-    <Flexbox align="center" direction="column" justify="between" className={cls} {...others}>
-      <UpVote isLogged={isLogged} vote={vote} onClick={localOnVote} />
-      <Score score={score || 0} vote={vote} />
-      <DownVote isLogged={isLogged} vote={vote} onClick={localOnVote} />
-    </Flexbox>
+    <div className={cls}>
+      <Flexbox align="center" direction="column" justify="between" className="vote-section-content" {...others}>
+        <UpVote isLogged={isLogged} vote={vote} onClick={localOnVote} />
+        <Score score={score || 0} vote={vote} />
+        <DownVote isLogged={isLogged} vote={vote} onClick={localOnVote} />
+      </Flexbox>
+    </div>
   );
 }

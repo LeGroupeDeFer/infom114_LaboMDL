@@ -51,10 +51,12 @@
 
 
 .vote-section {
-    padding: 1rem 0.84rem 0 0.84rem;
-
     background-color: rgba(0, 0, 0, 0.03);
     border-right: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.vote-section-content {
+    max-height: 8rem;
 }
 
 .post-footer-btn {
@@ -63,17 +65,8 @@
 }
 
 .post {
-    .more.show {
-        visibility: visible;
-    }
 
-    .more {
-        visibility: hidden;
-    }
-
-    .more .dropdown-toggle {
-        padding: 0 0 0 0;
-    }
+    position: relative;
 
     &:hover {
         &.preview {
@@ -86,12 +79,33 @@
         }
     }
 
+    &.post-preview.post-hidden {
+        filter: brightness(90%);
+        transition: filter .2s;
+    }
+
+    .more.show {
+        visibility: visible;
+    }
+
+    .more {
+        visibility: hidden;
+    }
+
+    .more .dropdown-toggle {
+        padding: 0 0 0 0;
+    }
+
     .card-header {
         padding: 0.7rem 1.25rem 0.4rem 1.25rem;
     }
 
     .more .dropdown-toggle:after {
         content: none
+    }
+
+    &.post-detail {
+        margin-top: 5rem;
     }
 
     &:not(.post-preview, .post-detail) {

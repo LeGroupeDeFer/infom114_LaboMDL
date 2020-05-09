@@ -19,10 +19,10 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { TiDelete } from 'react-icons/ti';
 import { useHistory } from 'react-router-dom';
-import AutoForm from '../../components/AutoForm';
-import { Option } from '../../components/SearchBar';
-import {useStream} from "../../context/streamContext";
-import {trace} from "../../lib";
+import { AutoForm, Authenticated } from 'unanimity/components';
+import { Option } from 'unanimity/components/SearchBar';
+import { useStream } from 'unanimity/context';
+
 
 const types = [
   { value: 'idea', label: Option({ icon: faLightbulb, label: 'Idée' }) },
@@ -145,7 +145,7 @@ function Submit({ loading }) {
   );
 }
 
-function Writer() {
+const Writer = Authenticated(() => {
   const history = useHistory();
   const stream = useStream();
   const [loading, setLoading] = useState(false);
@@ -244,7 +244,7 @@ function Writer() {
       </Row>
     </Container>
   );
-}
+});
 
 Writer.defaultProps = {};
 

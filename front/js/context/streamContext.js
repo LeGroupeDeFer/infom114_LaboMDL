@@ -58,6 +58,17 @@ export function StreamProvider({ children }) {
   const [state, setState] = useState({
 
     posts: {
+      _updatePost(promise) {
+        pushEffect([
+          promise,
+            post => setState(s => ({ ...s, posts: {
+              ...this,
+              value: s.posts.value.map(p => p.id === post.id ? post : p)
+            } })) || post,
+          printerr // TODO
+        ]);
+        return promise;
+      },
       value: [],
       of(id) {
         const prefetch = this.value.filter(p => p.id === id);
@@ -92,32 +103,24 @@ export function StreamProvider({ children }) {
         ]);
         return promise;
       },
-      vote(post, vote) {
-        const promise = api.posts.vote(post.id, vote);
-        pushEffect([
-          promise,
-          post => setState(s => ({
-            ...s,
-            posts: {
-              ...this,
-              value: s.posts.value.map(p => p.id === post.id ? post : p)
-            }
-          })) || post,
-          printerr // TODO
-        ]);
-        return promise;
-      },
-      comment(comment) {
+      comment(post, comment) {
         trace('TODO - COMMENT');
         return Promise.resolve(comment);
       },
+      vote(post, vote) {
+        return this._updatePost(api.posts.vote(post.id, vote));
+      },
       flag(post) {
-        trace('TODO - FLAG');
-        return Promise.resolve(post);
+        return this._updatePost(api.posts.flag(post.id));
       },
       hide(post) {
-        trace('TODO - HIDE');
-        return Promise.resolve(post);
+        return this._updatePost(api.posts.hide(post.id));
+      },
+      lock(post) {
+        return this._updatePost(api.posts.lock(post.id));
+      },
+      watch(post) {
+        return this._updatePost(api.posts.watch(post.id));
       }
     },
 
