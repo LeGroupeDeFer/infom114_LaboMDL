@@ -239,7 +239,7 @@ pub fn get_post_entity(locked: bool, hidden: bool, deleted: bool) -> PostEntity 
         kind: 0,
     };
 
-    let post = PostEntity::insert_new(&conn, &p).unwrap();
+    let mut post = PostEntity::insert_new(&conn, &p).unwrap();
     let id = post.id;
 
     if locked {

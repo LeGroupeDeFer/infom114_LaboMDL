@@ -78,7 +78,7 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
         content: lib::lorem_ipsum(),
         kind: 0,
     };
-    let hidden_post = PostEntity::insert_new(&conn, &hidden_minima).unwrap();
+    let mut hidden_post = PostEntity::insert_new(&conn, &hidden_minima).unwrap();
     hidden_post
         .add_tag(
             &conn,
@@ -94,7 +94,7 @@ pub fn seed_test_posts(conn: &MysqlConnection) {
         content: lib::lorem_ipsum(),
         kind: 0,
     };
-    let locked_post = PostEntity::insert_new(&conn, &locked_minima).unwrap();
+    let mut locked_post = PostEntity::insert_new(&conn, &locked_minima).unwrap();
     locked_post
         .add_tag(
             &conn,

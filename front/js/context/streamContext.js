@@ -110,8 +110,8 @@ export function StreamProvider({ children }) {
       vote(post, vote) {
         return this._updatePost(api.posts.vote(post.id, vote));
       },
-      flag(post) {
-        return this._updatePost(api.posts.flag(post.id));
+      flag(post, reason) {
+        return this._updatePost(api.posts.flag(post.id, reason));
       },
       hide(post) {
         return this._updatePost(api.posts.hide(post.id));

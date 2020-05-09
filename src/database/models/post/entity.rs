@@ -15,6 +15,7 @@ use std::hash::{Hash, Hasher};
     Identifiable, Queryable, AsChangeset, Associations, Serialize, Deserialize, Clone, Debug,
 )]
 #[table_name = "posts"]
+#[changeset_options(treat_none_as_null = "true")]
 pub struct PostEntity {
     pub id: u32,
     pub title: String,

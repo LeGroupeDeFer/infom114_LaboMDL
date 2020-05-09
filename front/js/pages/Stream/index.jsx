@@ -49,7 +49,7 @@ function StreamContent() {
     deletePost: false,
     toast: false,
 
-    onFlag: post => stream.posts.flag(trace(post)),
+    onFlag: (post, reason) => stream.posts.flag(post, reason),
     onHide: post => stream.posts.hide(post),
     onVote: (post, vote) => stream.posts.vote(post, vote),
     onTag: tag => stream.tags.set(tag),

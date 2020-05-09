@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::{NaiveDateTime, Utc};
 use diesel::expression::functions::date_and_time::now;
 use diesel::prelude::*;
 use diesel::MysqlConnection;
@@ -149,6 +149,7 @@ impl PostEntity {
                 dsl::updated_at,
                 dsl::deleted_at,
                 dsl::hidden_at,
+                dsl::watched_at,
                 dsl::locked_at,
                 dsl::votes,
                 dsl::score,
@@ -301,44 +302,30 @@ impl PostEntity {
         order + (elapsed / EASING) as f64
     }
 
-    pub fn toggle_visibility(&self, conn: &MysqlConnection) -> Consequence<()> {
-        if self.hidden_at.is_some() {
-            diesel::update(self)
-                .set(dsl::hidden_at.eq(None as Option<NaiveDateTime>))
-                .execute(conn)?;
+    pub fn toggle_visibility(&mut self, conn: &MysqlConnection) -> Consequence<()> {
+        self.hidden_at = if self.hidden_at.is_none() {
+            Some(Utc::now().naive_local())
         } else {
-            diesel::update(self)
-                .set(dsl::hidden_at.eq(now))
-                .execute(conn)?;
-        }
-
+            None
+        };
+        self.update(conn)?;
+        println!("HIDDEN {}", self.is_hidden());
         Ok(())
     }
 
-    pub fn toggle_lock(&self, conn: &MysqlConnection) -> Consequence<()> {
-        if self.locked_at.is_some() {
-            diesel::update(self)
-                .set(dsl::locked_at.eq(None as Option<NaiveDateTime>))
-                .execute(conn)?;
-        } else {
-            diesel::update(self)
-                .set(dsl::locked_at.eq(now))
-                .execute(conn)?;
-        }
+    pub fn toggle_lock(&mut self, conn: &MysqlConnection) -> Consequence<()> {
+        self.locked_at = if self.locked_at.is_none() {
+            Some(Utc::now().naive_local())
+        } else { None };
+        self.update(conn)?;
         Ok(())
     }
 
-    pub fn toggle_watch(&self, conn: &MysqlConnection) -> Consequence<()> {
-        if self.watched_at.is_some() {
-            diesel::update(self)
-                .set(dsl::watched_at.eq(None as Option<NaiveDateTime>))
-                .execute(conn)?;
-        } else {
-            diesel::update(self)
-                .set(dsl::watched_at.eq(now))
-                .execute(conn)?;
-        }
-
+    pub fn toggle_watch(&mut self, conn: &MysqlConnection) -> Consequence<()> {
+        self.watched_at = if self.watched_at.is_none() {
+            Some(Utc::now().naive_local())
+        } else { None };
+        self.update(conn)?;
         Ok(())
     }
 
