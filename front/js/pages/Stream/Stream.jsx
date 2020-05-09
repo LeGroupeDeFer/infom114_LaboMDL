@@ -13,6 +13,7 @@ import { useStream } from 'unanimity/context/streamContext';
 import { ORDER } from 'unanimity/lib';
 import Post from 'unanimity/components/Post';
 
+
 // InnerStream :: Object => Component
 function InnerStream({
   deletePost, flagPost, onDelete, previewPost, onPreview, toast, onToast,
@@ -181,5 +182,6 @@ function Stream({ onSort, ...others }) {
     </Container>
   );
 }
+
 
 export default Stream;

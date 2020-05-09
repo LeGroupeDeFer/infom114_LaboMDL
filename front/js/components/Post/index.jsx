@@ -57,8 +57,8 @@ const FlagPost = ({ post, userFlag, onFlag, onFlagCancel }) => {
   );
 };
 
-const DeletePost = ({ owner }) => owner ? (
-  <Dropdown.Item as="button" onClick={() => onDelete(post)}>
+const DeletePost = ({ owner, onClick }) => owner ? (
+  <Dropdown.Item as="button" onClick={() => onClick()}>
     <FaTrashAlt className="mr-2" />
     <span>Supprimer</span>
   </Dropdown.Item>

@@ -205,22 +205,19 @@ impl PostEntity {
         }
 
         // order by
-        if let Some(s) = sort {
-            query = match s {
-                SortOrder::New => query.order(dsl::created_at.desc()),
-                SortOrder::Old => query.order(dsl::created_at.asc()),
-                SortOrder::HighScore => query.order((dsl::score.desc(), dsl::created_at.desc())),
-                SortOrder::LowScore => query.order((dsl::score.asc(), dsl::created_at.desc())),
-                SortOrder::HighRank => {
-                    query.order((dsl::rank.desc(), dsl::score.desc(), dsl::created_at.desc()))
-                }
-                SortOrder::LowRank => {
-                    query.order((dsl::rank.asc(), dsl::score.asc(), dsl::created_at.desc()))
-                }
+        let s = sort.unwrap_or(SortOrder::HighRank);
+        query = match s {
+            SortOrder::New => query.order(dsl::created_at.desc()),
+            SortOrder::Old => query.order(dsl::created_at.asc()),
+            SortOrder::HighScore => query.order((dsl::score.desc(), dsl::created_at.desc())),
+            SortOrder::LowScore => query.order((dsl::score.asc(), dsl::created_at.desc())),
+            SortOrder::HighRank => {
+                query.order((dsl::rank.desc(), dsl::score.desc(), dsl::created_at.desc()))
             }
-        } else {
-            query = query.order((dsl::rank.desc(), dsl::score.desc(), dsl::created_at.desc()));
-        }
+            SortOrder::LowRank => {
+                query.order((dsl::rank.asc(), dsl::score.asc(), dsl::created_at.desc()))
+            }
+        };
 
         let results = query.distinct().load::<PostEntity>(conn)?;
         Ok(results)
@@ -301,11 +298,7 @@ impl PostEntity {
         let elapsed = self.created_at.timestamp() as u32 - EPOCH;
         let logarithm = (self.votes as f64).log(BASE);
         let order = logarithm.max(1.0);
-        let bonus = if self.watched_at.is_some() {
-            WATCH_BONUS
-        } else {
-            0
-        };
+        let bonus = self.watched_at.map_or(0, |_| WATCH_BONUS);
         order + (elapsed / EASING) as f64 + bonus as f64
     }
 
@@ -331,11 +324,13 @@ impl PostEntity {
     }
 
     pub fn toggle_watch(&mut self, conn: &MysqlConnection) -> Consequence<()> {
-        self.watched_at = if self.watched_at.is_none() {
-            Some(Utc::now().naive_local())
+        if self.watched_at.is_none() {
+            self.watched_at = Some(Utc::now().naive_local());
         } else {
-            None
+            self.watched_at = None;
         };
+
+        self.rank = self.calculate_rank();
         self.update(conn)?;
         Ok(())
     }

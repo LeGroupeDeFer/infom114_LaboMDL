@@ -33,6 +33,7 @@ function Sidebar({ open, links }) {
       <ListGroup variant="flush" className="sidebar-nav w-100 text-center">
         {links.map(({ name, path, icon, title }, i) => (
           <OverlayTrigger
+            key={name}
             placement="right"
             positionTop={150}
             style={{ top: '20px !important' }}
