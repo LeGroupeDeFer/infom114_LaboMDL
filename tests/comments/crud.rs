@@ -238,7 +238,7 @@ fn create_comment_from_comment_simple_user() {
 
     let reply = send_comment_from_comment(&client, auth_token_header, &comment.id, "Test <<positive>> too :D");
 
-    let comment_entity = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    let comment_entity = CommentEntity::by_id(&conn, &reply.id).unwrap().unwrap();
     assert_eq!(comment_entity.id, reply.id);
     assert_eq!(comment_entity.post_id, post.id);
     assert_eq!(comment_entity.parent_id, Some(comment.id));

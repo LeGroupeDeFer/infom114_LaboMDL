@@ -97,7 +97,11 @@ fn create_reply_comment(
         Err(AuthError::MissingCapability)?;
     }
 
-    
+    let post = PostEntity::by_id(&*conn, &comment_guard.comment().post_id).unwrap().unwrap();
+    if post.is_deleted() || post.is_locked() || post.is_hidden() {
+        Err(AuthError::MissingCapability)?;
+    }
+
     let new_comment = CommentMinima {
         post_id: comment_guard.comment().post_id,
         content: comment_request.content,
