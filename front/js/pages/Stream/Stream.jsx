@@ -25,7 +25,7 @@ function InnerStream({
   return (
     <div className="stream-content">
       {stream.posts.value.map(post => (
-        <Row key={post.id} className="mb-4"><Col>
+        <Row key={post.id} className="mb-4 post-row"><Col>
           <Post
             isPreview
             post={post}
