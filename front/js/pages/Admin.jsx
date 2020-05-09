@@ -337,7 +337,11 @@ const FlaggedPage = () => {
             <>
             <Row>
               <Col>
-              <FlaggedPost post={flaggedPost.post} count_flag={flaggedPost.count_flag} reasons={flaggedPost.reasons} />
+              <FlaggedPost 
+                post={flaggedPost.post} 
+                countFlag={flaggedPost.countFlag} 
+                reasons={flaggedPost.reasons} 
+              />
               </Col>
             </Row>
             <br />
