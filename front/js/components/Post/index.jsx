@@ -116,7 +116,7 @@ export function Post({
                 </Dropdown.Item>
 
                 {owner && (
-                  <Dropdown.Item as="button" onClick={onDelete}>
+                  <Dropdown.Item as="button" onClick={() => onDelete(post)}>
                     <FaTrashAlt className="mr-2" />
                     <span>Supprimer</span>
                   </Dropdown.Item>

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight, faExclamationCircle, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { Container, Row, Col, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 import { AutoForm, Flexbox, Image, Unauthenticated } from '../components';
-import { useAction } from '../hooks';
+import {subscribed, useAction, usePositiveEffect} from '../hooks';
 import { api, tee, aggregate } from '../lib';
 import { isUnamurEmail, isValidNatural, isValidPassword, isValidPhoneNumber } from '../lib/validators';
 
@@ -299,18 +299,30 @@ function ErrorMessage({ error }) {
 
 const Register = Unauthenticated((props) => {
 
-  const [email, setEmail] = useState(null);
-  const [handler, error, success] = useAction(tee(
-    ({ email }) => setEmail(email),
-    data => api.auth.register(
-      aggregate(data, 'address', ['street', 'number', 'boxNumber', 'zipcode', 'city'])
-    )
-  ));
+  const [state, setState] = useState({ email: null, error: null, success: null, promise: null });
+
+  const onSubmit = data => setState(s => ({
+    ...s,
+    email: data.email,
+    promise: api.auth.register(aggregate(
+      data,
+      'address',
+      ['street', 'number', 'boxNumber', 'zipcode', 'city']
+    ))
+  }));
+
+  usePositiveEffect(subscribed(
+    state.promise,
+    () => setState(s => ({ ...s, success: true, error: false, promise: null })),
+    () => setState(s => ({ ...s, success: false, error: true, promise: null })),
+  ), [state.promise]);
+
+  const { email, error, success } = state;
 
   return (
     <Container className="register-form">
       <AutoForm
-        onSubmit={handler}
+        onSubmit={onSubmit}
         validator={confirmPassword}
         autoComplete="off"
       >

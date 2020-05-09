@@ -15,7 +15,7 @@ function Detail(props) {
   const [post, setPost] = useState(null);
   useEffect(() => {
     let isSubscribed = true;
-    stream.posts.retrieve(id)
+    stream.posts.of(id)
       .then(post => isSubscribed ? setPost(post) : undefined)
       .catch(printerr);
     return () => isSubscribed = false;

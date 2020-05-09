@@ -83,7 +83,9 @@ function api(endpoint, { body, ...providedConfig } = {}) {
     .then((response) =>
       Promise.all([
         new Promise((resolve, _) => resolve(response.status)),
-        response.json(),
+        response.headers.get('Content-Type').includes('application/json')
+          ? response.json()
+          : response.text(),
       ])
     )
     .then(([status, data]) => {

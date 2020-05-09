@@ -37,8 +37,7 @@ const breakpoints = Object.freeze({
 
 const ORDER = Object.freeze({
   RANK: Object.freeze({ DESC: 'high_rank', ASC: 'low_rank' }),
-  SCORE: Object.freeze({ DESC: 'low', ASC: 'high' }),
-  VOTES: Object.freeze({ DESC: 'top', ASC: 'low' }),
+  SCORE: Object.freeze({ DESC: 'top', ASC: 'low' }),
   AGE: Object.freeze({ DESC: 'new', ASC: 'old' }),
 });
 
@@ -110,7 +109,10 @@ function Action(f) {
   promise.onEvent = e => {
     detail.source = e;
     document.dispatchEvent(handle);
+    promise.watch = !promise.watch;
   };
+
+  promise.watch = false;
 
   return promise;
 }

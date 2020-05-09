@@ -9,6 +9,7 @@ use crate::lib::consequence::*;
 
 use crate::database::schema::posts;
 use crate::database::schema::posts::dsl::{self, posts as table};
+use std::hash::{Hasher, Hash};
 
 
 #[derive(
@@ -20,7 +21,6 @@ use crate::database::schema::posts::dsl::{self, posts as table};
     Deserialize,
     Clone,
     Debug,
-    PartialEq,
 )]
 #[table_name = "posts"]
 pub struct PostEntity {
@@ -109,5 +109,19 @@ impl Entity for PostEntity {
             .execute(conn)
             .map(|_| ())
             .map(Ok)?
+    }
+}
+
+impl PartialEq for PostEntity {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for PostEntity {}
+
+impl Hash for PostEntity {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
     }
 }

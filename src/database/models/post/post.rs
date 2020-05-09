@@ -12,11 +12,12 @@ use crate::database::schema::tags::dsl as tags;
 use crate::database::tables::{posts_table as table, posts_tags_table, tags_table};
 use crate::database::SortOrder;
 use crate::lib::{self as conseq, Consequence, EntityError};
+use std::collections::HashSet;
 
 // TODO - Move this in app state
 const BASE: f64 = 1.414213562;
-const EPOCH: u64 = 1577840400; // 01/01/2020
-const EASING: u64 = 24 * 3600; // 1 day
+const EPOCH: u32 = 1577840400; // 01/01/2020
+const EASING: u32 = 24 * 3600; // 1 day
 
 pub enum PostKind {
     Info,
@@ -127,7 +128,7 @@ impl PostEntity {
         offset: Option<u32>,
     ) -> Consequence<Vec<Self>> {
         let mut query = table
-            .left_join(posts_tags_table.inner_join(tags_table))
+            .inner_join(posts_tags_table.inner_join(tags_table))
             .into_boxed();
 
         // filter out deleted
@@ -151,18 +152,6 @@ impl PostEntity {
             );
         }
 
-        // order by
-        if let Some(s) = sort {
-            query = match s {
-                SortOrder::New => query.order(dsl::created_at.desc()),
-                SortOrder::Old => query.order(dsl::created_at.asc()),
-                SortOrder::HighScore => query.order(dsl::score.desc()),
-                SortOrder::LowScore => query.order(dsl::score.asc()),
-                SortOrder::HighRank => query.order(dsl::rank.desc()),
-                SortOrder::LowRank => query.order(dsl::rank.asc()),
-            }
-        }
-
         let post_kind = kind
             .and_then(|v| if &*v == "all" { None } else { Some(v) })
             .map(|v| PostKind::try_from(v));
@@ -184,11 +173,27 @@ impl PostEntity {
             query = query.offset(o as i64);
         }
 
-        Ok(query
-            .load::<(PostEntity, Option<(RelPostTagEntity, TagEntity)>)>(conn)?
+        // order by
+        if let Some(s) = sort {
+            query = match s {
+                SortOrder::New => query.order(dsl::created_at.desc()),
+                SortOrder::Old => query.order(dsl::created_at.asc()),
+                SortOrder::HighScore => query.order(dsl::score.desc()),
+                SortOrder::LowScore => query.order(dsl::score.asc()),
+                SortOrder::HighRank => query.order(dsl::rank.desc()),
+                SortOrder::LowRank => query.order(dsl::rank.asc()),
+            }
+        }
+
+        let mut results = query
+            .load::<(PostEntity, (RelPostTagEntity, TagEntity))>(conn)?
             .into_iter()
             .map(move |(post_entity, _)| post_entity)
-            .collect::<Vec<Self>>())
+            .collect::<Vec<Self>>();
+
+        let result_set: HashSet<_> = results.drain(..).collect();
+        results.extend(result_set.into_iter());
+        Ok(results)
     }
 
     pub fn get_deleted(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
@@ -237,6 +242,7 @@ impl PostEntity {
         self.score = self.calculate_score(&conn)?;
         self.votes = self.count_votes(&conn)?;
         self.rank = self.calculate_rank();
+        println!("NEW RANK: {}", self.rank);
 
         // update self
         self.update(&conn)?;
@@ -252,7 +258,7 @@ impl PostEntity {
     }
 
     pub fn calculate_rank(&self) -> f64 {
-        let elapsed = self.created_at.timestamp() as u64 - EPOCH;
+        let elapsed = self.created_at.timestamp() as u32 - EPOCH;
         let logarithm = (self.votes as f64).log(BASE);
         let order = logarithm.max(1.0);
 
@@ -422,3 +428,12 @@ impl From<PostEntity> for Post {
         }
     }
 }
+
+
+impl PartialEq for Post {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for Post {}

@@ -1,6 +1,6 @@
 [package]
 name = "unanimity"
-version = "0.2.0"
+version = "0.4.1"
 authors = ["Guillaume Latour <g0latour@gmail.com>"]
 edition = "2018"
 default-run = "unanimity"

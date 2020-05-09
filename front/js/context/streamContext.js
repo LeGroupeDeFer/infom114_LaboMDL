@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useEffectQueue } from 'unanimity/hooks';
-import { KIND, ORDER, kinds, orders, api, cleanHard, printerr, trace } from "unanimity/lib";
+import { KIND, ORDER, kinds, orders, api, printerr, trace } from "unanimity/lib";
 import { isEqual, remove, without } from 'lodash';
 import {clean} from "../lib";
 
@@ -56,9 +56,10 @@ export function StreamProvider({ children }) {
   // the values given to children will provoke a rerender, the best way to
   // avoid that is to allow react to execute its diff algorithm.
   const [state, setState] = useState({
+
     posts: {
       value: [],
-      retrieve(id) {
+      of(id) {
         const prefetch = this.value.filter(p => p.id === id);
         if (prefetch.length)
           return Promise.resolve(prefetch[0]);
@@ -68,9 +69,9 @@ export function StreamProvider({ children }) {
         const promise = api.posts.add(post);
         pushEffect([
           promise,
-          post => setState(state => ({
+          post => setState(s => ({
             ...state,
-            posts: { ...state.posts, value: [...state.posts.value, post] }
+            posts: { ...this, value: [...this.value, post] }
           })) || post,
           printerr // TODO
         ]);
@@ -80,11 +81,11 @@ export function StreamProvider({ children }) {
         const promise = api.posts.delete(post.id);
         pushEffect([
           promise,
-          () => setState(state => ({
-            ...state,
+          () => setState(s => ({
+            ...s,
             posts: {
-              ...state.posts,
-              value: remove(state.posts.value, p => p.id === post.id)
+              ...this,
+              value: remove(s.posts.value, p => p.id !== post.id)
             }
           })),
           printerr // TODO
@@ -95,11 +96,11 @@ export function StreamProvider({ children }) {
         const promise = api.posts.vote(post.id, vote);
         pushEffect([
           promise,
-          post => setState(state => ({
-            ...state,
+          post => setState(s => ({
+            ...s,
             posts: {
-              ...state.posts,
-              value: state.posts.value.map(p => p.id === post.id ? post : p)
+              ...this,
+              value: s.posts.value.map(p => p.id === post.id ? post : p)
             }
           })) || post,
           printerr // TODO
@@ -118,7 +119,6 @@ export function StreamProvider({ children }) {
         trace('TODO - HIDE');
         return Promise.resolve(post);
       }
-
     },
 
     kind: {
@@ -127,7 +127,7 @@ export function StreamProvider({ children }) {
       set(kind) {
         if (this.value === kind)
           return;
-        setState(state => ({ ...state, kind: { ...this, value: kind } }));
+        setState(s => ({ ...s, kind: { ...this, value: kind } }));
       }
     },
 
@@ -135,10 +135,7 @@ export function StreamProvider({ children }) {
       available: orders,
       value: ORDER.RANK.DESC,
       set(order) {
-        setState(state => ({
-          ...state,
-          order: { ...state.order, value: order }
-        }));
+        setState(s => ({ ...s, order: { ...this, value: order } }));
       },
     },
 
@@ -148,18 +145,18 @@ export function StreamProvider({ children }) {
       add(tag) {
         if (this.value.includes(tag))
           return;
-        const tags = [...this.value, tag];
-        setState(state => ({ ...state, tags: { ...this, value: tags } }));
+        const tags = [...state.tags.value, tag];
+        setState(s => ({ ...s, tags: { ...s.tags, value: tags } }));
       },
       remove(tag) {
         if (!this.value.includes(tag))
           return;
         const tags = without(this.value, tag);
-        setState(state => ({ ...state, tags: { ...this, value: tags } }));
+        setState(s => ({ ...s, tags: { ...s.tags, value: tags } }));
       },
       set(tag) {
         const tags = (tag instanceof Array) ? tag : [tag];
-        setState(state => ({ ...state, tags: { ...this, value: tags } }));
+        setState(s => ({ ...s, tags: { ...s.tags, value: tags } }));
       }
     },
 
@@ -168,23 +165,24 @@ export function StreamProvider({ children }) {
       add(kw) {
         if (this.value.includes(kw))
           return;
-        const keywords = [ ...this.value, kw ];
-        setState(state => ({ ...state, keywords: { ...this, value: keywords } }));
+        const keywords = [ ...state.keywords.value, kw ];
+        setState(s => ({ ...s, keywords: { ...s.keywords, value: keywords } }));
       },
       remove(kw) {
         if (!this.value.includes(kw))
           return;
-        const keywords = without(this.value, kw);
-        setState(state => ({ ...state, keywords: { ...this, value: keywords } }));
+        const keywords = without(state.keywords.value, kw);
+        setState(s => ({ ...s, keywords: { ...s.keywords, value: keywords } }));
       }
     }
+
   });
 
   useEffect(() => pushEffect([
     api.posts.where(clean(query(state), true)),
-    posts => setState(state => ({
-      ...state,
-      posts: { ...state.posts, value: posts }
+    posts => setState(s => ({
+      ...s,
+      posts: { ...s.posts, value: posts }
     })),
     printerr // TODO
   ]), [state.kind.value, state.order.value, state.tags.value, state.keywords.value]);

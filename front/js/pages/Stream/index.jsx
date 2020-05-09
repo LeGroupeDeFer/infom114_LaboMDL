@@ -6,7 +6,7 @@ import clsx from 'clsx';
 
 import { useStream } from 'unanimity/context/streamContext';
 import { SearchBar } from 'unanimity/components';
-import { kinds, kindOf } from 'unanimity/lib';
+import { kinds, trace } from 'unanimity/lib';
 
 import Stream from './Stream';
 import Writer from './Writer';
@@ -19,18 +19,18 @@ function KindSection() {
 
   return (
     <ButtonGroup className="kind-section d-flex justify-content-between">
-      {kinds.map(({ key, icon, label }) => (
+      {kinds.map(kind => (
         <OverlayTrigger
-          key={key}
+          key={kind.key}
           placement="bottom"
-          overlay={<Tooltip id={key}>{label}</Tooltip>}
+          overlay={<Tooltip id={kind.key}>{kind.label}</Tooltip>}
         >
           <Button
-            key={key}
-            className={clsx('kind-choice', stream.kind.value.key === key && 'active')}
-            onClick={() => stream.kind.set(kindOf(key))}
+            key={kind.key}
+            className={clsx('kind-choice', trace(stream.kind.value.key === kind.key) && 'active')}
+            onClick={() => stream.kind.set(kind)}
           >
-            <Icon icon={icon} />
+            <Icon icon={kind.icon} />
           </Button>
         </OverlayTrigger>
       ))}

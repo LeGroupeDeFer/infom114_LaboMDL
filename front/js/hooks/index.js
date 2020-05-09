@@ -60,8 +60,15 @@ export function useRequest(f, args, base = null, eq = isEqual) {
 
 export function useAction(f) {
   const [action,] = useState(Action(f));
-  const [error, data] = useRequest(() => action, []);
-  return [action.onEvent, error, data];
+  const [state, setState] = useState([action && action.onEvent, null, null])
+
+  useEffect(() => subscribed(
+    action,
+    data => setState([action && action.onEvent, null, data || true]),
+    error => setState([action && action.onEvent, error || true, null]),
+  ), [action.watch]);
+
+  return state;
 }
 
 export function useWindowResize(debounceTimer = 250) {

@@ -96,7 +96,6 @@ function SortDropdownItem({ value, label, onSort }) {
   );
 }
 
-
 // SortDropdown :: None => Component
 function SortDropdown({ onSort }) {
   const [title, setTitle] = useState('Trier par');
