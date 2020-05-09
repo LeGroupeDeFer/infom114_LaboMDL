@@ -24,6 +24,9 @@ pub fn collect() -> Vec<rocket::Route> {
         toggle_visibility,
         toggle_lock,
         manage_post_report,
+        get_poll_post_authenticated,
+        get_poll_post,
+        vote_poll_post
     )
 }
 
@@ -40,15 +43,15 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult
 
     // prevent empty title & empty content
     if post_request.title == "" {
-        Err(EntityError::InvalidAttribute)?;
+        return Err(EntityError::InvalidAttribute.into());
     }
 
-    let post_kind: Consequence<PostKind> = PostKind::try_from((&post_request).kind.clone());
+    let post_kind = PostKind::try_from((&post_request).kind.clone())?;
     let new_post = PostMinima {
         title: post_request.title,
         content: post_request.content.unwrap_or("".into()),
         author_id: auth.sub,
-        kind: post_kind?.into(),
+        kind: (&post_kind).into(),
     };
 
     let p = PostEntity::insert_new(&*conn, &new_post)?;
@@ -59,6 +62,28 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult
         }
         Ok(())
     });
+
+    match post_kind {
+        PostKind::Info => {}
+        PostKind::Poll => match post_request.options {
+            Some(options) => {
+                PollAnswerEntity::bulk_insert(
+                    &*conn,
+                    &p.id,
+                    options
+                        .iter()
+                        .map(AsRef::as_ref)
+                        .collect::<Vec<&str>>()
+                        .as_ref(),
+                )?;
+            }
+            None => Err(EntityError::EmptyAttribute)?,
+        },
+        _ => {
+            // stress the fact that the kind is not implemented
+            unimplemented!();
+        }
+    }
 
     Ok(Json(Post::from(p)))
 }
@@ -313,4 +338,58 @@ fn manage_post_report(
     }
 
     ok()
+}
+
+#[get("/api/v1/post/<_post_id>/poll", rank = 1)]
+fn get_poll_post_authenticated(
+    conn: DBConnection,
+    auth: ForwardAuth,
+    post_guard: PostGuard,
+    _post_id: u32,
+) -> ApiResult<PostPoll> {
+    if post_guard.post().is_deleted() {
+        Err(EntityError::InvalidID)?;
+    } else if post_guard.post().is_hidden()
+        && !auth.deref().has_capability(&*conn, "post:view_hidden")
+    {
+        Err(AuthError::MissingCapability)?;
+    }
+
+    let mut p = PostPoll::try_from(post_guard.post())?;
+    p.set_user_info(&*conn, &auth.deref().sub)?;
+
+    Ok(Json(p))
+}
+
+#[get("/api/v1/post/<_post_id>/poll", rank = 2)]
+fn get_poll_post(post_guard: PostGuard, _post_id: u32) -> ApiResult<PostPoll> {
+    if post_guard.post().is_deleted() {
+        Err(EntityError::InvalidID)?;
+    } else if post_guard.post().is_hidden() {
+        Err(AuthError::MissingHeader)?;
+    }
+
+    Ok(Json(PostPoll::try_from(post_guard.post())?))
+}
+
+#[post("/api/v1/post/<_post_id>/poll", data = "<data>")]
+fn vote_poll_post(
+    conn: DBConnection,
+    auth: Auth,
+    post_guard: PostGuard,
+    _post_id: u32,
+    data: Json<PollVote>,
+) -> ApiResult<PostPoll> {
+    if post_guard.post().is_deleted() {
+        Err(EntityError::InvalidID)?
+    } else if post_guard.post().is_hidden() && !auth.has_capability(&*conn, "post:view_hidden") {
+        Err(AuthError::MissingCapability)?
+    }
+
+    let mut p = PostPoll::try_from(post_guard.post())?;
+    let user_vote = data.into_inner();
+
+    p.user_vote(&*conn, &auth.sub, &user_vote.answer_id)?;
+
+    Ok(Json(p))
 }

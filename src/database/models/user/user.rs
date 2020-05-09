@@ -1,14 +1,21 @@
 use diesel::prelude::*;
-use diesel::MysqlConnection;
+use diesel::{sql_query, MysqlConnection};
 use regex::Regex;
 
 use crate::database::models::prelude::*;
 use crate::database::models::Entity;
+use crate::database::tables::{
+    capabilities_table, roles_capabilities_table, roles_table, users_roles_table,
+};
 
+use crate::database::schema::capabilities::dsl as capabilities;
 use crate::database::schema::users::dsl::{self, users as table};
 
 use crate::database;
 use crate::lib::consequence::*;
+use chrono::NaiveDateTime;
+use diesel::dsl::count;
+use diesel::expression::functions::date_and_time::now;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct User {
@@ -63,6 +70,29 @@ impl UserEntity {
                 Error::NotFound => Ok(true),
                 other => Err(other),
             })
+    }
+
+    pub fn count_users(conn: &MysqlConnection, only_active: bool) -> Consequence<u64> {
+        let mut query = table.select(count(dsl::id)).into_boxed();
+
+        if only_active {
+            query = query.filter(dsl::active.eq(only_active));
+        }
+
+        let count = query.first::<i64>(conn).map(|c: i64| c as u64)?;
+
+        Ok(count)
+    }
+
+    pub fn count_connected(conn: &MysqlConnection) -> Consequence<u64> {
+        let close_to_now: NaiveDateTime =
+            chrono::offset::Local::now().naive_local() - chrono::Duration::minutes(15);
+        table
+            .select(count(dsl::id))
+            .filter(dsl::last_connection.ge(close_to_now))
+            .first::<i64>(conn)
+            .map(|c: i64| c as u64)
+            .map(Ok)?
     }
 
     /* --------------------------------------- DYNAMIC ---------------------------------------- */
@@ -164,6 +194,24 @@ impl UserEntity {
         }
 
         Ok(tab)
+    }
+
+    pub fn has_capability(&self, conn: &MysqlConnection, capability: &str) -> bool {
+        table
+            .inner_join(users_roles_table.inner_join(
+                roles_table.inner_join(roles_capabilities_table.inner_join(capabilities_table)),
+            ))
+            .filter(dsl::id.eq(self.id).and(capabilities::name.eq(capability)))
+            .first::<(
+                UserEntity,
+                (
+                    RelUserRoleEntity,
+                    (RoleEntity, (RelRoleCapabilityEntity, CapabilityEntity)),
+                ),
+            )>(conn)
+            .optional()
+            .unwrap_or(None)
+            .is_some()
     }
 
     /// Validate the fact that the email given

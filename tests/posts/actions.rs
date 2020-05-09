@@ -1,85 +1,9 @@
-use rocket::http::Status;
-
 use super::super::init;
+use super::helper::*;
+use rocket::http::Status;
 
 use rocket::http::ContentType;
 use unanimitylibrary::database::models::prelude::*;
-
-const POST_ROUTE: &'static str = "/api/v1/post";
-
-fn json_vote(value: i8) -> String {
-    format!("{{ \"vote\":{} }}", value)
-}
-
-pub fn send_vote<'a, 'b>(
-    client: &'a rocket::local::Client,
-    auth_token: rocket::http::Header<'static>,
-    post_id: &'b u32,
-    vote_value: i8,
-) -> rocket::local::LocalResponse<'a> {
-    let route = format!("{}/{}/vote", POST_ROUTE, post_id);
-    client
-        .post(route)
-        .header(ContentType::JSON)
-        .header(auth_token)
-        .body(json_vote(vote_value))
-        .dispatch()
-}
-
-fn toggle_visibility<'a, 'b>(
-    client: &'a rocket::local::Client,
-    auth_token: rocket::http::Header<'static>,
-    post_id: &'b u32,
-) -> rocket::local::LocalResponse<'a> {
-    let route = format!("{}/{}/hide", POST_ROUTE, post_id);
-    client.post(route).header(auth_token).dispatch()
-}
-
-fn toggle_lock<'a, 'b>(
-    client: &'a rocket::local::Client,
-    auth_token: rocket::http::Header<'static>,
-    post_id: &'b u32,
-) -> rocket::local::LocalResponse<'a> {
-    let route = format!("{}/{}/lock", POST_ROUTE, post_id);
-    client.post(route).header(auth_token).dispatch()
-}
-
-fn toggle_report<'a, 'b>(
-    client: &'a rocket::local::Client,
-    auth_token: rocket::http::Header<'static>,
-    post_id: &'b u32,
-    reason: Option<&str>,
-) -> rocket::local::LocalResponse<'a> {
-    let route = format!("{}/{}/report", POST_ROUTE, post_id);
-    match reason {
-        Some(r) => {
-            let reason_json = format!("{{ \"reason\": \"{}\" }}", r);
-            client
-                .post(route)
-                .header(ContentType::JSON)
-                .header(auth_token)
-                .body(reason_json)
-                .dispatch()
-        }
-        None => client
-            .post(route)
-            .header(ContentType::JSON)
-            .header(auth_token)
-            .dispatch(),
-    }
-}
-
-fn get_post(
-    client: &rocket::local::Client,
-    auth_token: rocket::http::Header<'static>,
-    post_id: &u32,
-) -> Post {
-    let route = format!("{}/{}", POST_ROUTE, post_id);
-    let mut response = client.get(&route).header(auth_token).dispatch();
-    assert_eq!(response.status(), Status::Ok);
-    let data = response.body_string().unwrap();
-    serde_json::from_str(&data).unwrap()
-}
 
 #[test]
 fn upvote_post() {

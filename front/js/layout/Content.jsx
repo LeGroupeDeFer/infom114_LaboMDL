@@ -14,7 +14,7 @@ const Login = lazy(() => import('../pages/Login'));
 const Logout = lazy(() => import('../pages/Logout'));
 const Register = lazy(() => import('../pages/Register'));
 const Activate = lazy(() => import('../pages/Activate'));
-const Admin = lazy(() => import('../pages/Admin'));
+const AuthenticatedAdmin = lazy(() => import('../pages/Admin'));
 const Recover = lazy(() => import('../pages/Recover'));
 const Restore = lazy(() => import('../pages/Restore'));
 
@@ -68,7 +68,7 @@ const Content = (_) => {
                 </Route>
 
                 <Route path="/admin">
-                  <Admin />
+                  <AuthenticatedAdmin />
                 </Route>
 
                 <Route path="/restore">

@@ -267,6 +267,18 @@ function removeRoleFromUser(userID, roleID) {
   return api('/user/role', {method: 'DELETE', body: {user_id: userID, role_id: parseInt(roleID)}} );
 }
 
+function userReport() {
+  return api('/report/users');
+}
+
+function tagReport() {
+  return api('/report/tags');
+}
+
+function postReport() {
+  return api('/report/posts');
+}
+
 api.tags = tags;
 api.tags.add = addTag;
 api.tags.remove = removeTag;
@@ -281,5 +293,8 @@ api.users = users;
 api.users.addRole = addRoleToUser;
 api.users.removeRole = removeRoleFromUser;
 
+api.users.report = userReport;
+api.tags.report = tagReport;
+api.posts.report = postReport;
 
 export default api;
