@@ -60,7 +60,7 @@ function layout (location) {
   if (!selected.length)
     return 'base';
   return selected[0];
-};
+}
 
 
 export default {

@@ -220,12 +220,6 @@ Object.assign(posts, {
     if (cancel) return api(`/post/${id}/report`, { method: 'POST' });
     return api(`/post/${id}/report`, { method: 'POST', body: { reason } });
   },
-  hide(id) {
-    return api(`/post/${id}/hide`, { method: 'POST' });
-  },
-  lock(id) {
-    return api(`/post/${id}/lock`, { method: 'POST' });
-  },
   watch(id) {
     return api(`/post/${id}/watch`, { method: 'POST' });
   },

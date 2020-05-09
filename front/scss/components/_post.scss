@@ -96,7 +96,14 @@
 
     &.post-preview.post-hidden {
         filter: brightness(90%);
+        opacity: .7;
         transition: filter .2s;
+    }
+
+    &.post-preview.post-watched {
+        .post-header {
+            border-color: theme-color("secondary");
+        }
     }
 
     .more.show {

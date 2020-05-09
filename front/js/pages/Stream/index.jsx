@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Switch, Route, useRouteMatch } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { Button, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
@@ -6,7 +6,7 @@ import clsx from 'clsx';
 
 import { useStream } from 'unanimity/context/streamContext';
 import { SearchBar } from 'unanimity/components';
-import { kinds, trace } from 'unanimity/lib';
+import { kinds } from 'unanimity/lib';
 
 import Stream from './Stream';
 import Writer from './Writer';
@@ -62,12 +62,20 @@ function StreamContent() {
     },
     onHide: (post) => stream.posts.hide(post),
     onVote: (post, vote) => stream.posts.vote(post, vote),
-    onTag: (tag) => stream.tags.set(tag),
-    onSort: (order) => stream.order.set(order),
-    onPreview: (v) => setState((state) => ({ ...state, previewPost: v })),
-    onDelete: (v) => setState((state) => ({ ...state, deletePost: v })),
-    onToast: (v) => setState({ ...state, toast: v }),
-    onFlagConfirmation: (post, reason) => {
+    onTag: tag => stream.tags.set(tag),
+    onWatch: post => stream.posts.watch(post),
+    onSort: order => stream.order.set(order),
+    onPreview: v => setState(state => ({ ...state, previewPost: v })),
+    onDelete: v => setState(state => ({ ...state, deletePost: v })),
+    onToast: v => setState({ ...state, toast: v }),
+    onDeleteConfirmation: post => stream.posts.remove(post).then(
+      () => setState(state => ({
+        ...state,
+        deletePost: false,
+        toast: false
+      }))
+    ),
+    onFlagConfirmation: (post, reason) =>
       stream.posts.flag(post, reason, false).then(() =>
         setState((state) => ({
           ...state,
@@ -75,17 +83,7 @@ function StreamContent() {
           toast: true,
           toastMsg: 'Votre signalement a été enregistré',
         }))
-      );
-    },
-    onDeleteConfirmation: (post) =>
-      stream.posts.remove(post).then(() =>
-        setState((state) => ({
-          ...state,
-          deletePost: false,
-          toast: true,
-          toastMsg: 'Votre post a bien été supprimé',
-        }))
-      ),
+      )
   });
 
   return (
