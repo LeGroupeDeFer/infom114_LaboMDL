@@ -17,7 +17,7 @@ import Post from 'unanimity/components/Post';
 // InnerStream :: Object => Component
 function InnerStream({
   deletePost, onDelete, previewPost, onPreview, toast, onToast,
-  onFlag, onHide, onVote, onTag, onDeleteConfirmation
+  onFlag, onHide, onVote, onTag, onDeleteConfirmation, onPromote
 }) {
   const stream = useStream();
 
@@ -34,6 +34,7 @@ function InnerStream({
             onVote={onVote}
             onPreview={onPreview}
             onTag={onTag}
+            onPromote={onPromote}
           />
         </Col></Row>
       ))}

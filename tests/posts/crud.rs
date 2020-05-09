@@ -1294,7 +1294,7 @@ fn update_post_locked_as_author() {
     assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
 
     // lock the post
-    let post_entity = PostEntity::by_id(&conn, &p.id).unwrap().unwrap();
+    let mut post_entity = PostEntity::by_id(&conn, &p.id).unwrap().unwrap();
     post_entity.toggle_lock(&conn).unwrap();
 
     let updated_title = "updated title yo";
@@ -1415,7 +1415,7 @@ fn update_post_hidden_as_author() {
     assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
 
     // hide the post
-    let post_entity = PostEntity::by_id(&conn, &p.id).unwrap().unwrap();
+    let mut post_entity = PostEntity::by_id(&conn, &p.id).unwrap().unwrap();
     post_entity.toggle_visibility(&conn).unwrap();
 
     let updated_title = "updated title yo";
@@ -1649,7 +1649,7 @@ fn delete_post_locked_by_author() {
     assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
 
     // lock the post
-    let post_entity = PostEntity::by_id(&conn, &p.id).unwrap().unwrap();
+    let mut post_entity = PostEntity::by_id(&conn, &p.id).unwrap().unwrap();
     post_entity.toggle_lock(&conn).unwrap();
 
     let update_req = client
@@ -1694,7 +1694,7 @@ fn delete_post_hidden_by_author() {
     assert!(PostEntity::by_id(&conn, &p.id).unwrap().is_some());
 
     // lock the post
-    let post_entity = PostEntity::by_id(&conn, &p.id).unwrap().unwrap();
+    let mut post_entity = PostEntity::by_id(&conn, &p.id).unwrap().unwrap();
     post_entity.toggle_visibility(&conn).unwrap();
 
     let update_req = client

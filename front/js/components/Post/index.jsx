@@ -1,7 +1,7 @@
 import React  from 'react';
 import { Link } from 'react-router-dom';
 import {Container, Row, Col, Badge, Dropdown, DropdownButton, Card} from 'react-bootstrap';
-import { FaEllipsisH, FaEyeSlash, FaFacebookSquare, FaFlag, FaLock, FaTag, FaTrashAlt } from 'react-icons/fa';
+import { FaEllipsisH, FaEyeSlash, FaFacebookSquare, FaFlag, FaLock, FaTag, FaTrashAlt, FaCrown } from 'react-icons/fa';
 import { FacebookShareButton } from "react-share";
 import { MdModeComment } from "react-icons/md";
 import Moment from 'react-moment';
@@ -14,7 +14,6 @@ import Comment from './Comment';
 import DeleteModal from './DeleteModal';
 import Poll from "./Poll";
 import clsx from "clsx";
-import {trace} from "../../lib";
 
 
 const HidePost = May('post:hide', ({ onClick }) => (
@@ -28,6 +27,13 @@ const LockPost = May('post:lock', ({ onClick }) => (
   <Dropdown.Item as="button" onClick={onClick}>
     <FaLock className="mr-2" />
     <span>Vérouiller</span>
+  </Dropdown.Item>
+));
+
+const PromotePost = May('post:promote', ({ onClick }) => (
+  <Dropdown.Item as="button" onClick={onClick}>
+    <FaCrown className="mr-2" />
+    <span>Promouvoir</span>
   </Dropdown.Item>
 ));
 
@@ -55,7 +61,7 @@ export function PostContent({ isPreview, post, onComment }) {
 }
 
 export function Post({
-  post, onVote, onFlag, onDelete, onHide, onTag, onLock, onComment,
+  post, onVote, onFlag, onDelete, onHide, onTag, onLock, onPromote, onComment,
   isPreview, onPreview, className, ...others
 }) {
 
@@ -74,6 +80,9 @@ export function Post({
   const cls = clsx(
     'post expand-preview',
     isPreview && 'post-preview',
+    post.locked && 'post-locked',
+    post.hidden && 'post-hidden',
+    post.userFlag && 'post-flagged',
     className
   );
 
@@ -108,9 +117,9 @@ export function Post({
                 onClick={() => {}}
                 href="#"
               >
-                <HidePost onClick={onHide} />
+                <HidePost onClick={() => onHide(post)} />
 
-                <Dropdown.Item as="button" onClick={onFlag}>
+                <Dropdown.Item as="button" onClick={() => onFlag(post)}>
                   <FaFlag className="mr-2" />
                   <span>Signaler</span>
                 </Dropdown.Item>
@@ -122,7 +131,9 @@ export function Post({
                   </Dropdown.Item>
                 )}
 
-                <LockPost onClick={onLock}/>
+                <LockPost onClick={() => onLock(post)} />
+
+                <PromotePost onClick={() => onPromote(post)} />
               </DropdownButton>
             </Col>
           </Row>
@@ -176,16 +187,6 @@ export function Post({
                   <span className="text-muted">Partager</span>
                 </a>
               </FacebookShareButton>
-
-              <a className="post-footer-btn mr-3" href="#">
-                <FaEyeSlash size="1.25em" className="mr-1" />
-                <span className="text-muted">Masquer</span>
-              </a>
-
-              <a className="post-footer-btn" href="#">
-                <FaFlag size="1.25em" className="mr-1" />
-                <span className="text-muted">Signaler</span>
-              </a>
 
             </div>
           </div>
