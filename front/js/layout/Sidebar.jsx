@@ -13,7 +13,7 @@ import layout from '../lib/layout';
 function Sidebar({ open, links }) {
   const location = useLocation();
   const { user } = useAuth();
-
+  
   const localPath = `/${location.pathname.split('/')[1]}`;
   if (layout.layout(localPath) == 'alternate') return <></>;
 

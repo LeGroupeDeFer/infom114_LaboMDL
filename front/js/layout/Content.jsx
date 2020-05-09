@@ -21,10 +21,10 @@ const Restore = lazy(() => import('../pages/Restore'));
 
 const Content = (_) => {
   const location = useLocation();
-  const { user } = useAuth();
-
+  const { user, token } = useAuth();
+ 
   const layoutStyle = layout.layout(`/${location.pathname.split('/')[1]}`);
-  const links = layout.links(user);
+  const links = layout.links(user, token);
 
   return (
     <>

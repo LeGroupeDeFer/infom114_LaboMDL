@@ -30,7 +30,7 @@ import clsx from 'clsx';
 function Admin(props) {
 
   const menuList = ['Tags', 'Roles', 'Users', 'Flagged Posts', 'Statistics'];
-  const [currentMenu, setCurrentMenu] = useState('Flagged Posts');
+  const [currentMenu, setCurrentMenu] = useState('Tags');
 
   const Page = () => {
     if (currentMenu === 'Tags') {
@@ -82,7 +82,7 @@ const Title = ({menu}) => {
     title = 'Gestion des utilisateurs';
     icon =  <FaUsers className="mr-3"/>;
   }
-  else if (menu == 'Reporting'){
+  else if (menu == 'Statistics'){
     title = 'Statistiques globales';
     icon = <FaChartLine className="mr-3"/>;
   }
