@@ -12,7 +12,6 @@ use crate::database::schema::tags::dsl as tags;
 use crate::database::tables::{posts_table as table, posts_tags_table, tags_table};
 use crate::database::SortOrder;
 use crate::lib::{self as conseq, Consequence, EntityError};
-use std::collections::HashSet;
 
 // TODO - Move this in app state
 const BASE: f64 = 1.414213562;
@@ -129,6 +128,21 @@ impl PostEntity {
     ) -> Consequence<Vec<Self>> {
         let mut query = table
             .inner_join(posts_tags_table.inner_join(tags_table))
+            .select((
+                dsl::id,
+                dsl::title,
+                dsl::content,
+                dsl::author_id,
+                dsl::created_at,
+                dsl::updated_at,
+                dsl::deleted_at,
+                dsl::hidden_at,
+                dsl::locked_at,
+                dsl::votes,
+                dsl::score,
+                dsl::rank,
+                dsl::kind,
+            ))
             .into_boxed();
 
         // filter out deleted
@@ -145,10 +159,11 @@ impl PostEntity {
         }
 
         // filter on the search term given (in title)
-        for keyword in  keywords {
+        for keyword in keywords {
             query = query.filter(
-                dsl::title.like(format!("%{}%", keyword))
-                    .or(dsl::content.like(format!("%{}%", keyword)))
+                dsl::title
+                    .like(format!("%{}%", keyword))
+                    .or(dsl::content.like(format!("%{}%", keyword))),
             );
         }
 
@@ -178,21 +193,20 @@ impl PostEntity {
             query = match s {
                 SortOrder::New => query.order(dsl::created_at.desc()),
                 SortOrder::Old => query.order(dsl::created_at.asc()),
-                SortOrder::HighScore => query.order(dsl::score.desc()),
-                SortOrder::LowScore => query.order(dsl::score.asc()),
-                SortOrder::HighRank => query.order(dsl::rank.desc()),
-                SortOrder::LowRank => query.order(dsl::rank.asc()),
+                SortOrder::HighScore => query.order((dsl::score.desc(), dsl::created_at.desc())),
+                SortOrder::LowScore => query.order((dsl::score.asc(), dsl::created_at.desc())),
+                SortOrder::HighRank => {
+                    query.order((dsl::rank.desc(), dsl::score.desc(), dsl::created_at.desc()))
+                }
+                SortOrder::LowRank => {
+                    query.order((dsl::rank.asc(), dsl::score.asc(), dsl::created_at.desc()))
+                }
             }
+        } else {
+            query = query.order((dsl::rank.desc(), dsl::score.desc(), dsl::created_at.desc()));
         }
 
-        let mut results = query
-            .load::<(PostEntity, (RelPostTagEntity, TagEntity))>(conn)?
-            .into_iter()
-            .map(move |(post_entity, _)| post_entity)
-            .collect::<Vec<Self>>();
-
-        let result_set: HashSet<_> = results.drain(..).collect();
-        results.extend(result_set.into_iter());
+        let results = query.distinct().load::<PostEntity>(conn)?;
         Ok(results)
     }
 
@@ -355,8 +369,16 @@ impl Post {
         limit: Option<u32>,
         offset: Option<u32>,
     ) -> Consequence<Vec<Self>> {
-        let entities =
-            PostEntity::get_all(conn, can_see_hidden, tags, keywords, sort, kind, limit, offset)?;
+        let entities = PostEntity::get_all(
+            conn,
+            can_see_hidden,
+            tags,
+            keywords,
+            sort,
+            kind,
+            limit,
+            offset,
+        )?;
         let posts = entities
             .into_iter()
             .map(move |post_entity| Post::from(post_entity))
@@ -428,7 +450,6 @@ impl From<PostEntity> for Post {
         }
     }
 }
-
 
 impl PartialEq for Post {
     fn eq(&self, other: &Self) -> bool {

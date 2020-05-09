@@ -2,7 +2,10 @@ use crate::database::models::prelude::*;
 use crate::database::{DBConnection, SortOrder};
 
 use crate::guards::{Auth, ForwardAuth, PostGuard};
-use crate::http::{responders::{ok, ApiResult}, helpers::StringVector};
+use crate::http::{
+    helpers::StringVector,
+    responders::{ok, ApiResult},
+};
 use crate::lib::{AuthError, Consequence, EntityError};
 
 use rocket_contrib::json::Json;
@@ -71,7 +74,7 @@ fn get_all_posts_authenticated(
     tags: StringVector,
     keywords: StringVector,
     order: Option<String>,
-    kind: Option<String>, // type
+    kind: Option<String>,
     limit: Option<u32>,
     offset: Option<u32>,
 ) -> ApiResult<Vec<Post>> {
@@ -117,7 +120,14 @@ fn get_all_posts(
         sort_order = Some(SortOrder::try_from(value.as_ref())?)
     }
     Ok(Json(Post::all(
-        &*conn, false, (*tags).clone(), (*keywords).clone(), sort_order, kind, limit, offset,
+        &*conn,
+        false,
+        (*tags).clone(),
+        (*keywords).clone(),
+        sort_order,
+        kind,
+        limit,
+        offset,
     )?))
 }
 
