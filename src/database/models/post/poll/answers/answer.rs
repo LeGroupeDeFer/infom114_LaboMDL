@@ -1,5 +1,5 @@
 use crate::database;
-use crate::database::models::prelude::{Entity, PollAnswerEntity};
+use crate::database::models::prelude::PollAnswerEntity;
 use diesel::MysqlConnection;
 
 #[derive(Debug, Serialize, Deserialize)]

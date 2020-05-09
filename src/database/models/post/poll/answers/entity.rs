@@ -1,7 +1,7 @@
 use crate::database::models::prelude::{Entity, PostEntity, RelUserPollAnswerEntity};
 use crate::database::schema::{poll_answers, users_poll_answers};
 use crate::database::tables::{poll_answers_table as table, users_poll_answers_table};
-use crate::lib::{Consequence, EntityError};
+use crate::lib::Consequence;
 
 use diesel::prelude::*;
 use diesel::MysqlConnection;
@@ -30,23 +30,23 @@ impl Entity for PollAnswerEntity {
         table.find(id).first(conn).optional().map(Ok)?
     }
 
-    fn all(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
+    fn all(_conn: &MysqlConnection) -> Consequence<Vec<Self>> {
         unimplemented!()
     }
 
-    fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Either<Self, Self>> {
+    fn insert(_conn: &MysqlConnection, _minima: &Self::Minima) -> Consequence<Either<Self, Self>> {
         unimplemented!()
     }
 
-    fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Option<Self>> {
+    fn select(_conn: &MysqlConnection, _minima: &Self::Minima) -> Consequence<Option<Self>> {
         unimplemented!()
     }
 
-    fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {
+    fn update(&self, _conn: &MysqlConnection) -> Consequence<&Self> {
         unimplemented!()
     }
 
-    fn delete(self, conn: &MysqlConnection) -> Consequence<()> {
+    fn delete(self, _conn: &MysqlConnection) -> Consequence<()> {
         unimplemented!()
     }
 }
