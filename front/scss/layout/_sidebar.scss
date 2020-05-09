@@ -59,6 +59,12 @@ $sidebar-dim: 60px;
     transform: translateY(-100%);
 }
 
+.sidebar-enter {
+    position: absolute;
+    top: 100%;
+    transform: translateY(-100%);
+}
+
 
 .nav-tooltip {
     top: -0.5rem !important;

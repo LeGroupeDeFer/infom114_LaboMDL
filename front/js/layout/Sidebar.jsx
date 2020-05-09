@@ -2,7 +2,7 @@ import React from 'react';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { NavLink } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { faDoorOpen } from '@fortawesome/free-solid-svg-icons';
+import { faDoorOpen, faSignInAlt } from '@fortawesome/free-solid-svg-icons';
 import { useLocation } from 'react-router-dom';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -52,7 +52,11 @@ function Sidebar({ open, links }) {
             </ListGroup.Item>
           </NavLink>
         ) : (
-          <></>
+          <NavLink variant="primary" exact to="/login" className="sidebar-enter">
+            <ListGroup.Item>
+              <Icon icon={faSignInAlt} />
+            </ListGroup.Item>
+          </NavLink>
         )}
       </ListGroup>
     </nav>
