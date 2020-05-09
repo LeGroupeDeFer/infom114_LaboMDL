@@ -1,31 +1,9 @@
 import React, { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 
-function DeleteModal({
-  modalDisplayed,
-  setDeleteModalDisplayed,
-  onPostDeleted,
-  postToDelete,
-}) {
-  const hideModal = () => setDeleteModalDisplayed(false);
-
-  const deletePost = () => {
-    setDeleteModalDisplayed(false);
-    api.posts
-      .delete(postToDelete)
-      .then(() => {
-        onPostDeleted();
-      })
-      .catch((error) => {});
-  };
-
+export default function DeleteModal({ post, show, onHide, onDelete }) {
   return (
-    <Modal
-      className="modal-delete"
-      show={modalDisplayed}
-      onHide={hideModal}
-      centered
-    >
+    <Modal className="modal-delete" show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
         <Modal.Title>Suprimer le post</Modal.Title>
       </Modal.Header>
@@ -37,10 +15,14 @@ function DeleteModal({
           irréversible.
         </p>
         <div className="float-right">
-          <Button variant="light" className="mt-1 mr-2" onClick={hideModal}>
+          <Button variant="light" className="mt-1 mr-2" onClick={onHide}>
             Annuler
           </Button>
-          <Button variant="danger" className=" mt-1" onClick={deletePost}>
+          <Button
+            variant="danger"
+            className=" mt-1"
+            onClick={() => onDelete(post)}
+          >
             Supprimer
           </Button>
         </div>
@@ -48,5 +30,3 @@ function DeleteModal({
     </Modal>
   );
 }
-
-export default DeleteModal;

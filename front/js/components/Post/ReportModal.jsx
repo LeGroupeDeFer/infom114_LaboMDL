@@ -1,38 +1,15 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
-import api from '../../lib/api';
 
-function ReportModal({
-  modalDisplayed,
-  setReportModalDisplayed,
-  onPostReported,
-  postToReport,
-}) {
+export default function ReportModal({ post, show, onHide, onFlag }) {
   const [reason, setReason] = useState('');
-  const hideModal = () => setReportModalDisplayed(false);
 
   function handleChange(event) {
     setReason(event.target.value);
   }
 
-  const reportPost = () => {
-    setReportModalDisplayed(false);
-    api.posts
-      .report(postToReport, reason)
-      .then(() => {
-        console.log('in');
-        onPostReported();
-      })
-      .catch((error) => {});
-  };
-
   return (
-    <Modal
-      className="modal-report"
-      show={modalDisplayed}
-      onHide={hideModal}
-      centered
-    >
+    <Modal className="modal-report" show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
         <Modal.Title>Signaler le post</Modal.Title>
       </Modal.Header>
@@ -48,10 +25,14 @@ function ReportModal({
         />
         <br />
         <div className="float-right">
-          <Button variant="light" className="mt-1 mr-2" onClick={hideModal}>
+          <Button variant="light" className="mt-1 mr-2" onClick={onHide}>
             Annuler
           </Button>
-          <Button variant="primary" className=" mt-1" onClick={reportPost}>
+          <Button
+            variant="primary"
+            className=" mt-1"
+            onClick={() => onFlag(post, reason)}
+          >
             Signaler
           </Button>
         </div>
@@ -59,5 +40,3 @@ function ReportModal({
     </Modal>
   );
 }
-
-export default ReportModal;

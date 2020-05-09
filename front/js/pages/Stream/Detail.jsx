@@ -7,7 +7,6 @@ import { Post } from 'unanimity/components';
 import { Loading } from 'unanimity/components';
 import { printerr } from 'unanimity/lib';
 
-
 function Detail(props) {
   const { id } = useParams();
   const stream = useStream();
@@ -15,17 +14,19 @@ function Detail(props) {
   const [post, setPost] = useState(null);
   useEffect(() => {
     let isSubscribed = true;
-    stream.posts.of(id)
-      .then(post => isSubscribed ? setPost(post) : undefined)
+    stream.posts
+      .of(id)
+      .then((post) => (isSubscribed ? setPost(post) : undefined))
       .catch(printerr);
-    return () => isSubscribed = false;
+    return () => (isSubscribed = false);
   }, []);
 
   const LocalPost = post === null ? Loading : Post;
 
   return (
     <Container className="py-5">
-      <LocalPost {...props} post={post} className="post-detail"/>
+      <br />
+      <LocalPost {...props} post={post} className="post-detail" />
     </Container>
   );
 }

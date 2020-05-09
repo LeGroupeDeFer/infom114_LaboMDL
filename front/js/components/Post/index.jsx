@@ -1,9 +1,25 @@
-import React  from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import {Container, Row, Col, Badge, Dropdown, DropdownButton, Card} from 'react-bootstrap';
-import { FaEllipsisH, FaEyeSlash, FaFacebookSquare, FaFlag, FaLock, FaTag, FaTrashAlt } from 'react-icons/fa';
-import { FacebookShareButton } from "react-share";
-import { MdModeComment } from "react-icons/md";
+import {
+  Container,
+  Row,
+  Col,
+  Badge,
+  Dropdown,
+  DropdownButton,
+  Card,
+} from 'react-bootstrap';
+import {
+  FaEllipsisH,
+  FaEyeSlash,
+  FaFacebookSquare,
+  FaFlag,
+  FaLock,
+  FaTag,
+  FaTrashAlt,
+} from 'react-icons/fa';
+import { FacebookShareButton } from 'react-share';
+import { MdModeComment } from 'react-icons/md';
 import Moment from 'react-moment';
 
 import { useAuth } from 'unanimity/context';
@@ -12,10 +28,10 @@ import { UpVote, DownVote, Vote, VoteSection } from './Vote';
 import { preview, previewLength } from 'unanimity/lib';
 import Comment from './Comment';
 import DeleteModal from './DeleteModal';
-import Poll from "./Poll";
-import clsx from "clsx";
-import {trace} from "../../lib";
-
+import ReportModal from './ReportModal';
+import Poll from './Poll';
+import clsx from 'clsx';
+import { trace } from '../../lib';
 
 const HidePost = May('post:hide', ({ onClick }) => (
   <Dropdown.Item as="button" onClick={onClick}>
@@ -31,45 +47,67 @@ const LockPost = May('post:lock', ({ onClick }) => (
   </Dropdown.Item>
 ));
 
-
 export function PostContent({ isPreview, post, onComment }) {
-
   if (isPreview)
     return (
       <div className="post-preview">
         <span className="pr-1">{preview(post.content, previewLength)}</span>
         <Link to={`/detail/${post.id}`}>Lire la suite</Link>
       </div>
-  );
+    );
 
   return (
     <div className="post-content">
       <p className="mb-4">{post.content}</p>
       {post.kind === 'poll' && <Poll />}
-      <Comment.Editor onComment={comment => onComment(post, comment) } />
+      <Comment.Editor onComment={(comment) => onComment(post, comment)} />
       <div className="post-comments">
-        {post.comments.map(comment => <Comment comment={comment} onComment={onComment} />)}
+        {post.comments.map((comment) => (
+          <Comment comment={comment} onComment={onComment} />
+        ))}
       </div>
     </div>
   );
 }
 
 export function Post({
-  post, onVote, onFlag, onDelete, onHide, onTag, onLock, onComment,
-  isPreview, onPreview, className, ...others
+  post,
+  onVote,
+  onFlag,
+  onDelete,
+  onHide,
+  onTag,
+  onLock,
+  onComment,
+  isPreview,
+  onPreview,
+  className,
+  ...others
 }) {
-
   const { user } = useAuth();
   const isLogged = !!user;
   const owner = isLogged && post.author.id === user.id;
 
   const cardProps = isPreview
-    ? { onClick: e => e.target.classList.contains('expand-preview')
-        ? onPreview(post)
-        : null
-    } : {};
+    ? {
+        onClick: (e) =>
+          e.target.classList.contains('expand-preview')
+            ? onPreview(post)
+            : null,
+      }
+    : {};
 
-  const { author, kind, id, createdAt, userVote, score, tags, title, comments } = post;
+  const {
+    author,
+    kind,
+    id,
+    createdAt,
+    userVote,
+    score,
+    tags,
+    title,
+    comments,
+  } = post;
 
   const cls = clsx(
     'post expand-preview',
@@ -93,7 +131,9 @@ export function Post({
                     <span className="ml-1">{author.lastname}</span>
                   </a>
                   <span>-</span>
-                  <Moment locale="fr" fromNow className="ml-1">{createdAt}</Moment>
+                  <Moment locale="fr" fromNow className="ml-1">
+                    {createdAt}
+                  </Moment>
                 </span>
               </h5>
             </Col>
@@ -102,7 +142,11 @@ export function Post({
               <DropdownButton
                 alignRight
                 id={`post-${id}-actions`}
-                title={<div className="px-2 py-1"><FaEllipsisH /></div>}
+                title={
+                  <div className="px-2 py-1">
+                    <FaEllipsisH />
+                  </div>
+                }
                 variant="link"
                 className="float-right more btn-link"
                 onClick={() => {}}
@@ -110,7 +154,7 @@ export function Post({
               >
                 <HidePost onClick={onHide} />
 
-                <Dropdown.Item as="button" onClick={onFlag}>
+                <Dropdown.Item as="button" onClick={() => onFlag(post)}>
                   <FaFlag className="mr-2" />
                   <span>Signaler</span>
                 </Dropdown.Item>
@@ -122,7 +166,7 @@ export function Post({
                   </Dropdown.Item>
                 )}
 
-                <LockPost onClick={onLock}/>
+                <LockPost onClick={onLock} />
               </DropdownButton>
             </Col>
           </Row>
@@ -132,7 +176,7 @@ export function Post({
       <Card.Body className="post-body p-0 expand-preview">
         <div className="d-flex expand-preview">
           <VoteSection
-            onVote={vote => onVote(post, vote)}
+            onVote={(vote) => onVote(post, vote)}
             score={score}
             isLogged={isLogged}
             vote={userVote}
@@ -141,8 +185,13 @@ export function Post({
           <div className="px-3 pb-3 pt-2 w-100">
             <Card.Text>
               <div className="mb-1">
-                {tags.map(tag => (
-                  <a href="#" key={tag} className="mr-2 tag" onClick={() => onTag(tag)}>
+                {tags.map((tag) => (
+                  <a
+                    href="#"
+                    key={tag}
+                    className="mr-2 tag"
+                    onClick={() => onTag(tag)}
+                  >
                     <FaTag className="mr-1" />
                     <span>{tag}</span>
                   </a>
@@ -158,8 +207,11 @@ export function Post({
             </Card.Text>
 
             <div className="post-footer mb-2">
-
-              <Link to={`/detail/${id}`} className="post-footer-btn mr-2" href="#">
+              <Link
+                to={`/detail/${id}`}
+                className="post-footer-btn mr-2"
+                href="#"
+              >
                 <MdModeComment size="1.25em" className="mr-1" />
                 <span className="text-muted">
                   <span className="pr-1">{comments.length}</span>
@@ -186,7 +238,6 @@ export function Post({
                 <FaFlag size="1.25em" className="mr-1" />
                 <span className="text-muted">Signaler</span>
               </a>
-
             </div>
           </div>
         </div>
@@ -196,8 +247,12 @@ export function Post({
 }
 
 Object.assign(Post, {
-  Delete: DeleteModal, Comment, Vote, UpVote, DownVote
+  Delete: DeleteModal,
+  Comment,
+  Vote,
+  UpVote,
+  DownVote,
+  Report: ReportModal,
 });
-
 
 export default Post;

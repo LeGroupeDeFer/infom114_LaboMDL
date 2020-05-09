@@ -208,6 +208,7 @@ Object.assign(posts, {
     return api(`/post/${id}`, { method: 'DELETE' });
   },
   report(id, reason) {
+    console.log(id + '  ' + reason);
     return api(`/post/${id}/report`, {
       method: 'POST',
       body: { reason: reason },
@@ -309,10 +310,6 @@ function tagReport() {
   return api('/report/tags');
 }
 
-function postReport() {
-  return api('/report/posts');
-}
-
 api.tags = tags;
 api.tags.add = addTag;
 api.tags.remove = removeTag;
@@ -329,6 +326,5 @@ api.users.removeRole = removeRoleFromUser;
 
 api.users.report = userReport;
 api.tags.report = tagReport;
-api.posts.report = postReport;
 
 export default api;

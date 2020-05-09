@@ -24,16 +24,19 @@ import Post from 'unanimity/components/Post';
 // InnerStream :: Object => Component
 function InnerStream({
   deletePost,
-  onDelete,
+  flagPost,
   previewPost,
-  onPreview,
+  toastMsg,
   toast,
-  onToast,
+  onDelete,
+  onPreview,
   onFlag,
   onHide,
   onVote,
   onTag,
+  onToast,
   onDeleteConfirmation,
+  onFlagConfirmation,
 }) {
   const stream = useStream();
 
@@ -85,8 +88,17 @@ function InnerStream({
         show={!!deletePost}
         onHide={() => onDelete(false)}
         onDelete={onDeleteConfirmation}
+        onToast={onToast}
       />
 
+      {/* Report post modal */}
+      <Post.Report
+        post={flagPost}
+        show={!!flagPost}
+        onHide={() => onFlag(false)}
+        onFlag={onFlagConfirmation}
+        onToast={onToast}
+      />
       <Toast
         className="notification"
         show={toast}
@@ -95,7 +107,7 @@ function InnerStream({
         autohide
       >
         <Toast.Header>
-          <strong className="mr-auto"> Votre post a bien été supprimé</strong>
+          <strong className="mr-auto"> {toastMsg}</strong>
         </Toast.Header>
       </Toast>
     </div>
