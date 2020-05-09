@@ -112,5 +112,15 @@ impl CommentEntity {
         Ok(())
     }
 
+    pub fn is_deleted(&self) -> bool {
+        self.deleted_at.is_some()
+    }
 
+    pub fn is_locked(&self) -> bool {
+        self.locked_at.is_some()
+    }
+
+    pub fn is_hidden(&self) -> bool {
+        self.hidden_at.is_some()
+    }
 }

@@ -5,7 +5,7 @@
 use crate::database::models::prelude::*;
 use crate::database::DBConnection;
 
-use crate::guards::{Auth, ForwardAuth, PostGuard};
+use crate::guards::{Auth, ForwardAuth, PostGuard, CommentGuard};
 
 use crate::http::responders::ApiResult;
 use crate::lib::{AuthError, EntityError};
@@ -19,6 +19,7 @@ pub fn collect() -> Vec<Route> {
     routes!(
         get,
         create_comment,
+        create_reply_comment,
     )
 }
 
@@ -69,6 +70,39 @@ fn create_comment(
         content: comment_request.content,
         author_id: auth.sub,
         parent_id: None,
+    };
+
+    let ce = CommentEntity::insert_either(&*conn, &new_comment)?;
+    Ok(Json(Comment::from(ce)))
+}
+
+#[post("/api/v1/comment/<_comment_id>", format = "json", data = "<data>")]
+fn create_reply_comment(
+    conn: DBConnection, 
+    auth: Auth, 
+    comment_guard: CommentGuard, 
+    _comment_id: u32, 
+    data:Json<NewComment>
+) -> ApiResult<Comment> {
+    let comment_request = data.into_inner();
+
+    if comment_request.content == "" {
+        Err(EntityError::InvalidAttribute)?;
+    }
+
+    if comment_guard.comment().is_deleted() 
+        || comment_guard.comment().is_locked()
+        || comment_guard.comment().is_hidden()
+    {
+        Err(AuthError::MissingCapability)?;
+    }
+
+    
+    let new_comment = CommentMinima {
+        post_id: comment_guard.comment().post_id,
+        content: comment_request.content,
+        author_id: auth.sub,
+        parent_id: Some(comment_guard.comment().id),
     };
 
     let ce = CommentEntity::insert_either(&*conn, &new_comment)?;
