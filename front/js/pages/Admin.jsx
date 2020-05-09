@@ -59,11 +59,42 @@ function Admin(props) {
       <br />
       <br />
       <Container>
+        <Title menu={currentMenu}/>
         <Page />
       </Container>
     </>
   );
 };
+
+const Title = ({menu}) => {
+
+  let title = '';
+  let icon = null;
+  if (menu == 'Tags') {
+    title = 'Gestion des tags';
+    icon = <FaTags className="mr-3"/>;
+  }
+  else if (menu == 'Roles') {
+    title = 'Gestion des roles';
+    icon = <FaClipboardCheck className="mr-3"/>;
+  }
+  else if (menu == 'Users') {
+    title = 'Gestion des utilisateurs';
+    icon =  <FaUsers className="mr-3"/>;
+  }
+  else if (menu == 'Reporting'){
+    title = 'Statistiques globales';
+    icon = <FaChartLine className="mr-3"/>;
+  }
+  else {
+    title = 'Gestion des posts signalés';
+    icon = <FaFlag />;
+  }
+
+  return(
+    <h2 className="mb-3 mt-3">{icon} {title}</h2>
+  );
+}
 
 const MenuBar = ({ currentMenu, onClick, menuList }) => {
 
