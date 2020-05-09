@@ -53,7 +53,7 @@ function StreamContent() {
     onHide: post => stream.posts.hide(post),
     onVote: (post, vote) => stream.posts.vote(post, vote),
     onTag: tag => stream.tags.set(tag),
-    onPromote: post => stream.posts.promote(post),
+    onWatch: post => stream.posts.watch(post),
     onSort: order => stream.order.set(order),
     onPreview: v => setState(state => ({ ...state, previewPost: v })),
     onDelete: v => setState(state => ({ ...state, deletePost: v })),

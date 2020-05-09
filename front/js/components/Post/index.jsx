@@ -61,7 +61,7 @@ export function PostContent({ isPreview, post, onComment }) {
 }
 
 export function Post({
-  post, onVote, onFlag, onDelete, onHide, onTag, onLock, onPromote, onComment,
+  post, onVote, onFlag, onDelete, onHide, onTag, onLock, onWatch, onComment,
   isPreview, onPreview, className, ...others
 }) {
 
@@ -83,6 +83,7 @@ export function Post({
     post.locked && 'post-locked',
     post.hidden && 'post-hidden',
     post.userFlag && 'post-flagged',
+    post.watched && 'post-watched',
     className
   );
 
@@ -133,7 +134,7 @@ export function Post({
 
                 <LockPost onClick={() => onLock(post)} />
 
-                <WatchPost onClick={() => onPromote(post)} />
+                <WatchPost onClick={() => onWatch(post)} />
               </DropdownButton>
             </Col>
           </Row>
@@ -150,23 +151,21 @@ export function Post({
           />
 
           <div className="px-3 pb-3 pt-2 w-100">
-            <Card.Text>
-              <div className="mb-1">
-                {tags.map(tag => (
-                  <a href="#" key={tag} className="mr-2 tag" onClick={() => onTag(tag)}>
-                    <FaTag className="mr-1" />
-                    <span>{tag}</span>
-                  </a>
-                ))}
-              </div>
+            <div className="mb-1">
+              {tags.map(tag => (
+                <a href="#" key={tag} className="mr-2 tag" onClick={() => onTag(tag)}>
+                  <FaTag className="mr-1" />
+                  <span>{tag}</span>
+                </a>
+              ))}
+            </div>
 
-              <PostContent
-                isPreview={isPreview}
-                post={post}
-                onTag={onTag}
-                onComment={onComment}
-              />
-            </Card.Text>
+            <PostContent
+              isPreview={isPreview}
+              post={post}
+              onTag={onTag}
+              onComment={onComment}
+            />
 
             <div className="post-footer mb-2">
 
@@ -190,6 +189,7 @@ export function Post({
 
             </div>
           </div>
+
         </div>
       </Card.Body>
     </Card>

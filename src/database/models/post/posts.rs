@@ -151,7 +151,6 @@ impl PostEntity {
                 dsl::updated_at,
                 dsl::deleted_at,
                 dsl::hidden_at,
-                dsl::watched_at,
                 dsl::locked_at,
                 dsl::watched_at,
                 dsl::votes,

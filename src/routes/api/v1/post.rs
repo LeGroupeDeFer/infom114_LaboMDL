@@ -23,6 +23,7 @@ pub fn collect() -> Vec<rocket::Route> {
         updown_vote,
         toggle_visibility,
         toggle_lock,
+        watch_post,
         manage_post_report,
         get_poll_post_authenticated,
         get_poll_post,
