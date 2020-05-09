@@ -3334,6 +3334,9 @@
         "properties": {
           "content": {
             "type": "string"
+          },
+          "watch": {
+            "type": "boolean"
           }
         }
       },
@@ -3363,6 +3366,12 @@
           },
           "score": {
             "type": "integer"
+          },
+          "rank": {
+            "type": "number"
+          },
+          "is_watched": {
+            "type": "boolean"
           },
           "self_vote": {
             "type": "integer"

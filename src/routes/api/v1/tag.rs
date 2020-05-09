@@ -11,7 +11,9 @@ pub fn collect() -> Vec<rocket::Route> {
 }
 
 #[post("/api/v1/tag/<tag_label>")]
-pub fn post_tag(conn: DBConnection, _auth: Auth, tag_label: String) -> ApiResult<()> {
+pub fn post_tag(conn: DBConnection, auth: Auth, tag_label: String) -> ApiResult<()> {
+    auth.check_capability(&*conn, "tag:create")?;
+
     let new_tag = TagMinima { label: tag_label };
 
     TagEntity::insert_new(&*conn, &new_tag)?;
