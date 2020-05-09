@@ -59,40 +59,16 @@ function Admin(props) {
       <br />
       <br />
       <Container>
-        <Title menu={currentMenu}/>
         <Page />
       </Container>
     </>
   );
 };
 
-const Title = ({menu}) => {
-
-  let title = '';
-  let icon = null;
-  if (menu == 'Tags') {
-    title = 'Gestion des tags';
-    icon = <FaTags className="mr-3"/>;
-  }
-  else if (menu == 'Roles') {
-    title = 'Gestion des roles';
-    icon = <FaClipboardCheck className="mr-3"/>;
-  }
-  else if (menu == 'Users') {
-    title = 'Gestion des utilisateurs';
-    icon =  <FaUsers className="mr-3"/>;
-  }
-  else if (menu == 'Statistics'){
-    title = 'Statistiques globales';
-    icon = <FaChartLine className="mr-3"/>;
-  }
-  else {
-    title = 'Gestion des posts signalés';
-    icon = <FaFlag />;
-  }
+const Title = ({icon, description}) => {
 
   return(
-    <h2 className="mb-3 mt-3">{icon} {title}</h2>
+    <><h2 className="mb-3 mt-3"><span className="mr-3">{icon}</span> {description}</h2><hr/></>
   );
 }
 
@@ -160,6 +136,7 @@ const UsersPage = () => {
   return (
     <>
       <Notification />
+      <Title icon={<FaUsers />} description='Gestion des utilisateurs' />
       <br />
       {users.length
         ? users.map((user) => {
@@ -263,6 +240,7 @@ const StatisticsPage = () => {
   return (
     <>
       <Notification />
+      <Title icon={<FaChartLine />} description='Statistiques globales' />
       <Container>
         <Row>
           <Col md={4}>
@@ -397,6 +375,8 @@ const FlaggedPage = () => {
   }, []);
 
   return (
+    <>
+    <Title icon={<FaFlag />} description='Gestion des posts signalés' />
     <Container>
           {
             flaggedPosts.map(flaggedPost => {
@@ -413,6 +393,7 @@ const FlaggedPage = () => {
             })
           }
     </Container>
+    </>
   );
 };
 
@@ -492,11 +473,10 @@ const RolesPage = () => {
   return (
     <>
       <Notification />
-      <br />
+      <Title icon={<FaClipboardCheck />} description='Gestion des roles' />
 
       <AddForm add={addRole} />
       <br />
-
       {roles.length
         ? roles.map((role, i) => {
           return (
@@ -604,11 +584,10 @@ const TagsPage = () => {
   return (
     <>
       <Notification />
-      <br />
+      <Title icon={<FaTags />} description='Gestion des tags' />
 
       <AddForm add={addTag} />
       <br />
-
       {tags.length
         ? tags.map((tag, i) => {
           return (
