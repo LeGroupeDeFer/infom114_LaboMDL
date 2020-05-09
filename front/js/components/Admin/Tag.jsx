@@ -1,16 +1,8 @@
 import React, {useState} from "react";
 import api from '../../lib/api';
+import { prevent } from '../../lib';
 
-import Button from 'react-bootstrap/Button';
-import Card from 'react-bootstrap/Card';
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Modal from 'react-bootstrap/Modal';
-import InputGroup from 'react-bootstrap/InputGroup';
-import FormControl from 'react-bootstrap/FormControl';
-import Form from 'react-bootstrap/Form';
-
+import { Button, Card, Container, Row, Col, Modal, InputGroup, FormControl, Form } from 'react-bootstrap/'
 import { FaPen, FaTrashAlt } from 'react-icons/fa';
 
 const Tag = ({name, deleteTag, setNotification, tags, setTags}) => {
@@ -43,6 +35,8 @@ const Tag = ({name, deleteTag, setNotification, tags, setTags}) => {
     });
   };
 
+  // e => e.preventDefault() || setModalShow(true)
+
   return (
     <>
     <Card style={{ width: '100vw' }}>
@@ -53,11 +47,11 @@ const Tag = ({name, deleteTag, setNotification, tags, setTags}) => {
               <Card.Title>{label}</Card.Title>
             </Col>
             <Col md="auto">
-              <a className="footer-primary-btn mr-3" href="#" onClick={() => setModalShow(true)}>
+              <a className="footer-primary-btn mr-3" href="#" onClick={e => prevent(e, () => setModalShow(true)) }> 
                 <FaPen className="fa-primary mr-1" /> 
                 <span className="text-muted">Renommer</span>
               </a>
-              <a className="post-footer-btn mr-3" href="#" onClick={() => deleteTag(label)}>
+              <a className="post-footer-btn mr-3" href="#" onClick={e => prevent(e, () => deleteTag(label))}>
                 <FaTrashAlt className="fa-danger mr-1"/>
                 <span className="text-muted">Supprimer</span>
               </a>
