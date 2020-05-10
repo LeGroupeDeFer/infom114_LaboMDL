@@ -95,7 +95,7 @@ impl Entity for RelPostVoteEntity {
 }
 
 impl RelPostVoteEntity {
-    pub fn sum_by_post_id(conn: &MysqlConnection, post_id: u32) -> Consequence<i64> {
+    pub fn sum_by_post_id(conn: &MysqlConnection, post_id: &u32) -> Consequence<i64> {
         Ok(table
             .select(sum(votes_posts::vote_value))
             .filter(votes_posts::post_id.eq(post_id))
@@ -103,12 +103,16 @@ impl RelPostVoteEntity {
             .unwrap_or(0))
     }
 
-    pub fn count_by_post_id(conn: &MysqlConnection, post_id: u32) -> Consequence<u64> {
+    pub fn count_by_post_id(conn: &MysqlConnection, post_id: &u32) -> Consequence<u64> {
         table
             .select(count(votes_posts::user_id))
             .filter(votes_posts::post_id.eq(post_id))
             .first::<i64>(conn)
             .map(|v: i64| v as u64)
             .map(Ok)?
+    }
+
+    pub fn by_post_id(conn: &MysqlConnection, post_id: &u32) -> Consequence<Vec<Self>> {
+        Ok(table.filter(votes_posts::post_id.eq(post_id)).load(conn)?)
     }
 }
