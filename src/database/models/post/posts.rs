@@ -192,19 +192,6 @@ impl PostEntity {
             query = query.filter(dsl::kind.eq(kind_id));
         }
 
-        // limit the results
-        if let Some(l) = limit {
-            query = query.limit(l as i64);
-        }
-
-        // offset the results
-        if let Some(o) = offset {
-            if limit.is_none() {
-                query = query.limit(10_000);
-            }
-            query = query.offset(o as i64);
-        }
-
         // order by
         let s = sort.unwrap_or(SortOrder::HighRank);
         query = match s {
@@ -222,10 +209,15 @@ impl PostEntity {
 
         let results = query.load::<PostEntity>(conn)?;
 
-        Ok(Self::filter_out_tags(results, tags_length))
+        Ok(Self::filter_out_tags(results, tags_length, limit, offset))
     }
 
-    fn filter_out_tags(posts: Vec<Self>, number: u32) -> Vec<Self> {
+    fn filter_out_tags(
+        posts: Vec<Self>,
+        number: u32,
+        limit: Option<u32>,
+        offset: Option<u32>,
+    ) -> Vec<Self> {
         let mut tab: HashMap<u32, u32> = HashMap::new();
         let mut check_duplicate: HashSet<u32> = HashSet::new();
 
@@ -234,10 +226,22 @@ impl PostEntity {
             *e += 1;
         }
 
-        posts
+        let filtered_posts = posts
             .into_iter()
             .filter(|entity| tab[&entity.id] >= number && check_duplicate.insert(entity.id))
-            .collect::<Vec<Self>>()
+            .collect::<Vec<Self>>();
+
+        let from = match offset {
+            Some(o) => o,
+            None => 0,
+        } as usize;
+
+        let to = filtered_posts.len().min(match limit {
+            Some(l) => from + l as usize,
+            None => filtered_posts.len(),
+        } as usize);
+
+        filtered_posts[from..to].to_vec()
     }
 
     pub fn get_report_by_year(
