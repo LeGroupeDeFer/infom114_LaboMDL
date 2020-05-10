@@ -77,7 +77,7 @@ const Role = ({
                 <a
                   className="footer-primary-btn mr-3"
                   href="#"
-                  onClick={() => setRenameModalShow(true)}
+                  onClick={e => prevent(e, () => setRenameModalShow(true))}
                 >
                   <Icon icon="pen" className="fa-primary mr-1" />
                   <span className="text-muted">Renommer</span>
@@ -85,7 +85,7 @@ const Role = ({
                 <a
                   className="footer-primary-btn mr-3"
                   href="#"
-                  onClick={() => setEditModalShow(true)}
+                  onClick={e => prevent(e, () => setEditModalShow(true))}
                 >
                   <Icon icon="edit" className="fa-primary mr-1" />
                   <span className="text-muted">Modifier</span>
@@ -269,11 +269,12 @@ function EditModal({
                 <Col>{capability.name}</Col>
                 <Col md="auto">
                   <Form.Check
-                    type="switch"
+                    key={capability.id}
                     id={capability.id}
+                    type="switch"
                     label={' '}
                     checked={capability.assigned}
-                    onClick={(e) => handleEdit(e, capability)}
+                    onChange={(e) => handleEdit(e, capability)}
                   />
                 </Col>
               </Row>
