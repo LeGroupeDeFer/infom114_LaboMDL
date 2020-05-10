@@ -16,6 +16,7 @@ const nobodyLinks = [
 ];
 
 const authenticatedLinks = [];
+//  link for notifications but not implemented yet
 //  link('notifications', '/notifications', "bell", 'Notifications', 2)
 
 
