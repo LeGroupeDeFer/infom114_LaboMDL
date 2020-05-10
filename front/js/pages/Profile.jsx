@@ -24,7 +24,6 @@ function Profile() {
 
     const fetch = async () => {
       let res = await api.users.posts(user.id);
-      console.log(res);
       res.forEach(post => {
         post.answers = [];
       }); //FIXME - If the post is a poll, answers Array is missing 
@@ -33,8 +32,6 @@ function Profile() {
     fetch();
 
   }, []);
-
-
 
   return (
     <>
@@ -52,18 +49,19 @@ function Profile() {
               <h2 className="mb-3 mt-3">
                 <span className=" mr-3"><Icon icon="user" /> <b>Profil utilisateur</b></span>
               </h2>
-              <User user={user} />
+              {
+                user?<User user={user} />:<></>
+              }       
               <hr />
             </div>
           </Col>
           <Col xs={12} md={8}>
-          <hr />
-          {
-            posts.map(post => {
-              return (<><Post post={post}/><hr /></>);
-            })
-          }
-
+            <hr />
+            {
+              posts.map(post => {
+                return (<><Post post={post} /><hr /></>);
+              })
+            }
           </Col>
         </Row>
       </Container>
