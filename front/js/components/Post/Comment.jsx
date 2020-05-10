@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { GoReply } from 'react-icons/go';
+import GoReply from '../../icons/reply.svg';
 import Moment from 'react-moment';
-import {DownVote, UpVote, VoteSection} from './Vote';
+import { DownVote, UpVote, VoteSection } from './Vote';
 import { Container, Row, Col, Button, Card, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { WhenLogged } from '../Auth';
 import { useAuth } from 'unanimity/context';
-import {VOTE} from "../../lib";
-
+import { VOTE } from '../../lib';
 
 const CommentInteraction = WhenLogged(({ onResponse, onMask, onFlag }) => {
   return (
@@ -24,7 +23,7 @@ const CommentInteraction = WhenLogged(({ onResponse, onMask, onFlag }) => {
       </a>
     </Row>
   );
-})
+});
 
 function Comment({ comment, onComment, onVote }) {
   const isLogged = !!useAuth().user;
@@ -44,10 +43,17 @@ function Comment({ comment, onComment, onVote }) {
         <Col>
           <div>
             <span className="text-muted">
-              <a href={`/profile/${comment.author.id}`} className="text-dark mr-1 ml-1">{comment.author}</a>
+              <a
+                href={`/profile/${comment.author.id}`}
+                className="text-dark mr-1 ml-1"
+              >
+                {comment.author}
+              </a>
               <span className=" mr-1">{comment.score} points</span>
               <span className=" mr-1">·</span>
-              <Moment locale="fr" fromNow>{comment.creationDate}</Moment>
+              <Moment locale="fr" fromNow>
+                {comment.creationDate}
+              </Moment>
             </span>
           </div>
         </Col>
@@ -61,15 +67,14 @@ function Comment({ comment, onComment, onVote }) {
             onMask={() => console.log('Wanna mask!')}
             onFlag={() => console.log('Wanna flag!')}
           />
-          <CommentEditor onComment={c => console.log('Commented ' + c)} />
+          <CommentEditor onComment={(c) => console.log('Commented ' + c)} />
         </Col>
       </Row>
-
     </Container>
   );
 }
 
-function CommentEditor ({ onComment }) {
+function CommentEditor({ onComment }) {
   const isLogged = !!useAuth().user;
   const [comment, setComment] = useState('');
 
@@ -81,12 +86,12 @@ function CommentEditor ({ onComment }) {
           rows="3"
           placeholder="Ajouter un commentaire"
           value={comment}
-          onChange={setComment}
+          onChange={(e) => setComment(e.target.value)}
         />
         <Button
           variant="primary"
           className="float-right my-1"
-          onClick={() => comment ? onComment(comment) : undefined}
+          onClick={() => (comment ? onComment(comment) : undefined)}
         >
           Commenter
         </Button>
@@ -110,10 +115,8 @@ function CommentEditor ({ onComment }) {
       </Card.Body>
     </Card>
   );
-
 }
 
 Comment.Editor = CommentEditor;
-
 
 export default Comment;

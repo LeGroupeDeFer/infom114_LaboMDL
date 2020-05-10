@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { Button, Card, Row, Col } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
 import ProgressBar from 'react-bootstrap/ProgressBar';
-import { FaRegCheckCircle } from 'react-icons/fa';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+
+import CheckCircle from '../../icons/check-circle-regular.svg';
 
 function Poll({ postId, answers, userAnswer, onPollVote }) {
   const [userVote, setUserVote] = useState(
@@ -69,10 +72,7 @@ function Poll({ postId, answers, userAnswer, onPollVote }) {
                           <Col xs={11} className="text-left">
                             {opt.answer}
                             {userVote == opt.id && (
-                              <FaRegCheckCircle
-                                size={20}
-                                className="ml-2 opt-selected"
-                              />
+                              <CheckCircle className="ml-2 opt-selected" />
                             )}
                           </Col>
                         </Row>

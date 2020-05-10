@@ -15,14 +15,14 @@ import {
   faInfo,
   faLightbulb,
   faPenFancy,
-  faPlusSquare, faTag,
+  faPlusSquare,
+  faTag,
+  faTimesCircle,
 } from '@fortawesome/free-solid-svg-icons';
-import { TiDelete } from 'react-icons/ti';
 import { useHistory } from 'react-router-dom';
 import { AutoForm, Authenticated } from 'unanimity/components';
 import { Option } from 'unanimity/components/SearchBar';
 import { useStream } from 'unanimity/context';
-
 
 const types = [
   { value: 'idea', label: Option({ icon: faLightbulb, label: 'Idée' }) },
@@ -103,7 +103,7 @@ function PollOptions() {
             {i > 1 && (
               <InputGroup.Append>
                 <Button variant="outline-danger" onClick={(_) => popOption(i)}>
-                  <TiDelete size={20} />
+                  <Icon icon={faTimesCircle} size={20} />
                 </Button>
               </InputGroup.Append>
             )}
@@ -153,16 +153,18 @@ const Writer = Authenticated(() => {
   function onSubmit(post) {
     setLoading(true);
     if (post.kind !== 'poll') post.options = [];
-    stream.posts.add(post).then(p => history.push(`/detail/${p.id}`));
+    stream.posts.add(post).then((p) => history.push(`/detail/${p.id}`));
   }
 
-  const tags = stream.tags.available.map(
-    t => ({ value: t.label, label: Option({ label: t.label, icon: faTag }) })
-  );
+  const tags = stream.tags.available.map((t) => ({
+    value: t.label,
+    label: Option({ label: t.label, icon: faTag }),
+  }));
 
-  const kinds = stream.kind.available.map(
-    kind => ({ value: kind.value, label: Option(kind) })
-  );
+  const kinds = stream.kind.available.map((kind) => ({
+    value: kind.value,
+    label: Option(kind),
+  }));
 
   return (
     <Container className="py-5">

@@ -15,8 +15,8 @@ import {
   Toast,
 } from 'react-bootstrap';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { MdSort } from 'react-icons/md/index.esm';
-import { FaEdit } from 'react-icons/fa/index.esm';
+import { faEdit } from '@fortawesome/free-solid-svg-icons';
+import MdSort from '../../icons/sort.svg';
 import { useStream } from 'unanimity/context/streamContext';
 import { ORDER } from 'unanimity/lib';
 import Post from 'unanimity/components/Post';
@@ -150,7 +150,7 @@ function SortDropdown({ onSort }) {
       alignRight
       title={
         <span>
-          <MdSort size={20} /> {title}
+          <MdSort size={20} fill="white" /> {title}
         </span>
       }
       variant="primary"
@@ -192,7 +192,7 @@ function Stream({ onSort, ...others }) {
             <OverlayTrigger overlay={<Tooltip>Créer un post</Tooltip>}>
               <Button variant="primary" className="h-100">
                 <div className="d-flex text-light">
-                  <FaEdit />
+                  <Icon icon={faEdit} />
                 </div>
               </Button>
             </OverlayTrigger>

@@ -4,17 +4,18 @@ import Moment from 'react-moment';
 import { dev, preview } from '../../lib';
 import { Badge, Card, Dropdown, DropdownButton } from 'react-bootstrap';
 import { DownVote, UpVote } from './Vote';
-import { MdModeComment, MdReport } from 'react-icons/md';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import {
-  FaTag,
-  FaFacebookSquare,
-  FaEllipsisH,
-  FaEyeSlash,
-  FaFlag,
-  FaTrashAlt,
-  FaLock,
-  FaEdit,
-} from 'react-icons/fa';
+  faFacebookSquare,
+  faEllipsisH,
+  faEyeSlash,
+  faFlag,
+  faTrashAlt,
+  faTag,
+  faLock,
+  faCommentAlt,
+} from '@fortawesome/free-solid-svg-icons';
+
 import clsx from 'clsx';
 import { FacebookShareButton } from 'react-share';
 import { useAuth } from 'unanimity/context/authContext';
@@ -94,7 +95,7 @@ const Preview = ({
             <DropdownButton
               title={
                 <span>
-                  <FaEllipsisH />
+                  <Icon icon={faEllipsisH} />
                 </span>
               }
               variant="link"
@@ -103,31 +104,25 @@ const Preview = ({
             >
               {caps.some((e) => e.name === 'post:hide') && (
                 <Dropdown.Item as="button">
-                  <FaEyeSlash className="mr-2" />
+                  <Icon icon={faEyeSlash} className="mr-2" />
                   Masquer
                 </Dropdown.Item>
               )}
               <Dropdown.Item as="button" onClick={reportPost}>
-                <FaFlag className="mr-2" />
+                <Icon icon={faFlag} className="mr-2" />
                 Signaler
               </Dropdown.Item>
-              {/* {owner && (
-                <Dropdown.Item as="button">
-                  <FaEdit className="mr-2" />
-                  Modifier
-                </Dropdown.Item>
-              )} */}
 
               {owner && (
                 <Dropdown.Item as="button" onClick={deletePost}>
-                  <FaTrashAlt className="mr-2" />
+                  <Icon icon={faTrashAlt} className="mr-2" />
                   Supprimer
                 </Dropdown.Item>
               )}
 
               {caps.some((e) => e.name === 'post:lock') && (
                 <Dropdown.Item as="button">
-                  <FaLock className="mr-2" />
+                  <Icon icon={faLock} className="mr-2" />
                   Vérouiller
                 </Dropdown.Item>
               )}
@@ -175,7 +170,7 @@ const Preview = ({
                       value={tag}
                       key={index}
                     >
-                      <FaTag className="mr-1" />
+                      <Icon icon={faTag} className="mr-1" />
                       {tag}
                     </a>
                   );
@@ -192,9 +187,9 @@ const Preview = ({
                 className="post-footer-btn mr-2"
                 href="#"
               >
-                <MdModeComment size="1.25em" className="mr-1" />
+                <Icon icon={faCommentAlt} size="1.25em" className="mr-1" />
                 <span className="text-muted">
-                  {comments.length}{' '}
+                  {comments.length}
                   {comments.length <= 1 ? 'commentaire' : 'commentaires'}
                 </span>
               </Link>
@@ -205,7 +200,11 @@ const Preview = ({
                 onClick={(e) => e.stopPropagation()}
               >
                 <a className="post-footer-btn mr-2" href="#">
-                  <FaFacebookSquare size="1.25em" className="mr-1" />
+                  <Icon
+                    icon={faFacebookSquare}
+                    size="1.25em"
+                    className="mr-1"
+                  />
                   <span className="text-muted">Partager</span>
                 </a>
               </FacebookShareButton>

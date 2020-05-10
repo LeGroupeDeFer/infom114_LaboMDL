@@ -12,8 +12,8 @@
     border-bottom: 1px solid #EDEFF1;
 }
 
-.poll {
 
+.poll {
     margin: 0 auto;
     width: 65%;
     border: 1px solid #EDEFF1;
@@ -28,11 +28,6 @@
     height: 2rem;
 }
 
-// .progress {
-//     text-align: center;
-//     width: 50%;
-//     margin: 15px auto;
-// }
 
 .progress-value {
     position: absolute;
@@ -43,5 +38,6 @@
 }
 
 .opt-selected {
+    height: 1.2rem;
     margin-top: -0.3rem;
 }
