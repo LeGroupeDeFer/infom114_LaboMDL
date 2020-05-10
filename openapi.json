@@ -3400,6 +3400,9 @@
           },
           "active": {
             "type": "integer"
+          },
+          "connected": {
+            "type": "integer"
           }
         }
       },
