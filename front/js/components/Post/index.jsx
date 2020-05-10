@@ -213,34 +213,36 @@ export function Post({
               <Flexbox reverse align={'center'} className="h-100">
                 {post.watched && <WatchSymbol className="px-2 ml-2 py-1" />}
 
-                <DropdownButton
-                  alignRight
-                  id={`post-${id}-actions`}
-                  title={
-                    <div className="px-2 py-1">
-                      <Icon icon="ellipsis-h" />
-                    </div>
-                  }
-                  variant="link"
-                  className="more btn-link"
-                  onClick={() => {}}
-                  href="#"
-                >
-                  <HidePost onClick={() => onHide(post)} />
+                {isLogged && (
+                  <DropdownButton
+                    alignRight
+                    id={`post-${id}-actions`}
+                    title={
+                      <div className="px-2 py-1">
+                        <Icon icon="ellipsis-h" />
+                      </div>
+                    }
+                    variant="link"
+                    className="more btn-link"
+                    onClick={() => {}}
+                    href="#"
+                  >
+                    <HidePost onClick={() => onHide(post)} />
 
-                  <FlagPost
-                    post={post}
-                    onFlag={onFlag}
-                    userFlag={userFlag}
-                    onFlagCancel={onFlagCancel}
-                  />
+                    <FlagPost
+                      post={post}
+                      onFlag={onFlag}
+                      userFlag={userFlag}
+                      onFlagCancel={onFlagCancel}
+                    />
 
-                  <DeletePost owner={owner} onClick={() => onDelete(post)} />
+                    <DeletePost owner={owner} onClick={() => onDelete(post)} />
 
-                  <LockPost onClick={() => onLock(post)} />
+                    <LockPost onClick={() => onLock(post)} />
 
-                  <WatchPost onClick={() => onWatch(post)} />
-                </DropdownButton>
+                    <WatchPost onClick={() => onWatch(post)} />
+                  </DropdownButton>
+                )}
               </Flexbox>
             </Col>
           </Row>
@@ -285,7 +287,7 @@ export function Post({
                 className="post-footer-btn mx-2 d-flex align-items-center"
                 href="#"
               >
-                <Icon icon={faCommentAlt} size="1x" className="mr-1" />
+                <Icon icon="comment-alt" size="1x" className="mr-1" />
                 <span className="text-muted">
                   {comments.length}
                   {` commentaire${comments.length > 1 ? 's' : ''}`}
@@ -296,7 +298,10 @@ export function Post({
                 url={`https://unanimity.be/detail/${id}`}
                 quote={`${title}  - ${author.firstname} ${author.lastname}`}
               >
-                <a className="post-footer-btn mr-2" href="#">
+                <a
+                  className="post-footer-btn mx-2 d-flex align-items-center"
+                  href="#"
+                >
                   <FacebookSquare height="18" className="mr-1 fb-icon" />
                   <span className="text-muted">Partager</span>
                 </a>

@@ -24,6 +24,7 @@
 
     &:disabled {
         cursor: not-allowed;
+        background-color: transparent !important;
     }
 
     &.up:hover,
