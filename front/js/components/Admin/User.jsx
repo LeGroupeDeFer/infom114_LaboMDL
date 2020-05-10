@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from 'react';
 import api from '../../lib/api';
 
 import Button from 'react-bootstrap/Button';
@@ -9,167 +9,179 @@ import Col from 'react-bootstrap/Col';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 
-import { FaEdit, FaUser } from 'react-icons/fa';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+import { faEdit, faUser } from '@fortawesome/free-solid-svg-icons';
 
-const User = ({user, roles, setNotification}) => {
+const User = ({ user, roles, setNotification }) => {
+  const [modalShow, setModalShow] = useState(false);
 
-    const [modalShow, setModalShow] = useState(false);
+  return (
+    <>
+      <Card style={{ width: '100vw' }}>
+        <Card.Body>
+          <Container>
+            <Row>
+              <Col>
+                <Card.Title>
+                  {user.lastname} {user.firstname}
+                </Card.Title>
+              </Col>
+              <Col md="auto">
+                <a
+                  className="footer-primary-btn mr-3"
+                  href="#"
+                  onClick={() => setModalShow(true)}
+                >
+                  <Icon icon={faEdit} className="fa-primary mr-1" />
+                  <span className="text-muted">Gérer les roles</span>
+                </a>
+                <a className="post-footer-btn mr-3" href="#">
+                  <Icon icon={faUser} className="fa-primary mr-1">
+                    Voir profil
+                  </Icon>
+                  <span className="text-muted">Voir profil</span>
+                </a>
+              </Col>
+            </Row>
+          </Container>
+        </Card.Body>
+      </Card>
 
-    return (
-        <>
-        <Card style={{ width: '100vw' }}>
-          <Card.Body>
-            <Container>
-              <Row>
-                <Col>
-                  <Card.Title>{user.lastname} {user.firstname}</Card.Title>
-                </Col>
-                <Col md="auto">
-                  <a className="footer-primary-btn mr-3" href="#" onClick={() => setModalShow(true)}>
-                    <FaEdit className="fa-primary mr-1" />    
-                    <span className="text-muted">Gérer les roles</span>
-                  </a>
-                  <a className="post-footer-btn mr-3" href="#">
-                    <FaUser className="fa-primary mr-1">Voir profil</FaUser>
-                    <span className="text-muted">Voir profil</span>
-                  </a>
-                </Col>
-              </Row>
-            </Container>
-          </Card.Body>
-        </Card>
-
-        <EditModal
+      <EditModal
         user={user}
         roles={roles}
         show={modalShow}
         onHide={() => setModalShow(false)}
         setNotification={setNotification}
-        />
-        </>
-    )
-}
+      />
+    </>
+  );
+};
 
 const containsID = (list, id) => {
-  for(var i = 0; i < list.length; i++) {
+  for (var i = 0; i < list.length; i++) {
     if (list[i].id == id) {
-        return true;
+      return true;
     }
   }
   return false;
-}
+};
 
-const EditModal = ({user, show, onHide, setNotification}) => {
+const EditModal = ({ user, show, onHide, setNotification }) => {
+  const userRoles = user.roles;
+  const [rolesList, setRolesList] = useState([]);
 
-    const userRoles = user.roles;
-    const [rolesList, setRolesList] = useState([]);
+  useEffect(() => {
+    const fetchRoles = async () => {
+      let roles = await api.roles();
+      roles.forEach((role) => {
+        if (containsID(userRoles, role.id)) {
+          role.assigned = true;
+        } else {
+          role.assigned = false;
+        }
+      });
+      setRolesList(roles);
+    };
 
-    useEffect(() => {
-      const fetchRoles = async () => {
-        let roles = await api.roles()
-        roles.forEach( role => {
-          if (containsID(userRoles, role.id)) {
-            role.assigned = true;
-          }
-          else {
-            role.assigned = false;
-          }
-        });
-        setRolesList(roles);
-      }
+    fetchRoles();
+  }, []);
 
-      fetchRoles();
-    }, [])
+  const handleEdit = (e) => {
+    const removeRoleFromUser = async (userID, roleID) => {
+      let res = await api.users.removeRole(userID, roleID);
+      return res;
+    };
 
-    const handleEdit = (e) => {
+    const addRoleToUser = async (userID, roleID) => {
+      let res = await api.users.addRole(userID, roleID);
+      return res;
+    };
 
-      const removeRoleFromUser = async (userID, roleID) => {
-        let res = await api.users.removeRole(userID, roleID);
-        return res;
-      }
+    const checked = e.target.checked;
+    const id = parseInt(e.target.id);
 
-      const addRoleToUser = async (userID, roleID) => {
-        let res = await api.users.addRole(userID, roleID);
-        return res;
-      }
-      
-      const checked = e.target.checked;
-      const id = parseInt(e.target.id);
-
-      if (checked) {
-        addRoleToUser(user.id, e.target.id).then(answer => {
+    if (checked) {
+      addRoleToUser(user.id, e.target.id)
+        .then((answer) => {
           let tmp = Array.from(rolesList);
-          tmp.map( role => {
+          tmp.map((role) => {
             if (role.id == id) {
               role.assigned = checked;
             }
-          })
-          
-          setRolesList(tmp);
-        }).catch(error => {
-          let reason = error.reason == null ? "La demande n'a pu être traitée" : error.reason;
-          setNotification('');
-          setNotification(reason);
-          console.log(error);
-        });
-      }
-      else {
-        removeRoleFromUser(user.id, e.target.id).then(answer => {
-          let tmp = Array.from(rolesList)
-          tmp.map( role => {
-            if (role.id == id) {
-              role.assigned = checked;
-            }
-          })
-          setRolesList(tmp);
-        }).catch(error => {
-          let reason = error.reason == null ? "La demande n'a pu être traitée" : error.reason;
-          setNotification('');
-          setNotification(reason);
-          console.log(error);
-        });
-      }
+          });
 
+          setRolesList(tmp);
+        })
+        .catch((error) => {
+          let reason =
+            error.reason == null
+              ? "La demande n'a pu être traitée"
+              : error.reason;
+          setNotification('');
+          setNotification(reason);
+          console.log(error);
+        });
+    } else {
+      removeRoleFromUser(user.id, e.target.id)
+        .then((answer) => {
+          let tmp = Array.from(rolesList);
+          tmp.map((role) => {
+            if (role.id == id) {
+              role.assigned = checked;
+            }
+          });
+          setRolesList(tmp);
+        })
+        .catch((error) => {
+          let reason =
+            error.reason == null
+              ? "La demande n'a pu être traitée"
+              : error.reason;
+          setNotification('');
+          setNotification(reason);
+          console.log(error);
+        });
     }
+  };
 
-    return (
-      <Modal
+  return (
+    <Modal
       onHide={onHide}
       show={show}
       size="lg"
       aria-labelledby="contained-modal-title-vcenter"
       centered
     >
-      <Modal.Header closeButton>        
-        <Modal.Title>Utilisateur: {user.lastname} {user.firstname}</Modal.Title>
+      <Modal.Header closeButton>
+        <Modal.Title>
+          Utilisateur: {user.lastname} {user.firstname}
+        </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <hr />
-        {rolesList.map( role => {
-            return (
-              <>  
+        {rolesList.map((role) => {
+          return (
+            <>
               <Row key={role.id}>
-                <Col>
-                  {role.name}
-                </Col>
+                <Col>{role.name}</Col>
                 <Col md="auto">
-
-                  <Form.Check 
+                  <Form.Check
                     type="switch"
-                    id={ role.id }
-                    label={ " " }
-                    checked={ role.assigned }
+                    id={role.id}
+                    label={' '}
+                    checked={role.assigned}
                     onClick={handleEdit}
                   />
                 </Col>
               </Row>
               <hr />
-              </>
-            );
-          })}
+            </>
+          );
+        })}
       </Modal.Body>
     </Modal>
-    );
-}
+  );
+};
 
 export default User;
