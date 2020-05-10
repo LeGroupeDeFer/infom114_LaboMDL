@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { NavLink } from 'react-router-dom';
 
-import ListGroup from 'react-bootstrap/ListGroup';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Card from 'react-bootstrap/Card';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import clsx from 'clsx';
+import 'regenerator-runtime';
 
 import { useAuth } from '../context';
 import { Authenticated } from '../components/';
@@ -28,6 +25,9 @@ function Profile() {
     const fetch = async () => {
       let res = await api.users.posts(user.id);
       console.log(res);
+      res.forEach(post => {
+        post.answers = [];
+      }); //FIXME - If the post is a poll, answers Array is missing 
       setPosts(res);
     };
     fetch();
@@ -38,18 +38,26 @@ function Profile() {
 
   return (
     <>
-      <Menu />
-      <Container>
-        <h2 className="mb-3 mt-3">
-          <span className="mr-3"><Icon icon="users" /> <b>Profil utilisateur</b></span>
-        </h2>
-        <hr />
+      <Container fluid className="menu-bar-container py-2">
+        <Menu className="menu-bar" />
+      </Container>
+      <br />
+      <br />
+      <br />
+      <Container fluid>
         <Row>
-          <Col style={{ 'border-right': '1px dashed #333' }} xs={12} md={4}>
-            <User user={user} />
+          <Col xs={12} md={4}>
+            <div className="fixed-info">
+              <hr />
+              <h2 className="mb-3 mt-3">
+                <span className=" mr-3"><Icon icon="user" /> <b>Profil utilisateur</b></span>
+              </h2>
+              <User user={user} />
+              <hr />
+            </div>
           </Col>
           <Col xs={12} md={8}>
-
+          <hr />
           {
             posts.map(post => {
               return (<><Post post={post}/><hr /></>);
@@ -68,21 +76,22 @@ const Menu = () => {
 
   return (
     <Row>
-      <Col xs={2}></Col>
-      <Col xs={8}>
-        <ButtonGroup className="kind-section d-flex justify-content-between">
+      <Col md={12} xs={12}>
+        <ButtonGroup className="float-right kind-section">
           <OverlayTrigger
+            key={1}
             placement="bottom"
             overlay={<Tooltip>Se déconnecter</Tooltip>}
           >
-            <a href="/logout" >
+            <Button
+              key={1}
+              className={'kind-choice'}
+            >
               <Icon icon="door-open" />
-              <span> - Se déconnecter</span>
-            </a>
+            </Button>
           </OverlayTrigger>
         </ButtonGroup>
       </Col>
-      <Col xs={2}></Col>
     </Row>
   );
 };
