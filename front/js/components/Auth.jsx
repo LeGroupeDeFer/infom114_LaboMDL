@@ -1,7 +1,7 @@
 import React from 'react';
-import { useAuth } from '../context/authContext';
+import { useAuth } from '../context';
 import { Container, Row, Col } from 'react-bootstrap';
-import { useParams, useHistory, Link } from 'react-router-dom';
+import { useHistory, Link } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 
 
@@ -24,12 +24,31 @@ export function Unauthenticated(Component) {
     const { user } = useAuth();
     const history = useHistory();
     if (user) {// Should be a flash instead
-      console.log('Already authenticated!');
       history.replace('/');
     }
 
     return <Component {...props} />
   }
+}
+
+
+export const WhenLogged = Component => props => {
+  const isLogged = !!useAuth().user;
+  return isLogged ? <Component {...props} /> : null;
+}
+
+
+export const AuthDisabled = Component => props => {
+  const isLogged = !!useAuth().user;
+  return <Component disabled={!isLogged} {...props} />
+};
+
+
+export const May = (cap, Component, ErrorComponent = <></>) => props => {
+  const { token } = useAuth();  
+  if (token && token.cap.some(e => e.name === cap))
+    return <Component {...props} />;
+  return <ErrorComponent cap={cap}/>;
 }
 
 

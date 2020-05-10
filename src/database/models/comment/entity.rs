@@ -11,10 +11,19 @@ use crate::database::models::Entity;
 use crate::lib::consequence::*;
 
 use crate::database::schema::comments;
-use crate::database::schema::comments::dsl::{self, comments as table} ;
+use crate::database::schema::comments::dsl::{self, comments as table};
 
-
-#[derive(Identifiable, Queryable, AsChangeset, Associations, Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(
+    Identifiable,
+    Queryable,
+    AsChangeset,
+    Associations,
+    Serialize,
+    Deserialize,
+    Clone,
+    Debug,
+    PartialEq,
+)]
 #[table_name = "comments"]
 pub struct CommentEntity {
     pub id: u32,
@@ -31,7 +40,6 @@ pub struct CommentEntity {
     pub score: i32,
 }
 
-
 #[derive(Serialize, Deserialize, Debug, Insertable)]
 #[table_name = "comments"]
 pub struct CommentMinima {
@@ -41,15 +49,17 @@ pub struct CommentMinima {
     pub parent_id: Option<u32>,
 }
 
-
 impl Entity for CommentEntity {
-
     type Minima = CommentMinima;
 
     /* ------------------------------- STATIC ------------------------------ */
 
     fn by_id(conn: &MysqlConnection, id: &u32) -> Consequence<Option<Self>> {
-        table.find(id).first::<CommentEntity>(conn).optional().map(Ok)?
+        table
+            .find(id)
+            .first::<CommentEntity>(conn)
+            .optional()
+            .map(Ok)?
     }
 
     fn all(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
@@ -71,18 +81,17 @@ impl Entity for CommentEntity {
         match &minima.parent_id {
             Some(_id) => filtered
                 .filter(dsl::parent_id.eq(&minima.parent_id))
-                .order(dsl::created_at.desc())            
+                .order(dsl::created_at.desc())
                 .first::<Self>(conn)
                 .optional()
                 .map(Ok)?,
             None => filtered
                 .filter(dsl::parent_id.is_null())
-                .order(dsl::created_at.desc())            
+                .order(dsl::created_at.desc())
                 .first::<Self>(conn)
                 .optional()
-                .map(Ok)?
+                .map(Ok)?,
         }
-
     }
 
     fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {

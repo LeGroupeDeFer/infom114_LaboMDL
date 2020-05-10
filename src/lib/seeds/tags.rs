@@ -3,7 +3,7 @@ use crate::database::models::Entity;
 use diesel::MysqlConnection;
 
 pub fn seed_tags(conn: &MysqlConnection) {
-    let labels = vec!["info", "eco", "droit", "pharma"];
+    let labels = vec!["info", "eco", "droit", "pharma", "hollow"];
 
     for label in labels {
         TagEntity::insert(

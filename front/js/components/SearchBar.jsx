@@ -1,15 +1,54 @@
-import React from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
+import React  from 'react';
+import {Container, Row, Col, ButtonGroup, OverlayTrigger, Tooltip, Button} from 'react-bootstrap';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { faTag, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { useRouteMatch, useHistory } from 'react-router-dom';
 import { components } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
-import {trace} from "unanimity/lib";
+import clsx from 'clsx';
+
+import { useStream } from 'unanimity/context/streamContext';
+import { last, kinds } from 'unanimity/lib';
+
+
+// FilterBar :: Object => Component
+function KindSection({ routeMatch, history }) {
+  const stream = useStream();
+
+  const localOnClick = kind => {
+    stream.kind.set(kind);
+    if (!routeMatch.isExact)
+      history.push(routeMatch.path);
+  }
+
+  return (
+    <ButtonGroup className="kind-section d-flex justify-content-between">
+      {kinds.map((kind) => (
+        <OverlayTrigger
+          key={kind.key}
+          placement="bottom"
+          overlay={<Tooltip id={kind.key}>{kind.label}</Tooltip>}
+        >
+          <Button
+            key={kind.key}
+            className={clsx(
+              'kind-choice',
+              stream.kind.value.key === kind.key && 'active'
+            )}
+            onClick={() => localOnClick(kind)}
+          >
+            <Icon icon={kind.icon} />
+          </Button>
+        </OverlayTrigger>
+      ))}
+    </ButtonGroup>
+  );
+}
+
 
 const DropdownIndicator = (props) => {
   return (
     <components.DropdownIndicator {...props}>
-      <Icon icon={faSearch} />
+      <Icon icon="search" />
     </components.DropdownIndicator>
   );
 };
@@ -26,17 +65,43 @@ export function Option({ icon, label }) {
   );
 }
 
+
+const searchVariant = {
+  kinds: KindSection
+};
+
 // SearchBar :: None => Component
-function SearchBar({ tags, choices, onChange, children }) {
-  const options = tags.map(({ label, id }) => ({
+function SearchBar({ variant }) {
+  const stream = useStream();
+  const routeMatch = useRouteMatch();
+  const history = useHistory();
+
+  const options = stream.tags.available.map(({ label, id }) => ({
     value: label,
-    label: <Option icon={faTag} label={label} />,
+    label: <Option icon="tag" label={label} />,
   }));
 
-  const localOnChange = (options, action) => {
-    if (!['select-option', 'remove-value'].includes(action.action))
-      return;
-    onChange((options || []).map(o => o.value));
+  const LocalVariant = searchVariant[variant];
+
+  const localOnChange = (options, meta) => {
+    // The new option is always the last of react-select values
+    const option = last(options);
+
+    if (meta.action === 'create-option')
+      stream.keywords.add(option.value);
+    else if (meta.action === 'select-option')
+      stream.tags.add(option.value);
+    else if (meta.action === 'remove-value') {
+      const v = meta.removedValue.value;
+      if (stream.tags.value.includes(v))
+        stream.tags.remove(v);
+      else
+        stream.keywords.remove(v);
+    }
+
+    // If we're not at this route root, we redirect to it
+    if (!routeMatch.isExact)
+      history.push(routeMatch.path);
   }
 
   return (
@@ -56,11 +121,17 @@ function SearchBar({ tags, choices, onChange, children }) {
           />
         </Col>
 
-        <Col md={4}>{children}</Col>
+        <Col md={4}>
+          <LocalVariant
+            routeMatch={routeMatch}
+            history={history}
+          />
+        </Col>
       </Row>
     </Container>
   );
 }
+
 
 SearchBar.Option = Option;
 

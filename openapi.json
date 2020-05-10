@@ -1167,6 +1167,74 @@
         ]
       }
     },
+    "/api/post/{post_id}/watch": {
+      "post": {
+        "tags": [
+          "post"
+        ],
+        "summary": "Watch a post, marking it in a special way",
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "path",
+            "description": "Id of the post",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Invalid ID supplied"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User cannot do this"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
+    },
     "/api/post/{post_id}/report": {
       "post": {
         "tags": [
@@ -2575,6 +2643,68 @@
         ]
       }
     },
+    "/api/user/{user_id}/posts": {
+      "get": {
+        "tags": [
+          "post", "user"
+        ],
+        "summary": "Get the posts written by the given user",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "description": "Id of the user",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Post"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Missing capability"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
+    },
     "/api/user/subscriptions": {
       "get": {
         "tags": [
@@ -2833,7 +2963,7 @@
         ]
       }
     },
-    "/api/report/posts": {
+    "/api/report/activity": {
       "get": {
         "tags": [
           "post",
@@ -2849,6 +2979,35 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/PostReport"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
+    },
+    "/api/report/post_reported": {
+      "get": {
+        "tags": [
+          "post",
+          "reporting"
+        ],
+        "summary": "Return the flagged posts & the reason",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PostReportedReport"
                   }
                 }
               }
@@ -3237,6 +3396,9 @@
         "properties": {
           "content": {
             "type": "string"
+          },
+          "watch": {
+            "type": "boolean"
           }
         }
       },
@@ -3267,6 +3429,12 @@
           "score": {
             "type": "integer"
           },
+          "rank": {
+            "type": "number"
+          },
+          "is_watched": {
+            "type": "boolean"
+          },
           "self_vote": {
             "type": "integer"
           },
@@ -3294,6 +3462,9 @@
           },
           "active": {
             "type": "integer"
+          },
+          "connected": {
+            "type": "integer"
           }
         }
       },
@@ -3308,6 +3479,23 @@
           },
           "interaction": {
             "type": "integer"
+          }
+        }
+      },
+      "PostReportedReport": {
+        "type": "object",
+        "properties": {
+          "post": {
+            "$ref": "#/components/schemas/Post"
+          },
+          "count_flag": {
+            "type": "integer"
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },

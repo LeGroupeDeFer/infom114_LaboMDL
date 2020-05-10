@@ -10,26 +10,15 @@ import {
   Spinner,
 } from 'react-bootstrap';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import {
-  faBalanceScale,
-  faInfo,
-  faLightbulb,
-  faPenFancy,
-  faPlusSquare,
-} from '@fortawesome/free-solid-svg-icons';
-import { TiDelete } from 'react-icons/ti';
-import { faTag } from '@fortawesome/free-solid-svg-icons';
-import { useRequest } from '../../hooks';
 import { useHistory } from 'react-router-dom';
-import api from '../../lib/api';
-import AutoForm from '../../components/AutoForm';
-import { Option } from '../../components/SearchBar';
-import { Simple as SimpleError } from '../../components/Error';
+import { AutoForm, Authenticated } from 'unanimity/components';
+import { Option } from 'unanimity/components/SearchBar';
+import { useStream } from 'unanimity/context';
 
 const types = [
-  { value: 'idea', label: Option({ icon: faLightbulb, label: 'Idée' }) },
-  { value: 'info', label: Option({ icon: faInfo, label: 'Information' }) },
-  { value: 'poll', label: Option({ icon: faBalanceScale, label: 'Sondage' }) },
+  { value: 'idea', label: Option({ icon: 'lightbulb', label: 'Idée' }) },
+  { value: 'info', label: Option({ icon: 'info', label: 'Information' }) },
+  { value: 'poll', label: Option({ icon: 'balance-scale', label: 'Sondage' }) },
 ];
 
 // I didn't find another way to add styles to the select
@@ -105,7 +94,7 @@ function PollOptions() {
             {i > 1 && (
               <InputGroup.Append>
                 <Button variant="outline-danger" onClick={(_) => popOption(i)}>
-                  <TiDelete size={20} />
+                  <Icon icon="times-circle" size={20} />
                 </Button>
               </InputGroup.Append>
             )}
@@ -115,7 +104,7 @@ function PollOptions() {
 
       {options.length < 5 && (
         <a href="#" onClick={addOption}>
-          <Icon icon={faPlusSquare} className="mr-1" />
+          <Icon icon="plus-square" className="mr-1" />
           <span>Ajouter une option</span>
         </a>
       )}
@@ -147,34 +136,34 @@ function Submit({ loading }) {
   );
 }
 
-function Writer() {
+const Writer = Authenticated(() => {
   const history = useHistory();
-  const [tagError, data] = useRequest(api.tags, []);
-  const [postError, setPostError] = useState(null);
-  const tags = (data ? data.tags : []).map((tag) => ({
-    id: tag.id,
-    value: tag.label,
-    label: Option({ icon: faTag, label: tag.label }),
-  }));
+  const stream = useStream();
   const [loading, setLoading] = useState(false);
 
   function onSubmit(post) {
     setLoading(true);
-    if (post.type !== 'poll') post.options = [];
-
-    api.posts
-      .add(post)
-      .then((newPost) => history.push(`/detail/${newPost.id}`))
-      .catch((e) => setPostError(e) || setLoading(false));
+    if (post.kind !== 'poll') post.options = [];
+    stream.posts.add(post).then((p) => history.push(`/detail/${p.id}`));
   }
+
+  const tags = stream.tags.available.map((t) => ({
+    value: t.label,
+    label: Option({ label: t.label, icon: 'tag' }),
+  }));
+
+  const kinds = stream.kind.available.map((kind) => ({
+    value: kind.value,
+    label: Option(kind),
+  }));
 
   return (
     <Container className="py-5">
       <Row>
         <Col>
           <h1 className="mb-4 text-dark writer-header">
-            <Icon icon={faPenFancy} className="mr-3" />
-            <span>Créer un post</span>
+            <Icon icon="pen-fancy" className="mr-3" />
+            <span>Écrire une publication</span>
             <hr />
           </h1>
         </Col>
@@ -184,15 +173,13 @@ function Writer() {
         <Col>
           <Card>
             <Card.Body>
-              <SimpleError error={tagError || postError} className="mb-3" />
-
               <AutoForm onSubmit={onSubmit}>
                 <Row>
                   <Col sm={12} md={6} className="pb-3">
                     <AutoForm.Select
                       id="kind"
                       name="kind"
-                      options={types}
+                      options={kinds}
                       styles={customStyles}
                       placeholder="Sélectionner une catégorie"
                     />
@@ -250,7 +237,7 @@ function Writer() {
       </Row>
     </Container>
   );
-}
+});
 
 Writer.defaultProps = {};
 

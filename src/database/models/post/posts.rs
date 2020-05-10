@@ -1,24 +1,26 @@
-use chrono::NaiveDateTime;
-use diesel::expression::functions::date_and_time::now;
+use chrono::{Datelike, Utc};
 use diesel::prelude::*;
 use diesel::MysqlConnection;
 use std::convert::TryFrom;
 
-use crate::database;
-use crate::database::models::post::{RelPostReportEntity, RelPostReportMinima, RelPostVoteMinima};
 use crate::database::models::prelude::*;
 use crate::database::schema::posts::dsl;
 use crate::database::schema::posts_tags::dsl as posts_tags;
 use crate::database::schema::tags::dsl as tags;
+use crate::{database, lib};
 
-use crate::database::tables::{posts_table as table, posts_tags_table, tags_table};
+use crate::database::tables::{
+    posts_reports_table, posts_table as table, posts_tags_table, tags_table,
+};
 use crate::database::SortOrder;
 use crate::lib::{self as conseq, Consequence, EntityError, PostError};
+use std::collections::{HashMap, HashSet};
 
 // TODO - Move this in app state
 const BASE: f64 = 1.414213562;
-const EPOCH: u64 = 1577840400; // 01/01/2020
-const EASING: u64 = 24 * 3600; // 1 day
+const EPOCH: u32 = 1577840400; // 01/01/2020
+const EASING: u32 = 24 * 3600; // 1 day
+const WATCH_BONUS: u32 = 200;
 
 pub enum PostKind {
     Info,
@@ -103,6 +105,7 @@ pub struct Post {
     pub locked: bool,
     pub hidden: bool,
     pub deleted: bool,
+    pub watched: bool,
     pub votes: u64,
     pub score: i64,
     pub rank: f64,
@@ -132,14 +135,30 @@ impl PostEntity {
         conn: &MysqlConnection,
         can_see_hidden: bool,
         tags: Vec<String>,
-        search: Option<String>,
+        keywords: Vec<String>,
         sort: Option<SortOrder>,
         kind: Option<String>, // type
         limit: Option<u32>,
         offset: Option<u32>,
     ) -> Consequence<Vec<Self>> {
         let mut query = table
-            .left_join(posts_tags_table.inner_join(tags_table))
+            .inner_join(posts_tags_table.inner_join(tags_table))
+            .select((
+                dsl::id,
+                dsl::title,
+                dsl::content,
+                dsl::author_id,
+                dsl::created_at,
+                dsl::updated_at,
+                dsl::deleted_at,
+                dsl::hidden_at,
+                dsl::locked_at,
+                dsl::watched_at,
+                dsl::votes,
+                dsl::score,
+                dsl::rank,
+                dsl::kind,
+            ))
             .into_boxed();
 
         // filter out deleted
@@ -151,25 +170,18 @@ impl PostEntity {
         }
 
         // filter on tag
-        if !tags.is_empty() {
-            query = query.filter(tags::label.eq_any(tags));
+        let tags_length = tags.len() as u32;
+        if tags_length > 0 {
+            query = query.filter(tags::label.eq_any(tags))
         }
 
         // filter on the search term given (in title)
-        if let Some(s) = search {
-            query = query.filter(dsl::title.like(format!("%{}%", s)));
-        }
-
-        // order by
-        if let Some(s) = sort {
-            query = match s {
-                SortOrder::New => query.order(dsl::created_at.desc()),
-                SortOrder::Old => query.order(dsl::created_at.asc()),
-                SortOrder::HighScore => query.order(dsl::score.desc()),
-                SortOrder::LowScore => query.order(dsl::score.asc()),
-                SortOrder::HighRank => query.order(dsl::rank.desc()),
-                SortOrder::LowRank => query.order(dsl::rank.asc()),
-            }
+        for keyword in keywords {
+            query = query.filter(
+                dsl::title
+                    .like(format!("%{}%", keyword))
+                    .or(dsl::content.like(format!("%{}%", keyword))),
+            );
         }
 
         let post_kind = kind
@@ -180,24 +192,153 @@ impl PostEntity {
             query = query.filter(dsl::kind.eq(kind_id));
         }
 
-        // limit the results
-        if let Some(l) = limit {
-            query = query.limit(l as i64);
-        }
-
-        // offset the results
-        if let Some(o) = offset {
-            if limit.is_none() {
-                query = query.limit(10_000);
+        // order by
+        let s = sort.unwrap_or(SortOrder::HighRank);
+        query = match s {
+            SortOrder::New => query.order(dsl::created_at.desc()),
+            SortOrder::Old => query.order(dsl::created_at.asc()),
+            SortOrder::HighScore => query.order((dsl::score.desc(), dsl::created_at.desc())),
+            SortOrder::LowScore => query.order((dsl::score.asc(), dsl::created_at.desc())),
+            SortOrder::HighRank => {
+                query.order((dsl::rank.desc(), dsl::score.desc(), dsl::created_at.desc()))
             }
-            query = query.offset(o as i64);
+            SortOrder::LowRank => {
+                query.order((dsl::rank.asc(), dsl::score.asc(), dsl::created_at.desc()))
+            }
+        };
+
+        let results = query.load::<PostEntity>(conn)?;
+
+        Ok(Self::filter_out_tags(results, tags_length, limit, offset))
+    }
+
+    fn filter_out_tags(
+        posts: Vec<Self>,
+        number: u32,
+        limit: Option<u32>,
+        offset: Option<u32>,
+    ) -> Vec<Self> {
+        let mut tab: HashMap<u32, u32> = HashMap::new();
+        let mut check_duplicate: HashSet<u32> = HashSet::new();
+
+        for post in posts.iter() {
+            let e = tab.entry(post.id).or_insert(0);
+            *e += 1;
         }
 
-        Ok(query
-            .load::<(PostEntity, Option<(RelPostTagEntity, TagEntity)>)>(conn)?
+        let filtered_posts = posts
             .into_iter()
-            .map(move |(post_entity, _)| post_entity)
-            .collect::<Vec<Self>>())
+            .filter(|entity| tab[&entity.id] >= number && check_duplicate.insert(entity.id))
+            .collect::<Vec<Self>>();
+
+        let from = match offset {
+            Some(o) => o,
+            None => 0,
+        } as usize;
+
+        let to = filtered_posts.len().min(match limit {
+            Some(l) => from + l as usize,
+            None => filtered_posts.len(),
+        } as usize);
+
+        filtered_posts[from..to].to_vec()
+    }
+
+    pub fn get_report_by_year(
+        conn: &MysqlConnection,
+        year: i32,
+    ) -> Consequence<Vec<ActivityReport>> {
+        struct EasyBoy {
+            pub post: PostEntity,
+            pub comments: Vec<CommentEntity>,
+            pub votes: Vec<RelPostVoteEntity>,
+        }
+
+        let mut tab: HashMap<u32, ActivityReport> = HashMap::new();
+        let months = lib::months();
+        for i in 1..=12 {
+            tab.insert(
+                i,
+                ActivityReport {
+                    month: months[&i].to_string(),
+                    new: 0,
+                    interaction: 0,
+                },
+            );
+        }
+
+        for easy_boy in PostEntity::all(conn)?
+            .into_iter()
+            .map(move |post_entity| -> Consequence<EasyBoy> {
+                let comments = CommentEntity::by_post_id(conn, &post_entity.id, true)?;
+                let votes = RelPostVoteEntity::by_post_id(conn, &post_entity.id)?;
+                Ok(EasyBoy {
+                    post: post_entity,
+                    comments,
+                    votes,
+                })
+            })
+            .filter(|object| object.is_ok())
+            .map(move |object| object.unwrap())
+            .filter(|easy_boy| {
+                easy_boy.post.created_at.year() == year
+                    || easy_boy.post.updated_at.year() == year
+                    || (easy_boy.post.hidden_at.is_some()
+                        && easy_boy.post.hidden_at.unwrap().year() == year)
+                    || (easy_boy.post.locked_at.is_some()
+                        && easy_boy.post.locked_at.unwrap().year() == year)
+                    || easy_boy.comments.iter().any(|comment| {
+                        comment.created_at.year() == year || comment.updated_at.year() == year
+                    })
+                    || easy_boy
+                        .votes
+                        .iter()
+                        .any(|vote| vote.voted_at.year() == year)
+            })
+            .collect::<Vec<EasyBoy>>()
+            .iter()
+        {
+            if easy_boy.post.created_at.year() == year {
+                tab.get_mut(&easy_boy.post.created_at.month())?.new += 1;
+            }
+
+            if easy_boy.post.updated_at.year() == year {
+                tab.get_mut(&easy_boy.post.updated_at.month())?.interaction += 1;
+            }
+
+            if easy_boy.post.hidden_at.is_some() && easy_boy.post.hidden_at.unwrap().year() == year
+            {
+                tab.get_mut(&easy_boy.post.hidden_at.unwrap().month())?
+                    .interaction += 1;
+            }
+
+            if easy_boy.post.locked_at.is_some() && easy_boy.post.locked_at.unwrap().year() == year
+            {
+                tab.get_mut(&easy_boy.post.locked_at.unwrap().month())?
+                    .interaction += 1;
+            }
+
+            for comment in easy_boy.comments.iter() {
+                if comment.created_at.year() == year {
+                    tab.get_mut(&comment.created_at.month())?.interaction += 1;
+                }
+
+                if comment.updated_at.year() == year {
+                    tab.get_mut(&comment.updated_at.month())?.interaction += 1;
+                }
+            }
+
+            for vote in easy_boy.votes.iter() {
+                if vote.voted_at.year() == year {
+                    tab.get_mut(&vote.voted_at.month())?.interaction += 1;
+                }
+            }
+        }
+
+        Ok(tab
+            .into_iter()
+            .map(move |(_, value)| value)
+            .collect::<Vec<ActivityReport>>())
     }
 
     pub fn get_deleted(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
@@ -218,6 +359,12 @@ impl PostEntity {
             .into_iter()
             .map(move |(entity, _)| entity)
             .collect::<Vec<Self>>())
+    }
+
+    pub fn by_author_id(conn: &MysqlConnection, user_id: &u32) -> Consequence<Vec<Self>> {
+        Ok(table
+            .filter(dsl::deleted_at.is_null().and(dsl::author_id.eq(user_id)))
+            .load(conn)?)
     }
 
     /// Delete a post permanently (not used)
@@ -256,6 +403,7 @@ impl PostEntity {
         self.score = self.calculate_score(&conn)?;
         self.votes = self.count_votes(&conn)?;
         self.rank = self.calculate_rank();
+        println!("NEW RANK: {}", self.rank);
 
         // update self
         self.update(&conn)?;
@@ -263,45 +411,51 @@ impl PostEntity {
     }
 
     pub fn calculate_score(&self, conn: &MysqlConnection) -> Consequence<i64> {
-        RelPostVoteEntity::sum_by_post_id(&conn, self.id)
+        RelPostVoteEntity::sum_by_post_id(&conn, &self.id)
     }
 
     pub fn count_votes(&self, conn: &MysqlConnection) -> Consequence<u64> {
-        Ok(RelPostVoteEntity::count_by_post_id(&conn, self.id)? as u64)
+        Ok(RelPostVoteEntity::count_by_post_id(&conn, &self.id)? as u64)
     }
 
     pub fn calculate_rank(&self) -> f64 {
-        let elapsed = self.created_at.timestamp() as u64 - EPOCH;
+        let elapsed = self.created_at.timestamp() as u32 - EPOCH;
         let logarithm = (self.votes as f64).log(BASE);
         let order = logarithm.max(1.0);
-
-        order + (elapsed / EASING) as f64
+        let bonus = self.watched_at.map_or(0, |_| WATCH_BONUS);
+        order + (elapsed / EASING) as f64 + bonus as f64
     }
 
-    pub fn toggle_visibility(&self, conn: &MysqlConnection) -> Consequence<()> {
-        if self.hidden_at.is_some() {
-            diesel::update(self)
-                .set(dsl::hidden_at.eq(None as Option<NaiveDateTime>))
-                .execute(conn)?;
+    pub fn toggle_visibility(&mut self, conn: &MysqlConnection) -> Consequence<()> {
+        self.hidden_at = if self.hidden_at.is_none() {
+            Some(Utc::now().naive_local())
         } else {
-            diesel::update(self)
-                .set(dsl::hidden_at.eq(now))
-                .execute(conn)?;
-        }
-
+            None
+        };
+        self.update(conn)?;
+        println!("HIDDEN {}", self.is_hidden());
         Ok(())
     }
 
-    pub fn toggle_lock(&self, conn: &MysqlConnection) -> Consequence<()> {
-        if self.locked_at.is_some() {
-            diesel::update(self)
-                .set(dsl::locked_at.eq(None as Option<NaiveDateTime>))
-                .execute(conn)?;
+    pub fn toggle_lock(&mut self, conn: &MysqlConnection) -> Consequence<()> {
+        self.locked_at = if self.locked_at.is_none() {
+            Some(Utc::now().naive_local())
         } else {
-            diesel::update(self)
-                .set(dsl::locked_at.eq(now))
-                .execute(conn)?;
-        }
+            None
+        };
+        self.update(conn)?;
+        Ok(())
+    }
+
+    pub fn toggle_watch(&mut self, conn: &MysqlConnection) -> Consequence<()> {
+        if self.watched_at.is_none() {
+            self.watched_at = Some(Utc::now().naive_local());
+        } else {
+            self.watched_at = None;
+        };
+
+        self.rank = self.calculate_rank();
+        self.update(conn)?;
         Ok(())
     }
 
@@ -355,6 +509,42 @@ impl PostEntity {
         }
         Ok(())
     }
+
+    pub fn all_flagged(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
+        Ok(table
+            .inner_join(posts_reports_table)
+            .filter(dsl::deleted_at.is_null())
+            .load::<(Self, RelPostReportEntity)>(conn)?
+            .into_iter()
+            .map(move |(entity, _)| entity)
+            .collect::<Vec<Self>>())
+    }
+
+    pub fn get_flag_report(conn: &MysqlConnection) -> Consequence<Vec<ReportedPost>> {
+        let mut tab: HashMap<u32, ReportedPost> = HashMap::new();
+
+        for (post_entity, rel_report_post_entity) in table
+            .inner_join(posts_reports_table)
+            .filter(dsl::deleted_at.is_null())
+            .load::<(Self, RelPostReportEntity)>(conn)?
+            .iter()
+        {
+            let post_report = tab.entry(post_entity.id).or_insert(ReportedPost {
+                post: Post::from(post_entity.clone()),
+                count_flag: 0,
+                reasons: vec![],
+            });
+            post_report.count_flag += 1;
+            if let Some(value) = &rel_report_post_entity.reason {
+                post_report.reasons.push(value.to_string());
+            }
+        }
+
+        Ok(tab
+            .into_iter()
+            .map(move |(_, entity)| entity)
+            .collect::<Vec<ReportedPost>>())
+    }
 }
 
 impl Post {
@@ -362,7 +552,7 @@ impl Post {
         conn: &MysqlConnection,
         can_see_hidden: bool,
         tags: Vec<String>,
-        search: Option<String>,
+        keywords: Vec<String>,
         sort: Option<SortOrder>,
         kind: Option<String>, // type
         limit: Option<u32>,
@@ -372,7 +562,7 @@ impl Post {
             conn,
             can_see_hidden,
             tags,
-            search,
+            keywords,
             sort,
             kind,
             limit,
@@ -436,6 +626,7 @@ impl From<PostEntity> for Post {
             locked: pe.locked_at.is_some(),
             hidden: pe.hidden_at.is_some(),
             deleted: pe.deleted_at.is_some(),
+            watched: pe.watched_at.is_some(),
             votes: pe.votes,
             score: pe.score,
             rank: pe.rank,
@@ -457,5 +648,11 @@ impl From<PostEntity> for Post {
             user_vote: None,
             user_flag: None,
         }
+    }
+}
+
+impl PartialEq for Post {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
     }
 }

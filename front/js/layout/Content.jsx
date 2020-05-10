@@ -1,16 +1,11 @@
-import React, { useRef, useState, useEffect, lazy, Suspense } from 'react';
+import 'unanimity/lib/icons'; // Preload the icon lib
+
+import React, { lazy, Suspense } from 'react';
 import { Route, Switch, useLocation } from 'react-router-dom';
-import {
-  faUserCircle,
-  faCogs,
-  faInfoCircle,
-  faStream,
-  faBell,
-  faPencilAlt,
-} from '@fortawesome/free-solid-svg-icons';
+import { Loading } from 'unanimity/components';
 import Sidebar from './Sidebar';
 import layout from '../lib/layout';
-import { useAuth } from '../context/authContext';
+import {StreamProvider, useAuth} from '../context';
 
 const Stream = lazy(() => import('../pages/Stream/index'));
 const Profile = lazy(() => import('../pages/Profile'));
@@ -25,13 +20,13 @@ const AuthenticatedAdmin = lazy(() => import('../pages/Admin'));
 const Recover = lazy(() => import('../pages/Recover'));
 const Restore = lazy(() => import('../pages/Restore'));
 
-// Content :: Object => Component
+
 const Content = (_) => {
   const location = useLocation();
-  const { user } = useAuth();
-
+  const { user, token } = useAuth();
+ 
   const layoutStyle = layout.layout(`/${location.pathname.split('/')[1]}`);
-  const links = layout.links(user);
+  const links = layout.links(user, token);
 
   return (
     <>
@@ -40,7 +35,7 @@ const Content = (_) => {
       <div className={`offset ${layoutStyle}`}>
         <main role="main">
           <div className="content">
-            <Suspense fallback={<h1>Loading...</h1>}>
+            <Suspense fallback={<Loading />}>
               <Switch>
                 <Route path="/profile">
                   <Profile />
@@ -87,7 +82,9 @@ const Content = (_) => {
                 </Route>
 
                 <Route path="/">
-                  <Stream />
+                  <StreamProvider>
+                    <Stream />
+                  </StreamProvider>
                 </Route>
               </Switch>
             </Suspense>

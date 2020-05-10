@@ -23,10 +23,11 @@ pub fn collect() -> Vec<rocket::Route> {
         updown_vote,
         toggle_visibility,
         toggle_lock,
+        watch_post,
         manage_post_report,
         get_poll_post_authenticated,
         get_poll_post,
-        vote_poll_post
+        vote_poll_post,
     )
 }
 
@@ -49,7 +50,7 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult
     let post_kind = PostKind::try_from((&post_request).kind.clone())?;
     let new_post = PostMinima {
         title: post_request.title,
-        content: post_request.content,
+        content: post_request.content.unwrap_or("".into()),
         author_id: auth.sub,
         kind: (&post_kind).into(),
     };
@@ -90,21 +91,21 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult
 
 // typo on tape is intentional : `type` is a rust reserved keyword
 #[get(
-    "/api/v1/posts?<tags>&<search>&<sort>&<kind>&<limit>&<offset>",
+    "/api/v1/posts?<tags>&<keywords>&<order>&<kind>&<limit>&<offset>",
     rank = 1
 )]
 fn get_all_posts_authenticated(
     conn: DBConnection,
     auth: ForwardAuth,
     tags: StringVector,
-    search: Option<String>,
-    sort: Option<String>,
-    kind: Option<String>, // type
+    keywords: StringVector,
+    order: Option<String>,
+    kind: Option<String>,
     limit: Option<u32>,
     offset: Option<u32>,
 ) -> ApiResult<Vec<Post>> {
     let mut sort_order: Option<SortOrder> = None;
-    if let Some(value) = sort {
+    if let Some(value) = order {
         sort_order = Some(SortOrder::try_from(value.as_ref())?)
     }
 
@@ -112,7 +113,7 @@ fn get_all_posts_authenticated(
         &*conn,
         auth.deref().has_capability(&*conn, "post:view_hidden"),
         (*tags).clone(),
-        search,
+        (*keywords).clone(),
         sort_order,
         kind,
         limit,
@@ -128,27 +129,27 @@ fn get_all_posts_authenticated(
 }
 
 #[get(
-    "/api/v1/posts?<tags>&<search>&<sort>&<kind>&<limit>&<offset>",
+    "/api/v1/posts?<tags>&<keywords>&<order>&<kind>&<limit>&<offset>",
     rank = 2
 )]
 fn get_all_posts(
     conn: DBConnection,
     tags: StringVector,
-    search: Option<String>,
-    sort: Option<String>,
+    keywords: StringVector,
+    order: Option<String>,
     kind: Option<String>, // type
     limit: Option<u32>,
     offset: Option<u32>,
 ) -> ApiResult<Vec<Post>> {
     let mut sort_order: Option<SortOrder> = None;
-    if let Some(value) = sort {
+    if let Some(value) = order {
         sort_order = Some(SortOrder::try_from(value.as_ref())?)
     }
     Ok(Json(Post::all(
         &*conn,
         false,
         (*tags).clone(),
-        search,
+        (*keywords).clone(),
         sort_order,
         kind,
         limit,
@@ -228,13 +229,13 @@ fn update_post(
     }
 
     // prevent empty title & empty content
-    if a_post.title == "" || a_post.content == "" {
+    if a_post.title == "" {
         Err(EntityError::InvalidAttribute)?;
     }
 
     let mut post = post_guard.post_clone();
     post.title = a_post.title;
-    post.content = a_post.content;
+    post.content = a_post.content.unwrap_or("".into());
 
     post.update(&*conn)?;
 
@@ -275,7 +276,7 @@ fn toggle_visibility(
     auth: Auth,
     post_guard: PostGuard,
     _post_id: u32,
-) -> ApiResult<()> {
+) -> ApiResult<Post> {
     if post_guard.post().is_deleted() {
         Err(EntityError::InvalidID)?;
     } else if post_guard.post().is_locked() && !auth.has_capability(&*conn, "post:edit_locked") {
@@ -283,9 +284,12 @@ fn toggle_visibility(
     }
     auth.check_capability(&*conn, "post:hide")?;
 
-    post_guard.post().toggle_visibility(&*conn)?;
+    let mut post = post_guard.post_clone();
+    post.toggle_visibility(&*conn)?;
 
-    ok()
+    let mut p = Post::from(post);
+    p.set_user_info(&*conn, &auth.sub);
+    Ok(Json(p))
 }
 
 #[post("/api/v1/post/<_post_id>/lock")]
@@ -294,7 +298,7 @@ fn toggle_lock(
     auth: Auth,
     post_guard: PostGuard,
     _post_id: u32,
-) -> ApiResult<()> {
+) -> ApiResult<Post> {
     if post_guard.post().is_deleted() {
         Err(EntityError::InvalidID)?;
     } else if post_guard.post().is_hidden() && !auth.has_capability(&*conn, "post:view_hidden") {
@@ -302,9 +306,12 @@ fn toggle_lock(
     }
     auth.check_capability(&*conn, "post:lock")?;
 
-    post_guard.post().toggle_lock(&*conn)?;
+    let mut post = post_guard.post_clone();
+    post.toggle_lock(&*conn)?;
 
-    ok()
+    let mut p = Post::from(post);
+    p.set_user_info(&*conn, &auth.sub);
+    Ok(Json(p))
 }
 
 #[post("/api/v1/post/<_post_id>/report", format = "json", data = "<data>")]
@@ -314,7 +321,7 @@ fn manage_post_report(
     post_guard: PostGuard,
     _post_id: u32,
     data: Option<Json<ReportData>>,
-) -> ApiResult<()> {
+) -> ApiResult<Post> {
     if post_guard.post().is_deleted() {
         Err(EntityError::InvalidID)?;
     } else if false
@@ -324,20 +331,44 @@ fn manage_post_report(
         Err(AuthError::MissingCapability)?;
     }
 
+    let post = post_guard.post_clone();
     match data {
         Some(json_data) => {
             let report_data = json_data.into_inner();
-
-            post_guard
-                .post()
-                .report(&*conn, &auth.sub, report_data.reason)?;
+            post.report(&*conn, &auth.sub, report_data.reason)?;
         }
         None => {
-            post_guard.post().remove_report(&*conn, &auth.sub)?;
+            post.remove_report(&*conn, &auth.sub)?;
         }
     }
 
-    ok()
+    let mut p = Post::from(post);
+    p.set_user_info(&*conn, &auth.sub);
+    Ok(Json(p))
+}
+
+#[post("/api/v1/post/<_post_id>/watch")]
+fn watch_post(
+    conn: DBConnection,
+    auth: Auth,
+    post_guard: PostGuard,
+    _post_id: u32,
+) -> ApiResult<Post> {
+    if post_guard.post().is_deleted() {
+        Err(EntityError::InvalidID)?;
+    } else if false
+        || (post_guard.post().is_locked() && !auth.has_capability(&*conn, "post:edit_locked"))
+        || (post_guard.post().is_hidden() && !auth.has_capability(&*conn, "post:view_hidden"))
+    {
+        Err(AuthError::MissingCapability)?;
+    }
+
+    let mut post = post_guard.post_clone();
+    post.toggle_watch(&*conn)?;
+
+    let mut p = Post::from(post);
+    p.set_user_info(&*conn, &auth.sub);
+    Ok(Json(p))
 }
 
 #[get("/api/v1/post/<_post_id>/poll", rank = 1)]

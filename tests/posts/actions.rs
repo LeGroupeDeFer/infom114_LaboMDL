@@ -322,16 +322,20 @@ fn hide_a_post() {
     assert!(!tmp_post.hidden);
 
     // hide post
-    let r1 = toggle_visibility(&client, auth_token.clone(), &post.id);
+    let mut r1 = toggle_visibility(&client, auth_token.clone(), &post.id);
     assert_eq!(r1.status(), Status::Ok);
+    let response_body: Post = serde_json::from_str(&*r1.body_string().unwrap()).unwrap();
+    assert!(response_body.hidden);
 
     // assert post is hidden
     tmp_post = get_post(&client, auth_token.clone(), &post.id);
     assert!(tmp_post.hidden);
 
     // unhide post
-    let r2 = toggle_visibility(&client, auth_token.clone(), &post.id);
+    let mut r2 = toggle_visibility(&client, auth_token.clone(), &post.id);
     assert_eq!(r2.status(), Status::Ok);
+    let response_body: Post = serde_json::from_str(&*r2.body_string().unwrap()).unwrap();
+    assert!(!response_body.hidden);
 
     // assert post is not hidden anymore
     tmp_post = get_post(&client, auth_token.clone(), &post.id);

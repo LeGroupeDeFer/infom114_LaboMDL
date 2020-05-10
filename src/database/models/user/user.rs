@@ -1,5 +1,5 @@
 use diesel::prelude::*;
-use diesel::{sql_query, MysqlConnection};
+use diesel::MysqlConnection;
 use regex::Regex;
 
 use crate::database::models::prelude::*;
@@ -15,7 +15,6 @@ use crate::database;
 use crate::lib::consequence::*;
 use chrono::NaiveDateTime;
 use diesel::dsl::count;
-use diesel::expression::functions::date_and_time::now;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct User {
@@ -87,12 +86,11 @@ impl UserEntity {
     pub fn count_connected(conn: &MysqlConnection) -> Consequence<u64> {
         let close_to_now: NaiveDateTime =
             chrono::offset::Local::now().naive_local() - chrono::Duration::minutes(15);
-        table
-            .select(count(dsl::id))
-            .filter(dsl::last_connection.ge(close_to_now))
-            .first::<i64>(conn)
-            .map(|c: i64| c as u64)
-            .map(Ok)?
+
+        Ok(UserEntity::all(conn)?
+            .iter()
+            .filter(|&user| user.last_connection >= close_to_now)
+            .count() as u64)
     }
 
     /* --------------------------------------- DYNAMIC ---------------------------------------- */

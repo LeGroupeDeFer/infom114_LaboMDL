@@ -17,7 +17,7 @@
 
 #preview-modal .modal-header {
   border-bottom: none;
-  padding: 0.5rem 1rem 0rem 1rem;
+  padding: 0.5rem 1rem 0 1rem;
 }
 
 .modal-body {
@@ -32,6 +32,13 @@
   width: 100%;
 }
 
-#sort-post {
+.btn-write-post, .btn-order-post {
+  box-shadow: rgba(0, 0, 0, 0.05) 0 0 10px;
+}
+
+.btn-order-post > button {
+  height: 100%;
+}
+.btn-order-post > button::after {
   color: white;
 }

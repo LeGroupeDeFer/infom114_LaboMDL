@@ -2,6 +2,13 @@
 
 Summary of implemented features classified by release (github tag)
 
+## [0.4.1] - 2020-05-09
+
+- fix bug duplicate post in read_all
+- update reporting route for posts (now /report/activity)
+- add WATCH functionality : allow administrators to mark a post as a watched one
+- add specifications for posts reporting (list of all flagged by user posts)
+
 ## [0.4.0] - 2020-05-06
 
 - implement "poll" posts management
