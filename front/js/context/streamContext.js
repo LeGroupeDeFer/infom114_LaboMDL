@@ -173,7 +173,7 @@ export function StreamProvider({ children }) {
       value: [],
       add(tag) {
         if (this.value.includes(tag)) return;
-        const tags = [...state.tags.value, tag];
+        const tags = [...this.value, tag];
         setState((s) => ({ ...s, tags: { ...s.tags, value: tags } }));
       },
       remove(tag) {
@@ -190,8 +190,7 @@ export function StreamProvider({ children }) {
     keywords: {
       value: [],
       add(kw) {
-        if (this.value.includes(kw)) return;
-        const keywords = [...state.keywords.value, kw];
+        const keywords = [...this.value, trace(kw)];
         setState((s) => ({
           ...s,
           keywords: { ...s.keywords, value: keywords },
