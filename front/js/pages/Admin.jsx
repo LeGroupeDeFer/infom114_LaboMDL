@@ -44,17 +44,17 @@ import 'regenerator-runtime';
 import clsx from 'clsx';
 
 function Admin(props) {
-  const menuList = ['Tags', 'Roles', 'Users', 'Flagged Posts', 'Statistics'];
+  const menuList = ['Tags', 'Roles', 'Utilisateurs', 'Publications signalées', 'Statistiques'];
   const [currentMenu, setCurrentMenu] = useState('Tags');
 
   const Page = () => {
     if (currentMenu === 'Tags') {
       return <TagsPage />;
-    } else if (currentMenu === 'Users') {
+    } else if (currentMenu === 'Utilisateurs') {
       return <UsersPage />;
-    } else if (currentMenu === 'Statistics') {
+    } else if (currentMenu === 'Statistiques') {
       return <StatisticsPage />;
-    } else if (currentMenu === 'Flagged Posts') {
+    } else if (currentMenu === 'Publications signalées') {
       return <FlaggedPage />;
     } else {
       return <RolesPage />;
@@ -337,7 +337,7 @@ const StatisticsPage = () => {
             <Card style={{ padding: '1rem' }}>
               <Card.Title>Tags et leur utilisation</Card.Title>
               <Card.Subtitle className="mb-2 text-muted">
-                Montre le nombre de citation par tag ainsi que le type de post
+                Montre le nombre de citations par tag ainsi que le type de publication
                 associé
               </Card.Subtitle>
               <ResponsiveContainer height={300}>
@@ -379,9 +379,9 @@ const StatisticsPage = () => {
 
           <Col md={12}>
             <Card style={{ padding: '1rem' }}>
-              <Card.Title>Postes créés sur l'année</Card.Title>
+              <Card.Title>Publications créées sur l'année</Card.Title>
               <Card.Subtitle className="mb-2 text-muted">
-                Nombre de nouveaux postes depuis le début de l'année, ainsi que
+                Nombre de nouvelles publications depuis le début de l'année, ainsi que
                 l'interaction liée
               </Card.Subtitle>
               <ResponsiveContainer height={250}>
@@ -426,7 +426,7 @@ const FlaggedPage = () => {
     <>
       <Title
         icon={<Icon icon="flag" />}
-        description="Gestion des posts signalés"
+        description="Gestion des publications signalées"
       />
       <Container>
         {flaggedPosts.length !== 0 ? (
@@ -447,7 +447,7 @@ const FlaggedPage = () => {
             );
           })
         ) : (
-          <b>Pas de postes signalés</b>
+          <b>Pas de publications signalées</b>
         )}
       </Container>
     </>
