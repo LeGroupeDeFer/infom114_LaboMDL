@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context';
 
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
@@ -187,6 +188,9 @@ const UsersPage = () => {
 };
 
 const StatisticsPage = () => {
+
+  const {user} = useAuth();
+
   const colors = ['#A0C55F', '#0D6759', '#1B4079', '#FC440F'];
   const [graphData, setGraphData] = useState({
     connect: [],
@@ -231,6 +235,8 @@ const StatisticsPage = () => {
     // Fetching Data
     //User data
     let usersData = await api.users.report();
+    console.log(usersData);
+    console.log(user);
     //Tags data
     let tagsData = await api.tags.report();
     let max = tagsData.map((tag) => {
