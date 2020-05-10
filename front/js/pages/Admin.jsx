@@ -237,8 +237,27 @@ const StatisticsPage = () => {
     setFullMark([0, Math.ceil(max / 10) * 10]); //Setting the ladder
     //Posts data
     let postsData = await api.posts.report();
+    const months = ["Janvier", 
+      "Février", 
+      "Mars", 
+      "Avril", 
+      "Mai", 
+      "Juin", 
+      "Juillet", 
+      "Août", 
+      "Septembre", 
+      "Octobre", 
+      "Novembre", 
+      "Décembre"];
+    postsData.forEach(post => {
+      months.forEach((month, index) => {
+        if (post.month === month) {
+          post.id = index + 1;
+        }
+      });  
+    });
 
-    //Transorming data if required
+    //Transorming data structure if required
     let connect = [
       {
         name: 'Connecté',
@@ -260,9 +279,7 @@ const StatisticsPage = () => {
       },
     ];
     let tag = tagsData;
-    //FIXME - sorting month from January through December
-    //let months = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Aout", "Septembre", "Octobre", "Novembre", "Décembre"]
-    let post = postsData
+    let post = postsData.slice().sort((a,b) => {return a.id - b.id});
     return { connect, active, tag, post };
   };
 
