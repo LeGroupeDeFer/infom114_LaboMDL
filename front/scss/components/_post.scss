@@ -20,7 +20,7 @@
 .vote {
     padding: 0 0 0 0;
     border: none;
-    background-color: transparent !important;
+    background-color: transparent;
 
     &:disabled {
         cursor: not-allowed;
@@ -30,14 +30,17 @@
     &.up:focus,
     &.up.active {
         color: theme-color("primary") !important;
-        ;
+        background-color: #e8e8e8 !important;
+        box-shadow: none !important;
+
     }
 
     &.down:hover,
     &.down:focus,
     &.down.active {
         color: theme-color("danger") !important;
-        ;
+        background-color: #e8e8e8 !important;
+        box-shadow: none !important;
     }
 }
 
@@ -172,6 +175,10 @@
             border: none;
         }
     }
+}
+
+.fa-comment-alt {
+    vertical-align: -0.3em;
 }
 
 .tag {

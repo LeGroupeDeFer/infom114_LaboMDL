@@ -102,7 +102,9 @@ export function PostContent({ isPreview, post, onComment, onPollVote }) {
   if (isPreview)
     return (
       <div className="post-preview expand-preview">
-        <p className="pr-1 expand-preview">{preview(post.content, previewLength)}</p>
+        <p className="pr-1 expand-preview">
+          {preview(post.content, previewLength)}
+        </p>
         <Link to={`/detail/${post.id}`}>Lire la suite</Link>
       </div>
     );
@@ -199,8 +201,7 @@ export function Post({
 
                 <span className="text-muted title-part2">
                   <a href="#" className="text-dark mx-1">
-                    <span>{author.firstname}</span>
-                    <span className="ml-1">{author.lastname}</span>
+                    {author.firstname} {' ' + author.lastname}
                   </a>
                   <span>-</span>
                   <Moment date={createdAt} />
@@ -284,7 +285,7 @@ export function Post({
                 className="post-footer-btn mx-2 d-flex align-items-center"
                 href="#"
               >
-                <Icon icon="comment-alt" size="1.25em" className="mr-1" />
+                <Icon icon={faCommentAlt} size="1x" className="mr-1" />
                 <span className="text-muted">
                   {comments.length}
                   {` commentaire${comments.length > 1 ? 's' : ''}`}
@@ -295,8 +296,8 @@ export function Post({
                 url={`https://unanimity.be/detail/${id}`}
                 quote={`${title}  - ${author.firstname} ${author.lastname}`}
               >
-                <a className="post-footer-btn mx-2 d-flex align-items-center" href="#">
-                  <FacebookSquare height="1.2rem" className="mr-1 fb-icon" />
+                <a className="post-footer-btn mr-2" href="#">
+                  <FacebookSquare height="18" className="mr-1 fb-icon" />
                   <span className="text-muted">Partager</span>
                 </a>
               </FacebookShareButton>
