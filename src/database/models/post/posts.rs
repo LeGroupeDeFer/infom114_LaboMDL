@@ -1,13 +1,15 @@
-use chrono::Utc;
+use chrono::{Datelike, Utc};
 use diesel::prelude::*;
 use diesel::MysqlConnection;
 use std::convert::TryFrom;
 
-use crate::database;
 use crate::database::models::prelude::*;
 use crate::database::schema::posts::dsl;
 use crate::database::schema::posts_tags::dsl as posts_tags;
 use crate::database::schema::tags::dsl as tags;
+use crate::{database, lib};
+
+use std::iter::FilterMap;
 
 use crate::database::tables::{
     posts_reports_table, posts_table as table, posts_tags_table, tags_table,
@@ -223,6 +225,103 @@ impl PostEntity {
         Ok(results)
     }
 
+    pub fn get_report_by_year(
+        conn: &MysqlConnection,
+        year: i32,
+    ) -> Consequence<Vec<ActivityReport>> {
+        struct EasyBoy {
+            pub post: PostEntity,
+            pub comments: Vec<CommentEntity>,
+            pub votes: Vec<RelPostVoteEntity>,
+        }
+
+        let mut tab: HashMap<u32, ActivityReport> = HashMap::new();
+        let months = lib::months();
+        for i in 1..=12 {
+            tab.insert(
+                i,
+                ActivityReport {
+                    month: months[&i].to_string(),
+                    new: 0,
+                    interaction: 0,
+                },
+            );
+        }
+
+        for easy_boy in PostEntity::all(conn)?
+            .into_iter()
+            .map(move |post_entity| -> Consequence<EasyBoy> {
+                let comments = CommentEntity::by_post_id(conn, &post_entity.id, true)?;
+                let votes = RelPostVoteEntity::by_post_id(conn, &post_entity.id)?;
+                Ok(EasyBoy {
+                    post: post_entity,
+                    comments,
+                    votes,
+                })
+            })
+            .filter(|object| object.is_ok())
+            .map(move |object| object.unwrap())
+            .filter(|easy_boy| {
+                easy_boy.post.created_at.year() == year
+                    || easy_boy.post.updated_at.year() == year
+                    || (easy_boy.post.hidden_at.is_some()
+                        && easy_boy.post.hidden_at.unwrap().year() == year)
+                    || (easy_boy.post.locked_at.is_some()
+                        && easy_boy.post.locked_at.unwrap().year() == year)
+                    || easy_boy.comments.iter().any(|comment| {
+                        comment.created_at.year() == year || comment.updated_at.year() == year
+                    })
+                    || easy_boy
+                        .votes
+                        .iter()
+                        .any(|vote| vote.voted_at.year() == year)
+            })
+            .collect::<Vec<EasyBoy>>()
+            .iter()
+        {
+            if easy_boy.post.created_at.year() == year {
+                tab.get_mut(&easy_boy.post.created_at.month())?.new += 1;
+            }
+
+            if easy_boy.post.updated_at.year() == year {
+                tab.get_mut(&easy_boy.post.updated_at.month())?.interaction += 1;
+            }
+
+            if easy_boy.post.hidden_at.is_some() && easy_boy.post.hidden_at.unwrap().year() == year
+            {
+                tab.get_mut(&easy_boy.post.hidden_at.unwrap().month())?
+                    .interaction += 1;
+            }
+
+            if easy_boy.post.locked_at.is_some() && easy_boy.post.locked_at.unwrap().year() == year
+            {
+                tab.get_mut(&easy_boy.post.locked_at.unwrap().month())?
+                    .interaction += 1;
+            }
+
+            for comment in easy_boy.comments.iter() {
+                if comment.created_at.year() == year {
+                    tab.get_mut(&comment.created_at.month())?.interaction += 1;
+                }
+
+                if comment.updated_at.year() == year {
+                    tab.get_mut(&comment.updated_at.month())?.interaction += 1;
+                }
+            }
+
+            for vote in easy_boy.votes.iter() {
+                if vote.voted_at.year() == year {
+                    tab.get_mut(&vote.voted_at.month())?.interaction += 1;
+                }
+            }
+        }
+
+        Ok(tab
+            .into_iter()
+            .map(move |(_, value)| value)
+            .collect::<Vec<ActivityReport>>())
+    }
+
     pub fn get_deleted(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
         Ok(table.filter(dsl::deleted_at.is_not_null()).load(conn)?)
     }
@@ -287,11 +386,11 @@ impl PostEntity {
     }
 
     pub fn calculate_score(&self, conn: &MysqlConnection) -> Consequence<i64> {
-        RelPostVoteEntity::sum_by_post_id(&conn, self.id)
+        RelPostVoteEntity::sum_by_post_id(&conn, &self.id)
     }
 
     pub fn count_votes(&self, conn: &MysqlConnection) -> Consequence<u64> {
-        Ok(RelPostVoteEntity::count_by_post_id(&conn, self.id)? as u64)
+        Ok(RelPostVoteEntity::count_by_post_id(&conn, &self.id)? as u64)
     }
 
     pub fn calculate_rank(&self) -> f64 {

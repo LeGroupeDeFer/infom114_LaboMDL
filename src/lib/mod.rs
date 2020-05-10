@@ -1,9 +1,9 @@
+pub mod consequence;
 pub mod mail;
 pub mod seeds;
-pub mod consequence;
+use std::collections::HashMap;
 
 pub use consequence::*;
-
 
 pub fn lorem_ipsum() -> String {
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed mollis neque a magna sollicitudin laoreet.\
@@ -22,4 +22,27 @@ pub fn lorem_ipsum() -> String {
      Pellentesque in risus et augue tincidunt pharetra.\
      Maecenas fringilla, urna ut cursus congue, lacus urna commodo urna, eu pharetra dolor metus vel magna."
         .to_string()
+}
+
+pub fn months() -> HashMap<u32, String> {
+    vec![
+        "Janvier",
+        "Février",
+        "Mars",
+        "Avril",
+        "Mai",
+        "Juin",
+        "Juillet",
+        "Août",
+        "Septembre",
+        "Octobre",
+        "Novembre",
+        "Décembre",
+    ]
+    .into_iter()
+    .map(move |m| m.to_string())
+    .enumerate()
+    .into_iter()
+    .map(|(i, month)| ((i + 1) as u32, month))
+    .collect()
 }
