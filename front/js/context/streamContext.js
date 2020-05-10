@@ -9,7 +9,9 @@ import {
   printerr,
   trace,
 } from 'unanimity/lib';
-import { isEqual, remove, without } from 'lodash';
+import isEqual from 'lodash/isEqual';
+import remove from 'lodash/remove';
+import without from 'lodash/without';
 import { clean } from '../lib';
 
 export const PostsChange = 0b00000001;

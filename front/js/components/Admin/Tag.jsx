@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from '../../lib/api';
+import { prevent } from '../../lib';
 
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
@@ -46,6 +47,8 @@ const Tag = ({ name, deleteTag, setNotification, tags, setTags }) => {
         console.log(error);
       });
   };
+
+  // e => e.preventDefault() || setModalShow(true)
 
   return (
     <>

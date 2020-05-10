@@ -168,7 +168,10 @@ const UsersPage = () => {
   return (
     <>
       <Notification />
-      <Title icon={<FaUsers />} description="Gestion des utilisateurs" />
+      <Title
+        icon={<Icon icon={faUsers} />}
+        description="Gestion des utilisateurs"
+      />
       {users.length ? (
         users.map((user) => {
           return (
@@ -286,7 +289,10 @@ const StatisticsPage = () => {
   return (
     <>
       <Notification />
-      <Title icon={<FaChartLine />} description="Statistiques globales" />
+      <Title
+        icon={<Icon icon={faChartLine} />}
+        description="Statistiques globales"
+      />
       <Container>
         <Row>
           <Col md={4}>
@@ -421,7 +427,10 @@ const FlaggedPage = () => {
 
   return (
     <>
-      <Title icon={<FaFlag />} description="Gestion des posts signalés" />
+      <Title
+        icon={<Icon icon={faFlag} />}
+        description="Gestion des posts signalés"
+      />
       <Container>
         {flaggedPosts.length !== 0 ? (
           flaggedPosts.map((flaggedPost) => {
@@ -539,7 +548,10 @@ const RolesPage = () => {
   return (
     <>
       <Notification />
-      <Title icon={<FaClipboardCheck />} description="Gestion des roles" />
+      <Title
+        icon={<Icon icon={faClipboardCheck} />}
+        description="Gestion des rôles"
+      />
 
       <AddForm add={addRole} />
       <br />
@@ -668,7 +680,7 @@ const TagsPage = () => {
   return (
     <>
       <Notification />
-      <Title icon={<FaTags />} description="Gestion des tags" />
+      <Title icon={<Icon icon={faTags} />} description="Gestion des tags" />
 
       <AddForm add={addTag} />
       <br />

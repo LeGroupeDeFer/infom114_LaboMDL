@@ -217,6 +217,16 @@ function delay(fn, ms = 250) {
 }
 
 /**
+ * Prevent default comportement from happening when using <a> tag with href='#'
+ * @memberof lib
+ * 
+ * @param { event } e 
+ * @param { function } fn 
+ */
+const prevent = (e, fn) => e.preventDefault() || e.stopPropagation() || fn();
+
+
+/**
  * @memberof lib.delay
  */
 delay.lazy = (fn, ms = 250) => lazy(() => delay(fn, ms));
@@ -343,6 +353,7 @@ export {
 
   debounce,
   delay,
+  prevent,
 
   recurse,
   camel,

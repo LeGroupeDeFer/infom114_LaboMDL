@@ -17,7 +17,6 @@ import {
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
 import MdSort from '../../icons/sort.svg';
-// import { MdSort } from 'react-icons/md';
 import { useStream } from 'unanimity/context/streamContext';
 import { ORDER } from 'unanimity/lib';
 import Post from 'unanimity/components/Post';
@@ -47,7 +46,7 @@ function InnerStream({
   return (
     <div className="stream-content">
       {stream.posts.value.map((post) => (
-        <Row key={post.id} className="mb-4">
+        <Row key={post.id} className="mb-4 post-row">
           <Col>
             <Post
               isPreview
