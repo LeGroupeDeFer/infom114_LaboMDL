@@ -42,9 +42,11 @@ import {
 import api from '../lib/api';
 import 'regenerator-runtime';
 import clsx from 'clsx';
+import { May } from '../components/Auth';
 
 
-function AdminPage() {
+
+function Admin() {
   const menuList = ['Tags', 'Roles', 'Utilisateurs', 'Publications signalées', 'Statistiques'];
   const [currentMenu, setCurrentMenu] = useState('Tags');
 
@@ -703,6 +705,19 @@ const TagsPage = () => {
   );
 };
 
-const AuthenticatedAdmin = Authenticated(Admin);
+//Show an error if the user does not have the capability
+const checkAuthorisation = () => {
+
+  let unauthorised = () => { 
+
+    return (
+    <span><b>Vous n'avez pas la possibilité de consulter cette page</b>
+    <br/><a href="/">Revenir à l'accueil</a></span>
+    )
+  }
+  return May('admin:access', Admin, unauthorised)();
+}
+
+const AuthenticatedAdmin = Authenticated(checkAuthorisation);
 
 export default AuthenticatedAdmin;
