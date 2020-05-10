@@ -163,7 +163,7 @@ const Writer = Authenticated(() => {
         <Col>
           <h1 className="mb-4 text-dark writer-header">
             <Icon icon="pen-fancy" className="mr-3" />
-            <span>Créer un post</span>
+            <span>Écrire une publication</span>
             <hr />
           </h1>
         </Col>

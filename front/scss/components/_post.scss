@@ -109,47 +109,53 @@
 
     position: relative;
 
-    &:hover {
-        &.preview {
-            border-color: theme-color("primary");
+    // Preview
+
+    &.post-preview {
+
+        box-shadow: rgba(0, 0, 0, 0.05) 0 0 10px;
+        transition: .1s ease-out;
+
+        &:hover {
+            border-color: theme-color("primary") !important;
             cursor: pointer;
+            transition: .2s ease-out;
         }
 
-        .more {
-            visibility: visible;
+        &.post-hidden {
+            filter: brightness(90%);
+            opacity: .7;
+            transition: filter .2s;
         }
-    }
 
-    &.post-preview.post-hidden {
-        filter: brightness(90%);
-        opacity: .7;
-        transition: filter .2s;
-    }
-
-    &.post-preview.post-watched {
-        .post-header {
-            border-color: theme-color("secondary");
+        &.post-watched {
+            .post-header {
+                border-color: theme-color("secondary");
+            }
         }
     }
 
-    .more.show {
-        visibility: visible;
-    }
+    // More
 
     .more {
         visibility: hidden;
+
+        .dropdown-toggle {
+            padding: 0 0 0 0;
+        }
+
+        .dropdown-toggle:after {
+            content: none
+        }
+
     }
 
-    .more .dropdown-toggle {
-        padding: 0 0 0 0;
+    &:hover .more {
+        visibility: visible;
     }
 
     .card-header {
         padding: 0.7rem 1.25rem 0.4rem 1.25rem;
-    }
-
-    .more .dropdown-toggle:after {
-        content: none
     }
 
     &.post-detail {

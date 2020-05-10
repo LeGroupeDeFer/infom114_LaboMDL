@@ -24,7 +24,6 @@ export function Unauthenticated(Component) {
     const { user } = useAuth();
     const history = useHistory();
     if (user) {// Should be a flash instead
-      console.log('Already authenticated!');
       history.replace('/');
     }
 

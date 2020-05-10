@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useHistory, Link } from 'react-router-dom';
 import {
   Container,
   Row,
@@ -101,8 +101,8 @@ const WatchSymbol = ({ className }) => (
 export function PostContent({ isPreview, post, onComment, onPollVote }) {
   if (isPreview)
     return (
-      <div className="post-preview">
-        <span className="pr-1">{preview(post.content, previewLength)}</span>
+      <div className="post-preview expand-preview">
+        <p className="pr-1 expand-preview">{preview(post.content, previewLength)}</p>
         <Link to={`/detail/${post.id}`}>Lire la suite</Link>
       </div>
     );
@@ -151,6 +151,7 @@ export function Post({
   ...others
 }) {
   const { user } = useAuth();
+  const history = useHistory();
   const isLogged = !!user;
   const owner = isLogged && post.author.id === user.id;
 
@@ -158,7 +159,7 @@ export function Post({
     ? {
         onClick: (e) =>
           e.target.classList.contains('expand-preview')
-            ? onPreview(post)
+            ? history.push(`/detail/${post.id}`)
             : null,
       }
     : {};
@@ -191,7 +192,7 @@ export function Post({
       <Card.Header className="post-header">
         <Container className="p-0">
           <Row>
-            <Col className="expand-preview">
+            <Col className="expand-preview" sm={10}>
               <h5 className="ml-1 expand-preview">
                 <Badge className={`post-${kind} mr-1`}>{kind}</Badge>
                 <span className="mr-1">{title}</span>
@@ -274,12 +275,13 @@ export function Post({
               onTag={onTag}
               onComment={onComment}
               onPollVote={onPollVote}
+              className="expand-preview"
             />
 
-            <div className="post-footer mb-2">
+            <Flexbox reverse className="post-footer mt-2">
               <Link
                 to={`/detail/${id}`}
-                className="post-footer-btn mr-2"
+                className="post-footer-btn mx-2 d-flex align-items-center"
                 href="#"
               >
                 <Icon icon="comment-alt" size="1.25em" className="mr-1" />
@@ -293,12 +295,12 @@ export function Post({
                 url={`https://unanimity.be/detail/${id}`}
                 quote={`${title}  - ${author.firstname} ${author.lastname}`}
               >
-                <a className="post-footer-btn mr-2" href="#">
+                <a className="post-footer-btn mx-2 d-flex align-items-center" href="#">
                   <FacebookSquare height="1.2rem" className="mr-1 fb-icon" />
                   <span className="text-muted">Partager</span>
                 </a>
               </FacebookShareButton>
-            </div>
+            </Flexbox>
           </div>
         </div>
       </Card.Body>
