@@ -1736,3 +1736,23 @@ fn delete_post_hidden_by_author() {
     assert!(not_updated.hidden);
     assert_eq!(not_updated.id, p.id);
 }
+
+#[test]
+fn get_posts_from_user() {
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let user = UserEntity::by_email(&conn, "alan.smithee@unamur.be")
+        .unwrap()
+        .unwrap();
+
+    let mut response = client
+        .get(format!("/api/v1/user/{}/posts", user.id))
+        .header(init::login_admin())
+        .dispatch();
+    assert_eq!(response.status(), Status::Ok);
+
+    let posts: Vec<Post> = serde_json::from_str(&response.body_string().unwrap()).unwrap();
+    assert_eq!(posts.len(), 7);
+}

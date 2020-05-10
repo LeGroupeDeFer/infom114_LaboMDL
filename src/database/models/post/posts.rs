@@ -361,6 +361,12 @@ impl PostEntity {
             .collect::<Vec<Self>>())
     }
 
+    pub fn by_author_id(conn: &MysqlConnection, user_id: &u32) -> Consequence<Vec<Self>> {
+        Ok(table
+            .filter(dsl::deleted_at.is_null().and(dsl::author_id.eq(user_id)))
+            .load(conn)?)
+    }
+
     /// Delete a post permanently (not used)
     pub fn hard_delete(&self, conn: &MysqlConnection) -> Consequence<()> {
         diesel::delete(self).execute(conn)?;
