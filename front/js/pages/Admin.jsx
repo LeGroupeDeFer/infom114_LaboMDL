@@ -114,6 +114,7 @@ const MenuBar = ({ currentMenu, onClick, menuList }) => {
           {menuList.map((menu, i) => {
             return (
               <OverlayTrigger
+                key={i}
                 placement="bottom"
                 overlay={<Tooltip>{menu}</Tooltip>}
               >
