@@ -9,14 +9,12 @@ use crate::database::schema::posts_tags::dsl as posts_tags;
 use crate::database::schema::tags::dsl as tags;
 use crate::{database, lib};
 
-use std::iter::FilterMap;
-
 use crate::database::tables::{
     posts_reports_table, posts_table as table, posts_tags_table, tags_table,
 };
 use crate::database::SortOrder;
 use crate::lib::{self as conseq, Consequence, EntityError, PostError};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 // TODO - Move this in app state
 const BASE: f64 = 1.414213562;
@@ -172,8 +170,9 @@ impl PostEntity {
         }
 
         // filter on tag
-        for tag in tags {
-            query = query.filter(tags::label.eq(tag));
+        let tags_length = tags.len() as u32;
+        if tags_length > 0 {
+            query = query.filter(tags::label.eq_any(tags))
         }
 
         // filter on the search term given (in title)
@@ -221,8 +220,24 @@ impl PostEntity {
             }
         };
 
-        let results = query.distinct().load::<PostEntity>(conn)?;
-        Ok(results)
+        let results = query.load::<PostEntity>(conn)?;
+
+        Ok(Self::filter_out_tags(results, tags_length))
+    }
+
+    fn filter_out_tags(posts: Vec<Self>, number: u32) -> Vec<Self> {
+        let mut tab: HashMap<u32, u32> = HashMap::new();
+        let mut check_duplicate: HashSet<u32> = HashSet::new();
+
+        for post in posts.iter() {
+            let e = tab.entry(post.id).or_insert(0);
+            *e += 1;
+        }
+
+        posts
+            .into_iter()
+            .filter(|entity| tab[&entity.id] >= number && check_duplicate.insert(entity.id))
+            .collect::<Vec<Self>>()
     }
 
     pub fn get_report_by_year(
@@ -631,5 +646,3 @@ impl PartialEq for Post {
         self.id == other.id
     }
 }
-
-impl Eq for Post {}

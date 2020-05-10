@@ -2643,6 +2643,68 @@
         ]
       }
     },
+    "/api/user/{user_id}/posts": {
+      "get": {
+        "tags": [
+          "post", "user"
+        ],
+        "summary": "Get the posts written by the given user",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "description": "Id of the user",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Post"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Missing capability"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
+    },
     "/api/user/subscriptions": {
       "get": {
         "tags": [
