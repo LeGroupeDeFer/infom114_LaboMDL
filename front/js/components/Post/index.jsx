@@ -15,7 +15,7 @@ import {
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import FacebookSquare from '../../icons/facebook-square.svg';
 import { FacebookShareButton } from 'react-share';
-import Moment from 'react-moment';
+import Moment from '../Moment';
 import clsx from 'clsx';
 
 import { useAuth } from 'unanimity/context';
@@ -202,9 +202,7 @@ export function Post({
                     <span className="ml-1">{author.lastname}</span>
                   </a>
                   <span>-</span>
-                  <Moment locale="fr" fromNow className="ml-1">
-                    {createdAt}
-                  </Moment>
+                  <Moment date={createdAt} />
                 </span>
               </h5>
             </Col>

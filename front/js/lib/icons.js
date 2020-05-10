@@ -38,6 +38,7 @@ import { faInfoCircle }  from '@fortawesome/free-solid-svg-icons/faInfoCircle';
 import { faStream }  from '@fortawesome/free-solid-svg-icons/faStream';
 import { faBell }  from '@fortawesome/free-solid-svg-icons/faBell';
 import { faUserShield }  from '@fortawesome/free-solid-svg-icons/faUserShield';
+import { faGlobeEurope }  from '@fortawesome/free-solid-svg-icons/faGlobeEurope';
 
 
 library.add(
@@ -61,6 +62,7 @@ library.add(
   faEllipsisH,
   faEyeSlash,
   faExclamationCircle,
+  faGlobeEurope,
   faInfo,
   faInfoCircle,
   faLightbulb,

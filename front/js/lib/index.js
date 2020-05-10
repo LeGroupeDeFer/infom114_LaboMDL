@@ -1,11 +1,4 @@
 import { lazy } from 'react';
-import {
-  faBalanceScale,
-  faGlobeEurope,
-  faInfo,
-  faLightbulb,
-} from '@fortawesome/free-solid-svg-icons';
-
 const identity = x => x;
 
 /* ------------------------------ App consts ------------------------------- */
@@ -46,10 +39,10 @@ const orderOf = key =>
   head(Object.keys(ORDER).filter(k => k !== key).map(k => ORDER[k]));
 
 const KIND = Object.freeze({
-  ALL: { label: 'Actualité', key: 'all', value: 'all', icon: faGlobeEurope },
-  INFO: { label: 'Infos', key: 'info', value: 'info', icon: faInfo },
-  IDEA: { label: 'Idées', key: 'idea', value:'idea', icon: faLightbulb },
-  POLL: { label: 'Sondages', key: 'poll', value: 'poll', icon: faBalanceScale },
+  ALL: { label: 'Actualité', key: 'all', value: 'all', icon: "globe-europe" },
+  INFO: { label: 'Infos', key: 'info', value: 'info', icon: "info" },
+  IDEA: { label: 'Idées', key: 'idea', value:'idea', icon: "lightbulb" },
+  POLL: { label: 'Sondages', key: 'poll', value: 'poll', icon: "balance-scale" },
 });
 
 const kinds = Object.values(KIND);

@@ -16,7 +16,7 @@ import { Option } from 'unanimity/components/SearchBar';
 import { useStream } from 'unanimity/context';
 
 const types = [
-  { value: 'idea', label: Option({ icon: 'light-bulb', label: 'Idée' }) },
+  { value: 'idea', label: Option({ icon: 'lightbulb', label: 'Idée' }) },
   { value: 'info', label: Option({ icon: 'info', label: 'Information' }) },
   { value: 'poll', label: Option({ icon: 'balance-scale', label: 'Sondage' }) },
 ];
