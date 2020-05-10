@@ -1,6 +1,9 @@
 import React from 'react';
-import { GoArrowUp } from 'react-icons/go';
-import { GoArrowDown } from 'react-icons/go';
+// import { GoArrowUp } from 'react-icons/go';
+// import { GoArrowDown } from 'react-icons/go';
+
+import GoArrowUp from '../../icons/arrow-up.svg';
+import GoArrowDown from '../../icons/arrow-down.svg';
 import { Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import clsx from 'clsx';
 
@@ -29,7 +32,7 @@ export function Vote({ isLogged, vote, direction, onClick }) {
   return (
     <VoteOverlay isLogged={isLogged}>
       <Button className={cls} onClick={() => onClick(direction, !vote)}>
-        <Arrow size="1.5em" />
+        <Arrow />
       </Button>
     </VoteOverlay>
   );

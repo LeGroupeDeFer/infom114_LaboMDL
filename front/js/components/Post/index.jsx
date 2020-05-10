@@ -14,7 +14,6 @@ import {
 
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import {
-  faFacebookSquare,
   faEllipsisH,
   faEyeSlash,
   faFlag,
@@ -24,6 +23,8 @@ import {
   faCommentAlt,
   faDove,
 } from '@fortawesome/free-solid-svg-icons';
+
+import FacebookSquare from '../../icons/facebook-square.svg';
 
 import { FacebookShareButton } from 'react-share';
 import Moment from 'react-moment';
@@ -297,8 +298,8 @@ export function Post({
               >
                 <Icon icon={faCommentAlt} size="1.25em" className="mr-1" />
                 <span className="text-muted">
-                  <span className="pr-1">{comments.length}</span>
-                  {`commentaire${comments.length > 1 ? 's' : ''}`}
+                  {comments.length}
+                  {` commentaire${comments.length > 1 ? 's' : ''}`}
                 </span>
               </Link>
 
@@ -307,11 +308,7 @@ export function Post({
                 quote={`${title}  - ${author.firstname} ${author.lastname}`}
               >
                 <a className="post-footer-btn mr-2" href="#">
-                  <Icon
-                    icon={faFacebookSquare}
-                    size="1.25em"
-                    className="mr-1"
-                  />
+                  <FacebookSquare height="1.2rem" className="mr-1 fb-icon" />
                   <span className="text-muted">Partager</span>
                 </a>
               </FacebookShareButton>
