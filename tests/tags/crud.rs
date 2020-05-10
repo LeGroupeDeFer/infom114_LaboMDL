@@ -27,12 +27,12 @@ fn add_new_tag() {
         .header(auth_token_header);
     let response = req.dispatch();
 
-    //check the answer is Ok
+    //check the answer is forbidden
     assert_eq!(response.status(), Status::Forbidden);
 
-    // check there is only one tag in db, and this tag is the one we just added
-    assert_eq!(TagEntity::all(&conn).unwrap().len(), 1);
-    assert!(TagEntity::by_label(&conn, &tag).unwrap().is_some());
+    // check there is no tag in database
+    assert_eq!(TagEntity::all(&conn).unwrap().len(), 0);
+    assert!(TagEntity::by_label(&conn, &tag).unwrap().is_none());
 }
 #[test]
 fn add_new_tag_correct_capability() {
