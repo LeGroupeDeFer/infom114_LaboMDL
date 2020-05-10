@@ -1,7 +1,6 @@
-import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Container, Row, Col, Form } from 'react-bootstrap';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { Link, useHistory } from 'react-router-dom';
 import { useAuth } from '../context';
 import { AutoForm, Flexbox, Unauthenticated } from '../components';
@@ -15,7 +14,7 @@ function Header() {
     <Flexbox justify="center" align="end" className='mb-3 form-header'>
       <h4 className="mb-1 mx-2">
         <Link to='/' className="text-secondary">
-          <Icon icon={faArrowLeft} className="mr-2" />
+          <Icon icon="arrow-left" className="mr-2" />
           HOME
         </Link>
       </h4>
@@ -25,7 +24,7 @@ function Header() {
       <h4 className="mb-1 mx-2">
         <Link to='/register' className="text-secondary">
           SIGN UP
-          <Icon icon={faArrowRight} className="ml-2" />
+          <Icon icon="arrow-right" className="ml-2" />
         </Link>
       </h4>
     </Flexbox>

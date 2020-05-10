@@ -1,6 +1,5 @@
 import React from 'react';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 import clsx from 'clsx';
 
 
@@ -11,7 +10,7 @@ export function Simple({ error, className }) {
   return error ? (
     <div className={cls}>
       <Icon
-        icon={faExclamationCircle}
+        icon="excalamation-circle"
         className="text-danger mr-2"
         style={{ display: 'inline-box' }}
       />

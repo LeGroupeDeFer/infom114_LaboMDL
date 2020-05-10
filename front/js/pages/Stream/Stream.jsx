@@ -15,7 +15,6 @@ import {
   Toast,
 } from 'react-bootstrap';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { faEdit } from '@fortawesome/free-solid-svg-icons';
 import MdSort from '../../icons/sort.svg';
 import { useStream } from 'unanimity/context/streamContext';
 import { ORDER } from 'unanimity/lib';
@@ -192,7 +191,7 @@ function Stream({ onSort, ...others }) {
             <OverlayTrigger overlay={<Tooltip>Créer un post</Tooltip>}>
               <Button variant="primary" className="h-100">
                 <div className="d-flex text-light">
-                  <Icon icon={faEdit} />
+                  <Icon icon="edit" />
                 </div>
               </Button>
             </OverlayTrigger>

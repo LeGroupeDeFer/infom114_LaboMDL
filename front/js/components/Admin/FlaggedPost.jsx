@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-
-import { Card, Badge, Container, Row, Col } from 'react-bootstrap/';
+import { Card, Badge, Container, Row, Col } from 'react-bootstrap';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import Moment from 'react-moment';
 
-import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { faLink, faFlag, faTag } from '@fortawesome/free-solid-svg-icons';
 
 const FlaggedPost = ({ post, countFlag, reasons, onHide }) => {
   const { author, kind, id, createdAt, title, tags, content } = post;
@@ -43,7 +41,7 @@ const FlaggedPost = ({ post, countFlag, reasons, onHide }) => {
               <div className="mb-1">
                 {tags.map((tag) => (
                   <a key={tag} className="mr-2 tag">
-                    <Icon icon={faTag} className="mr-1" />
+                    <Icon icon="tag" className="mr-1" />
                     <span>{tag}</span>
                   </a>
                 ))}
@@ -57,13 +55,13 @@ const FlaggedPost = ({ post, countFlag, reasons, onHide }) => {
                 className="post-footer-btn mr-2"
                 href="#"
               >
-                <Icon icon={faLink} />
+                <Icon icon="link" />
                 <span> - Voir le post</span>
               </Link>
               <br />
               <hr />
               <span className="text-muted">
-                <Icon icon={faFlag} />
+                <Icon icon="flag" />
                 <span className="text-muted">
                   {' '}
                   - A été signalé {countFlag} fois{' '}

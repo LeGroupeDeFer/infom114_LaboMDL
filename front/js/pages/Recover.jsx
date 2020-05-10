@@ -1,7 +1,6 @@
 import React from 'react';
 import { Row, Col, Form } from 'react-bootstrap';
 import { useParams, Link } from 'react-router-dom';
-import { faUserLock } from '@fortawesome/free-solid-svg-icons';
 
 import { Dialog, AutoForm, Unauthenticated } from '../components';
 import { useAction } from '../hooks';
@@ -106,7 +105,7 @@ const Recover = Unauthenticated(() => {
   const { id, token } = useParams();
 
   return (
-    <Dialog icon={faUserLock} title="Recovery">
+    <Dialog icon="user-lock" title="Recovery">
       <RecoveryForm id={id} token={token} />
     </Dialog>
   );

@@ -1,7 +1,6 @@
 import React from 'react';
 import AutoForm from '../components/AutoForm';
 import { Form } from 'react-bootstrap';
-import { faUserLock } from '@fortawesome/free-solid-svg-icons';
 import { useAction } from '../hooks';
 import { Dialog, Unauthenticated } from '../components';
 import { api } from '../lib';
@@ -64,7 +63,7 @@ function RestoreForm() {
 
 const Restore = Unauthenticated(() => {
   return (
-    <Dialog icon={faUserLock} title="Account restoration">
+    <Dialog icon="user-lock" title="Account restoration">
       <RestoreForm />
     </Dialog>
   );

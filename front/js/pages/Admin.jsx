@@ -6,6 +6,9 @@ import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 
 import Tag from '../components/Admin/Tag';
 import Role from '../components/Admin/Role';
@@ -15,17 +18,6 @@ import User from '../components/Admin/User';
 import FlaggedPost from '../components/Admin/FlaggedPost';
 import { Authenticated } from '../components/';
 
-import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import {
-  faTags,
-  faUsers,
-  faChartLine,
-  faClipboardCheck,
-  faFlag,
-} from '@fortawesome/free-solid-svg-icons';
-
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Tooltip from 'react-bootstrap/Tooltip';
 
 import {
   ResponsiveContainer,
@@ -102,11 +94,11 @@ const Title = ({ icon, description }) => {
 
 const MenuBar = ({ currentMenu, onClick, menuList }) => {
   const icons = [
-    <Icon icony={faTags} />,
-    <Icon icon={faClipboardCheck} />,
-    <Icon icon={faUsers} />,
-    <Icon icon={faFlag} />,
-    <Icon icon={faChartLine} />,
+    <Icon icony="tags" />,
+    <Icon icon="clipboard-check" />,
+    <Icon icon="users" />,
+    <Icon icon="flag" />,
+    <Icon icon="chart-line" />,
   ];
   //<a key={i} className={currentMenu == menu ? 'active mr-5' : 'mr-5'} onClick={() => onClick(menu)}>{icons[i]}</a>
 
@@ -169,7 +161,7 @@ const UsersPage = () => {
     <>
       <Notification />
       <Title
-        icon={<Icon icon={faUsers} />}
+        icon={<Icon icon="users" />}
         description="Gestion des utilisateurs"
       />
       {users.length ? (
@@ -290,7 +282,7 @@ const StatisticsPage = () => {
     <>
       <Notification />
       <Title
-        icon={<Icon icon={faChartLine} />}
+        icon={<Icon icon="chart-line" />}
         description="Statistiques globales"
       />
       <Container>
@@ -428,7 +420,7 @@ const FlaggedPage = () => {
   return (
     <>
       <Title
-        icon={<Icon icon={faFlag} />}
+        icon={<Icon icon="flag" />}
         description="Gestion des posts signalés"
       />
       <Container>
@@ -549,7 +541,7 @@ const RolesPage = () => {
     <>
       <Notification />
       <Title
-        icon={<Icon icon={faClipboardCheck} />}
+        icon={<Icon icon="clipboard-check" />}
         description="Gestion des rôles"
       />
 
@@ -680,7 +672,7 @@ const TagsPage = () => {
   return (
     <>
       <Notification />
-      <Title icon={<Icon icon={faTags} />} description="Gestion des tags" />
+      <Title icon={<Icon icon="tags" />} description="Gestion des tags" />
 
       <AddForm add={addTag} />
       <br />

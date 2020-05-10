@@ -1,7 +1,4 @@
 import React, { useState } from 'react';
-import api from '../../lib/api';
-import { prevent } from '../../lib';
-
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Container from 'react-bootstrap/Container';
@@ -11,9 +8,10 @@ import Modal from 'react-bootstrap/Modal';
 import InputGroup from 'react-bootstrap/InputGroup';
 import FormControl from 'react-bootstrap/FormControl';
 import Form from 'react-bootstrap/Form';
-
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { faPen, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+
+import api from '../../lib/api';
+
 
 const Tag = ({ name, deleteTag, setNotification, tags, setTags }) => {
   const [modalShow, setModalShow] = useState(false);
@@ -65,7 +63,7 @@ const Tag = ({ name, deleteTag, setNotification, tags, setTags }) => {
                   href="#"
                   onClick={() => setModalShow(true)}
                 >
-                  <Icon icon={faPen} className="fa-primary mr-1" />
+                  <Icon icon="pen" className="fa-primary mr-1" />
                   <span className="text-muted">Renommer</span>
                 </a>
                 <a
@@ -73,7 +71,7 @@ const Tag = ({ name, deleteTag, setNotification, tags, setTags }) => {
                   href="#"
                   onClick={() => deleteTag(label)}
                 >
-                  <Icon icon={faTrashAlt} className="fa-danger mr-1" />
+                  <Icon icon="trash-alt" className="fa-danger mr-1" />
                   <span className="text-muted">Supprimer</span>
                 </a>
               </Col>

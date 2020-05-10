@@ -1,17 +1,16 @@
-import React, { useState } from 'react';
+import React  from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { faTag, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { components } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
-import { useStream } from "../context/streamContext";
-import { trace, last } from "../lib";
+import { useStream } from '../context/streamContext';
+import { last } from '../lib';
 
 
 const DropdownIndicator = (props) => {
   return (
     <components.DropdownIndicator {...props}>
-      <Icon icon={faSearch} />
+      <Icon icon="search" />
     </components.DropdownIndicator>
   );
 };
@@ -34,7 +33,7 @@ function SearchBar({ children }) {
 
   const options = stream.tags.available.map(({ label, id }) => ({
     value: label,
-    label: <Option icon={faTag} label={label} />,
+    label: <Option icon="tag" label={label} />,
   }));
 
   const localOnChange = (options, meta) => {

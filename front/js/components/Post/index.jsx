@@ -13,18 +13,6 @@ import {
 } from 'react-bootstrap';
 
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import {
-  faFacebookSquare,
-  faEllipsisH,
-  faEyeSlash,
-  faFlag,
-  faTrashAlt,
-  faTag,
-  faLock,
-  faCommentAlt,
-  faDove,
-} from '@fortawesome/free-solid-svg-icons';
-
 import { FacebookShareButton } from 'react-share';
 import Moment from 'react-moment';
 import clsx from 'clsx';
@@ -44,21 +32,21 @@ import ReportModal from './ReportModal';
 
 const HidePost = May('post:hide', ({ onClick }) => (
   <Dropdown.Item as="button" onClick={onClick}>
-    <Icon icon={faEyeSlash} className="mr-2" />
+    <Icon icon="eye-slash" className="mr-2" />
     <span>Masquer</span>
   </Dropdown.Item>
 ));
 
 const LockPost = May('post:lock', ({ onClick }) => (
   <Dropdown.Item as="button" onClick={onClick}>
-    <Icon icon={faLock} className="mr-2" />
+    <Icon icon="lock" className="mr-2" />
     <span>Vérouiller</span>
   </Dropdown.Item>
 ));
 
 const WatchPost = May('post:watch', ({ onClick }) => (
   <Dropdown.Item as="button" onClick={onClick}>
-    <Icon icon={faDove} className="mr-2" />
+    <Icon icon="dove" className="mr-2" />
     <span>Promouvoir</span>
   </Dropdown.Item>
 ));
@@ -67,13 +55,13 @@ const FlagPost = ({ post, userFlag, onFlag, onFlagCancel }) => {
   if (userFlag != null && !userFlag)
     return (
       <Dropdown.Item as="button" onClick={() => onFlag(post)}>
-        <Icon icon={faFlag} className="mr-2" />
+        <Icon icon="flag" className="mr-2" />
         <span>Signaler</span>
       </Dropdown.Item>
     );
   return (
     <Dropdown.Item as="button" onClick={() => onFlagCancel(post)}>
-      <Icon icon={faFlag} className="mr-2" />
+      <Icon icon="flag" className="mr-2" />
       <span>Annuler signalement</span>
     </Dropdown.Item>
   );
@@ -82,7 +70,7 @@ const FlagPost = ({ post, userFlag, onFlag, onFlagCancel }) => {
 const DeletePost = ({ owner, onClick }) =>
   owner ? (
     <Dropdown.Item as="button" onClick={() => onClick()}>
-      <Icon icon={faTrashAlt} className="mr-2" />
+      <Icon icon="trash-alt" className="mr-2" />
       <span>Supprimer</span>
     </Dropdown.Item>
   ) : (
@@ -104,7 +92,7 @@ const WatchSymbol = ({ className }) => (
       width="2em"
       className={clsx('bg-secondary', 'text-light', 'watch-symbol', className)}
     >
-      <Icon icon={faDove} />
+      <Icon icon="dove" />
     </Circle>
   </OverlayTrigger>
 );
@@ -229,7 +217,7 @@ export function Post({
                   id={`post-${id}-actions`}
                   title={
                     <div className="px-2 py-1">
-                      <Icon icon={faEllipsisH} />
+                      <Icon icon="ellipsis-h" />
                     </div>
                   }
                   variant="link"
@@ -276,7 +264,7 @@ export function Post({
                   className="mr-2 tag"
                   onClick={() => onTag(tag)}
                 >
-                  <Icon icon={faTag} className="mr-1" />
+                  <Icon icon="tag" className="mr-1" />
                   <span>{tag}</span>
                 </a>
               ))}
@@ -295,7 +283,7 @@ export function Post({
                 className="post-footer-btn mr-2"
                 href="#"
               >
-                <Icon icon={faCommentAlt} size="1.25em" className="mr-1" />
+                <Icon icon="comment-alt" size="1.25em" className="mr-1" />
                 <span className="text-muted">
                   <span className="pr-1">{comments.length}</span>
                   {`commentaire${comments.length > 1 ? 's' : ''}`}
@@ -308,7 +296,7 @@ export function Post({
               >
                 <a className="post-footer-btn mr-2" href="#">
                   <Icon
-                    icon={faFacebookSquare}
+                    icon={["fab", "facebook-square"]}
                     size="1.25em"
                     className="mr-1"
                   />

@@ -1,3 +1,5 @@
+import 'unanimity/lib/icons'; // Preload the icon lib
+
 import React, { lazy, Suspense } from 'react';
 import { Route, Switch, useLocation } from 'react-router-dom';
 import { Loading } from 'unanimity/components';

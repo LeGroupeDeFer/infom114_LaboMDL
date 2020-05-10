@@ -10,7 +10,7 @@ import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { faEdit, faUser } from '@fortawesome/free-solid-svg-icons';
+
 
 const User = ({ user, roles, setNotification }) => {
   const [modalShow, setModalShow] = useState(false);
@@ -32,11 +32,11 @@ const User = ({ user, roles, setNotification }) => {
                   href="#"
                   onClick={() => setModalShow(true)}
                 >
-                  <Icon icon={faEdit} className="fa-primary mr-1" />
+                  <Icon icon="edit" className="fa-primary mr-1" />
                   <span className="text-muted">Gérer les roles</span>
                 </a>
                 <a className="post-footer-btn mr-3" href="#">
-                  <Icon icon={faUser} className="fa-primary mr-1">
+                  <Icon icon="user" className="fa-primary mr-1">
                     Voir profil
                   </Icon>
                   <span className="text-muted">Voir profil</span>

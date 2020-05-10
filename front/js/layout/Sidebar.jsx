@@ -2,12 +2,10 @@ import React from 'react';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { NavLink } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { faDoorOpen, faSignInAlt } from '@fortawesome/free-solid-svg-icons';
 import { useLocation } from 'react-router-dom';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { useAuth } from '../context';
-import { Link } from 'react-router-dom';
 import layout from '../lib/layout';
 
 function Sidebar({ open, links }) {
@@ -49,13 +47,13 @@ function Sidebar({ open, links }) {
         {user ? (
           <NavLink variant="danger" exact to="/logout" className="sidebar-exit">
             <ListGroup.Item>
-              <Icon icon={faDoorOpen} />
+              <Icon icon="door-open" />
             </ListGroup.Item>
           </NavLink>
         ) : (
           <NavLink variant="primary" exact to="/login" className="sidebar-enter">
             <ListGroup.Item>
-              <Icon icon={faSignInAlt} />
+              <Icon icon="sign-in-alt" />
             </ListGroup.Item>
           </NavLink>
         )}

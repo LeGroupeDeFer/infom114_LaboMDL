@@ -2,10 +2,8 @@ import React, { useState } from 'react';
 import { Button, Card, Row, Col } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
 import ProgressBar from 'react-bootstrap/ProgressBar';
-import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
-
 import CheckCircle from '../../icons/check-circle-regular.svg';
+
 
 function Poll({ postId, answers, userAnswer, onPollVote }) {
   const [userVote, setUserVote] = useState(

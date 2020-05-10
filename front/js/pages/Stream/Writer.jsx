@@ -10,24 +10,15 @@ import {
   Spinner,
 } from 'react-bootstrap';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import {
-  faBalanceScale,
-  faInfo,
-  faLightbulb,
-  faPenFancy,
-  faPlusSquare,
-  faTag,
-  faTimesCircle,
-} from '@fortawesome/free-solid-svg-icons';
 import { useHistory } from 'react-router-dom';
 import { AutoForm, Authenticated } from 'unanimity/components';
 import { Option } from 'unanimity/components/SearchBar';
 import { useStream } from 'unanimity/context';
 
 const types = [
-  { value: 'idea', label: Option({ icon: faLightbulb, label: 'Idée' }) },
-  { value: 'info', label: Option({ icon: faInfo, label: 'Information' }) },
-  { value: 'poll', label: Option({ icon: faBalanceScale, label: 'Sondage' }) },
+  { value: 'idea', label: Option({ icon: 'light-bulb', label: 'Idée' }) },
+  { value: 'info', label: Option({ icon: 'info', label: 'Information' }) },
+  { value: 'poll', label: Option({ icon: 'balance-scale', label: 'Sondage' }) },
 ];
 
 // I didn't find another way to add styles to the select
@@ -103,7 +94,7 @@ function PollOptions() {
             {i > 1 && (
               <InputGroup.Append>
                 <Button variant="outline-danger" onClick={(_) => popOption(i)}>
-                  <Icon icon={faTimesCircle} size={20} />
+                  <Icon icon="times-circle" size={20} />
                 </Button>
               </InputGroup.Append>
             )}
@@ -113,7 +104,7 @@ function PollOptions() {
 
       {options.length < 5 && (
         <a href="#" onClick={addOption}>
-          <Icon icon={faPlusSquare} className="mr-1" />
+          <Icon icon="plus-square" className="mr-1" />
           <span>Ajouter une option</span>
         </a>
       )}
@@ -158,7 +149,7 @@ const Writer = Authenticated(() => {
 
   const tags = stream.tags.available.map((t) => ({
     value: t.label,
-    label: Option({ label: t.label, icon: faTag }),
+    label: Option({ label: t.label, icon: 'tag' }),
   }));
 
   const kinds = stream.kind.available.map((kind) => ({
@@ -171,7 +162,7 @@ const Writer = Authenticated(() => {
       <Row>
         <Col>
           <h1 className="mb-4 text-dark writer-header">
-            <Icon icon={faPenFancy} className="mr-3" />
+            <Icon icon="pen-fancy" className="mr-3" />
             <span>Créer un post</span>
             <hr />
           </h1>

@@ -11,9 +11,8 @@ import Modal from 'react-bootstrap/Modal';
 import InputGroup from 'react-bootstrap/InputGroup';
 import FormControl from 'react-bootstrap/FormControl';
 import Form from 'react-bootstrap/Form';
-
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { faPen, faEdit, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+
 
 const Role = ({
   roleId,
@@ -80,7 +79,7 @@ const Role = ({
                   href="#"
                   onClick={() => setRenameModalShow(true)}
                 >
-                  <Icon icon={faPen} className="fa-primary mr-1" />
+                  <Icon icon="pen" className="fa-primary mr-1" />
                   <span className="text-muted">Renommer</span>
                 </a>
                 <a
@@ -88,7 +87,7 @@ const Role = ({
                   href="#"
                   onClick={() => setEditModalShow(true)}
                 >
-                  <Icon icon={faEdit} className="fa-primary mr-1" />
+                  <Icon icon="edit" className="fa-primary mr-1" />
                   <span className="text-muted">Modifier</span>
                 </a>
                 <a
@@ -96,7 +95,7 @@ const Role = ({
                   href="#"
                   onClick={() => deleteRole(role.id)}
                 >
-                  <Icon icon={faTrashAlt} className="fa-danger mr-1" />
+                  <Icon icon="trash-alt" className="fa-danger mr-1" />
                   <span className="text-muted">Supprimer</span>
                 </a>
               </Col>
