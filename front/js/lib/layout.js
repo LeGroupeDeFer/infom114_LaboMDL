@@ -10,17 +10,17 @@ const layouts = {
 
 const nobodyLinks = [
   link('stream', '/', "stream", 'Fil d\'actualité', 1),
-  link('about', '/about', "info-circle", 'À propos', 2),
-  link('settings', '/settings', "cogs", 'Paramètres', 3)
+  link('about', '/about', "info-circle", 'À propos', 5),
+  link('settings', '/settings', "cogs", 'Paramètres', 4),
+  link('profile', '/profile', "user-circle", 'Profil', 3),
 ];
 
-const authenticatedLinks = [
-  link('profile', '/profile', "user-circle", 'Profil', 3),
-  link('notifications', '/notifications', "bell", 'Notifications', 4)
-];
+const authenticatedLinks = [];
+//  link('notifications', '/notifications', "bell", 'Notifications', 2)
+
 
 const adminLinks = [
-  link('admin', '/admin', "user-shield", 'Admin', 5)
+  link('admin', '/admin', "user-shield", 'Admin', 6)
 ];
 
 function links(user = null, token = null) {
