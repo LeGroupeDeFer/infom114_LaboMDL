@@ -236,7 +236,7 @@ const StatisticsPage = () => {
     max = Math.max(...max) > 0 ? Math.max(...max) : 1;
     setFullMark([0, Math.ceil(max / 10) * 10]); //Setting the ladder
     //Posts data
-    //FIXME - waiting for the backend
+    let postsData = await api.posts.report();
 
     //Transorming data if required
     let connect = [
@@ -260,21 +260,9 @@ const StatisticsPage = () => {
       },
     ];
     let tag = tagsData;
-    let post = [
-      { name: 'Janvier', nouveau: 20, interaction: 124 },
-      { name: 'Février', nouveau: 13, interaction: 40 },
-      { name: 'Mars', nouveau: 24, interaction: 75 },
-      { name: 'Avril', nouveau: 40, interaction: 150 },
-      { name: 'Mai', nouveau: 5, interaction: 47 },
-      { name: 'Juin', nouveau: 0, interaction: 0 },
-      { name: 'Juillet', nouveau: 0, interaction: 0 },
-      { name: 'Aout', nouveau: 0, interaction: 0 },
-      { name: 'Septembre', nouveau: 0, interaction: 0 },
-      { name: 'Octobre', nouveau: 0, interaction: 0 },
-      { name: 'Novembre', nouveau: 0, interaction: 0 },
-      { name: 'Décembre', nouveau: 0, interaction: 0 },
-    ];
-
+    //FIXME - sorting month from January through December
+    //let months = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Aout", "Septembre", "Octobre", "Novembre", "Décembre"]
+    let post = postsData
     return { connect, active, tag, post };
   };
 
@@ -384,12 +372,12 @@ const StatisticsPage = () => {
                   data={graphData.post}
                   margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                 >
-                  <XAxis dataKey="name" />
+                  <XAxis dataKey="month" />
                   <YAxis />
                   <RechartsTooltip />
                   <Legend />
                   <CartesianGrid stroke="#f5f5f5" />
-                  <Bar dataKey="nouveau" barSize={20} fill={colors[0]} />
+                  <Bar dataKey="new" barSize={20} fill={colors[0]} />
                   <Line
                     type="monotone"
                     dataKey="interaction"
