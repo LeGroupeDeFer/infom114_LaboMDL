@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 
 import ListGroup from 'react-bootstrap/ListGroup';
@@ -16,8 +16,25 @@ import clsx from 'clsx';
 import { useAuth } from '../context';
 import { Authenticated } from '../components/';
 import api from '../lib/api';
+import Post from 'unanimity/components/Post';
 
 function Profile() {
+
+  const { user } = useAuth();
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+
+    const fetch = async () => {
+      let res = await api.users.posts(user.id);
+      console.log(res);
+      setPosts(res);
+    };
+    fetch();
+
+  }, []);
+
+
 
   return (
     <>
@@ -28,11 +45,17 @@ function Profile() {
         </h2>
         <hr />
         <Row>
-          <Col style={{ 'border-right': '1px dashed #333'}}>
-            <User />
+          <Col style={{ 'border-right': '1px dashed #333' }} xs={12} md={4}>
+            <User user={user} />
           </Col>
-          <Col >
-            <Postes />
+          <Col xs={12} md={8}>
+
+          {
+            posts.map(post => {
+              return (<><Post post={post}/><hr /></>);
+            })
+          }
+
           </Col>
         </Row>
       </Container>
@@ -64,19 +87,28 @@ const Menu = () => {
   );
 };
 
-const User = () => {
-
-  const {user} = useAuth();
+const User = ({ user }) => {
 
   return (
-    <span>Le profil utilisateur sera ici</span>
-  );
-};
-
-const Postes = () => {
-
-  return (
-    <span>Les postes seront ici</ span>
+    <Row>
+      <Col>
+        <div>
+          <img
+            src="https://www.freelogodesign.org/file/app/client/thumb/93b27fc8-6653-43ea-a4c4-3f22893f93dd_200x200.png?1585111496240"
+            alt="logo"
+            maxHeight="auto"
+            maxWidth="100%"
+          />
+        </div>
+      </ Col>
+      <Col>
+        <span><b>{user.firstname}</b> </span>
+        <span><b>{user.lastname}</b> </span>
+        <hr />
+        <span>Email : {user.email}</span><br />
+        <span>A rejoit le : {user.creationDate.substring(0, 10)}</span>
+      </ Col>
+    </Row>
   );
 };
 
@@ -86,37 +118,11 @@ export default AuthenticatedProfile;
 
 /*
 
-  const {user} = useAuth();
-
-  useEffect( () => {
-    console.log(user);
-    
-    const fetch = async () => {
-      let posts = await api.users.posts(user.id);
-      console.log(posts);
-    }
-    fetch();
-   
-  }, []);
-
-
-    <Row>
-    <Col>
-      <div className="sidebar-logo">
-        <img
-          src="https://www.freelogodesign.org/file/app/client/thumb/93b27fc8-6653-43ea-a4c4-3f22893f93dd_200x200.png?1585111496240"
-          alt="logo"
-          height="100"
-        />
-      </div>
-    </ Col>
-    <Col>
-      <span><b>{user.firstname}</b> </span>
-      <span><b>{user.lastname}</b> </span>
-      <br /><br />
-      <span>Email : {user.email}</span><br />
-      <span>A rejoit le : {user.creationDate}</span>
-      
-    </ Col>
-    </Row>
+              onDelete={onDelete}
+              onFlag={onFlag}
+              onFlagCancel={onFlagCancel}
+              onHide={onHide}
+              onVote={(vote) => onVote(post, vote)}
+              onPreview={onPreview}
+              onTag={onTag}
 */
