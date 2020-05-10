@@ -1,44 +1,12 @@
 import React, { useState } from 'react';
 import { Switch, Route, useRouteMatch } from 'react-router-dom';
-import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { Button, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import clsx from 'clsx';
-
 import { useStream } from 'unanimity/context/streamContext';
 import { SearchBar } from 'unanimity/components';
-import { kinds } from 'unanimity/lib';
 
 import Stream from './Stream';
 import Writer from './Writer';
 import Detail from './Detail';
 
-// FilterBar :: Object => Component
-function KindSection() {
-  const stream = useStream();
-
-  return (
-    <ButtonGroup className="kind-section d-flex justify-content-between">
-      {kinds.map((kind) => (
-        <OverlayTrigger
-          key={kind.key}
-          placement="bottom"
-          overlay={<Tooltip id={kind.key}>{kind.label}</Tooltip>}
-        >
-          <Button
-            key={kind.key}
-            className={clsx(
-              'kind-choice',
-              stream.kind.value.key === kind.key && 'active'
-            )}
-            onClick={() => stream.kind.set(kind)}
-          >
-            <Icon icon={kind.icon} />
-          </Button>
-        </OverlayTrigger>
-      ))}
-    </ButtonGroup>
-  );
-}
 
 // StreamContent :: None => Component
 function StreamContent() {
@@ -89,9 +57,7 @@ function StreamContent() {
 
   return (
     <>
-      <SearchBar>
-        <KindSection />
-      </SearchBar>
+      <SearchBar variant="kinds" />
 
       <Switch>
         <Route exact path={path}>

@@ -143,7 +143,7 @@ export function Post({
   onHide,
   onTag,
   onLock,
-  onPromote,
+  onWatch,
   onComment,
   isPreview,
   onPreview,
