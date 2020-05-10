@@ -43,7 +43,8 @@ import api from '../lib/api';
 import 'regenerator-runtime';
 import clsx from 'clsx';
 
-function Admin(props) {
+
+function AdminPage() {
   const menuList = ['Tags', 'Roles', 'Utilisateurs', 'Publications signalées', 'Statistiques'];
   const [currentMenu, setCurrentMenu] = useState('Tags');
 
@@ -94,7 +95,7 @@ const Title = ({ icon, description }) => {
 
 const MenuBar = ({ currentMenu, onClick, menuList }) => {
   const icons = [
-    <Icon icony="tags" />,
+    <Icon icon= "tags" />,
     <Icon icon="clipboard-check" />,
     <Icon icon="users" />,
     <Icon icon="flag" />,

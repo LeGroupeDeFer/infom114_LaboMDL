@@ -44,11 +44,11 @@ export const AuthDisabled = Component => props => {
 };
 
 
-export const May = (cap, Component) => props => {
-  const { token } = useAuth();
+export const May = (cap, Component, ErrorComponent = <></>) => props => {
+  const { token } = useAuth();  
   if (token && token.cap.some(e => e.name === cap))
     return <Component {...props} />;
-  return <></>;
+  return <ErrorComponent cap={cap}/>;
 }
 
 
