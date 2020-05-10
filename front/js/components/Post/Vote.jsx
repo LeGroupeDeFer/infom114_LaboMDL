@@ -7,7 +7,6 @@ import clsx from 'clsx';
 import { VOTE } from 'unanimity/lib';
 import Flexbox from '../Flexbox';
 
-
 function VoteOverlay({ isLogged, children }) {
   if (isLogged)
     return <>{children}</>;
@@ -30,7 +29,7 @@ export function Vote({ isLogged, vote, direction, onClick }) {
 
   return (
     <VoteOverlay isLogged={isLogged}>
-      <Button className={cls} onClick={() => onClick(direction, !vote)}>
+      <Button disabled={!isLogged} className={cls} onClick={() => onClick(direction, !vote)}>
         <Arrow size="1.5em" />
       </Button>
     </VoteOverlay>

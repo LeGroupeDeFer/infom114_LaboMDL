@@ -3,7 +3,6 @@ import { useAuth } from '../context';
 import { Container, Row, Col } from 'react-bootstrap';
 import { useHistory, Link } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import {trace} from "../lib";
 
 
 export function Authenticated(Component) {
@@ -40,12 +39,19 @@ export const WhenLogged = Component => props => {
 }
 
 
+export const AuthDisabled = Component => props => {
+  const isLogged = !!useAuth().user;
+  return <Component disabled={!isLogged} {...props} />
+};
+
+
 export const May = (cap, Component) => props => {
   const { token } = useAuth();
   if (token && token.cap.some(e => e.name === cap))
     return <Component {...props} />;
   return <></>;
 }
+
 
 export const Dialog = Unauthenticated(({ icon, title, children }) => {
   return (
