@@ -59,7 +59,7 @@ function Profile() {
             <hr />
             {
               posts.map(post => {
-                return (<><Post post={post} /><hr /></>);
+                return (<><Post post={post} isPreview /><hr /></>);
               })
             }
           </Col>
@@ -74,19 +74,21 @@ const Menu = () => {
 
   return (
     <Row>
-      <Col md={12} xs={12}>
-        <ButtonGroup className="float-right kind-section">
+      <Col xs={10} md={11}></Col>
+      <Col md={1} xs={2}>
+        <ButtonGroup className="kind-section d-flex justify-content-between">
           <OverlayTrigger
             key={1}
             placement="bottom"
             overlay={<Tooltip>Se déconnecter</Tooltip>}
           >
-            <Button
+            <a
               key={1}
+              href="/logout"
               className={'kind-choice'}
             >
               <Icon icon="door-open" />
-            </Button>
+            </a>
           </OverlayTrigger>
         </ButtonGroup>
       </Col>
@@ -103,8 +105,7 @@ const User = ({ user }) => {
           <img
             src="https://www.freelogodesign.org/file/app/client/thumb/93b27fc8-6653-43ea-a4c4-3f22893f93dd_200x200.png?1585111496240"
             alt="logo"
-            maxHeight="auto"
-            maxWidth="100%"
+            className="profile-pic"
           />
         </div>
       </ Col>

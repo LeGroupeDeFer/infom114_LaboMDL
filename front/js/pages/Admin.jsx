@@ -108,8 +108,8 @@ const MenuBar = ({ currentMenu, onClick, menuList }) => {
 
   return (
     <Row>
-      <Col xs={2}></Col>
-      <Col xs={8}>
+      <Col xs={0} md={3}></Col>
+      <Col xs={12} md={6}>
         <ButtonGroup className="kind-section d-flex justify-content-between">
           {menuList.map((menu, i) => {
             return (
@@ -133,7 +133,7 @@ const MenuBar = ({ currentMenu, onClick, menuList }) => {
           })}
         </ButtonGroup>
       </Col>
-      <Col xs={2}></Col>
+      <Col xs={0} md={3}></Col>
     </Row>
   );
 };

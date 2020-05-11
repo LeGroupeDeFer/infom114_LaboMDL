@@ -44,8 +44,17 @@
     }
   
   }
+  
+  @media (min-width: 1200px) {
 
-.fixed-info {
-    //position:fixed;
+    .fixed-info {
+      position:fixed;
+  }
+
+}
+
+.profile-pic {
+  max-width: 10em !important;
+  height: 10em;
 }
 
