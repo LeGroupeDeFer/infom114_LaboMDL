@@ -251,8 +251,8 @@ fn manage_comment_report(
     } else if false
         || (post.is_hidden() && !auth.has_capability(&*conn, "post:view_hidden"))
         || (post.is_locked() && !auth.has_capability(&*conn, "post:edit_locked"))
-        || (comment_guard.comment().is_hidden() && !can_view_hidden)
-        || (comment_guard.comment().is_locked() && !can_edit_locked)
+        || (comment.is_hidden() && !can_view_hidden)
+        || (comment.is_locked() && !can_edit_locked)
     {
         Err(AuthError::MissingCapability)?;
     }
