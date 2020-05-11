@@ -24,9 +24,6 @@ function Profile() {
 
     const fetch = async () => {
       let res = await api.users.posts(user.id);
-      res.forEach(post => {
-        post.answers = [];
-      }); //FIXME - If the post is a poll, answers Array is missing 
       setPosts(res);
     };
     fetch();
