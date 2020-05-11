@@ -124,6 +124,7 @@ function SortDropdown({ onSort }) {
 // Stream :: None => Component
 function Stream({ onSort, ...others }) {
   const stream = useStream();
+  useEffect(() => stream.author.set(null), []);
 
   return (
     <Container className="py-5">
@@ -161,8 +162,8 @@ function Stream({ onSort, ...others }) {
 }
 
 //Same as Stream() but does not give you a header 
-export function SpecificStream({ userId, ...others }) {
-
+export function SpecificStream({ userId, onAuthor, ...others }) {
+  useEffect(() => onAuthor(userId), []);
   return (
     <Container className="py-5">
       {/* Posts */}

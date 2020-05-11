@@ -14,11 +14,12 @@ import remove from 'lodash/remove';
 import without from 'lodash/without';
 import { clean } from '../lib';
 
-export const PostsChange = 0b00000001;
-export const TagsChange = 0b00000010;
-export const KeywordChange = 0b00000100;
-export const KindChange = 0b00001000;
-export const OrderChange = 0b00010000;
+export const PostsChange = /*       */ 0b00000001;
+export const TagsChange = /*        */ 0b00000010;
+export const KeywordChange = /*     */ 0b00000100;
+export const KindChange = /*        */ 0b00001000;
+export const OrderChange = /*       */ 0b00010000;
+export const AuthorChange = /*      */ 0b00100000;
 
 export const StreamDiff = Object.freeze({
   PostsChange,
@@ -26,6 +27,7 @@ export const StreamDiff = Object.freeze({
   KeywordChange,
   KindChange,
   OrderChange,
+  AuthorChange,
 });
 
 function streamDifference(prev, next) {
@@ -38,6 +40,7 @@ function streamDifference(prev, next) {
   if (!isEqual(prev.keywords, next.keywords)) diff |= KeywordChange;
   if (!isEqual(prev.kind, next.kind)) diff |= KindChange;
   if (!isEqual(prev.order, next.order)) diff |= OrderChange;
+  if (!isEqual(prev.author, next.author)) diff |= AuthorChange;
 
   return diff;
 }
@@ -49,6 +52,7 @@ const query = (state) => ({
   order: state.order.value,
   tags: state.tags.value,
   keywords: state.keywords.value,
+  author: trace(state.author.value)
 });
 
 export function StreamProvider({ children }) {
@@ -217,6 +221,14 @@ export function StreamProvider({ children }) {
         }));
       },
     },
+
+    author: {
+      value: null,
+      set(author_id) {
+        if (this.value === author_id) return;
+        setState(s => ({ ...s, author: { ...state.author, value: author_id } }));
+      }
+    }
   });
 
   useEffect(
@@ -235,6 +247,7 @@ export function StreamProvider({ children }) {
       state.order.value,
       state.tags.value,
       state.keywords.value,
+      state.author.value
     ]
   );
 

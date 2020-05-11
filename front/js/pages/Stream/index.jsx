@@ -84,11 +84,11 @@ function StreamContent({ userId }) {
     onHide: (post) => stream.posts.hide(post),
     onPollVote: (postId, answerId) => stream.posts.pollVote(postId, answerId),
     onVote: (post, vote) => stream.posts.vote(post, vote),
-
     onTag: (tag) => stream.tags.set(tag),
     onWatch: (post, event) => stream.posts.watch(post, event),
     onLock: (post) => stream.posts.lock(post),
     onSort: (order) => stream.order.set(order),
+    onAuthor: author => stream.author.set(author),
     onPreview: (v) => setState((state) => ({ ...state, previewPost: v })),
     onDelete: (v, p) => {
       pathWhenDelete = p;
@@ -118,7 +118,8 @@ function StreamContent({ userId }) {
       }),
   });
 
-  if (userId) return <SpecificStream userId={userId} {...state} />;
+  if (userId)
+    return <SpecificStream userId={userId} {...state} />;
 
   return (
     <>

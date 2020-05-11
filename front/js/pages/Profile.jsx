@@ -22,10 +22,8 @@ function Profile() {
       <Container fluid className="menu-bar-container py-2">
         <Menu className="menu-bar" />
       </Container>
-      <br />
-      <br />
-      <br />
-      <Container>
+
+      <Container className="mt-5 py-5">
         <Row>
           <Col xs={12} md={5}>
             <div className="fixed-info">

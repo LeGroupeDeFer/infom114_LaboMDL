@@ -115,7 +115,7 @@ const WatchSymbol = ({ className }) => (
   >
     <Circle
       width="2em"
-      className={clsx('bg-secondary', 'text-light', 'watch-symbol', className)}
+      className={clsx('text-light', 'watch-symbol', className)}
     >
       <Icon icon="dove" />
     </Circle>
@@ -127,7 +127,12 @@ const LockSymbol = ({ className }) => (
     placement="auto"
     overlay={<Tooltip>Cette publication est vérouillée</Tooltip>}
   >
-    <Icon icon="lock" className="ml-1" />
+    <Circle
+      width="2em"
+      className={clsx('text-light', 'lock-symbol', 'ml-2', className)}
+    >
+      <Icon icon="lock" />
+    </Circle>
   </OverlayTrigger>
 );
 
@@ -227,20 +232,20 @@ export function Post({
                 <Badge className={`post-${kind} mr-1`}>{kind}</Badge>
                 <span className="mr-1">{title}</span>
 
-                <span className="text-muted title-part2">
-                  <a href="#" className="text-dark mx-1">
+                <span className="text-muted post-subtitle">
+                  <a href="#" className="post-author text-dark mx-1">
                     {author.firstname} {' ' + author.lastname}
                   </a>
                   <span>-</span>
-                  <Moment date={createdAt} />
+                  <Moment date={createdAt} className="post-moment"/>
                 </span>
               </h5>
             </Col>
 
             <Col className="expand-preview">
               <Flexbox reverse align={'center'} className="h-100">
-                {post.locked && <LockSymbol className="px-2 ml-2 py-1" />}
-                {post.watched && <WatchSymbol className="px-2 ml-2 py-1" />}
+                {post.locked && <LockSymbol className="px-2 ml-3 py-1" />}
+                {post.watched && <WatchSymbol className="px-2 ml-3 py-1" />}
 
                 {isLogged && (
                   <DropdownButton

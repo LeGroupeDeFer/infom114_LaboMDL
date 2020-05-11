@@ -135,7 +135,21 @@
 
         &.post-watched {
             .post-header {
-                border-color: theme-color("secondary");
+                background-color: theme-color("secondary");
+                color: white;
+            }
+
+            .post-subtitle, .post-author {
+                opacity: .8;
+                color: white !important;
+            }
+
+            .post-author {
+                font-weight: bold !important;
+            }
+
+            .post-time {
+                opacity: .8;
             }
         }
     }
@@ -177,6 +191,15 @@
             border: none;
         }
     }
+
+    .watch-symbol, .lock-symbol {
+        background: darken(theme-color("secondary"), 5) !important;
+    }
+
+}
+
+.lock-symbol svg {
+    padding-left: 2px; // FIXME - The lock is not centered
 }
 
 .fa-comment-alt {
