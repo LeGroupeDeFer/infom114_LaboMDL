@@ -24,7 +24,8 @@ pub fn collect() -> Vec<Route> {
         get_comment_authenticated,
         get_comment_unauthenticated,
         updown_vote,
-        toggle_vote_visibility
+        toggle_vote_visibility,
+        toggle_vote_lock
     )
 }
 
@@ -250,6 +251,40 @@ fn toggle_vote_visibility(
 
     let mut comment_entity = comment_guard.comment_clone();
     comment_entity.toggle_visibility(&*conn)?;
+
+    let mut comment = Comment::from(comment_entity);
+    comment.set_user_info(&*conn, &auth.sub);
+
+    Ok(Json(comment))
+}
+
+#[post("/api/v1/comment/<_comment_id>/lock")]
+fn toggle_vote_lock(
+    conn: DBConnection,
+    auth: Auth,
+    comment_guard: CommentGuard,
+    _comment_id: u32,
+) -> ApiResult<Comment> {
+    let can_view_hidden = auth.has_capability(&*conn, "comment:view_hidden");
+    let can_edit_locked = auth.has_capability(&*conn, "comment:edit_locked");
+
+    let post = PostEntity::by_id(&*conn, &comment_guard.comment().post_id)??;
+
+    if comment_guard.comment().is_deleted() || post.is_deleted() {
+        Err(EntityError::InvalidID)?
+    } else if false
+        || (post.is_hidden() && !auth.has_capability(&*conn, "post:view_hidden"))
+        || (post.is_locked() && !auth.has_capability(&*conn, "post:edit_locked"))
+        || (comment_guard.comment().is_hidden() && !can_view_hidden)
+        || (comment_guard.comment().is_locked() && !can_edit_locked)
+    {
+        Err(AuthError::MissingCapability)?
+    }
+
+    auth.check_capability(&*conn, "comment:lock")?;
+
+    let mut comment_entity = comment_guard.comment_clone();
+    comment_entity.toggle_lock(&*conn)?;
 
     let mut comment = Comment::from(comment_entity);
     comment.set_user_info(&*conn, &auth.sub);

@@ -176,3 +176,16 @@ pub fn toggle_comment_hide(
 
     serde_json::from_str(&response.body_string().unwrap()).unwrap()
 }
+
+pub fn toggle_comment_lock(
+    client: &rocket::local::Client,
+    auth_token: rocket::http::Header<'static>,
+    comment_id: &u32,
+) -> Comment {
+    let route = format!("{}/{}/lock", COMMENT_ROUTE, comment_id);
+
+    let mut response = client.post(route).header(auth_token).dispatch();
+    assert_eq!(response.status(), Status::Ok);
+
+    serde_json::from_str(&response.body_string().unwrap()).unwrap()
+}
