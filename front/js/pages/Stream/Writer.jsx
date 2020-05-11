@@ -8,6 +8,8 @@ import {
   Col,
   InputGroup,
   Spinner,
+  Tooltip,
+  OverlayTrigger,
 } from 'react-bootstrap';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { useHistory } from 'react-router-dom';
@@ -108,6 +110,29 @@ function PollOptions() {
           <span>Ajouter une option</span>
         </a>
       )}
+
+      <Form.Check
+        type="checkbox"
+        id={'checkbox-trace'}
+        label={
+          <>
+            <span>J'aimerais avoir un suivi pour mon sondage</span>
+            <OverlayTrigger
+              key={name}
+              placement="auto"
+              overlay={
+                <Tooltip className="nav-tooltip">
+                  En cochant cette cache, votre sondage sera analysé et traité
+                  comme une idée.
+                </Tooltip>
+              }
+            >
+              <Icon icon="question-circle" className="ml-1" />
+            </OverlayTrigger>
+          </>
+        }
+        className="mt-1"
+      />
     </Form.Group>
   );
 }
@@ -152,7 +177,7 @@ const Writer = Authenticated(() => {
     label: Option({ label: t.label, icon: 'tag' }),
   }));
 
-  const kinds = stream.kind.available.map((kind) => ({
+  const kinds = stream.kind.available.slice(1).map((kind) => ({
     value: kind.value,
     label: Option(kind),
   }));

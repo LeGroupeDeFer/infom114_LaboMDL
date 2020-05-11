@@ -10,6 +10,7 @@ import {
   Card,
   OverlayTrigger,
   Tooltip,
+  Alert,
 } from 'react-bootstrap';
 
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
@@ -98,11 +99,13 @@ const WatchSymbol = ({ className }) => (
   </OverlayTrigger>
 );
 
-export function PostContent({ isPreview, post, onComment, onPollVote }) {
+export function PostContent({ isPreview, post, onPollVote }) {
   if (isPreview)
     return (
       <div className="post-preview expand-preview">
-        <p className="pr-1 expand-preview">{preview(post.content, previewLength)}</p>
+        <p className="pr-1 expand-preview">
+          {preview(post.content, previewLength)}
+        </p>
         <Link to={`/detail/${post.id}`}>Lire la suite</Link>
       </div>
     );
@@ -121,12 +124,6 @@ export function PostContent({ isPreview, post, onComment, onPollVote }) {
           <br />
         </>
       )}
-      <Comment.Editor onComment={(comment) => onComment(post, comment)} />
-      <div className="post-comments">
-        {post.comments.map((comment) => (
-          <Comment comment={comment} onComment={onComment} />
-        ))}
-      </div>
     </div>
   );
 }
@@ -269,6 +266,7 @@ export function Post({
                 </a>
               ))}
             </div>
+
             <PostContent
               isPreview={isPreview}
               post={post}
@@ -277,6 +275,13 @@ export function Post({
               onPollVote={onPollVote}
               className="expand-preview"
             />
+
+            <div className="mt-2">
+              <strong className="status">Accepté le 18 Avril 2020</strong>
+              <Alert variant="success">
+                Les vaccances seront prolongées de 2 semaines.
+              </Alert>
+            </div>
 
             <Flexbox reverse className="post-footer mt-2">
               <Link
@@ -295,12 +300,27 @@ export function Post({
                 url={`https://unanimity.be/detail/${id}`}
                 quote={`${title}  - ${author.firstname} ${author.lastname}`}
               >
-                <a className="post-footer-btn mx-2 d-flex align-items-center" href="#">
-                  <FacebookSquare height="1.2rem" className="mr-1 fb-icon" />
+                <a
+                  className="post-footer-btn mx-2 d-flex align-items-center"
+                  href="#"
+                >
+                  <FacebookSquare height="18" className="mr-1 fb-icon" />
                   <span className="text-muted">Partager</span>
                 </a>
               </FacebookShareButton>
             </Flexbox>
+            {!isPreview && (
+              <div className="mt-2">
+                <Comment.Editor
+                  onComment={(comment) => onComment(post, comment)}
+                />
+                <div className="post-comments">
+                  {post.comments.map((comment) => (
+                    <Comment comment={comment} onComment={onComment} />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </Card.Body>
