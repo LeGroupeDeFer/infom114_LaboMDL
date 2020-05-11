@@ -33,14 +33,13 @@ import ReportModal from './ReportModal';
 /* ------------------------------ Post actions ----------------------------- */
 
 const HidePost = May('post:hide', ({ onClick, hidden }) => {
-  if (hidden) {
+  if (hidden)
     return (
       <Dropdown.Item as="button" onClick={onClick}>
         <Icon icon="eye" className="mr-2" />
         <span>Rendre visible</span>
       </Dropdown.Item>
     );
-  }
   return (
     <Dropdown.Item as="button" onClick={onClick}>
       <Icon icon="eye-slash" className="mr-2" />
@@ -50,14 +49,14 @@ const HidePost = May('post:hide', ({ onClick, hidden }) => {
 });
 
 const LockPost = May('post:lock', ({ onClick, post }) => {
-  if (post.locked) {
+  if (post.locked)
     return (
       <Dropdown.Item as="button" onClick={onClick}>
         <Icon icon="unlock" className="mr-2" />
         <span>Dévérouiller</span>
       </Dropdown.Item>
     );
-  }
+
   return (
     <Dropdown.Item as="button" onClick={onClick}>
       <Icon icon="lock" className="mr-2" />
@@ -275,6 +274,7 @@ export function Post({
                     />
 
                     <LockPost onClick={() => onLock(post)} post={post} />
+
                     <WatchPost
                       post={post}
                       onClick={(event) => onWatch(post, event)}

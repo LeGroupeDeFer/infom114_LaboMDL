@@ -300,15 +300,24 @@ const Register = Unauthenticated((props) => {
 
   const [state, setState] = useState({ email: null, error: null, success: null, promise: null });
 
-  const onSubmit = data => setState(s => ({
-    ...s,
-    email: data.email,
-    promise: api.auth.register(aggregate(
-      data,
+  const onSubmit = info => {
+    const data = aggregate(
+      info,
       'address',
       ['street', 'number', 'boxNumber', 'zipcode', 'city']
-    ))
-  }));
+    );
+
+    // If one field of the address is empty, remove thde whole address
+    // FIXME - Should show an error message to the user instead
+    if (Object.values(data.address).some(x => !x))
+      delete(data.address);
+
+    setState(s => ({
+      ...s,
+      email: data.email,
+      promise: api.auth.register(data)
+    }));
+  }
 
   usePositiveEffect(subscribed(
     state.promise,

@@ -115,6 +115,7 @@ Object.assign(auth, {
    * @returns {Promise<api.User|api.Response>}
    */
   login(email, password) {
+    auth.clear();
     return auth('/login', {
       body: { email, password },
     }).then(({ user, accessToken, refreshToken }) => {
@@ -153,10 +154,8 @@ Object.assign(auth, {
         currentAccessToken = accessToken;
         store.setItem('__refresh_token__', `${email}:${refreshToken}`);
         return { accessToken, user };
-      })
-      .catch(({ code, reason }) => {
-        if (code == 403)
-          // Token expired
+      }).catch(({ code, reason }) => {
+        if (code === 403) // Token expired
           auth.clear();
         return Promise.reject({ code, reason });
       });

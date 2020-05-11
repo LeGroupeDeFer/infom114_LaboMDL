@@ -81,7 +81,6 @@ function StreamContent({ userId }) {
       );
     },
     //setAuthorPostFilter: (userId) => stream.posts.authorPostFilter(userId),
-    onLock: (post) => stream.posts.lock(post),
     onHide: (post) => stream.posts.hide(post),
     onPollVote: (postId, answerId) => stream.posts.pollVote(postId, answerId),
     onVote: (post, vote) => stream.posts.vote(post, vote),

@@ -5,21 +5,21 @@ import { useParams } from 'react-router-dom';
 import { useStream } from 'unanimity/context';
 import { Post } from 'unanimity/components';
 import { Loading } from 'unanimity/components';
-import { printerr } from 'unanimity/lib';
+import { head } from 'unanimity/lib';
+
 
 function Detail(props) {
-  const { id } = useParams();
+  const id = Number(useParams().id);
   const stream = useStream();
   const [post, setPost] = useState(null);
-  stream.posts.of(id);
 
-  if (stream.value.some((p) => p.id == id)) {
-    // Il l'a fetch
-  } else {
-    // Montrer un loader
-  }
+  useEffect(() => stream.posts.of(id) && undefined, []);
+  useEffect(() => {
+    const post = head(stream.posts.value.filter(p => p.id === id));
+    if (post) setPost(post);
+  }, [stream.posts.value]);
 
-  const LocalPost = post === null ? Loading : Post;
+  const LocalPost = post ? Post : Loading;
   return (
     <Container className="py-5">
       <br />

@@ -62,6 +62,7 @@ export function AuthProvider({ children }) {
     setState(s => ({ ...s, pending: true })) || api.auth.refresh(),
     data => setState(state => ({
       ...state,
+      error: null,
       pending: false,
       user: data.user,
       token: jwtDecode(data.accessToken)

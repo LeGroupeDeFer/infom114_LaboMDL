@@ -33,13 +33,14 @@ const Hollow = ({ children, setLockedCap }) => {
 const Temp = May('post:edit_locked', Hollow, LockedT);
 
 
-
 function VoteOverlay({ isLogged, isLocked, children, setLockedCap }) {
   if (isLogged && !isLocked)
     return <>{children}</>;
 
+  /*
   if (isLogged && isLocked)
     return <Temp setLockedCap={setLockedCap}>{children}</Temp>;
+  */
 
   return (
     <OverlayTrigger

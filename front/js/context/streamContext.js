@@ -51,9 +51,6 @@ const query = (state) => ({
   keywords: state.keywords.value,
 });
 
-const replaceOrAppend = (xs, y, eq) =>
-  xs.some((x) => eq(x, y)) ? xs.map((x) => (eq(x, y) ? y : x)) : [...xs, y];
-
 export function StreamProvider({ children }) {
   const pushEffect = useEffectQueue();
 
@@ -69,21 +66,17 @@ export function StreamProvider({ children }) {
 
         pushEffect([
           promise,
-          (post) =>
-            setState((s) => {
-              let updatedPosts = replaceOrAppend(
-                this.value,
-                post,
-                (x, y) => x.id === y.id
-              );
-              return {
-                ...s,
-                posts: {
-                  ...this,
-                  value: updatedPosts,
-                },
-              };
-            }) || post,
+          (post) => setState((s) => {
+
+            const currentPosts = s.posts.value;
+            let updatedPosts;
+            if (s.posts.value.some(p => p.id === post.id))
+              updatedPosts = currentPosts.map(p => (p.id === post.id ? post : p));
+            else
+              updatedPosts = [ ...currentPosts, post ];
+
+            return { ...s, posts: { ...s.posts, value: updatedPosts } };
+          }) || post,
           printerr, // TODO
         ]);
         return promise;
@@ -98,13 +91,11 @@ export function StreamProvider({ children }) {
 
         return this._updatePost(promise.then(([post, comments]) => {
           post.comments = comments;
-          if (post.kind === 'poll') {
-            return api.posts.pollData(id).then((pollData) => {
-              post.answers = pollData.answers;
-              post.userAnswer = pollData.userAnswer;
-              return post;
-            });
-          }
+          return post.kind !== 'poll' ? post : api.posts.pollData(id).then((pollData) => {
+            post.answers = pollData.answers;
+            post.userAnswer = pollData.userAnswer;
+            return post;
+          });
         }));
       },
 
@@ -243,7 +234,7 @@ export function StreamProvider({ children }) {
       state.kind.value,
       state.order.value,
       state.tags.value,
-      state.keywords.value
+      state.keywords.value,
     ]
   );
 

@@ -40,11 +40,11 @@ export const AuthDisabled = (Component) => (props) => {
   return <Component disabled={!isLogged} {...props} />;
 };
 
-export const May = (cap, Component, ErrorComponent = <></>) => (props) => {
+export const May = (cap, Component, ErrorComponent = null) => (props) => {
   const { token } = useAuth();
   if (token && token.cap.some((e) => e.name === cap))
     return <Component {...props} />;
-  return <ErrorComponent cap={cap} {...props} />;
+  return ErrorComponent ? <ErrorComponent cap={cap} {...props} /> : <></>;
 };
 
 export const Dialog = Unauthenticated(({ icon, title, children }) => {
