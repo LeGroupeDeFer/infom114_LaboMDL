@@ -768,18 +768,205 @@ fn get_deleted_comment_admin() {
     assert_eq!(response_status, Status::BadRequest);
 }
 
-// update a comment (admin)
-// update a comment (author)
-// update a comment (non-author)
-// update a comment (unauthenticated)
-// update a comment unexisting id
-// update a comment from a soft-deleted post
-// update a comment from a hidden post (admin) -> ok
+#[test]
+fn update_comment_admin() {
+    let client = init::clean_client();
+    init::seed();
+    let post = init::get_post_entity(false, false, false);
+    let comment_entity = init::get_comment_entity(post.id, false, false, false);
+
+    let content = "I am so unique !";
+    assert_ne!(&comment_entity.content, content);
+
+    let comment = update_comment(&client, init::login_admin(), &comment_entity.id, content);
+
+    assert_eq!(&comment.content, content);
+}
+
+#[test]
+fn update_comment_author() {
+    let client = init::clean_client();
+    init::seed();
+    // init simple user
+    let (user, passwd) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &passwd);
+
+    let post = init::get_post_entity(false, false, false);
+    let comment = send_comment_from_post(
+        &client,
+        auth_token_header.clone(),
+        &post.id,
+        "Normal user should be able to post a comment like this!!!",
+    );
+
+    let content = "I am so unique !";
+    assert_ne!(&comment.content, content);
+
+    let new_comment = update_comment(&client, auth_token_header.clone(), &comment.id, content);
+
+    assert_eq!(&new_comment.content, content);
+}
+
+#[test]
+fn update_comment_non_author() {
+    let client = init::clean_client();
+    init::seed();
+    // init simple user
+    let (user, passwd) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &passwd);
+
+    let (other_user, other_passord) = init::get_user(true);
+    let other_auth_token = init::login(&other_user.email, &other_passord);
+
+    let post = init::get_post_entity(false, false, false);
+    let comment = send_comment_from_post(
+        &client,
+        auth_token_header.clone(),
+        &post.id,
+        "Normal user should be able to post a comment like this!!!",
+    );
+
+    let content = "I am so unique !";
+    assert_ne!(&comment.content, content);
+
+    let route = format!("{}/{}", COMMENT_ROUTE, &comment.id);
+    let json_data = format!("{{ \"content\": \"{}\" }}", content);
+    let response = client
+        .put(route)
+        .header(other_auth_token)
+        .header(ContentType::JSON)
+        .body(json_data)
+        .dispatch();
+    assert_eq!(response.status(), Status::Forbidden);
+
+    assert_ne!(&comment.content, content);
+}
+
+#[test]
+fn update_comment_non_authenticated() {
+    let client = init::clean_client();
+    init::seed();
+    let post = init::get_post_entity(false, false, false);
+    let comment = init::get_comment_entity(post.id, false, false, false);
+
+    let content = "I am so unique !";
+    assert_ne!(&comment.content, content);
+
+    let route = format!("{}/{}", COMMENT_ROUTE, &comment.id);
+    let json_data = format!("{{ \"content\": \"{}\" }}", content);
+    let response = client
+        .put(route)
+        .header(ContentType::JSON)
+        .body(json_data)
+        .dispatch();
+    assert_eq!(response.status(), Status::Unauthorized);
+
+    assert_ne!(&comment.content, content);
+}
+
+#[test]
+fn update_comment_unexisting_id() {
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let mut unexisting_id = 1;
+    while CommentEntity::by_id(&conn, &unexisting_id)
+        .unwrap()
+        .is_some()
+    {
+        unexisting_id += 1;
+    }
+
+    let content = "I am so unique !";
+    let route = format!("{}/{}", COMMENT_ROUTE, &unexisting_id);
+    let json_data = format!("{{ \"content\": \"{}\" }}", content);
+    let response = client
+        .put(route)
+        .header(ContentType::JSON)
+        .header(init::login_admin())
+        .body(json_data)
+        .dispatch();
+    assert_eq!(response.status(), Status::BadRequest);
+}
+
+#[test]
+fn update_comment_deleted() {
+    let client = init::clean_client();
+    init::seed();
+    let post = init::get_post_entity(false, false, false);
+    let comment = init::get_comment_entity(post.id, false, false, true);
+
+    let content = "I am so unique !";
+    assert_ne!(&comment.content, content);
+
+    let route = format!("{}/{}", COMMENT_ROUTE, &comment.id);
+    let json_data = format!("{{ \"content\": \"{}\" }}", content);
+    let response = client
+        .put(route)
+        .header(ContentType::JSON)
+        .header(init::login_admin())
+        .body(json_data)
+        .dispatch();
+    assert_eq!(response.status(), Status::BadRequest);
+
+    assert_ne!(&comment.content, content);
+}
+
+#[test]
+fn update_comment_hidden_post_admin() {
+    let client = init::clean_client();
+    init::seed();
+    let post = init::get_post_entity(false, true, false);
+    let comment = init::get_comment_entity(post.id, false, false, false);
+
+    let content = "I am so unique !";
+    assert_ne!(&comment.content, content);
+    let new_comment = update_comment(&client, init::login_admin(), &comment.id, content);
+    assert_eq!(&new_comment.content, content);
+}
+
+#[test]
+fn update_comment_locked_post_admin() {
+    let client = init::clean_client();
+    init::seed();
+    let post = init::get_post_entity(true, false, false);
+    let comment = init::get_comment_entity(post.id, false, false, false);
+
+    let content = "I am so unique !";
+    assert_ne!(&comment.content, content);
+    let new_comment = update_comment(&client, init::login_admin(), &comment.id, content);
+    assert_eq!(&new_comment.content, content);
+}
+
+#[test]
+fn update_comment_hidden_comment_admin() {
+    let client = init::clean_client();
+    init::seed();
+    let post = init::get_post_entity(false, false, false);
+    let comment = init::get_comment_entity(post.id, false, true, false);
+
+    let content = "I am so unique !";
+    assert_ne!(&comment.content, content);
+    let new_comment = update_comment(&client, init::login_admin(), &comment.id, content);
+    assert_eq!(&new_comment.content, content);
+}
+
+#[test]
+fn update_comment_locked_comment_admin() {
+    let client = init::clean_client();
+    init::seed();
+    let post = init::get_post_entity(false, false, false);
+    let comment = init::get_comment_entity(post.id, true, false, false);
+
+    let content = "I am so unique !";
+    assert_ne!(&comment.content, content);
+    let new_comment = update_comment(&client, init::login_admin(), &comment.id, content);
+    assert_eq!(&new_comment.content, content);
+}
+
 // update a comment from a hidden post (author) -> nok
-// update a comment from a locked post (admin) -> nok
-// update a hidden comment (admin) -> ok
 // update a hidden comment (author) -> nok
-// update a locked comment (admin) -> nok
 // update a comment with malformed json
 
 // delete a comment (admin)
