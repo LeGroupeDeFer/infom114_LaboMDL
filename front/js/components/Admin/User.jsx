@@ -30,7 +30,7 @@ const User = ({ user, roles, setNotification }) => {
                 <a
                   className="footer-primary-btn mr-3"
                   href="#"
-                  onClick={() => setModalShow(true)}
+                  onClick={e => prevent(e, () => setModalShow(true))}
                 >
                   <Icon icon="edit" className="fa-primary mr-1" />
                   <span className="text-muted">Gérer les roles</span>
@@ -167,11 +167,12 @@ const EditModal = ({ user, show, onHide, setNotification }) => {
                 <Col>{role.name}</Col>
                 <Col md="auto">
                   <Form.Check
+                    key={role.id}
                     type="switch"
                     id={role.id}
                     label={' '}
                     checked={role.assigned}
-                    onClick={handleEdit}
+                    onChange={handleEdit}
                   />
                 </Col>
               </Row>

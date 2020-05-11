@@ -324,6 +324,10 @@ function postFlagged() {
   return api('/report/post_reported');
 }
 
+function userPosts(id) {
+  return api(`/user/${id}/posts`)
+}
+
 api.tags = tags;
 api.tags.add = addTag;
 api.tags.remove = removeTag;
@@ -337,7 +341,7 @@ api.capabilities = capabilities;
 api.users = users;
 api.users.addRole = addRoleToUser;
 api.users.removeRole = removeRoleFromUser;
-
+api.users.posts = userPosts;
 api.users.report = userStat;
 api.tags.report = tagStat;
 api.posts.report = postStat;
