@@ -25,12 +25,12 @@ const adjacent = code => WATCH_EVENT_FSM[code]
   .map(([_, i]) => i);
 
 const WATCH_EVENT = Object.freeze([
-  { event: 0,                                                    },
-  { event: 1, doneLabel: 'Suivi',      actionLabel: 'Suivre'     },
-  { event: 2, doneLabel: 'Acceptée',   actionLabel: 'Accepter',  },
-  { event: 3, doneLabel: 'Déclinée',   actionLabel: 'Décliner'   },
-  { event: 4, doneLabel: 'En progrès', actionLabel: 'Progresser' },
-  { event: 5, doneLabel: 'Terminée',   actionLabel: 'Terminer'   }
+  { event: 0,                                                                           },
+  { event: 1, doneLabel: 'Suivi',      actionLabel: 'Suivre',     icon: 'envelope-open' },
+  { event: 2, doneLabel: 'Acceptée',   actionLabel: 'Accepter',   icon: 'check-circle'  },
+  { event: 3, doneLabel: 'Déclinée',   actionLabel: 'Décliner',   icon: 'stop-circle'   },
+  { event: 4, doneLabel: 'En progrès', actionLabel: 'Progresser', icon: 'tasks'         },
+  { event: 5, doneLabel: 'Terminée',   actionLabel: 'Terminer',   icon: 'genderless'    }
 ]);
 
 
@@ -53,6 +53,7 @@ function WatchEventTab({ event, tip }) {
       className={cls}
     >
       <b>{event.done ? event.doneLabel : event.actionLabel}</b>
+      <Icon icon={event.icon} className="float-right" style={{ fontSize: '1.5rem' }}/>
     </ListGroup.Item>
   );
 }
@@ -142,7 +143,7 @@ function AmendContent({ post, error }) {
             <h6 className="d-inline text-muted pl-1"><Moment date={post.createdAt} /></h6>
           </div>
           <hr />
-          <p>{post.content}</p>
+          <p className="text-justify">{post.content}</p>
         </Col>
       </Row>
       <Row>

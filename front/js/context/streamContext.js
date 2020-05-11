@@ -63,17 +63,19 @@ export function StreamProvider({ children }) {
       value: [],
       _updatePost(promise) {
         const that = this;
+
         pushEffect([
           promise,
           (post) => setState((s) => {
 
+            const currentPosts = s.posts.value;
             let updatedPosts;
-            if (that.value.some(p => p.id === post.id))
-              updatedPosts = that.value.map((p) => (p.id === post.id ? post : p));
+            if (s.posts.value.some(p => p.id === post.id))
+              updatedPosts = currentPosts.map(p => (p.id === post.id ? post : p));
             else
-              updatedPosts = [ ...that.value, post ];
+              updatedPosts = [ ...currentPosts, post ];
 
-            return { ...s, posts: { ...that, value: updatedPosts } };
+            return { ...s, posts: { ...s.posts, value: updatedPosts } };
           }) || post,
           printerr, // TODO
         ]);

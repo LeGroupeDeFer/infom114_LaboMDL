@@ -68,7 +68,8 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult
     });
 
     match post_kind {
-        PostKind::Info => {}
+        PostKind::Info => {},
+        PostKind::Idea => {},
         PostKind::Poll => match post_request.options {
             Some(options) => {
                 PollAnswerEntity::bulk_insert(
