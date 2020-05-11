@@ -4,12 +4,13 @@ import { useStream } from 'unanimity/context/streamContext';
 import { SearchBar } from 'unanimity/components';
 
 import Stream from './Stream';
+import { SpecificStream } from './Stream';
 import Writer from './Writer';
 import Detail from './Detail';
 
 // StreamContent :: None => Component
-function StreamContent() {
-  const { path } = useRouteMatch();
+function StreamContent({ onlySpecificPosts }) {
+   const { path } = useRouteMatch();
   const stream = useStream();
   const [state, setState] = useState({
     previewPost: false,
@@ -58,19 +59,25 @@ function StreamContent() {
 
   return (
     <>
-      <SearchBar variant="kinds" />
-
-      <Switch>
-        <Route exact path={path}>
-          <Stream {...state} />
-        </Route>
-        <Route path={`${path}write`}>
-          <Writer {...state} />
-        </Route>
-        <Route path={`${path}detail/:id`}>
-          <Detail {...state} />
-        </Route>
-      </Switch>
+      { 
+      ! onlySpecificPosts ? 
+        <>
+          <SearchBar variant="kinds" />
+          <Switch>
+            <Route exact path={path}>
+              <Stream {...state} />
+            </Route>
+            <Route path={`${path}write`}>
+              <Writer {...state} />
+            </Route>
+            <Route path={`${path}detail/:id`}>
+              <Detail {...state} />
+            </Route>
+          </Switch> 
+        </>
+      :
+        <SpecificStream filteredPosts={onlySpecificPosts} {...state} />                 
+      }
     </>
   );
 }
