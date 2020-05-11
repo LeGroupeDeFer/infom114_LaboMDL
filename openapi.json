@@ -660,6 +660,12 @@
           },
           {
             "in": "query",
+            "name": "author",
+            "schema": {"type": "integer"},
+            "description": "The id of an author"
+          },
+          {
+            "in": "query",
             "name": "limit",
             "schema": {
               "type": "integer"
