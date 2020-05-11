@@ -68,7 +68,6 @@ pub fn url() -> String {
         )
     };
 
-    println!("TARGET DATABASE ({}): {}", app_env, db_uri);
     db_uri
 }
 

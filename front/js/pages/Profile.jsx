@@ -9,24 +9,13 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import 'regenerator-runtime';
 
-import Stream from '../pages/Stream/index';
+import StreamContent from '../pages/Stream/index';
 import { useAuth } from '../context';
 import { Authenticated } from '../components/';
-import api from '../lib/api';
 import Moment from '../components/Moment';
 
 function Profile() {
   const { user } = useAuth();
-  const [posts, setPosts] = useState();
-
-  const fetch = async () => {
-    let res = await api.users.posts(user.id);
-    setPosts(res);
-  };
-
-  useEffect(() => {
-    fetch();
-  }, []);
 
   return (
     <>
@@ -49,7 +38,7 @@ function Profile() {
             </div>
           </Col>
           <Col xs={12} md={7}>
-            {posts ? <Stream onlySpecificPosts={posts} /> : <></>}
+            {user ? <StreamContent userId={user.id} /> : <></>}
           </Col>
         </Row>
       </Container>

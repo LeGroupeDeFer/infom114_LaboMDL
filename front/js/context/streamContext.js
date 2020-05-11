@@ -151,6 +151,15 @@ export function StreamProvider({ children }) {
       pollVote(postId, answerId) {
         return this._updatePost(api.posts.pollVote(postId, answerId));
       },
+      authorPostFilter(authorId) {
+        const promise = api.users.posts(authorId);
+        pushEffect([
+          promise,
+          value => setState(s => ({ ...s, posts: { ...s.posts, value: value }})),
+          printerr
+        ]);
+        return promise;
+      }
     },
 
     kind: {
@@ -225,6 +234,7 @@ export function StreamProvider({ children }) {
       state.order.value,
       state.tags.value,
       state.keywords.value,
+      state.posts.value,
     ]
   );
 

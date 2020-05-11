@@ -137,7 +137,8 @@ impl PostEntity {
         tags: Vec<String>,
         keywords: Vec<String>,
         sort: Option<SortOrder>,
-        kind: Option<String>, // type
+        kind: Option<String>,
+        author: Option<u32>,
         limit: Option<u32>,
         offset: Option<u32>,
     ) -> Consequence<Vec<Self>> {
@@ -182,6 +183,11 @@ impl PostEntity {
                     .like(format!("%{}%", keyword))
                     .or(dsl::content.like(format!("%{}%", keyword))),
             );
+        }
+
+        // filter based on the author
+        if let Some(author_id) = author {
+            query = query.filter(dsl::author_id.eq(author_id));
         }
 
         let post_kind = kind
@@ -403,7 +409,6 @@ impl PostEntity {
         self.score = self.calculate_score(&conn)?;
         self.votes = self.count_votes(&conn)?;
         self.rank = self.calculate_rank();
-        println!("NEW RANK: {}", self.rank);
 
         // update self
         self.update(&conn)?;
@@ -433,7 +438,6 @@ impl PostEntity {
             None
         };
         self.update(conn)?;
-        println!("HIDDEN {}", self.is_hidden());
         Ok(())
     }
 
@@ -554,7 +558,8 @@ impl Post {
         tags: Vec<String>,
         keywords: Vec<String>,
         sort: Option<SortOrder>,
-        kind: Option<String>, // type
+        kind: Option<String>,
+        author: Option<u32>,
         limit: Option<u32>,
         offset: Option<u32>,
     ) -> Consequence<Vec<Self>> {
@@ -565,6 +570,7 @@ impl Post {
             keywords,
             sort,
             kind,
+            author,
             limit,
             offset,
         )?;

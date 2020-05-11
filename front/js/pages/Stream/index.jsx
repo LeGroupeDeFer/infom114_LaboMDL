@@ -9,7 +9,7 @@ import Writer from './Writer';
 import Detail from './Detail';
 
 // StreamContent :: None => Component
-function StreamContent({ onlySpecificPosts }) {
+function StreamContent({ userId }) {
    const { path } = useRouteMatch();
   const stream = useStream();
   const [state, setState] = useState({
@@ -29,6 +29,7 @@ function StreamContent({ onlySpecificPosts }) {
         }))
       );
     },
+    //setAuthorPostFilter: (userId) => stream.posts.authorPostFilter(userId),
     onHide: (post) => stream.posts.hide(post),
     onPollVote: (postId, answerId) => stream.posts.pollVote(postId, answerId),
     onVote: (post, vote) => stream.posts.vote(post, vote),
@@ -60,7 +61,7 @@ function StreamContent({ onlySpecificPosts }) {
   return (
     <>
       { 
-      ! onlySpecificPosts ? 
+      ! userId ? 
         <>
           <SearchBar variant="kinds" />
           <Switch>
@@ -76,7 +77,7 @@ function StreamContent({ onlySpecificPosts }) {
           </Switch> 
         </>
       :
-        <SpecificStream filteredPosts={onlySpecificPosts} {...state} />                 
+        <SpecificStream userId={userId} {...state} />                 
       }
     </>
   );
