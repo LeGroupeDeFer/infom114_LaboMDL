@@ -254,9 +254,57 @@ fn upvote_comment_post_hidden_missing_capability() {
     assert_eq!(resp.status(), Status::Forbidden);
 }
 
-// hide and unhide a comment
-// hide a comment (invalid id)
-// hide a comment (invalid capability)
+#[test]
+fn hide_unhide_comment() {
+    let client = init::clean_client();
+    init::seed();
+    let post = init::get_post_entity(false, false, false);
+    let comment_entity = init::get_comment_entity(post.id, false, false, false);
+
+    let comment = get_comment(&client, init::login_admin(), &comment_entity.id);
+    assert!(!comment.hidden);
+
+    let comment = toggle_comment_hide(&client, init::login_admin(), &comment_entity.id);
+    assert!(comment.hidden);
+
+    let comment = toggle_comment_hide(&client, init::login_admin(), &comment_entity.id);
+    assert!(!comment.hidden);
+}
+
+#[test]
+fn hide_invalid_comment_id() {
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let mut unexisting_id = 1;
+    while CommentEntity::by_id(&conn, &unexisting_id)
+        .unwrap()
+        .is_some()
+    {
+        unexisting_id += 1;
+    }
+
+    let route = format!("{}/{}/hide", COMMENT_ROUTE, unexisting_id);
+    let response = client.post(route).header(init::login_admin()).dispatch();
+    assert_eq!(response.status(), Status::BadRequest);
+}
+
+#[test]
+fn hide_comment_missing_capability() {
+    let client = init::clean_client();
+    init::seed();
+    let post = init::get_post_entity(false, false, false);
+    let comment_entity = init::get_comment_entity(post.id, false, false, false);
+    let (user, password) = init::get_user(true);
+
+    let route = format!("{}/{}/hide", COMMENT_ROUTE, &comment_entity.id);
+    let response = client
+        .post(route)
+        .header(init::login(&user.email, &password))
+        .dispatch();
+    assert_eq!(response.status(), Status::Forbidden);
+}
 
 // lock and unlock a comment
 // lock a comment (invalid id)

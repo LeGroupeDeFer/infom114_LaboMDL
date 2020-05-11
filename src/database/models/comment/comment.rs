@@ -4,8 +4,7 @@ use crate::database::schema::comments::dsl;
 use crate::database::tables::comments_table as table;
 use crate::lib::{Consequence, EntityError};
 
-use chrono::NaiveDateTime;
-use diesel::expression::functions::date_and_time::now;
+use chrono::Utc;
 use diesel::prelude::*;
 use diesel::MysqlConnection;
 
@@ -17,6 +16,7 @@ pub struct Comment {
     pub author: User,
     pub created_at: String,
     pub updated_at: String,
+    pub hidden: bool,
     pub votes: u64,
     pub score: i64,
     pub replies: Vec<Comment>,
@@ -74,6 +74,7 @@ impl From<CommentEntity> for Comment {
                 .unwrap(),
             created_at: ce.created_at.to_string(),
             updated_at: ce.updated_at.to_string(),
+            hidden: ce.is_hidden(),
             votes: ce.votes,
             score: ce.score,
             replies,
@@ -115,29 +116,23 @@ impl CommentEntity {
         Ok(query.load(conn)?)
     }
 
-    pub fn toggle_visibility(&self, conn: &MysqlConnection) -> Consequence<()> {
-        if self.hidden_at.is_some() {
-            diesel::update(self)
-                .set(dsl::hidden_at.eq(None as Option<NaiveDateTime>))
-                .execute(conn)?;
+    pub fn toggle_visibility(&mut self, conn: &MysqlConnection) -> Consequence<()> {
+        self.hidden_at = if self.hidden_at.is_none() {
+            Some(Utc::now().naive_local())
         } else {
-            diesel::update(self)
-                .set(dsl::hidden_at.eq(now))
-                .execute(conn)?;
-        }
-
+            None
+        };
+        self.update(conn)?;
         Ok(())
     }
-    pub fn toggle_lock(&self, conn: &MysqlConnection) -> Consequence<()> {
-        if self.locked_at.is_some() {
-            diesel::update(self)
-                .set(dsl::locked_at.eq(None as Option<NaiveDateTime>))
-                .execute(conn)?;
+
+    pub fn toggle_lock(&mut self, conn: &MysqlConnection) -> Consequence<()> {
+        self.locked_at = if self.locked_at.is_none() {
+            Some(Utc::now().naive_local())
         } else {
-            diesel::update(self)
-                .set(dsl::locked_at.eq(now))
-                .execute(conn)?;
-        }
+            None
+        };
+        self.update(conn)?;
         Ok(())
     }
 

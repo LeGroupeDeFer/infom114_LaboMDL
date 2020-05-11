@@ -271,7 +271,7 @@ pub fn get_comment_entity(
         parent_id: None,
     };
 
-    let comment = CommentEntity::insert_new(&conn, &cm).unwrap();
+    let mut comment = CommentEntity::insert_new(&conn, &cm).unwrap();
     let id = comment.id;
 
     if locked {
