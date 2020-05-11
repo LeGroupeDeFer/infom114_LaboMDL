@@ -7,12 +7,10 @@ import {
   Row,
   Col,
   Button,
-  Modal,
   Dropdown,
   DropdownButton,
   Tooltip,
   OverlayTrigger,
-  Toast,
 } from 'react-bootstrap';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import MdSort from '../../icons/sort.svg';
@@ -25,7 +23,6 @@ function InnerStream({
   deletePost,
   flagPost,
   onDelete,
-  previewPost,
   onPreview,
   toast,
   onToast,
@@ -33,6 +30,7 @@ function InnerStream({
   onFlag,
   onFlagCancel,
   onHide,
+  onLock,
   onVote,
   onPollVote,
   onTag,
@@ -59,63 +57,11 @@ function InnerStream({
               onPreview={onPreview}
               onTag={onTag}
               onWatch={onWatch}
+              onLock={onLock}
             />
           </Col>
         </Row>
       ))}
-
-      {/* Preview modal */}
-      <Modal
-        id="preview-modal"
-        show={!!previewPost}
-        onHide={() => onPreview(false)}
-        dialogClassName="modal-80w"
-      >
-        <Modal.Header closeButton />
-        <Modal.Body>
-          {previewPost && (
-            <Post
-              post={previewPost}
-              onDelete={onDelete}
-              onFlag={onFlag}
-              onFlagCancel={onFlagCancel}
-              onHide={onHide}
-              onVote={(vote) => onVote(post, vote)}
-              onPreview={onPreview}
-              onTag={onTag}
-            />
-          )}
-        </Modal.Body>
-      </Modal>
-
-      {/* Delete post modal */}
-      <Post.Delete
-        post={deletePost}
-        show={!!deletePost}
-        onHide={() => onDelete(false)}
-        onDelete={onDeleteConfirmation}
-        onToast={onToast}
-      />
-
-      {/* Report post modal */}
-      <Post.Report
-        post={flagPost}
-        show={!!flagPost}
-        onHide={() => onFlag(false)}
-        onFlag={onFlagConfirmation}
-        onToast={onToast}
-      />
-      <Toast
-        className="notification"
-        show={toast}
-        onClose={() => onToast(false)}
-        delay={4000}
-        autohide
-      >
-        <Toast.Header>
-          <strong className="mr-auto"> {toastMsg}</strong>
-        </Toast.Header>
-      </Toast>
     </div>
   );
 }

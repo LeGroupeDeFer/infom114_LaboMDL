@@ -11,7 +11,7 @@ import {
   OverlayTrigger,
   Tooltip,
 } from 'react-bootstrap';
-
+import { Switch, Route, useRouteMatch } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import FacebookSquare from '../../icons/facebook-square.svg';
 import { FacebookShareButton } from 'react-share';
@@ -31,39 +31,70 @@ import ReportModal from './ReportModal';
 
 /* ------------------------------ Post actions ----------------------------- */
 
-const HidePost = May('post:hide', ({ onClick }) => (
-  <Dropdown.Item as="button" onClick={onClick}>
-    <Icon icon="eye-slash" className="mr-2" />
-    <span>Masquer</span>
-  </Dropdown.Item>
-));
-
-const LockPost = May('post:lock', ({ onClick }) => (
-  <Dropdown.Item as="button" onClick={onClick}>
-    <Icon icon="lock" className="mr-2" />
-    <span>Vérouiller</span>
-  </Dropdown.Item>
-));
-
-const WatchPost = May('post:watch', ({ onClick }) => (
-  <Dropdown.Item as="button" onClick={onClick}>
-    <Icon icon="dove" className="mr-2" />
-    <span>Promouvoir</span>
-  </Dropdown.Item>
-));
-
-const FlagPost = ({ post, userFlag, onFlag, onFlagCancel }) => {
-  if (userFlag != null && !userFlag)
+const HidePost = May('post:hide', ({ onClick, hidden }) => {
+  if (hidden) {
     return (
-      <Dropdown.Item as="button" onClick={() => onFlag(post)}>
-        <Icon icon="flag" className="mr-2" />
-        <span>Signaler</span>
+      <Dropdown.Item as="button" onClick={onClick}>
+        <Icon icon="eye" className="mr-2" />
+        <span>Rendre visible</span>
       </Dropdown.Item>
     );
+  }
   return (
-    <Dropdown.Item as="button" onClick={() => onFlagCancel(post)}>
+    <Dropdown.Item as="button" onClick={onClick}>
+      <Icon icon="eye-slash" className="mr-2" />
+      <span>Masquer</span>
+    </Dropdown.Item>
+  );
+});
+
+const LockPost = May('post:lock', ({ onClick, post }) => {
+  if (post.locked) {
+    return (
+      <Dropdown.Item as="button" onClick={onClick}>
+        <Icon icon="unlock" className="mr-2" />
+        <span>Dévérouiller</span>
+      </Dropdown.Item>
+    );
+  }
+  return (
+    <Dropdown.Item as="button" onClick={onClick}>
+      <Icon icon="lock" className="mr-2" />
+      <span>Vérouiller</span>
+    </Dropdown.Item>
+  );
+});
+
+const WatchPost = May('post:watch', ({ onClick, watched }) => {
+  if (watched) {
+    return (
+      <Dropdown.Item as="button" onClick={onClick}>
+        <Icon icon="dove" className="mr-2" />
+        <span>Retirer promotion</span>
+      </Dropdown.Item>
+    );
+  }
+  return (
+    <Dropdown.Item as="button" onClick={onClick}>
+      <Icon icon="dove" className="mr-2" />
+      <span>Promouvoir</span>
+    </Dropdown.Item>
+  );
+});
+
+const FlagPost = ({ post, userFlag, onFlag, onFlagCancel }) => {
+  if (userFlag) {
+    return (
+      <Dropdown.Item as="button" onClick={() => onFlagCancel(post)}>
+        <Icon icon="flag" className="mr-2" />
+        <span>Annuler signalement</span>
+      </Dropdown.Item>
+    );
+  }
+  return (
+    <Dropdown.Item as="button" onClick={() => onFlag(post)}>
       <Icon icon="flag" className="mr-2" />
-      <span>Annuler signalement</span>
+      <span>Signaler</span>
     </Dropdown.Item>
   );
 };
@@ -95,6 +126,19 @@ const WatchSymbol = ({ className }) => (
     >
       <Icon icon="dove" />
     </Circle>
+  </OverlayTrigger>
+);
+
+const LockSymbol = ({ className }) => (
+  <OverlayTrigger
+    placement="auto"
+    overlay={
+      <Tooltip>
+        Cette publication est vérouillée. Vous ne pouvez pas voter ni commenter
+      </Tooltip>
+    }
+  >
+    <Icon icon="lock" className="ml-1" />
   </OverlayTrigger>
 );
 
@@ -145,6 +189,7 @@ export function Post({
   onHide,
   onTag,
   onLock,
+  onWatch,
   onPromote,
   onComment,
   isPreview,
@@ -154,6 +199,7 @@ export function Post({
 }) {
   const { user } = useAuth();
   const history = useHistory();
+  const { path } = useRouteMatch();
   const isLogged = !!user;
   const owner = isLogged && post.author.id === user.id;
 
@@ -211,8 +257,6 @@ export function Post({
 
             <Col className="expand-preview">
               <Flexbox reverse align={'center'} className="h-100">
-                {post.watched && <WatchSymbol className="px-2 ml-2 py-1" />}
-
                 {isLogged && (
                   <DropdownButton
                     alignRight
@@ -227,7 +271,10 @@ export function Post({
                     onClick={() => {}}
                     href="#"
                   >
-                    <HidePost onClick={() => onHide(post)} />
+                    <HidePost
+                      hidden={post.hidden}
+                      onClick={() => onHide(post)}
+                    />
 
                     <FlagPost
                       post={post}
@@ -236,13 +283,21 @@ export function Post({
                       onFlagCancel={onFlagCancel}
                     />
 
-                    <DeletePost owner={owner} onClick={() => onDelete(post)} />
+                    <DeletePost
+                      owner={owner}
+                      onClick={() => onDelete(post, path)}
+                    />
 
-                    <LockPost onClick={() => onLock(post)} />
+                    <LockPost onClick={() => onLock(post)} post={post} />
 
-                    <WatchPost onClick={() => onWatch(post)} />
+                    <WatchPost
+                      watched={post.watched}
+                      onClick={() => onWatch(post)}
+                    />
                   </DropdownButton>
                 )}
+                {post.locked && <LockSymbol className="px-2 ml-2 py-1" />}
+                {post.watched && <WatchSymbol className="px-2 ml-2 py-1" />}
               </Flexbox>
             </Col>
           </Row>
@@ -265,7 +320,7 @@ export function Post({
                   href="#"
                   key={tag}
                   className="mr-2 tag"
-                  onClick={() => onTag(tag)}
+                  // onClick={() => onTag(tag)}
                 >
                   <Icon icon="tag" className="mr-1" />
                   <span>{tag}</span>

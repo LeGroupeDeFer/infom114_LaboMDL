@@ -51,6 +51,9 @@ const query = (state) => ({
   keywords: state.keywords.value,
 });
 
+const replaceOrAppend = (xs, y, eq) =>
+  xs.some((x) => eq(x, y)) ? xs.map((x) => (eq(x, y) ? y : x)) : [...xs, y];
+
 export function StreamProvider({ children }) {
   const pushEffect = useEffectQueue();
 
@@ -59,22 +62,31 @@ export function StreamProvider({ children }) {
   // avoid that is to allow react to execute its diff algorithm.
   const [state, setState] = useState({
     posts: {
+      value: [],
+
       _updatePost(promise) {
         pushEffect([
           promise,
           (post) =>
-            setState((s) => ({
-              ...s,
-              posts: {
-                ...this,
-                value: s.posts.value.map((p) => (p.id === post.id ? post : p)),
-              },
-            })) || post,
+            setState((s) => {
+              let updatedPosts = replaceOrAppend(
+                this.value,
+                post,
+                (x, y) => x.id === y.id
+              );
+              return {
+                ...s,
+                posts: {
+                  ...this,
+                  value: updatedPosts,
+                },
+              };
+            }) || post,
           printerr, // TODO
         ]);
         return promise;
       },
-      value: [],
+
       of(id) {
         const prefetch = this.value.filter((p) => p.id == id);
         let promise;
@@ -84,16 +96,31 @@ export function StreamProvider({ children }) {
           promise = api.posts.of(id);
         }
 
-        return promise.then((post) => {
-          if (post.kind == 'poll') {
+        return promise
+          .then((post) => {
+            if (post.kind != 'poll') return post;
             return api.posts.pollData(id).then((pollData) => {
               post.answers = pollData.answers;
               post.userAnswer = pollData.userAnswer;
               return post;
             });
-          }
-          return post;
-        });
+          })
+          .then((post) =>
+            setState(
+              (s) =>
+                ({
+                  ...s,
+                  posts: {
+                    ...s.posts,
+                    value: replaceOrAppend(
+                      s.posts.value,
+                      post
+                      //(x, y) => x.id === y.id
+                    ),
+                  },
+                } || post)
+            )
+          );
       },
       add(post) {
         const promise = api.posts.add(post);

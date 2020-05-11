@@ -98,7 +98,7 @@ function CommentEditor({ onComment }) {
 
   return (
     <Card>
-      <Card.Body class="comment-editor comment-editor-guest">
+      <Card.Body className="comment-editor comment-editor-guest">
         <p className="text-center">
           <span className="mr-2">
             Il faut être authentifié pour pouvoir laisser un commentaire

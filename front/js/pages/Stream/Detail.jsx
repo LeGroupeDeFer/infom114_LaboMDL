@@ -11,21 +11,15 @@ function Detail(props) {
   const { id } = useParams();
   const stream = useStream();
   const [post, setPost] = useState(null);
-  useEffect(() => {
-    let isSubscribed = true;
-    stream.posts
-      .of(id)
-      .then((post) => {
-        if (isSubscribed) {
-          setPost(post);
-        }
-      })
-      .catch(printerr);
-    return () => (isSubscribed = false);
-  }, []);
+  stream.posts.of(id);
+
+  if (stream.value.some((p) => p.id == id)) {
+    // Il l'a fetch
+  } else {
+    // Montrer un loader
+  }
 
   const LocalPost = post === null ? Loading : Post;
-
   return (
     <Container className="py-5">
       <br />
