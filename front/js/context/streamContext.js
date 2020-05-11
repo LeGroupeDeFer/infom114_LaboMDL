@@ -159,17 +159,6 @@ export function StreamProvider({ children }) {
           printerr
         ]);
         return promise;
-      },
-      removeAllFilter() {
-        pushEffect([
-          api.posts.where(clean(query(state), true)),
-          (posts) =>
-            setState((s) => ({
-              ...s,
-              posts: { ...s.posts, value: posts },
-            })),
-          printerr, // TODO
-        ]) //FIXME - Find a proper solution
       }
     },
 
@@ -245,6 +234,7 @@ export function StreamProvider({ children }) {
       state.order.value,
       state.tags.value,
       state.keywords.value,
+      state.posts.value,
     ]
   );
 

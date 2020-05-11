@@ -29,8 +29,7 @@ function StreamContent({ userId }) {
         }))
       );
     },
-    setAuthorPostFilter: (userId) => stream.posts.authorPostFilter(userId),
-    removeAllFilter: () => stream.posts.removeAllFilter(),
+    //setAuthorPostFilter: (userId) => stream.posts.authorPostFilter(userId),
     onHide: (post) => stream.posts.hide(post),
     onPollVote: (postId, answerId) => stream.posts.pollVote(postId, answerId),
     onVote: (post, vote) => stream.posts.vote(post, vote),
