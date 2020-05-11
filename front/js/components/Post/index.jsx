@@ -46,12 +46,16 @@ const LockPost = May('post:lock', ({ onClick }) => (
   </Dropdown.Item>
 ));
 
-const WatchPost = May('post:watch', ({ onClick }) => (
-  <Dropdown.Item as="button" onClick={onClick}>
-    <Icon icon="dove" className="mr-2" />
-    <span>Promouvoir</span>
-  </Dropdown.Item>
-));
+const WatchPost = May('post:watch', ({ post }) => {
+  const history = useHistory();
+  return (
+    <Dropdown.Item as="button" onClick={() => history.push(`amend/${post.id}`)}>
+      <Icon icon="dove" className="mr-2" />
+      <span>Amender</span>
+    </Dropdown.Item>
+  );
+
+});
 
 const FlagPost = ({ post, userFlag, onFlag, onFlagCancel }) => {
   if (userFlag != null && !userFlag)
@@ -235,7 +239,7 @@ export function Post({
 
                   <LockPost onClick={() => onLock(post)} />
 
-                  <WatchPost onClick={() => onWatch(post)} />
+                  <WatchPost post={post} onClick={event => onWatch(post, event)} />
                 </DropdownButton>
               </Flexbox>
             </Col>

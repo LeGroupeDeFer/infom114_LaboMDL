@@ -1,6 +1,7 @@
 use crate::lib::{consequence as conseq, Consequence, PostError};
 use std::convert::TryFrom;
 
+#[derive(PartialEq)]
 pub enum PostKind {
     Info,
     Poll,

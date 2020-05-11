@@ -44,11 +44,11 @@ pub trait Entity: Sized {
     // Synonym to add but errors if the record was already present
     fn insert_new(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Self> {
         let addition = Self::insert(conn, minima)?;
-        if let Left(record) = addition {
+        if let Left(_record) = &addition {
             Err(Error::EntityError(EntityError::Duplicate))?
         }
 
-        Ok(record)
+        Ok(addition.right().unwrap())
     }
 
     // Synonym to add but does not differentiate whether the input was present or not

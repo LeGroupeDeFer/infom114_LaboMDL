@@ -39,10 +39,10 @@ const orderOf = key =>
   head(Object.keys(ORDER).filter(k => k !== key).map(k => ORDER[k]));
 
 const KIND = Object.freeze({
-  ALL: { label: 'Actualité', key: 'all', value: 'all', icon: "globe-europe" },
-  INFO: { label: 'Infos', key: 'info', value: 'info', icon: "info" },
-  IDEA: { label: 'Idées', key: 'idea', value:'idea', icon: "lightbulb" },
-  POLL: { label: 'Sondages', key: 'poll', value: 'poll', icon: "balance-scale" },
+  ALL:  { label: 'Actualité', labelSingular: 'Actualité',   key: 'all',   value: 'all',   icon: "globe-europe"  },
+  INFO: { label: 'Infos',     labelSingular: 'Information', key: 'info',  value: 'info',  icon: "info"          },
+  IDEA: { label: 'Idées',     labelSingular: 'Idée',        key: 'idea',  value:'idea',   icon: "lightbulb"     },
+  POLL: { label: 'Sondages',  labelSingular: 'Sondage',     key: 'poll',  value: 'poll',  icon: "balance-scale" },
 });
 
 const kinds = Object.values(KIND);

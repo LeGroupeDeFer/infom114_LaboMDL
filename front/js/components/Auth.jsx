@@ -48,7 +48,7 @@ export const May = (cap, Component, ErrorComponent = <></>) => props => {
   const { token } = useAuth();  
   if (token && token.cap.some(e => e.name === cap))
     return <Component {...props} />;
-  return <ErrorComponent cap={cap}/>;
+  return <ErrorComponent cap={cap} {...props} />;
 }
 
 

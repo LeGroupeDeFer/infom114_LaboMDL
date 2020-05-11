@@ -74,7 +74,7 @@ $input-animation: 0.2s ease all;
         opacity: 0.5;
     }
 
-    input.form-control {
+    input.form-control, textarea.form-control {
         color: theme-color("secondary");
         border-left: 0;
         border-top: 0;

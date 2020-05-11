@@ -12,7 +12,7 @@ use rocket_contrib::json::Json;
 use serde::export::TryFrom;
 use crate::database::models::post::{WatchEventEntity, WatchEventKind, WatchEventMinima, WatchEventData};
 use std::borrow::BorrowMut;
-use std::convert::AsRef;
+use std::convert::{AsRef, TryInto};
 
 pub fn collect() -> Vec<rocket::Route> {
     routes!(
@@ -369,17 +369,17 @@ fn watch_post(
     if (&post).is_hidden() { caps.push("post:view_hidden"); }
     auth.check_capabilities(&*conn, caps)?;
 
-    if PostKind::Info == (&post).kind {
-        Err(WatchEventError::InvalidWatchTransition)?
-    }
+    let post_kind: PostKind = (&post).kind.try_into()?;
+    // if post_kind == PostKind::Info {
+    //     Err(WatchEventError::InvalidWatchTransition)?
+    // }
 
-    let mut p = Post::from(post.clone());
-    let post_id = p.id;
-    let past_events: &mut Vec<WatchEventEntity> = p.watch_events.borrow_mut();
-    let last_event: Option<WatchEventKind> = WatchEventEntity::last(past_events)
-        .map(|le| WatchEventKind::try_from(le.event))
-        .transpose()?;
-    let new_event = WatchEventKind::try_from(payload.event)?;
+    let post_id = post.id;
+    let mut past_events: Vec<WatchEventEntity> = WatchEventEntity::by_post_id(&*conn, &post_id)?;
+    let last_event: Option<WatchEventKind> = WatchEventEntity::last(&mut past_events)
+        .map(|le| WatchEventKind::try_from(le.event)) // Option<Result<WatchEventKind>>
+        .transpose()?; // Result<Option<WatchEventKind>>
+    let new_event = WatchEventKind::try_from(payload.code)?;
 
     WatchEventEntity::validate_transition((&last_event).as_ref(), &new_event)?;
     // End of validation
@@ -391,13 +391,15 @@ fn watch_post(
         event: new_event.into()
     };
 
-    let wee = WatchEventEntity::insert_new(&*conn, &wem)?;
-    p.set_user_info(&*conn, &auth.sub);
-    p.watch_events.push(wee);
+    // RIP wee :'(
+    WatchEventEntity::insert_new(&*conn, &wem)?;
 
     // Update post rank
     post.watch_now();
     post.update(&*conn)?;
+
+    let mut p = Post::from(post.clone());
+    p.set_user_info(&*conn, &auth.sub);
 
     Ok(Json(p))
 }

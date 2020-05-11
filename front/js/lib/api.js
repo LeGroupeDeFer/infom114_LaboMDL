@@ -220,8 +220,8 @@ Object.assign(posts, {
     if (cancel) return api(`/post/${id}/report`, { method: 'POST' });
     return api(`/post/${id}/report`, { method: 'POST', body: { reason } });
   },
-  watch(id) {
-    return api(`/post/${id}/watch`, { method: 'POST' });
+  watch(id, payload) {
+    return api(`/post/${id}/watch`, { method: 'POST', body: payload });
   },
   pollData(id) {
     return api(`/post/${id}/poll`);

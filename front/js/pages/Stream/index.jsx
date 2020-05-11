@@ -6,6 +6,7 @@ import { SearchBar } from 'unanimity/components';
 import Stream from './Stream';
 import Writer from './Writer';
 import Detail from './Detail';
+import Amend from './Amend';
 
 
 // StreamContent :: None => Component
@@ -32,7 +33,8 @@ function StreamContent() {
     onPollVote: (postId, answerId) => stream.posts.pollVote(postId, answerId),
     onVote: (post, vote) => stream.posts.vote(post, vote),
     onTag: tag => stream.tags.set(tag),
-    onWatch: post => stream.posts.watch(post),
+    onWatch: (post, event) => stream.posts.watch(post, event),
+    onLock: post => stream.posts.lock(post),
     onSort: order => stream.order.set(order),
     onPreview: v => setState(state => ({ ...state, previewPost: v })),
     onDelete: v => setState(state => ({ ...state, deletePost: v })),
@@ -68,6 +70,9 @@ function StreamContent() {
         </Route>
         <Route path={`${path}detail/:id`}>
           <Detail {...state} />
+        </Route>
+        <Route path={`${path}amend/:id`}>
+          <Amend {...state} />
         </Route>
       </Switch>
     </>

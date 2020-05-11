@@ -107,7 +107,7 @@ impl PostEntity {
         sort: Option<SortOrder>,
         kind: Option<String>, // type
         limit: Option<u32>,
-        offset: Option<u32>,
+        offset: Option<u32>
     ) -> Consequence<Vec<Self>> {
         let tags_length = tags.len() as u32;
 
@@ -144,8 +144,8 @@ impl PostEntity {
 
         let kid: Option<u8> = kind
             .and_then(|v| if &*v == "all" { None } else { Some(v) })  // Option<String>
-            .map(|v| PostKind::try_from(v))                       // Option<Result<PostKind>>
-            .transpose()?                                                           // Option<PostKind>
+            .map(|v| PostKind::try_from(v))              // Option<Result<PostKind>>
+            .transpose()?                                      // Option<PostKind>
             .map(|k| k.into());
 
         if let Some(id) = kid {
