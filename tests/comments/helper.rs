@@ -214,3 +214,33 @@ pub fn toggle_comment_lock(
 
     serde_json::from_str(&response.body_string().unwrap()).unwrap()
 }
+
+pub fn update_comment(
+    client: &rocket::local::Client,
+    auth_token: rocket::http::Header<'static>,
+    comment_id: &u32,
+    content: &str,
+) -> Comment {
+    let route = format!("{}/{}", COMMENT_ROUTE, comment_id);
+
+    let json_data = format!("{{ \"content\": \"{}\" }}", content);
+    let mut response = client
+        .put(route)
+        .header(auth_token)
+        .header(ContentType::JSON)
+        .body(json_data)
+        .dispatch();
+    assert_eq!(response.status(), Status::Ok);
+
+    serde_json::from_str(&response.body_string().unwrap()).unwrap()
+}
+
+pub fn delete_comment(
+    client: &rocket::local::Client,
+    auth_token: rocket::http::Header<'static>,
+    comment_id: &u32,
+) {
+    let route = format!("{}/{}", COMMENT_ROUTE, comment_id);
+    let response = client.delete(route).header(auth_token).dispatch();
+    assert_eq!(response.status(), Status::Ok);
+}

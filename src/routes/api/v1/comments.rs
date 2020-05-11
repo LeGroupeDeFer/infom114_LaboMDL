@@ -7,7 +7,7 @@ use crate::database::DBConnection;
 
 use crate::guards::{Auth, CommentGuard, ForwardAuth, PostGuard};
 
-use crate::http::responders::ApiResult;
+use crate::http::responders::{ok, ApiResult};
 use crate::lib::{AuthError, EntityError};
 
 use rocket::Route;
@@ -25,8 +25,10 @@ pub fn collect() -> Vec<Route> {
         get_comment_unauthenticated,
         updown_vote,
         toggle_vote_visibility,
-        toggle_vote_lock,  
-        manage_comment_report
+        manage_comment_report,
+        toggle_vote_lock,
+        update_comment,
+        delete_comment
     )
 }
 
@@ -324,4 +326,63 @@ fn toggle_vote_lock(
     comment.set_user_info(&*conn, &auth.sub);
 
     Ok(Json(comment))
+}
+
+#[put("/api/v1/comment/<_comment_id>", format = "json", data = "<data>")]
+fn update_comment(
+    conn: DBConnection,
+    auth: Auth,
+    comment_guard: CommentGuard,
+    _comment_id: u32,
+    data: Json<NewComment>,
+) -> ApiResult<Comment> {
+    let comment_request = data.into_inner();
+    let post_entity = PostEntity::by_id(&*conn, &comment_guard.comment().post_id)??;
+    if post_entity.is_deleted() || comment_guard.comment().is_deleted() {
+        Err(EntityError::InvalidID)?;
+    } else if false
+        || (post_entity.is_hidden() && !auth.has_capability(&*conn, "post:view_hidden"))
+        || (post_entity.is_locked() && !auth.has_capability(&*conn, "post:edit_locked"))
+        || (comment_guard.comment().is_hidden()
+            && !auth.has_capability(&*conn, "comment:view_hidden"))
+        || (comment_guard.comment().is_locked()
+            && !auth.has_capability(&*conn, "comment:edit_locked"))
+        || (comment_guard.comment().author_id != auth.sub
+            && !auth.has_capability(&*conn, "comment:edit"))
+    {
+        Err(AuthError::MissingCapability)?;
+    }
+
+    let mut comment = comment_guard.comment_clone();
+    comment.content = comment_request.content;
+    comment.update(&*conn)?;
+
+    Ok(Json(Comment::from(comment)))
+}
+
+#[delete("/api/v1/comment/<_comment_id>")]
+fn delete_comment(
+    conn: DBConnection,
+    auth: Auth,
+    comment_guard: CommentGuard,
+    _comment_id: u32,
+) -> ApiResult<()> {
+    let post_entity = PostEntity::by_id(&*conn, &comment_guard.comment().post_id)??;
+    if post_entity.is_deleted() || comment_guard.comment().is_deleted() {
+        Err(EntityError::InvalidID)?;
+    } else if false
+        || (post_entity.is_hidden() && !auth.has_capability(&*conn, "post:view_hidden"))
+        || (post_entity.is_locked() && !auth.has_capability(&*conn, "post:edit_locked"))
+        || (comment_guard.comment().is_hidden()
+            && !auth.has_capability(&*conn, "comment:view_hidden"))
+        || (comment_guard.comment().is_locked()
+            && !auth.has_capability(&*conn, "comment:edit_locked"))
+    {
+        Err(AuthError::MissingCapability)?;
+    }
+
+    let comment = comment_guard.comment_clone();
+    comment.delete(&*conn)?;
+
+    ok()
 }
