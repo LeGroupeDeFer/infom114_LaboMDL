@@ -1806,6 +1806,16 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportReason"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK"

@@ -244,18 +244,17 @@ fn manage_comment_report(
     let can_edit_locked = auth.has_capability(&*conn, "comment:edit_locked");
 
     let comment = comment_guard.comment_clone();
-    let post = PostEntity::by_id(&*conn, &comment.post_id)
-        .unwrap()
-        .unwrap();
+    let post = PostEntity::by_id(&*conn, &comment.post_id)??;
 
     if comment.is_deleted() || post.is_deleted() {
-        Err(EntityError::InvalidID)?
-    }
-
-    if ((comment.is_locked() || post.is_locked()) && !can_edit_locked)
-        || ((comment.is_hidden() || post.is_hidden()) && !can_view_hidden)
+        Err(EntityError::InvalidID)?;
+    } else if false
+        || (post.is_hidden() && !auth.has_capability(&*conn, "post:view_hidden"))
+        || (post.is_locked() && !auth.has_capability(&*conn, "post:edit_locked"))
+        || (comment_guard.comment().is_hidden() && !can_view_hidden)
+        || (comment_guard.comment().is_locked() && !can_edit_locked)
     {
-        Err(AuthError::MissingCapability)?
+        Err(AuthError::MissingCapability)?;
     }
 
     match data {
