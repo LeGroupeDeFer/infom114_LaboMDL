@@ -5,7 +5,6 @@ use rocket::http::{ContentType, Status};
 use unanimitylibrary::database::models::prelude::*;
 
 use super::helper::*;
-use crate::init::login_admin;
 
 #[test]
 fn create_comment_from_post_admin() {
@@ -14,7 +13,7 @@ fn create_comment_from_post_admin() {
 
     let post = init::get_post_entity(false, false, false);
     let comment_content = "FIIIIIRST!!!";
-    let comment = send_comment_from_post(&client, login_admin(), &post.id, comment_content);
+    let comment = send_comment_from_post(&client, init::login_admin(), &post.id, comment_content);
 
     let conn = init::database_connection();
     let comment_entity = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
@@ -37,12 +36,7 @@ fn create_comment_from_post_normal_user() {
 
     let post = init::get_post_entity(false, false, false);
     let comment_content = "Normal user";
-    let comment = send_comment_from_post(
-        &client,
-        auth_token_header,
-        &post.id,
-        comment_content
-    );
+    let comment = send_comment_from_post(&client, auth_token_header, &post.id, comment_content);
 
     let comment_entity = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
     assert_eq!(comment_entity.post_id, post.id);
@@ -58,7 +52,7 @@ fn create_duplicate_comments_from_post() {
     init::seed();
 
     let post = init::get_post_entity(false, false, false);
-    let token = login_admin();
+    let token = init::login_admin();
     let comment_content = "There are 2 comments like this!!";
 
     let comment1 = send_comment_from_post(&client, token.clone(), &post.id, comment_content);
@@ -122,7 +116,9 @@ fn create_comment_from_post_bad_json() {
         .dispatch();
     assert_eq!(resp.status(), Status::BadRequest);
     assert_eq!(
-        CommentEntity::by_post_id(&conn, &post.id, false).unwrap().len(),
+        CommentEntity::by_post_id(&conn, &post.id, false)
+            .unwrap()
+            .len(),
         0
     );
 }
@@ -158,10 +154,10 @@ fn create_comment_from_locked_post_normal_user() {
 
     let post = init::get_post_entity(true, false, false);
     let response_status = send_comment_from_post_ko(
-        &client, 
-        auth_token_header, 
-        &post.id, 
-        "I cannot be submitted to a locked post by a normal user."
+        &client,
+        auth_token_header,
+        &post.id,
+        "I cannot be submitted to a locked post by a normal user.",
     );
     assert_eq!(response_status, Status::Forbidden);
 }
@@ -173,12 +169,7 @@ fn create_comment_from_locked_post_admin() {
 
     let post = init::get_post_entity(true, false, false);
     let comment_content = "Ahihi, you won!!!";
-    let comment = send_comment_from_post(
-        &client,
-        login_admin(),
-        &post.id,
-        comment_content,
-    );
+    let comment = send_comment_from_post(&client, init::login_admin(), &post.id, comment_content);
 
     let conn = init::database_connection();
     let comment_entity = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
@@ -195,10 +186,10 @@ fn create_comment_from_hidden_post_normal_user() {
 
     let post = init::get_post_entity(false, true, false);
     let response_status = send_comment_from_post_ko(
-        &client, 
-        auth_token_header, 
-        &post.id, 
-        "I cannot be submitted to a hidden post by a normal user."
+        &client,
+        auth_token_header,
+        &post.id,
+        "I cannot be submitted to a hidden post by a normal user.",
     );
     assert_eq!(response_status, Status::Forbidden);
 }
@@ -210,15 +201,13 @@ fn create_comment_from_hidden_post_admin() {
 
     let post = init::get_post_entity(false, true, false);
     let comment_content = "An admin can still add a comment to a hidden post!";
-    let returned_comment = send_comment_from_post(
-        &client, 
-        init::login_admin(), 
-        &post.id, 
-        comment_content
-    );
+    let returned_comment =
+        send_comment_from_post(&client, init::login_admin(), &post.id, comment_content);
 
     let conn = init::database_connection();
-    let comment_entity = CommentEntity::by_id(&conn, &returned_comment.id).unwrap().unwrap();
+    let comment_entity = CommentEntity::by_id(&conn, &returned_comment.id)
+        .unwrap()
+        .unwrap();
     assert_eq!(comment_entity.content, comment_content);
 }
 
@@ -230,11 +219,8 @@ fn create_comment_from_soft_deleted_post() {
     let post = init::get_post_entity(false, false, true);
     let comment_content = "No one can comment to a deleted post.";
 
-    let response_status = send_comment_from_post_ko(
-        &client, 
-        init::login_admin(), 
-        &post.id, 
-        comment_content);
+    let response_status =
+        send_comment_from_post_ko(&client, init::login_admin(), &post.id, comment_content);
     assert_eq!(response_status, Status::BadRequest);
 }
 
@@ -247,12 +233,7 @@ fn create_comment_from_comment_admin() {
     let post = init::get_post_entity(false, false, false);
     let comment = init::get_comment_entity(post.id, false, false, false);
     let reply_content = "Test <<positive>>";
-    let reply = send_comment_from_comment(
-        &client, 
-        login_admin(), 
-        &comment.id, 
-        reply_content
-    );
+    let reply = send_comment_from_comment(&client, init::login_admin(), &comment.id, reply_content);
 
     let comment_entity = CommentEntity::by_id(&conn, &reply.id).unwrap().unwrap();
     assert_eq!(comment_entity.post_id, post.id);
@@ -273,12 +254,7 @@ fn create_comment_from_comment_normal_user() {
     let post = init::get_post_entity(false, false, false);
     let comment = init::get_comment_entity(post.id, false, false, false);
     let reply_content = "Test <<positive>> too :D";
-    let reply = send_comment_from_comment(
-        &client,
-        auth_token_header,
-        &comment.id,
-        reply_content
-    );
+    let reply = send_comment_from_comment(&client, auth_token_header, &comment.id, reply_content);
 
     let conn = init::database_connection();
     let comment_entity = CommentEntity::by_id(&conn, &reply.id).unwrap().unwrap();
@@ -296,7 +272,7 @@ fn create_duplicate_comments_from_comment() {
 
     let post = init::get_post_entity(false, false, false);
     let comment = init::get_comment_entity(post.id, false, false, false);
-    let token = login_admin();
+    let token = init::login_admin();
     let reply_content = "There are 2 comments like this!!";
 
     let reply1 = send_comment_from_comment(&client, token.clone(), &comment.id, reply_content);
@@ -406,12 +382,8 @@ fn create_comment_from_locked_comment_admin() {
     let post = init::get_post_entity(false, false, false);
     let comment = init::get_comment_entity(post.id, true, false, false);
     let reply_content = "Admin can still reply to a locked comment!";
-    let reply = send_comment_from_comment(
-        &client, 
-        init::login_admin(), 
-        &comment.id, 
-        reply_content);
-        
+    let reply = send_comment_from_comment(&client, init::login_admin(), &comment.id, reply_content);
+
     let conn = init::database_connection();
     let comment_entity = CommentEntity::by_id(&conn, &reply.id).unwrap().unwrap();
     assert_eq!(comment_entity.content, reply_content);
@@ -444,13 +416,8 @@ fn create_comment_from_hidden_comment_admin() {
     let comment = init::get_comment_entity(post.id, false, true, false);
     let reply_content = "Admin can still reply to a hidden comment!";
 
-    let reply = send_comment_from_comment(
-        &client, 
-        init::login_admin(), 
-        &comment.id, 
-        reply_content
-    );
-    
+    let reply = send_comment_from_comment(&client, init::login_admin(), &comment.id, reply_content);
+
     let conn = init::database_connection();
     let comment_entity = CommentEntity::by_id(&conn, &reply.id).unwrap().unwrap();
     assert_eq!(comment_entity.content, reply_content);
@@ -479,12 +446,7 @@ fn create_comment_from_comment_in_locked_post() {
     let post = init::get_post_entity(true, false, false);
     let comment = init::get_comment_entity(post.id, false, false, false);
     let reply_content = "Admin can still reply to a comment on a locked post!";
-    let reply = send_comment_from_comment(
-        &client, 
-        login_admin(),
-        &comment.id,
-        reply_content
-    );
+    let reply = send_comment_from_comment(&client, init::login_admin(), &comment.id, reply_content);
 
     let conn = init::database_connection();
     let comment_entity = CommentEntity::by_id(&conn, &reply.id).unwrap().unwrap();
@@ -521,12 +483,8 @@ fn create_comment_from_comment_in_hidden_post_normal_user() {
     let post = init::get_post_entity(false, true, false);
     let comment = init::get_comment_entity(post.id, false, false, false);
     let reply_content = "Don't panic! Try your best!";
-    let response = send_comment_from_comment_ko(
-        &client, 
-        auth_token_header, 
-        &comment.id, 
-        reply_content
-    );
+    let response =
+        send_comment_from_comment_ko(&client, auth_token_header, &comment.id, reply_content);
     assert_eq!(response.status(), Status::Forbidden);
 }
 
@@ -538,12 +496,7 @@ fn create_comment_from_comment_in_hidden_post_admin() {
     let post = init::get_post_entity(false, true, false);
     let comment = init::get_comment_entity(post.id, false, false, false);
     let reply_content = "Admin can still reply to a comment on a locked post!";
-    let reply = send_comment_from_comment(
-        &client, 
-        login_admin(),
-        &comment.id,
-        reply_content
-    );
+    let reply = send_comment_from_comment(&client, init::login_admin(), &comment.id, reply_content);
 
     let conn = init::database_connection();
     let comment_entity = CommentEntity::by_id(&conn, &reply.id).unwrap().unwrap();
@@ -1035,16 +988,210 @@ fn update_comment_locked_comment_admin() {
 // update a hidden comment (author) -> nok
 // update a comment with malformed json
 
-// delete a comment (admin)
-// delete a comment (author)
-// delete a comment (non-author)
-// delete a comment (unauthenticated)
-// delete a comment unexisting id
-// delete a comment from a soft-deleted post
-// delete a comment from a hidden post (admin) -> ok
+#[test]
+fn delete_comment_admin() {
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+    let post = init::get_post_entity(false, false, false);
+    let comment = init::get_comment_entity(post.id, false, false, false);
+
+    let before_deletion_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(before_deletion_comment.deleted_at.is_none());
+
+    delete_comment(&client, init::login_admin(), &comment.id);
+    let deleted_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(deleted_comment.deleted_at.is_some());
+}
+
+#[test]
+fn delete_comment_author() {
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+    let post = init::get_post_entity(false, false, false);
+
+    let (user, passwd) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &passwd);
+
+    let comment = send_comment_from_post(
+        &client,
+        auth_token_header.clone(),
+        &post.id,
+        "Normal user should be able to post a comment like this!!!",
+    );
+    let before_deletion_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(before_deletion_comment.deleted_at.is_none());
+
+    delete_comment(&client, auth_token_header.clone(), &comment.id);
+    let deleted_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(deleted_comment.deleted_at.is_some());
+}
+
+#[test]
+fn delete_comment_missing_capability() {
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+    let post = init::get_post_entity(false, false, false);
+    let comment = init::get_comment_entity(post.id, false, false, false);
+
+    let (user, passwd) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &passwd);
+
+    let before_deletion_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(before_deletion_comment.deleted_at.is_none());
+
+    let route = format!("{}/{}", COMMENT_ROUTE, comment.id);
+    let response = client
+        .delete(route)
+        .header(auth_token_header.clone())
+        .dispatch();
+    assert_eq!(response.status(), Status::Forbidden);
+
+    let not_deleted_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(not_deleted_comment.deleted_at.is_none());
+}
+
+#[test]
+fn delete_comment_unauthenticated() {
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+    let post = init::get_post_entity(false, false, false);
+    let comment = init::get_comment_entity(post.id, false, false, false);
+
+    let before_deletion_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(before_deletion_comment.deleted_at.is_none());
+
+    let route = format!("{}/{}", COMMENT_ROUTE, comment.id);
+    let response = client.delete(route).dispatch();
+    assert_eq!(response.status(), Status::Unauthorized);
+
+    let not_deleted_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(not_deleted_comment.deleted_at.is_none());
+}
+
+#[test]
+fn delete_comment_unexisting_id() {
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let mut unexisting_id = 1;
+    while CommentEntity::by_id(&conn, &unexisting_id)
+        .unwrap()
+        .is_some()
+    {
+        unexisting_id += 1;
+    }
+
+    let route = format!("{}/{}", COMMENT_ROUTE, unexisting_id);
+    let response = client.delete(route).header(init::login_admin()).dispatch();
+    assert_eq!(response.status(), Status::BadRequest);
+}
+
+#[test]
+fn delete_comment_comment_deleted() {
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+    let post = init::get_post_entity(false, false, false);
+    let comment = init::get_comment_entity(post.id, false, false, true);
+
+    let before_deletion_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(before_deletion_comment.deleted_at.is_some());
+
+    let route = format!("{}/{}", COMMENT_ROUTE, comment.id);
+    let response = client.delete(route).header(init::login_admin()).dispatch();
+    assert_eq!(response.status(), Status::BadRequest);
+
+    let after_bad_call = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(after_bad_call.deleted_at.is_some());
+}
+
+#[test]
+fn delete_comment_post_deleted() {
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+    let post = init::get_post_entity(false, false, true);
+    let comment = init::get_comment_entity(post.id, false, false, false);
+
+    let comment_before_deletion = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(comment_before_deletion.deleted_at.is_none());
+
+    let route = format!("{}/{}", COMMENT_ROUTE, comment.id);
+    let response = client.delete(route).header(init::login_admin()).dispatch();
+    assert_eq!(response.status(), Status::BadRequest);
+
+    let after_bad_call = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(after_bad_call.deleted_at.is_none());
+}
+
+#[test]
+fn delete_comment_post_hidden_admin() {
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+    let post = init::get_post_entity(false, true, false);
+    let comment = init::get_comment_entity(post.id, false, false, false);
+
+    let before_deletion_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(before_deletion_comment.deleted_at.is_none());
+
+    delete_comment(&client, init::login_admin(), &comment.id);
+    let after_bad_call = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(after_bad_call.deleted_at.is_some());
+}
+
+#[test]
+fn delete_comment_comment_hidden_admin() {
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+    let post = init::get_post_entity(false, false, false);
+    let comment = init::get_comment_entity(post.id, false, true, false);
+
+    let before_deletion_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(before_deletion_comment.deleted_at.is_none());
+
+    delete_comment(&client, init::login_admin(), &comment.id);
+    let after_bad_call = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(after_bad_call.deleted_at.is_some());
+}
+
+#[test]
+fn delete_comment_post_locked_admin() {
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+    let post = init::get_post_entity(true, false, false);
+    let comment = init::get_comment_entity(post.id, false, false, false);
+
+    let before_deletion_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(before_deletion_comment.deleted_at.is_none());
+
+    delete_comment(&client, init::login_admin(), &comment.id);
+    let after_bad_call = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(after_bad_call.deleted_at.is_some());
+}
+
+#[test]
+fn delete_comment_comment_locked_admin() {
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+    let post = init::get_post_entity(false, false, false);
+    let comment = init::get_comment_entity(post.id, true, false, false);
+
+    let before_deletion_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(before_deletion_comment.deleted_at.is_none());
+
+    delete_comment(&client, init::login_admin(), &comment.id);
+    let after_bad_call = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
+    assert!(after_bad_call.deleted_at.is_some());
+}
+
 // delete a comment from a hidden post (author) -> nok
-// delete a comment from a locked post (admin) -> nok
-// delete a soft-deleted comment
-// delete an hidden comment (admin) -> ok
 // delete an hidden comment (author) -> nok
-// delete a locked comment (admin) -> nok

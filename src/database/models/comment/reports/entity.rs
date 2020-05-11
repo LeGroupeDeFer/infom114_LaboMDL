@@ -3,7 +3,7 @@ use crate::database::models::prelude::*;
 use crate::database::schema::comments_reports;
 use crate::database::tables::comments_reports_table as table;
 
-use crate::lib::{Consequence, EntityError};
+use crate::lib::Consequence;
 use chrono::NaiveDateTime;
 use diesel::dsl::*;
 use diesel::prelude::*;
