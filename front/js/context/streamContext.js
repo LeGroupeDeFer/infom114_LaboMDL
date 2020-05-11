@@ -59,22 +59,26 @@ export function StreamProvider({ children }) {
   // avoid that is to allow react to execute its diff algorithm.
   const [state, setState] = useState({
     posts: {
+      focus: null,
+      value: [],
       _updatePost(promise) {
         pushEffect([
           promise,
-          (post) =>
-            setState((s) => ({
-              ...s,
-              posts: {
-                ...this,
-                value: s.posts.value.map((p) => (p.id === post.id ? post : p)),
-              },
-            })) || post,
+          (post) => setState((s) => {
+
+            let updatedPosts;
+            if (this.value.includes(post))
+              updatedPosts = s.posts.value.map((p) => (p.id === post.id ? post : p));
+            else
+              updatedPosts = [ ...s.posts.value, post ];
+
+            return { ...s, posts: { ...this, value: updatedPosts } };
+
+            }) || post,
           printerr, // TODO
         ]);
         return promise;
       },
-      value: [],
       of(id) {
         const prefetch = this.value.filter((p) => p.id == id);
         let promise;

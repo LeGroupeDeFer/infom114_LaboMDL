@@ -6,10 +6,13 @@ use crate::http::{
     helpers::StringVector,
     responders::{ok, ApiResult},
 };
-use crate::lib::{AuthError, Consequence, EntityError};
+use crate::lib::{AuthError, Consequence, EntityError, WatchEventError};
 
 use rocket_contrib::json::Json;
 use serde::export::TryFrom;
+use crate::database::models::post::{WatchEventEntity, WatchEventKind, WatchEventMinima, WatchEventData};
+use std::borrow::BorrowMut;
+use std::convert::AsRef;
 
 pub fn collect() -> Vec<rocket::Route> {
     routes!(
@@ -347,27 +350,55 @@ fn manage_post_report(
     Ok(Json(p))
 }
 
-#[post("/api/v1/post/<_post_id>/watch")]
+#[post("/api/v1/post/<_post_id>/watch", format = "json", data = "<data>")]
 fn watch_post(
     conn: DBConnection,
     auth: Auth,
     post_guard: PostGuard,
     _post_id: u32,
+    data: Json<WatchEventData>
 ) -> ApiResult<Post> {
-    if post_guard.post().is_deleted() {
-        Err(EntityError::InvalidID)?;
-    } else if false
-        || (post_guard.post().is_locked() && !auth.has_capability(&*conn, "post:edit_locked"))
-        || (post_guard.post().is_hidden() && !auth.has_capability(&*conn, "post:view_hidden"))
-    {
-        Err(AuthError::MissingCapability)?;
+    let payload = data.into_inner();
+    let mut post = post_guard.post_clone();
+
+    // Validation
+    if (&post).is_deleted() { Err(EntityError::InvalidID)?; }
+
+    let mut caps = vec!("post:watch");
+    if (&post).is_locked() { caps.push("post:edit_locked"); }
+    if (&post).is_hidden() { caps.push("post:view_hidden"); }
+    auth.check_capabilities(&*conn, caps)?;
+
+    if PostKind::Info == (&post).kind {
+        Err(WatchEventError::InvalidWatchTransition)?
     }
 
-    let mut post = post_guard.post_clone();
-    post.toggle_watch(&*conn)?;
+    let mut p = Post::from(post.clone());
+    let post_id = p.id;
+    let past_events: &mut Vec<WatchEventEntity> = p.watch_events.borrow_mut();
+    let last_event: Option<WatchEventKind> = WatchEventEntity::last(past_events)
+        .map(|le| WatchEventKind::try_from(le.event))
+        .transpose()?;
+    let new_event = WatchEventKind::try_from(payload.event)?;
 
-    let mut p = Post::from(post);
+    WatchEventEntity::validate_transition((&last_event).as_ref(), &new_event)?;
+    // End of validation
+
+    let wem = WatchEventMinima {
+        post_id,
+        author_id: auth.sub,
+        comment: payload.comment,
+        event: new_event.into()
+    };
+
+    let wee = WatchEventEntity::insert_new(&*conn, &wem)?;
     p.set_user_info(&*conn, &auth.sub);
+    p.watch_events.push(wee);
+
+    // Update post rank
+    post.watch_now();
+    post.update(&*conn)?;
+
     Ok(Json(p))
 }
 

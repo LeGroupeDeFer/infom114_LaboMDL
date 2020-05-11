@@ -17,6 +17,8 @@ pub const TOKEN_PREFIX: &'static str = "Bearer ";
 
 pub mod forms;
 pub use forms::*;
+use std::collections::HashSet;
+use std::iter::FromIterator;
 
 /* -------------------------------- Structs -------------------------------- */
 
@@ -137,8 +139,26 @@ impl Auth {
         }
     }
 
+    pub fn has_capabilities(&self, conn: &MysqlConnection, capabilities: Vec<&str>) -> bool {
+        let found = CapabilityEntity::with_names(&conn, &capabilities).unwrap(); // FIXME unwrap
+
+        let db_caps: HashSet<&str> = HashSet::from_iter(found.iter().map(|c| &*(c.name)));
+        let user_caps: HashSet<&str> = HashSet::from_iter(self.cap.iter().map(|c| &*(c.name)));
+        let intersection: HashSet<_> = db_caps.intersection(&user_caps).collect();
+
+        intersection.len() == capabilities.len()
+    }
+
     pub fn check_capability(&self, conn: &MysqlConnection, capability: &str) -> Consequence<()> {
         if !self.has_capability(conn, capability) {
+            Err(AuthError::MissingCapability)?
+        } else {
+            Ok(())
+        }
+    }
+
+    pub fn check_capabilities(&self, conn: &MysqlConnection, capabilities: Vec<&str>) -> Consequence<()> {
+        if !self.has_capabilities(conn, capabilities) {
             Err(AuthError::MissingCapability)?
         } else {
             Ok(())

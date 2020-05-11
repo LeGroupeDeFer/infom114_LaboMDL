@@ -113,7 +113,8 @@
 
     &.post-preview {
 
-        box-shadow: rgba(0, 0, 0, 0.05) 0 0 10px;
+        // Slows down performance by quite a bit
+        // box-shadow: rgba(0, 0, 0, 0.05) 0 0 10px;
         transition: .1s ease-out;
 
         &:hover {

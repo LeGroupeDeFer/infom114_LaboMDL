@@ -32,6 +32,7 @@ export function AuthProvider({ children }) {
           ...s,
           pending: false,
           user: data.user,
+          error: null,
           token: jwtDecode(data.accessToken)
         })) || data,
         error => setState(s => ({ ...s, pending: false, error }))
@@ -43,8 +44,8 @@ export function AuthProvider({ children }) {
       const promise = api.auth.logout();
       pushEffect([
         promise,
-        setState(state => ({ ...state, user: null, token: null })),
-        error => setState(state => ({ ...state, error }))
+        setState(s => ({ ...s, user: null, token: null, error: null })),
+        error => setState(s => ({ ...s, error }))
       ]);
       return promise;
     },
@@ -75,12 +76,13 @@ export function AuthProvider({ children }) {
 
     setTimeout(() => pushEffect([
       api.auth.refresh(),
-      data => setState(state => ({
-        ...state,
+      data => setState(s => ({
+        ...s,
         user: data.user,
+        error: null,
         token: jwtDecode(data.accessToken)
       })),
-      error => setState(state => ({ ...state, error, user: null, token: null }))
+      error => setState(s => ({ ...s, error, user: null, token: null }))
     ]), expiration - now);
 
   }, [state.token]);

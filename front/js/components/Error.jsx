@@ -7,6 +7,7 @@ export function Simple({ error, className }) {
 
   const cls = clsx('bg-dark text-center text-light p-2', className);
 
+  console.log(error);
   return error ? (
     <div className={cls}>
       <Icon
@@ -16,7 +17,7 @@ export function Simple({ error, className }) {
       />
       <p className="m-0">{error.reason}</p>
     </div>
-  ) : false;
+  ) : <></>;
 }
 
 Simple.defaultProps = {

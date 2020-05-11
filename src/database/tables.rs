@@ -13,4 +13,5 @@ pub use super::schema::{
     users_roles::dsl::users_roles as users_roles_table,
     votes_comments::dsl::votes_comments as votes_comments_table,
     votes_posts::dsl::votes_posts as votes_posts_table,
+    watch_events::dsl::watch_events as watch_events_table,
 };
