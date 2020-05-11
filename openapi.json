@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "UNAnimity",
-    "version": "0.2.4"
+    "version": "0.4.2"
   },
   "servers": [
     {

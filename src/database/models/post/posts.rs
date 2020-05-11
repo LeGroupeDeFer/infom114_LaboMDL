@@ -105,7 +105,8 @@ impl PostEntity {
         tags: Vec<String>,
         keywords: Vec<String>,
         sort: Option<SortOrder>,
-        kind: Option<String>, // type
+        kind: Option<String>,
+        author: Option<u32>,
         limit: Option<u32>,
         offset: Option<u32>
     ) -> Consequence<Vec<Self>> {
@@ -144,12 +145,18 @@ impl PostEntity {
 
         let kid: Option<u8> = kind
             .and_then(|v| if &*v == "all" { None } else { Some(v) })  // Option<String>
-            .map(|v| PostKind::try_from(v))              // Option<Result<PostKind>>
-            .transpose()?                                      // Option<PostKind>
+            .map(|v| PostKind::try_from(v))                       // Option<Result<PostKind>>
+            .transpose()?                                                           // Option<PostKind>
             .map(|k| k.into());
 
         if let Some(id) = kid {
             query = query.filter(dsl::kind.eq(id));
+        }
+
+        /* ---------------------------------------------------------- AUTHOR */
+
+        if let Some(author_id) = author {
+            query = query.filter(dsl::author_id.eq(author_id));
         }
 
         /* -------------------------------------------------------- ORDER BY */
@@ -513,7 +520,8 @@ impl Post {
         tags: Vec<String>,
         keywords: Vec<String>,
         sort: Option<SortOrder>,
-        kind: Option<String>, // type
+        kind: Option<String>,
+        author: Option<u32>,
         limit: Option<u32>,
         offset: Option<u32>,
     ) -> Consequence<Vec<Self>> {
@@ -524,6 +532,7 @@ impl Post {
             keywords,
             sort,
             kind,
+            author,
             limit,
             offset,
         )?;

@@ -95,7 +95,7 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult
 
 // typo on tape is intentional : `type` is a rust reserved keyword
 #[get(
-    "/api/v1/posts?<tags>&<keywords>&<order>&<kind>&<limit>&<offset>",
+    "/api/v1/posts?<tags>&<keywords>&<order>&<kind>&<author>&<limit>&<offset>",
     rank = 1
 )]
 fn get_all_posts_authenticated(
@@ -105,6 +105,7 @@ fn get_all_posts_authenticated(
     keywords: StringVector,
     order: Option<String>,
     kind: Option<String>,
+    author: Option<u32>,
     limit: Option<u32>,
     offset: Option<u32>,
 ) -> ApiResult<Vec<Post>> {
@@ -120,6 +121,7 @@ fn get_all_posts_authenticated(
         (*keywords).clone(),
         sort_order,
         kind,
+        author,
         limit,
         offset,
     )?
@@ -133,7 +135,7 @@ fn get_all_posts_authenticated(
 }
 
 #[get(
-    "/api/v1/posts?<tags>&<keywords>&<order>&<kind>&<limit>&<offset>",
+    "/api/v1/posts?<tags>&<keywords>&<order>&<kind>&<author>&<limit>&<offset>",
     rank = 2
 )]
 fn get_all_posts(
@@ -141,7 +143,8 @@ fn get_all_posts(
     tags: StringVector,
     keywords: StringVector,
     order: Option<String>,
-    kind: Option<String>, // type
+    kind: Option<String>,
+    author: Option<u32>,
     limit: Option<u32>,
     offset: Option<u32>,
 ) -> ApiResult<Vec<Post>> {
@@ -156,6 +159,7 @@ fn get_all_posts(
         (*keywords).clone(),
         sort_order,
         kind,
+        author,
         limit,
         offset,
     )?))
