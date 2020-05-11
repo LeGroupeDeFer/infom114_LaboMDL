@@ -15,9 +15,7 @@ import { Authenticated } from '../components/';
 import api from '../lib/api';
 import Moment from '../components/Moment';
 
-
 function Profile() {
-
   const { user } = useAuth();
   const [posts, setPosts] = useState();
 
@@ -28,7 +26,6 @@ function Profile() {
 
   useEffect(() => {
     fetch();
-
   }, []);
 
   return (
@@ -39,32 +36,28 @@ function Profile() {
       <br />
       <br />
       <br />
-      <Container >
+      <Container>
         <Row>
           <Col xs={12} md={5}>
             <div className="fixed-info">
               <h2 className="mb-3 mt-3">
-                <span className=" mr-3"><Icon icon="user" /> <b>Profil utilisateur</b></span>
+                <span className=" mr-3">
+                  <Icon icon="user" /> <b>Profil utilisateur</b>
+                </span>
               </h2>
-              {
-                user ? <User user={user} /> : <></>
-              }
+              {user ? <User user={user} /> : <></>}
             </div>
           </Col>
           <Col xs={12} md={7}>
-            {
-              posts ? <Stream onlySpecificPosts={posts} /> : <></>
-            }
+            {posts ? <Stream onlySpecificPosts={posts} /> : <></>}
           </Col>
         </Row>
       </Container>
     </>
   );
-};
-
+}
 
 const Menu = () => {
-
   return (
     <Row>
       <Col xs={5} md={5}></Col>
@@ -75,11 +68,7 @@ const Menu = () => {
             placement="bottom"
             overlay={<Tooltip>Se déconnecter</Tooltip>}
           >
-            <a
-              key={1}
-              href="/logout"
-              className={'kind-choice'}
-            >
+            <a key={1} href="/logout" className={'kind-choice'}>
               <Icon icon="door-open" />
             </a>
           </OverlayTrigger>
@@ -91,10 +80,9 @@ const Menu = () => {
 };
 
 const User = ({ user }) => {
-
   return (
     <Row>
-      <Col xs={6} md={12} >
+      <Col xs={6} md={12}>
         <div>
           <img
             src="https://www.freelogodesign.org/file/app/client/thumb/93b27fc8-6653-43ea-a4c4-3f22893f93dd_200x200.png?1585111496240"
@@ -102,16 +90,23 @@ const User = ({ user }) => {
             className="profile-pic"
           />
         </div>
-      </ Col>
-      <Col xs={6} md={7} >
+      </Col>
+      <Col xs={6} md={7}>
         <hr />
-        <span><b>{user.firstname}</b> </span>
-        <span><b>{user.lastname}</b> </span>
+        <span>
+          <b>{user.firstname}</b>{' '}
+        </span>
+        <span>
+          <b>{user.lastname}</b>{' '}
+        </span>
         <hr />
-        <span>Email : {user.email}</span><br />
-        <span>A rejoint le : <Moment date={user.creationDate} /></span>
+        <span>Email : {user.email}</span>
+        <br />
+        <span>
+          A rejoint le : <Moment date={user.creationDate} />
+        </span>
         <hr />
-      </ Col>
+      </Col>
     </Row>
   );
 };
