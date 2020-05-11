@@ -152,9 +152,7 @@ fn get_comment_authenticated(
     comment_guard: CommentGuard,
     _comment_id: u32,
 ) -> ApiResult<Comment> {
-    let post = PostEntity::by_id(&*conn, &comment_guard.comment().post_id)
-        .unwrap()
-        .unwrap();
+    let post = PostEntity::by_id(&*conn, &comment_guard.comment().post_id)??;
 
     let can_view_hidden = auth.deref().has_capability(&*conn, "comment:view_hidden");
 
@@ -181,9 +179,8 @@ fn get_comment_unauthenticated(
         Err(EntityError::InvalidID)?
     }
 
-    let post = PostEntity::by_id(&*conn, &comment_guard.comment().post_id)
-        .unwrap()
-        .unwrap();
+    let post = PostEntity::by_id(&*conn, &comment_guard.comment().post_id)??;
+
     if post.is_deleted() || post.is_hidden() {
         Err(EntityError::InvalidID)?
     }
@@ -199,23 +196,18 @@ fn updown_vote(
     _comment_id: u32,
     data: Json<ChangeVote>,
 ) -> ApiResult<Comment> {
-    println!("Got in to the function!");
     let can_view_hidden = auth.has_capability(&*conn, "comment:view_hidden");
     let can_edit_locked = auth.has_capability(&*conn, "comment:edit_locked");
 
-    let post = PostEntity::by_id(&*conn, &comment_guard.comment().post_id)
-        .unwrap()
-        .unwrap();
-    if comment_guard.comment().is_deleted()
-        || (comment_guard.comment().is_hidden() && !can_view_hidden)
-        || post.is_deleted()
-        || (post.is_hidden() && !can_view_hidden)
-    {
-        Err(EntityError::InvalidID)?
-    }
+    let post = PostEntity::by_id(&*conn, &comment_guard.comment().post_id)??;
 
-    if (comment_guard.comment().is_locked() && !can_edit_locked)
-        || (post.is_locked() && !can_edit_locked)
+    if comment_guard.comment().is_deleted() || post.is_deleted() {
+        Err(EntityError::InvalidID)?
+    } else if false
+        || (post.is_hidden() && !auth.has_capability(&*conn, "post:view_hidden"))
+        || (post.is_locked() && !auth.has_capability(&*conn, "post:edit_locked"))
+        || (comment_guard.comment().is_hidden() && !can_view_hidden)
+        || (comment_guard.comment().is_locked() && !can_edit_locked)
     {
         Err(AuthError::MissingCapability)?
     }
