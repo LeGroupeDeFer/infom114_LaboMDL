@@ -18,7 +18,11 @@ export default function About(props) {
       </Card>
       <br />
       <br />
-      <h4 className="text-center"> FAQ</h4>
+      <img
+        id="faq-img"
+        src="https://axanar.com/wp-content/uploads/2016/01/faq-icon-1024x361.png"
+        className="mx-auto d-block"
+      ></img>
       <hr />
       <Accordion>
         <Card>
