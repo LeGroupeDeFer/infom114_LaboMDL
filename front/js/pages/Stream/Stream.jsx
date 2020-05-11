@@ -39,16 +39,16 @@ function InnerStream({
   onDeleteConfirmation,
   onFlagConfirmation,
   onWatch,
-  setAuthorPost,
+  setAuthorPostFilter,
+  removeAllFilter,
   userId,
 }) {
   let stream = useStream();
 
+  //FIXME - Find a proper solution
   useEffect( () => {
-    userId ? setAuthorPost(userId) : console.log("No specified user");
+    userId ? setAuthorPostFilter(userId) : removeAllFilter();
   }, []);
-
-  console.log(stream.posts.value);
 
   return (
     <div className="stream-content">

@@ -9,10 +9,9 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import 'regenerator-runtime';
 
-import Stream from '../pages/Stream/index';
+import StreamContent from '../pages/Stream/index';
 import { useAuth } from '../context';
 import { Authenticated } from '../components/';
-import api from '../lib/api';
 import Moment from '../components/Moment';
 
 
@@ -42,7 +41,7 @@ function Profile() {
           </Col>
           <Col xs={12} md={7}>
             {
-              user ? <Stream userId={user.id} /> : <></>
+              user ? <StreamContent userId={user.id} /> : <></>
             }
           </Col>
         </Row>
