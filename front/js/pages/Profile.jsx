@@ -19,17 +19,6 @@ import Moment from '../components/Moment';
 function Profile() {
 
   const { user } = useAuth();
-  const [posts, setPosts] = useState();
-
-  const fetch = async () => {
-    let res = await api.users.posts(user.id);
-    setPosts(res);
-  };
-
-  useEffect(() => {
-    fetch();
-
-  }, []);
 
   return (
     <>
@@ -53,7 +42,7 @@ function Profile() {
           </Col>
           <Col xs={12} md={7}>
             {
-              posts ? <Stream onlySpecificPosts={posts} /> : <></>
+              user ? <Stream userId={user.id} /> : <></>
             }
           </Col>
         </Row>

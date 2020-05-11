@@ -1,6 +1,6 @@
 import 'regenerator-runtime';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Container,
@@ -39,12 +39,16 @@ function InnerStream({
   onDeleteConfirmation,
   onFlagConfirmation,
   onWatch,
-  filteredPosts,
+  setAuthorPost,
+  userId,
 }) {
   let stream = useStream();
-  if (filteredPosts) {
-    stream.posts.value = filteredPosts;  
-  }
+
+  useEffect( () => {
+    userId ? setAuthorPost(userId) : console.log("No specified user");
+  }, []);
+
+  console.log(stream.posts.value);
 
   return (
     <div className="stream-content">
@@ -213,14 +217,12 @@ function Stream({ onSort, ...others }) {
 }
 
 //Same as Stream() but does not give you a header 
-//Let you give the desired posts to the stream
-export function SpecificStream({ filteredPosts, ...others }) {
-  const stream = useStream();
+export function SpecificStream({ userId, ...others }) {
 
   return (
     <Container className="py-5">
       {/* Posts */}
-      <InnerStream filteredPosts={filteredPosts} {...others} />
+      <InnerStream userId={userId} {...others} />
     </Container>
   );
 }
