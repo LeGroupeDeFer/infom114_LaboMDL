@@ -123,7 +123,7 @@ function PollOptions() {
               overlay={
                 <Tooltip className="nav-tooltip">
                   En cochant cette cache, votre sondage sera analysé et traité
-                  comme une idée.
+                  comme une idée
                 </Tooltip>
               }
             >
