@@ -22,7 +22,8 @@ pub fn collect() -> Vec<Route> {
         create_reply_to_comment,
         get_comment_authenticated,
         get_comment_unauthenticated, 
-        updown_vote
+        updown_vote,
+        manage_comment_report
     )
 }
 
@@ -194,8 +195,47 @@ fn updown_vote(
     let mut comment_entity = comment_guard.comment_clone();
     comment_entity.upvote(&*conn, &auth.sub, vote_request.vote)?;
 
-    let mut comment = Comment::from(comment_entity);
-    comment.set_user_info(&*conn, &auth.sub);
+    let mut c = Comment::from(comment_entity);
+    c.set_user_info(&*conn, &auth.sub);
 
-    Ok(Json(comment))
+    Ok(Json(c))
+}
+
+#[post("/api/v1/comment/<_comment_id>/report", format = "json", data = "<data>")]
+fn manage_comment_report(
+    conn: DBConnection,
+    auth: Auth,
+    comment_guard: CommentGuard,
+    _comment_id: u32,
+    data: Option<Json<ReportData>>,
+) -> ApiResult<Comment> {
+    let can_view_hidden = auth.has_capability(&*conn, "comment:view_hidden");
+    let can_edit_locked = auth.has_capability(&*conn, "comment:edit_locked");
+
+    let comment = comment_guard.comment_clone();
+    let post = PostEntity::by_id(&*conn, &comment.post_id).unwrap().unwrap();
+
+    if comment.is_deleted() || post.is_deleted() {
+        Err(EntityError::InvalidID)?
+    } 
+    
+    if ((comment.is_locked() || post.is_locked()) && !can_edit_locked)
+        || ((comment.is_hidden() || post.is_hidden()) && !can_view_hidden)
+    {
+        Err(AuthError::MissingCapability)?
+    }
+
+    match data {
+        Some(json_data) => {
+            let report_data = json_data.into_inner();
+            comment.report(&*conn, &auth.sub, report_data.reason)?;
+        }
+        None => {
+            comment.remove_report(&*conn, &auth.sub)?;
+        }
+    }
+
+    let mut c = Comment::from(comment);
+    c.set_user_info(&*conn, &auth.sub);
+    Ok(Json(c))
 }

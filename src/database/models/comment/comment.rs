@@ -19,8 +19,10 @@ pub struct Comment {
     pub updated_at: String,
     pub votes: u64,
     pub score: i64,
+    pub flags: u64,
     pub replies: Vec<Comment>,
     pub user_vote: Option<i16>,
+    pub user_flag: Option<bool>,
 }
 
 impl Comment {
@@ -36,6 +38,19 @@ impl Comment {
             .map_or(0, |vote| vote.vote_value);
 
         self.user_vote = Some(user_vote);
+
+        let report_minima = RelCommentReportMinima {
+            comment_id: self.id,
+            user_id: user_id.clone(),
+            reason: None,
+        };
+
+        self.user_flag = Some(
+            RelCommentReportEntity::select(&conn, &report_minima)
+                .unwrap_or(None)
+                .is_some(),
+        );
+        // TODO return replies
     }
 
 }
@@ -57,6 +72,7 @@ impl From<CommentEntity> for Comment {
             updated_at: ce.updated_at.to_string(),
             votes: ce.votes,
             score: ce.score,
+            flags: RelCommentReportEntity::count_by_comment_id(&conn, &ce.id).unwrap(),
             replies: vec![],
             // todo : implement replies
             // ce.parent_id
@@ -65,6 +81,7 @@ impl From<CommentEntity> for Comment {
             //         .and_then::<Comment>(|comment_entity| Some(Comment::from(comment_entity)))
             // }),
             user_vote: None,
+            user_flag: None
         }
     }
 }
@@ -181,5 +198,35 @@ impl CommentEntity {
 
     pub fn count_votes(&self, conn: &MysqlConnection) -> Consequence<u64> {
         Ok(RelCommentVoteEntity::count_by_comment_id(&conn, self.id)?)
+    }
+
+    pub fn report(
+        &self,
+        conn: &MysqlConnection,
+        user_id: &u32,
+        reason: Option<String>,
+    ) -> Consequence<()> {
+        let minima = RelCommentReportMinima {
+            comment_id: self.id,
+            user_id: user_id.clone(),
+            reason,
+        };
+        RelCommentReportEntity::insert_new(conn, &minima)?;
+        Ok(())
+    }
+
+    pub fn remove_report(&self, conn: &MysqlConnection, user_id: &u32) -> Consequence<()> {
+        let minima = RelCommentReportMinima {
+            comment_id: self.id,
+            user_id: user_id.clone(),
+            reason: None,
+        };
+        match RelCommentReportEntity::select(conn, &minima)? {
+            Some(entity) => {
+                entity.delete(conn)?;
+            }
+            None => Err(EntityError::InvalidID)?,
+        }
+        Ok(())
     }
 }

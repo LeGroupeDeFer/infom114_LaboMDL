@@ -3,7 +3,8 @@ pub use super::{
     capability::{Capability, CapabilityData, CapabilityEntity, CapabilityMinima, CAPABILITIES},
     comment::{
         Comment, CommentEntity, CommentMinima, NewComment,
-        RelCommentVoteEntity, RelCommentVoteMinima},
+        RelCommentVoteEntity, RelCommentVoteMinima,
+        RelCommentReportEntity, RelCommentReportMinima},
     post::{
         ActivityReport, ChangeVote, NewPost, PollAnswer, PollAnswerEntity, PollVote, Post,
         PostEntity, PostKind, PostMinima, PostPoll, RelPostReportEntity, RelPostReportMinima,
