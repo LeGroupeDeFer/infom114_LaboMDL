@@ -198,3 +198,28 @@ pub fn send_vote<'a, 'b>(
         .body(format!("{{ \"vote\":{} }}", vote_value))
         .dispatch()
 }
+
+pub fn toggle_report<'a, 'b>(
+    client: &'a rocket::local::Client,
+    auth_token: rocket::http::Header<'static>,
+    comment_id: &'b u32,
+    reason: Option<&str>,
+) -> rocket::local::LocalResponse<'a> {
+    let route = format!("{}/{}/report", COMMENT_ROUTE, comment_id);
+    match reason {
+        Some(r) => {
+            let reason_json = format!("{{ \"reason\": \"{}\" }}", r);
+            client
+                .post(route)
+                .header(ContentType::JSON)
+                .header(auth_token)
+                .body(reason_json)
+                .dispatch()
+        }
+        None => client
+            .post(route)
+            .header(ContentType::JSON)
+            .header(auth_token)
+            .dispatch(),
+    }
+}
