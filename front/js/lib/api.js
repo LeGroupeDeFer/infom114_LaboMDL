@@ -229,6 +229,15 @@ Object.assign(posts, {
   pollVote(postId, answerId) {
     return api(`/post/${postId}/poll`, { method: 'POST', body: { answerId } });
   },
+  comment(postId, comment) {
+    return api(`/post/${postId}/comment`, {
+      method: 'POST',
+      body: { content: comment },
+    });
+  },
+  comments(postId) {
+    return api(`/post/${postId}/comments`);
+  },
 });
 
 /* --------------------------------- Tags --------------------------------- */
@@ -325,7 +334,7 @@ function postFlagged() {
 }
 
 function userPosts(id) {
-  return api(`/user/${id}/posts`)
+  return api(`/user/${id}/posts`);
 }
 
 api.tags = tags;

@@ -39,7 +39,6 @@ export default function About(props) {
           </Card.Header>
           <Accordion.Collapse eventKey="1">
             <Card.Body>
-              <p>Quel sont les différents types de publications ?</p>
               <p> Il existe 3 catégories de publications.</p>
               <p>
                 <b> - Les informations</b> : qui sont utilisés par
