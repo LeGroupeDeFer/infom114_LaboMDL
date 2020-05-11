@@ -1,89 +1,116 @@
 import React, { useState } from 'react';
-import { Button, Card, Row } from 'react-bootstrap';
+import { Button, Card, Row, Col } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
 import ProgressBar from 'react-bootstrap/ProgressBar';
-import { FaRegCheckCircle } from 'react-icons/fa';
+import CheckCircle from '../../icons/check-circle-regular.svg';
 
-function Poll() {
-  const options = ['Option 1', 'Option2'];
-  const [voted, setVoted] = useState(false);
+
+function Poll({ postId, answers, userAnswer, onPollVote }) {
+  const [userVote, setUserVote] = useState(
+    userAnswer == null ? null : userAnswer.id
+  );
+  const [optionSelected, setOptionSelected] = useState(null);
+  let toltalVote = 0;
+  answers.forEach((a) => (toltalVote += a.count));
+
+  function vote() {
+    onPollVote(postId, optionSelected);
+    setUserVote(optionSelected);
+  }
 
   return (
     <>
-      {!voted && (
-        <Card onClick={(e) => e.preventDefault} className="poll mb-2">
-          <Card.Header>
-            <span className="ml-">12 votes</span>
-          </Card.Header>
-          <Card.Body>
-            <Card.Text>
-              {options.map((opt, index) => {
+      <Card onClick={(e) => e.preventDefault} className="poll mb-2">
+        <Card.Header>
+          <span className="ml-3">
+            {toltalVote} {toltalVote > 1 ? ' votes' : ' vote'}
+          </span>
+        </Card.Header>
+        <Card.Body>
+          {userVote == null && (
+            <>
+              {answers.map((opt, index) => {
                 return (
                   <Form.Check
                     type="radio"
-                    label={opt}
-                    id={`opt-${index + 1}`}
+                    label={opt.answer}
+                    id={`opt-${opt.id}`}
                     className="mb-3"
                     name="poll-options"
+                    onChange={() => setOptionSelected(opt.id)}
+                    key={index}
                   />
                 );
               })}
-            </Card.Text>
-            <Button variant="primary" onClick={() => setVoted(true)}>
-              Voter
-            </Button>
-          </Card.Body>
-        </Card>
-      )}
+              <Button
+                variant="primary"
+                onClick={() => vote()}
+                disabled={optionSelected == null}
+              >
+                Voter
+              </Button>
+            </>
+          )}
 
-      {voted && (
-        <Card onClick={(e) => e.preventDefault} className="poll mb-2">
-          <Card.Header>
-            <span className="ml-">12 votes</span>
-          </Card.Header>
-          <Card.Body>
-            <div>
-              <ProgressBar
-                animated
-                now={70}
-                className="mb-2"
-                label={
-                  <span className="progress-value">
-                    <span className="mr-5">35</span>
-                    <span>Option 1</span>
-                    <FaRegCheckCircle size={20} className="ml-1 opt-selected" />
-                  </span>
-                }
-              />
-              <ProgressBar
-                animated
-                now={2}
-                className="mb-2"
-                label={
-                  <span className="progress-value">
-                    <span className="mr-5">1</span>
-                    <span>Option 2 avec looong label</span>
-                  </span>
-                }
-              />
-
-              <ProgressBar
-                animated
-                now={28}
-                className="mb-2"
-                label={
-                  <span className="progress-value">
-                    <span className="mr-5">14</span>
-                    <span>Option 3</span>
-                  </span>
-                }
-              />
-            </div>
-          </Card.Body>
-        </Card>
-      )}
+          {userVote != null && (
+            <>
+              {answers.map((opt, index) => {
+                return (
+                  <ProgressBar
+                    animated
+                    key={index}
+                    now={opt.count == 0 ? 0.5 : (opt.count * 100) / toltalVote}
+                    className="mb-2"
+                    label={
+                      <div className="progress-value">
+                        <Row>
+                          <Col xs={1} className="text-right">
+                            {opt.count}
+                          </Col>
+                          <Col xs={11} className="text-left">
+                            {opt.answer}
+                            {userVote == opt.id && (
+                              <CheckCircle className="ml-2 opt-selected" />
+                            )}
+                          </Col>
+                        </Row>
+                      </div>
+                    }
+                  />
+                );
+              })}
+            </>
+          )}
+        </Card.Body>
+      </Card>
     </>
   );
 }
 
 export default Poll;
+
+{
+  /* Object.keys(optionVote).map((obj, idex) => {
+  return (<ProgressBar
+    animated
+    now={70}
+    className="mb-2"
+    label={
+      <div className="progress-value">
+        <Row>
+          <Col xs={1} className="text-right">
+            35
+          </Col>
+          <Col xs={11} className="text-left">
+            Option 1
+            <FaRegCheckCircle
+              size={20}
+              className="ml-1 opt-selected"
+            />
+          </Col>
+        </Row>
+      </div>
+    }
+  />
+</>)} */
+}

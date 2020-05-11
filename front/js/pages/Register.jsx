@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faArrowRight, faExclamationCircle, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { Container, Row, Col, Form } from 'react-bootstrap';
-import { Link, useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import { AutoForm, Flexbox, Image, Unauthenticated } from '../components';
-import { useAuth } from '../context/authContext';
-import { useAction } from '../hooks';
-import { api, trace, debounce, tee, aggregate } from '../lib';
+import {subscribed, usePositiveEffect} from '../hooks';
+import { api, aggregate } from '../lib';
 import { isUnamurEmail, isValidNatural, isValidPassword, isValidPhoneNumber } from '../lib/validators';
 
 
@@ -20,7 +18,7 @@ function Header() {
     <Flexbox justify="center" align="end" className="mb-3 form-header">
       <h4 className="mb-1 mx-2">
         <Link to="/" className="text-secondary">
-          <Icon icon={faArrowLeft} className="mr-2" />
+          <Icon icon="arrow-left" className="mr-2" />
           HOME
         </Link>
       </h4>
@@ -28,7 +26,7 @@ function Header() {
       <h4 className="mb-1 mx-2">
         <Link to="/login" className="text-secondary">
           SIGN IN
-          <Icon icon={faArrowRight} className="ml-2" />
+          <Icon icon="arrow-right" className="ml-2" />
         </Link>
       </h4>
     </Flexbox>
@@ -271,7 +269,7 @@ function RegisterForm() {
 function RegistrationSuccess({ email }) {
   return (
     <Flexbox className="h-100 text-center" align="center" direction="column" justify="center">
-      <Icon icon={faCheckCircle} className="display-4 pb-3" />
+      <Icon icon="check-circle" className="display-4 pb-3" />
       <h1 className="pb-3 text-secondary font-weight-bold">
         Registration success
       </h1>
@@ -288,7 +286,7 @@ function ErrorMessage({ error }) {
   return error ? (
     <div className="bg-dark text-center p-2">
       <Icon
-        icon={faExclamationCircle}
+        icon="exclamation-circle"
         className="text-danger mr-2"
         style={{ display: 'inline-box' }}
       />
@@ -300,18 +298,30 @@ function ErrorMessage({ error }) {
 
 const Register = Unauthenticated((props) => {
 
-  const [email, setEmail] = useState(null);
-  const [handler, error, success] = useAction(tee(
-    ({ email }) => setEmail(email),
-    data => api.auth.register(
-      aggregate(data, 'address', ['street', 'number', 'boxNumber', 'zipcode', 'city'])
-    )
-  ));
+  const [state, setState] = useState({ email: null, error: null, success: null, promise: null });
+
+  const onSubmit = data => setState(s => ({
+    ...s,
+    email: data.email,
+    promise: api.auth.register(aggregate(
+      data,
+      'address',
+      ['street', 'number', 'boxNumber', 'zipcode', 'city']
+    ))
+  }));
+
+  usePositiveEffect(subscribed(
+    state.promise,
+    () => setState(s => ({ ...s, success: true, error: false, promise: null })),
+    () => setState(s => ({ ...s, success: false, error: true, promise: null })),
+  ), [state.promise]);
+
+  const { email, error, success } = state;
 
   return (
     <Container className="register-form">
       <AutoForm
-        onSubmit={handler}
+        onSubmit={onSubmit}
         validator={confirmPassword}
         autoComplete="off"
       >

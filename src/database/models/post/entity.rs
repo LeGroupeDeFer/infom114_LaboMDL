@@ -9,20 +9,13 @@ use crate::lib::consequence::*;
 
 use crate::database::schema::posts;
 use crate::database::schema::posts::dsl::{self, posts as table};
-
+use std::hash::{Hash, Hasher};
 
 #[derive(
-    Identifiable,
-    Queryable,
-    AsChangeset,
-    Associations,
-    Serialize,
-    Deserialize,
-    Clone,
-    Debug,
-    PartialEq,
+    Identifiable, Queryable, AsChangeset, Associations, Serialize, Deserialize, Clone, Debug,
 )]
 #[table_name = "posts"]
+#[changeset_options(treat_none_as_null = "true")]
 pub struct PostEntity {
     pub id: u32,
     pub title: String,
@@ -33,6 +26,7 @@ pub struct PostEntity {
     pub deleted_at: Option<NaiveDateTime>,
     pub hidden_at: Option<NaiveDateTime>,
     pub locked_at: Option<NaiveDateTime>,
+    pub watched_at: Option<NaiveDateTime>,
     pub votes: u64,
     pub score: i64,
     pub rank: f64,
@@ -45,7 +39,7 @@ pub struct PostMinima {
     pub title: String,
     pub content: String,
     pub author_id: u32,
-    pub kind: u8
+    pub kind: u8,
 }
 
 impl Entity for PostEntity {
@@ -109,5 +103,19 @@ impl Entity for PostEntity {
             .execute(conn)
             .map(|_| ())
             .map(Ok)?
+    }
+}
+
+impl PartialEq for PostEntity {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for PostEntity {}
+
+impl Hash for PostEntity {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
     }
 }

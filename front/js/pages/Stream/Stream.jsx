@@ -1,5 +1,7 @@
 import 'regenerator-runtime';
-import React, { Suspense, useState } from 'react';
+
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Container,
   Row,
@@ -12,150 +14,172 @@ import {
   OverlayTrigger,
   Toast,
 } from 'react-bootstrap';
-import { MdSort } from 'react-icons/md';
-import { FaSearch, FaTag, FaEdit } from 'react-icons/fa';
-import { useAuth } from '../../context/authContext';
-import { Link } from 'react-router-dom';
-import { Post, SearchBar } from '../../components';
-import api from '../../lib/api';
-import DeleteModal from 'unanimity/components/Post/DeleteModal';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+import MdSort from '../../icons/sort.svg';
+import { useStream } from 'unanimity/context/streamContext';
+import { ORDER } from 'unanimity/lib';
+import Post from 'unanimity/components/Post';
 
 // InnerStream :: Object => Component
-function InnerStream({ posts, onClick, showPreview, showDelete, onTagClick }) {
+function InnerStream({
+  deletePost,
+  flagPost,
+  onDelete,
+  previewPost,
+  onPreview,
+  toast,
+  onToast,
+  toastMsg,
+  onFlag,
+  onFlagCancel,
+  onHide,
+  onVote,
+  onPollVote,
+  onTag,
+  onDeleteConfirmation,
+  onFlagConfirmation,
+  onWatch,
+}) {
+  const stream = useStream();
+
   return (
-    <>
-      {posts.map((post) => (
-        <Row key={post.id} className="mb-4">
+    <div className="stream-content">
+      {stream.posts.value.map((post) => (
+        <Row key={post.id} className="mb-4 post-row">
           <Col>
-            <Post.Preview
-              onClick={onClick}
+            <Post
+              isPreview
               post={post}
-              // showPreviewModal={showPreview}
-              showDeleteModal={showDelete}
-              onTagClick={onTagClick}
+              onDelete={onDelete}
+              onFlag={onFlag}
+              onFlagCancel={onFlagCancel}
+              onHide={onHide}
+              onVote={onVote}
+              onPollVote={onPollVote}
+              onPreview={onPreview}
+              onTag={onTag}
+              onWatch={onWatch}
             />
           </Col>
         </Row>
       ))}
-    </>
+
+      {/* Preview modal */}
+      <Modal
+        id="preview-modal"
+        show={!!previewPost}
+        onHide={() => onPreview(false)}
+        dialogClassName="modal-80w"
+      >
+        <Modal.Header closeButton />
+        <Modal.Body>
+          {previewPost && (
+            <Post
+              post={previewPost}
+              onDelete={onDelete}
+              onFlag={onFlag}
+              onFlagCancel={onFlagCancel}
+              onHide={onHide}
+              onVote={(vote) => onVote(post, vote)}
+              onPreview={onPreview}
+              onTag={onTag}
+            />
+          )}
+        </Modal.Body>
+      </Modal>
+
+      {/* Delete post modal */}
+      <Post.Delete
+        post={deletePost}
+        show={!!deletePost}
+        onHide={() => onDelete(false)}
+        onDelete={onDeleteConfirmation}
+        onToast={onToast}
+      />
+
+      {/* Report post modal */}
+      <Post.Report
+        post={flagPost}
+        show={!!flagPost}
+        onHide={() => onFlag(false)}
+        onFlag={onFlagConfirmation}
+        onToast={onToast}
+      />
+      <Toast
+        className="notification"
+        show={toast}
+        onClose={() => onToast(false)}
+        delay={4000}
+        autohide
+      >
+        <Toast.Header>
+          <strong className="mr-auto"> {toastMsg}</strong>
+        </Toast.Header>
+      </Toast>
+    </div>
+  );
+}
+
+function SortDropdownItem({ value, label, onSort }) {
+  return (
+    <Dropdown.Item as="button" onClick={() => onSort(value)}>
+      {label}
+    </Dropdown.Item>
   );
 }
 
 // SortDropdown :: None => Component
-const SortDropdown = (props) => {
-  const [criteria, setCriteria] = useState('none');
+function SortDropdown({ onSort }) {
   const [title, setTitle] = useState('Trier par');
+
+  const orders = [
+    { label: 'Rang', value: ORDER.RANK.DESC },
+    { label: 'Score', value: ORDER.SCORE.DESC },
+    { label: 'Récent', value: ORDER.AGE.DESC },
+    { label: 'Ancien', value: ORDER.AGE.ASC },
+  ];
+
+  const localOnSort = (value, label) => {
+    setTitle(`Trier par ${label}`);
+    onSort(value);
+  };
 
   return (
     <DropdownButton
+      alignRight
       title={
         <span>
-          <MdSort size={20} /> {title}
+          <MdSort size={20} fill="white" /> {title}
         </span>
       }
       variant="primary"
       id="sort-post"
     >
-      <Dropdown.Item
-        as="button"
-        onClick={() => {
-          props.sortPost('top');
-          setTitle('Trier par - Top');
-        }}
-      >
-        Top
-      </Dropdown.Item>
-      <Dropdown.Item
-        as="button"
-        onClick={() => {
-          props.sortPost('new');
-          setTitle('Trier par - Récent');
-        }}
-      >
-        Récent
-      </Dropdown.Item>
-      <Dropdown.Item
-        as="button"
-        onClick={() => {
-          props.sortPost('old');
-          setTitle('Trier par - Ancien');
-        }}
-      >
-        Ancien
-      </Dropdown.Item>
+      {orders.map((order) => (
+        <SortDropdownItem
+          key={order.value}
+          label={order.label}
+          value={order.value}
+          onSort={() => localOnSort(order.value, order.label)}
+        />
+      ))}
     </DropdownButton>
   );
-};
+}
 
 // Stream :: None => Component
-function Stream({ kind, posts, onSort }) {
-  const { user, token } = useAuth();
-  const isLogged = !!user;
-
-  const [postModal, setPostModal] = useState(null);
-  const [previewModalDisplayed, setPreviewModalDisplayed] = useState(false);
-  const [deleteModalDisplayed, setDeleteModalDisplayed] = useState(false);
-  const [showNotification, setShowNotification] = useState(false);
-  const [postToDelete, setPostToDelete] = useState(null);
-
-  /* Preview modal */
-  function hidePreviewModal() {
-    setPreviewModalDisplayed(false);
-  }
-
-  function showPreviewModal(id) {
-    setPostModal(null);
-    api.posts
-      .of(id)
-      .then(setPostModal)
-      .catch((error) => {});
-    setPreviewModalDisplayed(true);
-  }
-
-  /* Delete modal */
-  const deletePost = () => {
-    setDeleteModalDisplayed(false);
-    api.posts
-      .delete(postToDelete)
-      .then(() => {
-        // setPosts(posts.filter(p => p.id !== postToDelete));
-        toggleNotification();
-        setPostToDelete(null);
-      })
-      .catch((error) => {});
-  };
-
-  const showDeleteModal = (id) => {
-    setDeleteModalDisplayed(true);
-    setPostToDelete(id);
-  };
-
-  /* Notification */
-  const toggleNotification = () => setShowNotification((n) => !n);
-
-  function tagClickHandler(e) {
-    e.stopPropagation();
-    let value = e.target.getAttribute('value');
-    let tag = {
-      value: value,
-      label: (
-        <span>
-          <FaTag /> {value}
-        </span>
-      ),
-    };
-    setChoices([tag]);
-
-    // Scroll to the top
-    //document.getElementsByTagName('main')[0].scrollTo(0, 0);
-  }
+function Stream({ onSort, ...others }) {
+  const stream = useStream();
 
   return (
     <Container className="py-5">
       {/* Header*/}
       <Row>
         <Col>
-          <h1 className="text-dark stream-header">{kind.label}</h1>
+          <h1 className="text-dark stream-header">
+            <Icon icon={stream.kind.value.icon} className="mr-3" />
+            <span>{stream.kind.value.label}</span>
+          </h1>
           <hr />
         </Col>
       </Row>
@@ -167,63 +191,19 @@ function Stream({ kind, posts, onSort }) {
             <OverlayTrigger overlay={<Tooltip>Créer un post</Tooltip>}>
               <Button variant="primary" className="h-100">
                 <div className="d-flex text-light">
-                  <FaEdit />
+                  <Icon icon="edit" />
                 </div>
               </Button>
             </OverlayTrigger>
           </Link>
-          <SortDropdown sortPost={onSort} />
+          <SortDropdown onSort={onSort} />
         </Col>
       </Row>
 
       {/* Posts */}
-      <Suspense fallback={<h3>Chargement des posts...</h3>}>
-        <InnerStream
-          posts={posts}
-          onClick={showPreviewModal}
-          showDelete={showDeleteModal}
-          onTagClick={tagClickHandler}
-        />
-      </Suspense>
-
-      {/* Post modal */}
-      <Modal
-        id="preview-modal"
-        show={previewModalDisplayed}
-        onHide={hidePreviewModal}
-        dialogClassName="modal-80w"
-      >
-        <Modal.Header closeButton></Modal.Header>
-        <Modal.Body>
-          {postModal ? (
-            <Post {...postModal} isLogged={isLogged} />
-          ) : (
-            'Chargement des données...'
-          )}
-        </Modal.Body>
-      </Modal>
-
-      {/* Delete post modal */}
-      <DeleteModal
-        modalDisplayed={deleteModalDisplayed}
-        setModalDisplayed={setDeleteModalDisplayed}
-        deletePost={deletePost}
-      />
-      <Toast
-        className="notification"
-        show={showNotification}
-        onClose={toggleNotification}
-        delay={4000}
-        autohide
-      >
-        <Toast.Header>
-          <strong className="mr-auto"> Votre post a bien été supprimé</strong>
-        </Toast.Header>
-      </Toast>
+      <InnerStream {...others} />
     </Container>
   );
 }
-
-Stream.defaultProps = {};
 
 export default Stream;

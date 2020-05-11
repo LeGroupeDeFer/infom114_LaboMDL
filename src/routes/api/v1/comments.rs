@@ -21,7 +21,8 @@ pub fn collect() -> Vec<Route> {
         create_comment,
         create_reply_to_comment,
         get_comment_authenticated,
-        get_comment_unauth
+        get_comment_unauthenticated, 
+        updown_vote
     )
 }
 
@@ -92,30 +93,30 @@ fn create_reply_to_comment(
     _comment_id: u32, 
     data:Json<NewComment>
 ) -> ApiResult<Comment> {
-    let comment_request = data.into_inner();
     let can_view_hidden = auth.has_capability(&*conn, "comment:view_hidden");
+    let can_edit_locked = auth.has_capability(&*conn, "comment:edit_locked");
 
-    if comment_request.content == "" {
-        Err(EntityError::InvalidAttribute)?
-    }
+    let post = PostEntity::by_id(&*conn, &comment_guard.comment().post_id).unwrap().unwrap();
 
     if comment_guard.comment().is_deleted() 
         || (comment_guard.comment().is_hidden() && !can_view_hidden)
+        || post.is_deleted() 
+        || (post.is_hidden() && !can_view_hidden)
     {
         Err(EntityError::InvalidID)?
     } 
     
     if comment_guard.comment().is_locked() 
         || (comment_guard.comment().is_hidden() && can_view_hidden)
+        || (post.is_locked() && !can_edit_locked) 
+        || (post.is_hidden() && can_view_hidden) 
     {
         Err(AuthError::MissingCapability)?
     }
 
-    let post = PostEntity::by_id(&*conn, &comment_guard.comment().post_id).unwrap().unwrap();
-    if post.is_deleted() || (post.is_hidden() && !can_view_hidden)  {
-        Err(EntityError::InvalidID)?
-    } else if post.is_locked() || (post.is_hidden() && can_view_hidden) {
-        Err(AuthError::MissingCapability)?
+    let comment_request = data.into_inner();
+    if comment_request.content == "" {
+        Err(EntityError::InvalidAttribute)?
     }
 
     let new_comment = CommentMinima {
@@ -137,28 +138,26 @@ fn get_comment_authenticated(
     comment_guard: CommentGuard, 
     _comment_id: u32
 ) -> ApiResult<Comment> {
-    
-    if comment_guard.comment().is_deleted() 
-        || (comment_guard.comment().is_hidden() 
-            && !auth.deref().has_capability(&*conn, "comment:view_hidden")) 
-    {
-        Err(EntityError::InvalidID)?
-    }
-
     let post = PostEntity::by_id(&*conn, &comment_guard.comment().post_id).unwrap().unwrap();
-    if post.is_deleted() || 
-        (post.is_hidden() && !auth.deref().has_capability(&*conn, "comment:view_hidden")) 
+
+    let can_view_hidden = auth.deref().has_capability(&*conn, "comment:view_hidden");
+    let can_edit_locked = auth.deref().has_capability(&*conn, "comment:edit_locked");
+
+    if comment_guard.comment().is_deleted() 
+        || (comment_guard.comment().is_hidden() && !can_view_hidden)
+        || post.is_deleted()
+        || (post.is_hidden() && !can_view_hidden)
     {
         Err(EntityError::InvalidID)?
     }
 
     let mut c = Comment::from(comment_guard.comment_clone());
-    // c.set_user_info(&*conn, &auth.deref().sub);
+    c.set_user_info(&*conn, &auth.deref().sub);
     Ok(Json(c))
 }
 
 #[get("/api/v1/comment/<_comment_id>", rank = 2)] 
-fn get_comment_unauth(
+fn get_comment_unauthenticated(
     conn: DBConnection, 
     comment_guard: CommentGuard, 
     _comment_id: u32
@@ -173,4 +172,41 @@ fn get_comment_unauth(
     }
 
     Ok(Json(Comment::from(comment_guard.comment_clone())))
+}
+
+#[post("/api/v1/comment/<_comment_id>/vote", format = "json", data = "<data>")]
+fn updown_vote(
+    conn: DBConnection,
+    auth: Auth,
+    comment_guard: CommentGuard,
+    _comment_id: u32,
+    data: Json<ChangeVote>,
+) -> ApiResult<Comment> {
+    println!("Got in to the function!");
+    let can_view_hidden = auth.has_capability(&*conn, "comment:view_hidden");
+    let can_edit_locked = auth.has_capability(&*conn, "comment:edit_locked");
+
+    let post = PostEntity::by_id(&*conn, &comment_guard.comment().post_id).unwrap().unwrap();
+    if comment_guard.comment().is_deleted() 
+        || (comment_guard.comment().is_hidden() && !can_view_hidden)
+        || post.is_deleted() 
+        || (post.is_hidden() && !can_view_hidden)
+    {
+        Err(EntityError::InvalidID)?
+    } 
+    
+    if (comment_guard.comment().is_locked() && !can_edit_locked)
+        || (post.is_locked() && !can_edit_locked)
+    {
+        Err(AuthError::MissingCapability)?
+    }
+
+    let vote_request = data.into_inner();
+    let mut comment_entity = comment_guard.comment_clone();
+    comment_entity.upvote(&*conn, &auth.sub, vote_request.vote)?;
+
+    let mut comment = Comment::from(comment_entity);
+    comment.set_user_info(&*conn, &auth.sub);
+
+    Ok(Json(comment))
 }

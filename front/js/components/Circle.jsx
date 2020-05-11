@@ -1,9 +1,10 @@
 import React, { forwardRef } from 'react';
+import clsx from "clsx";
 
-const Circle = forwardRef(({ width, children, ...others }, ref) => (
+const Circle = forwardRef(({ width, children, className, ...others }, ref) => (
   <div ref={ref} {...others}>
     <div
-      className='shape-circle'
+      className={clsx('shape-circle', className)}
       style={{ width }}
     >
       <div className="shape-content">

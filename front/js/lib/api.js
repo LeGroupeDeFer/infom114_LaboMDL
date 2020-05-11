@@ -1,4 +1,4 @@
-import { snake, camel, empty, trace, identity } from './index';
+import { snake, camel, empty, trace, identity, clean } from './index';
 import jwtDecode from 'jwt-decode';
 
 /* istanbul ignore next */
@@ -74,16 +74,18 @@ function api(endpoint, { body, ...providedConfig } = {}) {
   };
 
   let target = `${root}${endpoint}`;
-  if (body && method === 'GET') target = query(target, body);
-  if (body && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) ) 
-    config.body = JSON.stringify(snake(body));
+  if (body)
+    if (method === 'GET') target = query(target, clean(body));
+    else config.body = JSON.stringify(snake(clean(body)));
 
   return window
     .fetch(target, config)
     .then((response) =>
       Promise.all([
         new Promise((resolve, _) => resolve(response.status)),
-        response.json(),
+        response.headers.get('Content-Type').includes('application/json')
+          ? response.json()
+          : response.text(),
       ])
     )
     .then(([status, data]) => {
@@ -122,7 +124,6 @@ Object.assign(auth, {
     });
   },
 
-  
   /**
    * Attempts to logout the currently connected user.
    *
@@ -206,8 +207,27 @@ Object.assign(posts, {
   delete(id) {
     return api(`/post/${id}`, { method: 'DELETE' });
   },
+  hide(id) {
+    return api(`/post/${id}/hide`, { method: 'POST' });
+  },
+  lock(id) {
+    return api(`/post/${id}/lock`, { method: 'POST' });
+  },
   where(query) {
     return api('/posts', { method: 'GET', body: query });
+  },
+  flag(id, reason, cancel) {
+    if (cancel) return api(`/post/${id}/report`, { method: 'POST' });
+    return api(`/post/${id}/report`, { method: 'POST', body: { reason } });
+  },
+  watch(id) {
+    return api(`/post/${id}/watch`, { method: 'POST' });
+  },
+  pollData(id) {
+    return api(`/post/${id}/poll`);
+  },
+  pollVote(postId, answerId) {
+    return api(`/post/${postId}/poll`, { method: 'POST', body: { answerId } });
   },
 });
 
@@ -222,31 +242,48 @@ Object.assign(api, { query, auth, posts, tags });
 /* TODO Move all tag, role & users related fns in their respective namespace */
 
 function addTag(label) {
-  return api(`/tag/${label}`, {method: 'POST'});
+  return api(`/tag/${label}`, { method: 'POST' });
 }
 
 function removeTag(label) {
-  return api(`/tag/${label}`, {method: "DELETE"});
+  return api(`/tag/${label}`, { method: 'DELETE' });
 }
 
 function editTag(oldLabel, newLabel) {
-  return api(`/tag/${oldLabel}`, {method: "PUT", body: { label: String(newLabel) } });
+  return api(`/tag/${oldLabel}`, {
+    method: 'PUT',
+    body: { label: String(newLabel) },
+  });
 }
 
 function roles() {
   return api('/roles');
 }
 
-function addRole(name, color, capability) { 
-  return api('/role', {method: 'POST', body: {name: String(name), color: String(color), capabilities:[{name:String(capability)}]} });
+function addRole(name, color, capability) {
+  return api('/role', {
+    method: 'POST',
+    body: {
+      name: String(name),
+      color: String(color),
+      capabilities: [{ name: String(capability) }],
+    },
+  });
 }
 
 function editRole(id, name, color, capabilities) {
-  return api(`/role/${id}`, {method: 'PUT', body: {name: String(name), color: String(color), capabilities:capabilities } });
+  return api(`/role/${id}`, {
+    method: 'PUT',
+    body: {
+      name: String(name),
+      color: String(color),
+      capabilities: capabilities,
+    },
+  });
 }
 
-function deleteRole(id) { 
-  return api(`/role/${id}`, {method: 'DELETE'} );
+function deleteRole(id) {
+  return api(`/role/${id}`, { method: 'DELETE' });
 }
 
 function capabilities() {
@@ -258,30 +295,40 @@ function users() {
 }
 
 function addRoleToUser(userID, roleID) {
-  return api('/user/role', {method: 'POST', body: {user_id: userID, role_id: parseInt(roleID)}} );
+  return api('/user/role', {
+    method: 'POST',
+    body: { user_id: userID, role_id: parseInt(roleID) },
+  });
 }
 
 function removeRoleFromUser(userID, roleID) {
-  return api('/user/role', {method: 'DELETE', body: {user_id: userID, role_id: parseInt(roleID)}} );
+  return api('/user/role', {
+    method: 'DELETE',
+    body: { user_id: userID, role_id: parseInt(roleID) },
+  });
 }
 
-function userReport() {
+function userStat() {
   return api('/report/users');
 }
 
-function tagReport() {
+function tagStat() {
   return api('/report/tags');
 }
 
-function postReport() {
-  return api('/report/posts');
+function postStat() {
+  return api('/report/activity');
+}
+
+function postFlagged() {
+  return api('/report/post_reported');
 }
 
 api.tags = tags;
 api.tags.add = addTag;
 api.tags.remove = removeTag;
 api.tags.edit = editTag;
-api.tag = tags
+api.tag = tags;
 api.roles = roles;
 api.roles.add = addRole;
 api.roles.edit = editRole;
@@ -291,8 +338,10 @@ api.users = users;
 api.users.addRole = addRoleToUser;
 api.users.removeRole = removeRoleFromUser;
 
-api.users.report = userReport;
-api.tags.report = tagReport;
-api.posts.report = postReport;
+api.users.report = userStat;
+api.tags.report = tagStat;
+api.posts.report = postStat;
+
+api.posts.flagged = postFlagged;
 
 export default api;

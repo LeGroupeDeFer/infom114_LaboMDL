@@ -1,4 +1,4 @@
-import React, { useState, useRef, lazy, Suspense } from 'react';
+import React, { lazy, Suspense } from 'react';
 import Spinner from 'react-bootstrap/Spinner';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { AuthProvider } from './context/authContext';
@@ -21,15 +21,13 @@ const Matter = lazy(() => import('./layout/Content'));
 function App(_) {
 
   return (
-    <React.StrictMode>
-      <AuthProvider>
-        <Suspense fallback={<Loading />}>
-          <Router>
-            <Matter />
-          </Router>
-        </Suspense>
-      </AuthProvider>
-    </React.StrictMode>
+    <AuthProvider>
+      <Suspense fallback={<Loading />}>
+        <Router>
+          <Matter />
+        </Router>
+      </Suspense>
+    </AuthProvider>
   );
 
 }

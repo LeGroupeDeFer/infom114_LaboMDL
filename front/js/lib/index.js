@@ -1,4 +1,10 @@
 import { lazy } from 'react';
+import {
+  faBalanceScale,
+  faGlobeEurope,
+  faInfo,
+  faLightbulb,
+} from '@fortawesome/free-solid-svg-icons';
 
 const identity = x => x;
 
@@ -29,6 +35,35 @@ const breakpoints = Object.freeze({
   'sm': 576, 'md': 768, 'lg': 992, 'xl': 1200
 });
 
+const ORDER = Object.freeze({
+  RANK: Object.freeze({ DESC: 'high_rank', ASC: 'low_rank' }),
+  SCORE: Object.freeze({ DESC: 'top', ASC: 'low' }),
+  AGE: Object.freeze({ DESC: 'new', ASC: 'old' }),
+});
+
+const orders = Object.values(ORDER);
+const orderOf = key =>
+  head(Object.keys(ORDER).filter(k => k !== key).map(k => ORDER[k]));
+
+const KIND = Object.freeze({
+  ALL: { label: 'Actualité', key: 'all', value: 'all', icon: faGlobeEurope },
+  INFO: { label: 'Infos', key: 'info', value: 'info', icon: faInfo },
+  IDEA: { label: 'Idées', key: 'idea', value:'idea', icon: faLightbulb },
+  POLL: { label: 'Sondages', key: 'poll', value: 'poll', icon: faBalanceScale },
+});
+
+const kinds = Object.values(KIND);
+const kindOf = key =>
+  head(Object.keys(KIND).map(k => KIND[k]).filter(k => k.key === key));
+
+const VOTE = Object.freeze({
+  DOWN: -1,
+  NONE: 0,
+  UP: 1,
+});
+
+const voteOf =
+    v => head(Object.keys(VOTE).map(k => VOTE[k]).filter(vote => vote === v));
 
 /* ------------------------------- I/O utils ------------------------------- */
 
@@ -48,7 +83,7 @@ const printerr = console.error.bind(console);
  * Debugging utility. Outputs the given value to console.err and returns the value.
  * @memberof lib
  *
- * @param { any } thing The traced object.
+ * @param { any } x The traced object.
  * @return { any } The given value
  */
 const trace = x => printerr(x) || x;
@@ -74,7 +109,10 @@ function Action(f) {
   promise.onEvent = e => {
     detail.source = e;
     document.dispatchEvent(handle);
+    promise.watch = !promise.watch;
   };
+
+  promise.watch = false;
 
   return promise;
 }
@@ -179,6 +217,16 @@ function delay(fn, ms = 250) {
 }
 
 /**
+ * Prevent default comportement from happening when using <a> tag with href='#'
+ * @memberof lib
+ * 
+ * @param { event } e 
+ * @param { function } fn 
+ */
+const prevent = (e, fn) => e.preventDefault() || e.stopPropagation() || fn();
+
+
+/**
  * @memberof lib.delay
  */
 delay.lazy = (fn, ms = 250) => lazy(() => delay(fn, ms));
@@ -230,7 +278,19 @@ function tee(f, g) {
   }
 }
 
+const subscribed = (subscription, f) => subscription ? f() : undefined;
+
 /* ----------------------------- Object utils ------------------------------ */
+
+const defined = thing => thing !== undefined && thing !== null;
+
+const truthy = thing => (thing instanceof Array) ? thing.length : thing;
+
+const update = (o, k, v) => ({ ...o, [k]: v });
+
+const clean = (o, hard= false) => Object.keys(o).reduce(
+  (a, k) => (hard ? truthy : defined)(o[k]) ? ({ ...a, [k]: o[k] }) : a, {}
+);
 
 function aggregate(o, key, props) {
   const aggregation = {
@@ -240,78 +300,16 @@ function aggregate(o, key, props) {
     .filter(k => !props.includes(k))
     .reduce((a, k) => ({ ...a, [k]: o[k] }), {});
 
-  return Object.assign({}, others, aggregation);
+  return clean(Object.assign({}, others, aggregation));
 }
-
-// https://stackoverflow.com/questions/13142968/deep-comparison-of-objects-arrays
-// TODO refactor to ES7 style
-function equal(value, other) {
-
-  // Get the value type
-  var type = Object.prototype.toString.call(value);
-
-  // If the two objects are not the same type, return false
-  if (type !== Object.prototype.toString.call(other)) return false;
-
-  // If items are not an object or array, return false
-  if (['[object Array]', '[object Object]'].indexOf(type) < 0) return false;
-
-  // Compare the length of the length of the two items
-  var valueLen = type === '[object Array]' ? value.length : Object.keys(value).length;
-  var otherLen = type === '[object Array]' ? other.length : Object.keys(other).length;
-  if (valueLen !== otherLen) return false;
-
-  // Compare two items
-  var compare = function (item1, item2) {
-
-    // Get the object type
-    var itemType = Object.prototype.toString.call(item1);
-
-    // If an object or array, compare recursively
-    if (['[object Array]', '[object Object]'].indexOf(itemType) >= 0) {
-      if (!equal(item1, item2)) return false;
-    }
-
-    // Otherwise, do a simple comparison
-    else {
-
-      // If the two items are not the same type, return false
-      if (itemType !== Object.prototype.toString.call(item2)) return false;
-
-      // Else if it's a function, convert to a string and compare
-      // Otherwise, just compare
-      if (itemType === '[object Function]') {
-        if (item1.toString() !== item2.toString()) return false;
-      } else {
-        if (item1 !== item2) return false;
-      }
-
-    }
-  };
-
-  // Compare properties
-  if (type === '[object Array]') {
-    for (var i = 0; i < valueLen; i++) {
-      if (compare(value[i], other[i]) === false) return false;
-    }
-  } else {
-    for (var key in value) {
-      if (value.hasOwnProperty(key)) {
-        if (compare(value[key], other[key]) === false) return false;
-      }
-    }
-  }
-
-  // If nothing failed, return true
-  return true;
-
-};
 
 /* ------------------------------ Array utils ------------------------------ */
 
 const empty = xs => (xs instanceof Array) && xs.length === 0;
 
-const head = ([x,]) => x;
+const head = xs => xs.length ? xs[0] : null;
+
+const last = xs => (xs && xs.length) ? xs[xs.length - 1] : null;
 
 const zip = (...xs) =>
   xs.length && xs[0].map((_, i) => xs.map(e => e[i])) || [];
@@ -335,6 +333,14 @@ export {
 
   colorVariants,
   breakpoints,
+  ORDER,
+  orders,
+  orderOf,
+  KIND,
+  kinds,
+  kindOf,
+  VOTE,
+  voteOf,
 
   println,
   printerr,
@@ -347,18 +353,23 @@ export {
 
   debounce,
   delay,
+  prevent,
 
   recurse,
   camel,
   snake,
 
+  defined,
+  update,
+  clean,
+
   iff,
   tee,
 
   aggregate,
-  equal,
 
   empty,
   head,
+  last,
   zip
 };

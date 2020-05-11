@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Spinner } from 'react-bootstrap';
-import { useParams, useHistory, Link } from 'react-router-dom';
-import { faMailBulk } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+import { Spinner } from 'react-bootstrap';
+import { useParams, Link } from 'react-router-dom';
 import { usePositiveEffect } from '../hooks';
 import { Dialog, Unauthenticated } from '../components';
-import { api, trace } from '../lib';
+import { api } from '../lib';
 
 
 function ActivationStatus({ id, token }) {
@@ -65,7 +63,7 @@ function ActivationStatus({ id, token }) {
 const Activate = Unauthenticated(() => {
   const { id, token } = useParams();
   return (
-    <Dialog icon={faMailBulk} title="Activation">
+    <Dialog icon="mail-bulk" title="Activation">
       <ActivationStatus id={id} token={token} />
     </Dialog>
   );

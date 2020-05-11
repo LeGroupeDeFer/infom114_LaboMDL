@@ -6,7 +6,6 @@ use super::helper::*;
 fn create_a_post_poll() {
     let client = init::clean_client();
     init::seed();
-    let conn = init::database_connection();
     let auth_token = init::login_admin();
 
     let post = create_a_poll_post(
@@ -16,14 +15,13 @@ fn create_a_post_poll() {
         &["response 1", "response 2", "response 3"],
     );
 
-    let poll_info = get_poll_info(&client, auth_token.clone(), &post.id);
+    let _poll_info = get_poll_info(&client, auth_token.clone(), &post.id);
 }
 
 #[test]
 fn vote_for_a_poll_post() {
     let client = init::clean_client();
     init::seed();
-    let conn = init::database_connection();
     let auth_token = init::login_admin();
 
     let post = create_a_poll_post(

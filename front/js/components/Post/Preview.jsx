@@ -1,23 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Moment from 'react-moment';
-import { dev, preview } from '../../lib';
 import { Badge, Card, Dropdown, DropdownButton } from 'react-bootstrap';
 import { DownVote, UpVote } from './Vote';
-import { MdModeComment, MdReport } from 'react-icons/md';
-import {
-  FaTag,
-  FaFacebookSquare,
-  FaEllipsisH,
-  FaEyeSlash,
-  FaFlag,
-  FaTrashAlt,
-  FaLock,
-  FaEdit,
-} from 'react-icons/fa';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import clsx from 'clsx';
 import { FacebookShareButton } from 'react-share';
 import { useAuth } from 'unanimity/context/authContext';
+
+import { preview } from 'unanimity/lib';
+
 
 function getDisplayedKind(kind) {
   switch (kind) {
@@ -36,6 +28,7 @@ const Preview = ({
   currentFilter,
   showPreviewModal,
   showDeleteModal,
+  showReportModal,
   onClick,
   onTagClick,
   ...others
@@ -65,6 +58,8 @@ const Preview = ({
 
   const deletePost = () => showDeleteModal(id);
 
+  const reportPost = () => showReportModal(id);
+
   return (
     <div className="d-flex">
       <Card {...others} className="post" onClick={() => onClick(id)} id={id}>
@@ -91,7 +86,7 @@ const Preview = ({
             <DropdownButton
               title={
                 <span>
-                  <FaEllipsisH />
+                  <Icon icon="ellipsis-h" />
                 </span>
               }
               variant="link"
@@ -100,31 +95,25 @@ const Preview = ({
             >
               {caps.some((e) => e.name === 'post:hide') && (
                 <Dropdown.Item as="button">
-                  <FaEyeSlash className="mr-2" />
+                  <Icon icon="eye-slash" className="mr-2" />
                   Masquer
                 </Dropdown.Item>
               )}
-              <Dropdown.Item as="button">
-                <FaFlag className="mr-2" />
+              <Dropdown.Item as="button" onClick={reportPost}>
+                <Icon icon="flag" className="mr-2" />
                 Signaler
               </Dropdown.Item>
-              {/* {owner && (
-                <Dropdown.Item as="button">
-                  <FaEdit className="mr-2" />
-                  Modifier
-                </Dropdown.Item>
-              )} */}
 
               {owner && (
                 <Dropdown.Item as="button" onClick={deletePost}>
-                  <FaTrashAlt className="mr-2" />
+                  <Icon icon="trash-alt" className="mr-2" />
                   Supprimer
                 </Dropdown.Item>
               )}
 
               {caps.some((e) => e.name === 'post:lock') && (
                 <Dropdown.Item as="button">
-                  <FaLock className="mr-2" />
+                  <Icon icon="lock" className="mr-2" />
                   Vérouiller
                 </Dropdown.Item>
               )}
@@ -172,7 +161,7 @@ const Preview = ({
                       value={tag}
                       key={index}
                     >
-                      <FaTag className="mr-1" />
+                      <Icon icon="tag" className="mr-1" />
                       {tag}
                     </a>
                   );
@@ -189,9 +178,9 @@ const Preview = ({
                 className="post-footer-btn mr-2"
                 href="#"
               >
-                <MdModeComment size="1.25em" className="mr-1" />
+                <Icon icon="comment-alt" size="1.25em" className="mr-1" />
                 <span className="text-muted">
-                  {comments.length}{' '}
+                  {comments.length}
                   {comments.length <= 1 ? 'commentaire' : 'commentaires'}
                 </span>
               </Link>
@@ -202,7 +191,11 @@ const Preview = ({
                 onClick={(e) => e.stopPropagation()}
               >
                 <a className="post-footer-btn mr-2" href="#">
-                  <FaFacebookSquare size="1.25em" className="mr-1" />
+                  <Icon
+                    icon={['fab', 'facebook-square']}
+                    size="1.25em"
+                    className="mr-1"
+                  />
                   <span className="text-muted">Partager</span>
                 </a>
               </FacebookShareButton>
