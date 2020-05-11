@@ -28,7 +28,15 @@ export default function About(props) {
             </Accordion.Toggle>
           </Card.Header>
           <Accordion.Collapse eventKey="0">
-            <Card.Body>A rien wallah</Card.Body>
+            <Card.Body>Unanimity est une plateforme participative intégrée à l'UNamur. Son but est de rassembler 
+            les membres de l'université qu'ils soient membres du personnel éducatif ou étudiant afin de:
+            <ul class="list-group mt-3">
+                <li class="list-group-item"><b>Mieux informer</b></li>
+                <li class="list-group-item"><b>Débattre</b></li>       
+                <li class="list-group-item"><b>Soumettre des idées</b></li>
+                <li class="list-group-item"><b>Avoir un impact sur les décisions de l’Université au niveau étudiant, facultaire et institutionnel</b></li>
+            </ul>
+            </Card.Body>
           </Accordion.Collapse>
         </Card>
         <Card>
@@ -52,7 +60,23 @@ export default function About(props) {
                 rejetter.
               </p>
               <p>
-                <b>- Les sondages</b> : Blablabla..
+                <b>- Les sondages</b> : Similaires aux idées mais permettent aux membres de voter différentes propositions 
+              </p>
+            </Card.Body>
+          </Accordion.Collapse>
+        </Card>
+        <Card>
+          <Card.Header>
+            <Accordion.Toggle as={Button} variant="link" eventKey="2">
+              Mon idée/vote peut-elle/il aboutir à quelque chose de concret ?
+            </Accordion.Toggle>
+          </Card.Header>
+          <Accordion.Collapse eventKey="2">
+            <Card.Body>
+              <p><b>Oui !</b> Certains modérateurs ont pour tâche de juger les idées 
+              et permettre un suivi sur les plus pertinents. Ce suivi pourra alors
+              aboutir à une acceptation ou un rejet. Dans le premier cas, de réelles démarches seront mises en places 
+              afin d'arriver à un aboutissement concret sur le campus universitaire.
               </p>
             </Card.Body>
           </Accordion.Collapse>
