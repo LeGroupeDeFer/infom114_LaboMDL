@@ -3,6 +3,7 @@
 //! Here will be stored everything that is related to the commentaries
 //! The post linked to them, the user that writes them, the number of replies, ...
 use chrono::NaiveDateTime;
+use diesel::expression::functions::date_and_time::now;
 use diesel::prelude::*;
 use either::*;
 
@@ -35,8 +36,8 @@ pub struct CommentEntity {
     pub deleted_at: Option<NaiveDateTime>,
     pub hidden_at: Option<NaiveDateTime>,
     pub locked_at: Option<NaiveDateTime>,
-    pub votes: u32,
-    pub score: i32,
+    pub votes: u64,
+    pub score: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Insertable)]
@@ -66,14 +67,9 @@ impl Entity for CommentEntity {
     }
 
     fn insert(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Either<Self, Self>> {
-        let past = Self::select(conn, minima)?;
-        if past.is_some() {
-            Ok(Left(past.unwrap()))
-        } else {
-            diesel::insert_into(table).values(minima).execute(conn)?;
-            let future = Self::select(conn, minima)??;
-            Ok(Right(future))
-        }
+        diesel::insert_into(table).values(minima).execute(conn)?;
+        let future = Self::select(conn, minima)??;
+        Ok(Right(future))
     }
 
     fn select(conn: &MysqlConnection, minima: &Self::Minima) -> Consequence<Option<Self>> {
@@ -85,11 +81,13 @@ impl Entity for CommentEntity {
         match &minima.parent_id {
             Some(_id) => filtered
                 .filter(dsl::parent_id.eq(&minima.parent_id))
+                .order(dsl::created_at.desc())            
                 .first::<Self>(conn)
                 .optional()
                 .map(Ok)?,
             None => filtered
                 .filter(dsl::parent_id.is_null())
+                .order(dsl::created_at.desc())            
                 .first::<Self>(conn)
                 .optional()
                 .map(Ok)?,
@@ -105,7 +103,8 @@ impl Entity for CommentEntity {
     }
 
     fn delete(self, conn: &MysqlConnection) -> Consequence<()> {
-        diesel::delete(table.filter(dsl::id.eq(self.id)))
+        diesel::update(&self)
+            .set(dsl::deleted_at.eq(now))
             .execute(conn)
             .map(|_| ())
             .map(Ok)?

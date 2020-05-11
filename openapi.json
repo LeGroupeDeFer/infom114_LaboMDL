@@ -660,6 +660,12 @@
           },
           {
             "in": "query",
+            "name": "author",
+            "schema": {"type": "integer"},
+            "description": "The id of an author"
+          },
+          {
+            "in": "query",
             "name": "limit",
             "schema": {
               "type": "integer"
@@ -1734,14 +1740,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Ok",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Comment"
-                }
-              }
-            }
+            "description": "Ok"
           },
           "400": {
             "description": "Bad Request",
@@ -3396,9 +3395,6 @@
         "properties": {
           "content": {
             "type": "string"
-          },
-          "watch": {
-            "type": "boolean"
           }
         }
       },

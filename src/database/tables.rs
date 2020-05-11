@@ -2,6 +2,7 @@ pub use super::schema::{
     addresses::dsl::addresses as addresses_table,
     capabilities::dsl::capabilities as capabilities_table,
     comments::dsl::comments as comments_table,
+    comments_reports::dsl::comments_reports as comments_reports_table,
     poll_answers::dsl::poll_answers as poll_answers_table, posts::dsl::posts as posts_table,
     posts_reports::dsl::posts_reports as posts_reports_table,
     posts_tags::dsl::posts_tags as posts_tags_table, roles::dsl::roles as roles_table,

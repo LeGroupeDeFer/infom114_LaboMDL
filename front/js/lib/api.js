@@ -145,6 +145,9 @@ Object.assign(auth, {
     const token = store.getItem('__refresh_token__');
     const [email, refreshToken] = token.split(':');
 
+    if (!token)
+      throw { code: 0, reason: 'Dead refresh token' };
+
     return auth('/refresh', { body: { email, refreshToken } })
       .then(({ accessToken, refreshToken, user }) => {
         currentAccessToken = accessToken;
@@ -228,6 +231,15 @@ Object.assign(posts, {
   },
   pollVote(postId, answerId) {
     return api(`/post/${postId}/poll`, { method: 'POST', body: { answerId } });
+  },
+  comment(postId, comment) {
+    return api(`/post/${postId}/comment`, {
+      method: 'POST',
+      body: { content: comment },
+    });
+  },
+  comments(postId) {
+    return api(`/post/${postId}/comments`);
   },
 });
 
@@ -325,7 +337,7 @@ function postFlagged() {
 }
 
 function userPosts(id) {
-  return api(`/user/${id}/posts`)
+  return api(`/user/${id}/posts`);
 }
 
 api.tags = tags;

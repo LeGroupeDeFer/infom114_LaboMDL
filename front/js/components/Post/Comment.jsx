@@ -76,6 +76,18 @@ function CommentEditor({ onComment }) {
   const isLogged = !!useAuth().user;
   const [comment, setComment] = useState('');
 
+  const onKeyPressed = (e) => {
+    if (e.keyCode == 13 && e.shiftKey == false) {
+      e.preventDefault();
+      addComment();
+    }
+  };
+
+  const addComment = () => {
+    comment ? onComment(comment) : undefined;
+    setComment('');
+  };
+
   if (isLogged)
     return (
       <div className="comment-editor">
@@ -85,11 +97,12 @@ function CommentEditor({ onComment }) {
           placeholder="Ajouter un commentaire"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
+          onKeyDown={onKeyPressed}
         />
         <Button
           variant="primary"
           className="float-right my-1"
-          onClick={() => (comment ? onComment(comment) : undefined)}
+          onClick={() => addComment()}
         >
           Commenter
         </Button>

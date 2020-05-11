@@ -11,7 +11,7 @@ export function Simple({ error, className }) {
   return error ? (
     <div className={cls}>
       <Icon
-        icon="excalamation-circle"
+        icon="exclamation-circle"
         className="text-danger mr-2"
         style={{ display: 'inline-box' }}
       />

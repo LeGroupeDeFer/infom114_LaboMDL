@@ -84,14 +84,13 @@ export function StreamProvider({ children }) {
 
       of(id) {
         const prefetch = this.value.filter((p) => Number(p.id) === Number(id));
-        let promise;
-        if (prefetch.length) {
-          promise = Promise.resolve(prefetch[0]);
-        } else {
-          promise = api.posts.of(id);
-        }
+        const promise = Promise.all([
+          prefetch.length ? Promise.resolve(prefetch[0]) : api.posts.of(id),
+          api.posts.comments(id)
+        ]);
 
-        return this._updatePost(promise.then((post) => {
+        return this._updatePost(promise.then(([post, comments]) => {
+          post.comments = comments;
           if (post.kind === 'poll') {
             return api.posts.pollData(id).then((pollData) => {
               post.answers = pollData.answers;
@@ -133,8 +132,7 @@ export function StreamProvider({ children }) {
         return promise;
       },
       comment(post, comment) {
-        trace('TODO - COMMENT');
-        return Promise.resolve(comment);
+        return this._updatePost(api.posts.comment(post.id, comment));
       },
       vote(post, vote) {
         return this._updatePost(api.posts.vote(post.id, vote));
@@ -157,8 +155,8 @@ export function StreamProvider({ children }) {
       pollVote(postId, answerId) {
         return this._updatePost(api.posts.pollVote(postId, answerId));
       },
-      authorPost(authorId) {
-        const promise = api.posts.author(authorId);
+      authorPostFilter(authorId) {
+        const promise = api.users.posts(authorId);
         pushEffect([
           promise,
           value => setState(s => ({ ...s, posts: { ...s.posts, value: value }})),

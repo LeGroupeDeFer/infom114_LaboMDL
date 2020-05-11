@@ -4,14 +4,14 @@ import { useStream } from 'unanimity/context/streamContext';
 import { SearchBar } from 'unanimity/components';
 
 import Stream from './Stream';
+import { SpecificStream } from './Stream';
 import Writer from './Writer';
 import Detail from './Detail';
 import Amend from './Amend';
 
-
 // StreamContent :: None => Component
-function StreamContent() {
-  const { path } = useRouteMatch();
+function StreamContent({ userId }) {
+   const { path } = useRouteMatch();
   const stream = useStream();
   const [state, setState] = useState({
     previewPost: false,
@@ -19,6 +19,7 @@ function StreamContent() {
     flagPost: false,
     toast: false,
     toastMsg: '',
+    onComment: (post, comment) => stream.posts.comment(post, comment),
     onFlag: (v) => setState((state) => ({ ...state, flagPost: v })),
     onFlagCancel: (post) => {
       stream.posts.flag(post, '', true).then(() =>
@@ -29,9 +30,11 @@ function StreamContent() {
         }))
       );
     },
+    //setAuthorPostFilter: (userId) => stream.posts.authorPostFilter(userId),
     onHide: (post) => stream.posts.hide(post),
     onPollVote: (postId, answerId) => stream.posts.pollVote(postId, answerId),
     onVote: (post, vote) => stream.posts.vote(post, vote),
+
     onTag: tag => stream.tags.set(tag),
     onWatch: (post, event) => stream.posts.watch(post, event),
     onLock: post => stream.posts.lock(post),
@@ -54,8 +57,11 @@ function StreamContent() {
           toast: true,
           toastMsg: 'Votre signalement a été enregistré',
         }))
-      )
+      ),
   });
+
+  if (userId)
+    return <SpecificStream userId={userId} {...state} />;
 
   return (
     <>
