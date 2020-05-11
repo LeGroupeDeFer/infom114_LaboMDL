@@ -8,28 +8,48 @@ import clsx from 'clsx';
 import { VOTE } from 'unanimity/lib';
 import Flexbox from '../Flexbox';
 
-function VoteOverlay({ isLogged, children }) {
-  if (isLogged) return <>{children}</>;
+function VoteOverlay({ isLogged, isLocked, children }) {
+  if (isLogged && !isLocked) return <>{children}</>;
 
-  return (
-    <OverlayTrigger
-      placement="right"
-      overlay={<Tooltip>Il faut être authentifié pour pouvoir voter</Tooltip>}
-    >
-      {children}
-    </OverlayTrigger>
-  );
+  if (!isLogged)
+    return (
+      <OverlayTrigger
+        placement="right"
+        overlay={<Tooltip>Il faut être authentifié pour pouvoir voter</Tooltip>}
+      >
+        {children}
+      </OverlayTrigger>
+    );
+
+  if (isLocked)
+    return (
+      <OverlayTrigger
+        placement="right"
+        overlay={
+          <Tooltip>
+            Impossible de voter car la publication a été vérouillée par un
+            administrateur
+          </Tooltip>
+        }
+      >
+        {children}
+      </OverlayTrigger>
+    );
 }
 
-export function Vote({ isLogged, vote, direction, onClick }) {
+export function Vote({ isLogged, isLocked, vote, direction, onClick }) {
   const upvote = direction === VOTE.UP;
   const active = vote === direction;
   const cls = clsx('vote p-0', (upvote && 'up') || 'down', active && 'active');
   const Arrow = upvote ? GoArrowUp : GoArrowDown;
 
   return (
-    <VoteOverlay isLogged={isLogged}>
-      <Button disabled={!isLogged} className={cls} onClick={() => onClick(direction, !vote)}>
+    <VoteOverlay isLogged={isLogged} isLocked>
+      <Button
+        disabled={!isLogged || isLocked}
+        className={cls}
+        onClick={() => onClick(direction, !vote)}
+      >
         <Arrow />
       </Button>
     </VoteOverlay>
@@ -52,6 +72,7 @@ export function Score({ score, vote }) {
 
 export function VoteSection({
   isLogged,
+  isLocked,
   vote,
   score,
   className,
@@ -70,9 +91,19 @@ export function VoteSection({
         className="vote-section-content"
         {...others}
       >
-        <UpVote isLogged={isLogged} vote={vote} onClick={localOnVote} />
+        <UpVote
+          isLogged={isLogged}
+          vote={vote}
+          onClick={localOnVote}
+          isLocked
+        />
         <Score score={score || 0} vote={vote} />
-        <DownVote isLogged={isLogged} vote={vote} onClick={localOnVote} />
+        <DownVote
+          isLogged={isLogged}
+          vote={vote}
+          onClick={localOnVote}
+          isLocked
+        />
       </Flexbox>
     </div>
   );

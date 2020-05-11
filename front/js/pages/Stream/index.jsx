@@ -20,6 +20,7 @@ import { kinds } from 'unanimity/lib';
 import Stream from './Stream';
 import Writer from './Writer';
 import Detail from './Detail';
+import { useAuth } from '../../context';
 
 // FilterBar :: Object => Component
 function KindSection() {
@@ -95,6 +96,8 @@ function StreamModals({
 
 // StreamContent :: None => Component
 function StreamContent() {
+  const { token } = useAuth();
+  console.log(token);
   const { path } = useRouteMatch();
   const stream = useStream();
   const history = useHistory();
