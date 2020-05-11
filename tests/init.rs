@@ -257,16 +257,21 @@ pub fn get_post_entity(locked: bool, hidden: bool, deleted: bool) -> PostEntity 
     PostEntity::by_id(&conn, &id).unwrap().unwrap()
 }
 
-pub fn get_comment_entity(ppost_id: u32, locked: bool, hidden: bool, deleted: bool) -> CommentEntity {
+pub fn get_comment_entity(
+    post_id: u32,
+    locked: bool,
+    hidden: bool,
+    deleted: bool,
+) -> CommentEntity {
     let conn = database_connection();
     let cm = CommentMinima {
-        post_id: ppost_id,
+        post_id,
         content: lorem_ipsum(),
         author_id: get_admin().id,
-        parent_id: None
+        parent_id: None,
     };
 
-    let comment = CommentEntity::insert_new(&conn, &cm).unwrap();
+    let mut comment = CommentEntity::insert_new(&conn, &cm).unwrap();
     let id = comment.id;
 
     if locked {
@@ -287,7 +292,10 @@ pub fn get_comment_entity(ppost_id: u32, locked: bool, hidden: bool, deleted: bo
 pub fn get_unexisting_comment_id() -> u32 {
     let conn = database_connection();
     let mut unexisting_id = 12;
-    while CommentEntity::by_id(&conn, &unexisting_id).unwrap().is_some() {
+    while CommentEntity::by_id(&conn, &unexisting_id)
+        .unwrap()
+        .is_some()
+    {
         unexisting_id += 1;
     }
     unexisting_id

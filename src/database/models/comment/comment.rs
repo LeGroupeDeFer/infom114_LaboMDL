@@ -1,13 +1,12 @@
 use crate::database;
 use crate::database::models::prelude::*;
+use crate::database::schema::comments::dsl;
 use crate::database::tables::comments_table as table;
 use crate::lib::{Consequence, EntityError};
-use crate::database::schema::comments::dsl;
 
+use chrono::Utc;
 use diesel::prelude::*;
 use diesel::MysqlConnection;
-use diesel::expression::functions::date_and_time::now;
-use chrono::NaiveDateTime;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Comment {
@@ -17,6 +16,8 @@ pub struct Comment {
     pub author: User,
     pub created_at: String,
     pub updated_at: String,
+    pub hidden: bool,
+    pub locked: bool,
     pub votes: u64,
     pub score: i64,
     pub flags: u64,
@@ -27,6 +28,21 @@ pub struct Comment {
 
 impl Comment {
     pub fn set_user_info(&mut self, conn: &MysqlConnection, user_id: &u32) {
+        if let Some(user) = UserEntity::by_id(conn, user_id).unwrap_or(None) {
+            self.replies = CommentEntity::by_comment_id(
+                conn,
+                &self.id,
+                user.has_capability(conn, "comment:view_hidden"),
+            )
+            .unwrap_or(vec![])
+            .into_iter()
+            .map(move |entity| {
+                let mut c = Comment::from(entity);
+                c.set_user_info(conn, user_id);
+                c
+            })
+            .collect::<Vec<Self>>();
+        }
         let vote_minima = RelCommentVoteMinima {
             comment_id: self.id,
             user_id: user_id.clone(),
@@ -52,12 +68,16 @@ impl Comment {
         );
         // TODO return replies
     }
-
 }
 
 impl From<CommentEntity> for Comment {
     fn from(ce: CommentEntity) -> Self {
         let conn = database::connection(&database::url());
+        let replies = CommentEntity::by_comment_id(&conn, &ce.id, false)
+            .unwrap_or(vec![])
+            .into_iter()
+            .map(move |entity| Self::from(entity))
+            .collect::<Vec<Self>>();
 
         // fixme : optimize db request
         Self {
@@ -70,16 +90,12 @@ impl From<CommentEntity> for Comment {
                 .unwrap(),
             created_at: ce.created_at.to_string(),
             updated_at: ce.updated_at.to_string(),
+            hidden: ce.is_hidden(),
+            locked: ce.is_locked(),
             votes: ce.votes,
             score: ce.score,
             flags: RelCommentReportEntity::count_by_comment_id(&conn, &ce.id).unwrap(),
-            replies: vec![],
-            // todo : implement replies
-            // ce.parent_id
-            // .and_then(|comment_id| {
-            //     CommentEntity::by_id(&conn, comment_id)
-            //         .and_then::<Comment>(|comment_entity| Some(Comment::from(comment_entity)))
-            // }),
+            replies,
             user_vote: None,
             user_flag: None
         }
@@ -102,12 +118,12 @@ impl CommentEntity {
 
         Ok(query.load(conn)?)
     }
-    
+
     pub fn by_comment_id(
         conn: &MysqlConnection,
         comment_id: &u32,
-        hidden: bool
-    ) -> Consequence<Vec<Self>> { 
+        hidden: bool,
+    ) -> Consequence<Vec<Self>> {
         let mut query = table.into_boxed();
         query = query.filter(dsl::deleted_at.is_not_null());
         query = query.filter(dsl::parent_id.eq(comment_id));
@@ -119,29 +135,23 @@ impl CommentEntity {
         Ok(query.load(conn)?)
     }
 
-    pub fn toggle_visibility(&self, conn: &MysqlConnection) -> Consequence<()> {
-        if self.hidden_at.is_some() {
-            diesel::update(self)
-                .set(dsl::hidden_at.eq(None as Option<NaiveDateTime>))
-                .execute(conn)?;
+    pub fn toggle_visibility(&mut self, conn: &MysqlConnection) -> Consequence<()> {
+        self.hidden_at = if self.hidden_at.is_none() {
+            Some(Utc::now().naive_local())
         } else {
-            diesel::update(self)
-                .set(dsl::hidden_at.eq(now))
-                .execute(conn)?;
-        }
-
+            None
+        };
+        self.update(conn)?;
         Ok(())
     }
-    pub fn toggle_lock(&self, conn: &MysqlConnection) -> Consequence<()> {
-        if self.locked_at.is_some() {
-            diesel::update(self)
-                .set(dsl::locked_at.eq(None as Option<NaiveDateTime>))
-                .execute(conn)?;
+
+    pub fn toggle_lock(&mut self, conn: &MysqlConnection) -> Consequence<()> {
+        self.locked_at = if self.locked_at.is_none() {
+            Some(Utc::now().naive_local())
         } else {
-            diesel::update(self)
-                .set(dsl::locked_at.eq(now))
-                .execute(conn)?;
-        }
+            None
+        };
+        self.update(conn)?;
         Ok(())
     }
 

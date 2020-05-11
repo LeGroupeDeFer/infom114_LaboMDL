@@ -403,7 +403,6 @@ impl PostEntity {
         self.score = self.calculate_score(&conn)?;
         self.votes = self.count_votes(&conn)?;
         self.rank = self.calculate_rank();
-        println!("NEW RANK: {}", self.rank);
 
         // update self
         self.update(&conn)?;
@@ -433,7 +432,6 @@ impl PostEntity {
             None
         };
         self.update(conn)?;
-        println!("HIDDEN {}", self.is_hidden());
         Ok(())
     }
 
