@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import GoArrowUp from '../../icons/arrow-up.svg';
 import GoArrowDown from '../../icons/arrow-down.svg';
@@ -7,34 +7,49 @@ import clsx from 'clsx';
 
 import { VOTE } from 'unanimity/lib';
 import Flexbox from '../Flexbox';
+import { May } from '../Auth';
 
-function VoteOverlay({ isLogged, isLocked, children }) {
+const LockedT = ({ children }) => {
+  return (
+    <OverlayTrigger
+      placement="right"
+      overlay={
+        <Tooltip>
+          Impossible de voter car la publication a été vérouillée par un
+          administrateur
+        </Tooltip>
+      }
+    >
+      {children}
+    </OverlayTrigger>
+  );
+};
+
+const Hollow = ({ children, setLockedCap }) => {
+  console.log('in');
+  setLockedCap(false);
+  return <>{children}</>;
+};
+
+// May :: (String, Component, Component) => Component
+// typeof Hollow == Component
+// typeof <Hollow /> !== Component
+
+function VoteOverlay({ isLogged, isLocked, children, setLockedCap }) {
   if (isLogged && !isLocked) return <>{children}</>;
 
-  if (!isLogged)
-    return (
-      <OverlayTrigger
-        placement="right"
-        overlay={<Tooltip>Il faut être authentifié pour pouvoir voter</Tooltip>}
-      >
-        {children}
-      </OverlayTrigger>
-    );
+  if (isLogged && isLocked) {
+    return May('post:edit_locked', Hollow, LockedT)({ children, setLockedCap });
+  }
 
-  if (isLocked)
-    return (
-      <OverlayTrigger
-        placement="right"
-        overlay={
-          <Tooltip>
-            Impossible de voter car la publication a été vérouillée par un
-            administrateur
-          </Tooltip>
-        }
-      >
-        {children}
-      </OverlayTrigger>
-    );
+  return (
+    <OverlayTrigger
+      placement="right"
+      overlay={<Tooltip>Il faut être authentifié pour pouvoir voter</Tooltip>}
+    >
+      {children}
+    </OverlayTrigger>
+  );
 }
 
 export function Vote({ isLogged, isLocked, vote, direction, onClick }) {
@@ -42,11 +57,16 @@ export function Vote({ isLogged, isLocked, vote, direction, onClick }) {
   const active = vote === direction;
   const cls = clsx('vote p-0', (upvote && 'up') || 'down', active && 'active');
   const Arrow = upvote ? GoArrowUp : GoArrowDown;
+  const [lockedCap, setLockedCap] = useState(isLocked);
 
   return (
-    <VoteOverlay isLogged={isLogged} isLocked>
+    <VoteOverlay
+      isLogged={isLogged}
+      isLocked={isLocked}
+      setLockedCap={setLockedCap}
+    >
       <Button
-        disabled={!isLogged || isLocked}
+        disabled={!isLogged || lockedCap}
         className={cls}
         onClick={() => onClick(direction, !vote)}
       >
@@ -95,14 +115,14 @@ export function VoteSection({
           isLogged={isLogged}
           vote={vote}
           onClick={localOnVote}
-          isLocked
+          isLocked={isLocked}
         />
         <Score score={score || 0} vote={vote} />
         <DownVote
           isLogged={isLogged}
           vote={vote}
           onClick={localOnVote}
-          isLocked
+          isLocked={isLocked}
         />
       </Flexbox>
     </div>

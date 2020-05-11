@@ -132,7 +132,7 @@ const WatchSymbol = ({ className }) => (
 const LockSymbol = ({ className }) => (
   <OverlayTrigger
     placement="auto"
-    overlay={<Tooltip>Cette publication est vérouillée.</Tooltip>}
+    overlay={<Tooltip>Cette publication est vérouillée</Tooltip>}
   >
     <Icon icon="lock" className="ml-1" />
   </OverlayTrigger>
@@ -198,8 +198,6 @@ export function Post({
   const { path } = useRouteMatch();
   const isLogged = !!user;
   const owner = isLogged && post.author.id === user.id;
-  const isLocked = post.locked;
-  //&& May('post:edit_locked', true);
 
   const cardProps = isPreview
     ? {
@@ -308,7 +306,7 @@ export function Post({
             onVote={(vote) => onVote(post, vote)}
             score={score}
             isLogged={isLogged}
-            isLocked={isLocked}
+            isLocked={post.locked}
             vote={userVote}
           />
 
