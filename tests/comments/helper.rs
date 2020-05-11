@@ -27,7 +27,7 @@ pub fn send_comment_from_post(
     serde_json::from_str(&body).unwrap()
 }
 
-pub fn send_comment_from_unavailable_post(
+pub fn send_comment_from_post_ko(
     client: &rocket::local::Client,
     auth_token: rocket::http::Header<'static>,
     post_id: &u32,

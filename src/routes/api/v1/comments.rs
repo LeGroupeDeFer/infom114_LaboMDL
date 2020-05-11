@@ -55,21 +55,20 @@ fn create_comment(
     _post_id: u32, 
     data:Json<NewComment>
 ) -> ApiResult<Comment> {
-    let comment_request = data.into_inner();
     let can_view_hidden = auth.has_capability(&*conn, "comment:view_hidden");
+    let can_edit_locked = auth.has_capability(&*conn, "comment:edit_locked");
 
+    let comment_request = data.into_inner();
     if comment_request.content == "" {
         Err(EntityError::InvalidAttribute)?;
     }
 
-    if post_guard.post().is_deleted() 
-        || (post_guard.post().is_hidden() && !can_view_hidden)
-    {
+    if post_guard.post().is_deleted() {
         Err(EntityError::InvalidID)?
     } 
     
-    if post_guard.post().is_locked() 
-        || (post_guard.post().is_hidden() && can_view_hidden)
+    if (post_guard.post().is_locked() && !can_edit_locked)
+        || (post_guard.post().is_hidden() && !can_view_hidden)
     {
         Err(AuthError::MissingCapability)?
     }
@@ -96,20 +95,15 @@ fn create_reply_to_comment(
     let can_view_hidden = auth.has_capability(&*conn, "comment:view_hidden");
     let can_edit_locked = auth.has_capability(&*conn, "comment:edit_locked");
 
-    let post = PostEntity::by_id(&*conn, &comment_guard.comment().post_id).unwrap().unwrap();
+    let comment = comment_guard.comment();
+    let post = PostEntity::by_id(&*conn, &comment.post_id).unwrap().unwrap();
 
-    if comment_guard.comment().is_deleted() 
-        || (comment_guard.comment().is_hidden() && !can_view_hidden)
-        || post.is_deleted() 
-        || (post.is_hidden() && !can_view_hidden)
-    {
+    if comment.is_deleted() || post.is_deleted() {
         Err(EntityError::InvalidID)?
     } 
     
-    if comment_guard.comment().is_locked() 
-        || (comment_guard.comment().is_hidden() && can_view_hidden)
-        || (post.is_locked() && !can_edit_locked) 
-        || (post.is_hidden() && can_view_hidden) 
+    if ((comment.is_locked() || post.is_locked()) && !can_edit_locked)
+        || ((comment.is_hidden() || post.is_hidden()) && !can_view_hidden)
     {
         Err(AuthError::MissingCapability)?
     }
@@ -138,15 +132,13 @@ fn get_comment_authenticated(
     comment_guard: CommentGuard, 
     _comment_id: u32
 ) -> ApiResult<Comment> {
-    let post = PostEntity::by_id(&*conn, &comment_guard.comment().post_id).unwrap().unwrap();
+    let comment = comment_guard.comment();
+    let post = PostEntity::by_id(&*conn, &comment.post_id).unwrap().unwrap();
 
     let can_view_hidden = auth.deref().has_capability(&*conn, "comment:view_hidden");
-    let can_edit_locked = auth.deref().has_capability(&*conn, "comment:edit_locked");
 
-    if comment_guard.comment().is_deleted() 
-        || (comment_guard.comment().is_hidden() && !can_view_hidden)
-        || post.is_deleted()
-        || (post.is_hidden() && !can_view_hidden)
+    if comment.is_deleted() || post.is_deleted()
+        || ((comment.is_hidden() || post.is_hidden()) && !can_view_hidden)
     {
         Err(EntityError::InvalidID)?
     }
@@ -162,12 +154,11 @@ fn get_comment_unauthenticated(
     comment_guard: CommentGuard, 
     _comment_id: u32
 ) -> ApiResult<Comment> {
-    if comment_guard.comment().is_deleted() || comment_guard.comment().is_hidden() {
-        Err(EntityError::InvalidID)?
-    }
-
-    let post = PostEntity::by_id(&*conn, &comment_guard.comment().post_id).unwrap().unwrap();
-    if post.is_deleted() || post.is_hidden() {
+    let comment = comment_guard.comment();
+    let post = PostEntity::by_id(&*conn, &comment.post_id).unwrap().unwrap();
+    if comment.is_deleted() || comment.is_hidden() 
+        || post.is_deleted() || post.is_hidden() 
+    {
         Err(EntityError::InvalidID)?
     }
 
@@ -186,17 +177,15 @@ fn updown_vote(
     let can_view_hidden = auth.has_capability(&*conn, "comment:view_hidden");
     let can_edit_locked = auth.has_capability(&*conn, "comment:edit_locked");
 
-    let post = PostEntity::by_id(&*conn, &comment_guard.comment().post_id).unwrap().unwrap();
-    if comment_guard.comment().is_deleted() 
-        || (comment_guard.comment().is_hidden() && !can_view_hidden)
-        || post.is_deleted() 
-        || (post.is_hidden() && !can_view_hidden)
-    {
+    let comment = comment_guard.comment();
+    let post = PostEntity::by_id(&*conn, &comment.post_id).unwrap().unwrap();
+
+    if comment.is_deleted() || post.is_deleted() {
         Err(EntityError::InvalidID)?
     } 
     
-    if (comment_guard.comment().is_locked() && !can_edit_locked)
-        || (post.is_locked() && !can_edit_locked)
+    if ((comment.is_locked() || post.is_locked()) && !can_edit_locked)
+        || ((comment.is_hidden() || post.is_hidden()) && !can_view_hidden)
     {
         Err(AuthError::MissingCapability)?
     }
