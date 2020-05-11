@@ -39,8 +39,12 @@ function InnerStream({
   onDeleteConfirmation,
   onFlagConfirmation,
   onWatch,
+  filteredPosts,
 }) {
-  const stream = useStream();
+  let stream = useStream();
+  if (filteredPosts) {
+    stream.posts.value = filteredPosts;  
+  }
 
   return (
     <div className="stream-content">
@@ -204,6 +208,19 @@ function Stream({ onSort, ...others }) {
 
       {/* Posts */}
       <InnerStream {...others} />
+    </Container>
+  );
+}
+
+//Same as Stream() but does not give you a header 
+//Let you give the desired posts to the stream
+export function SpecificStream({ filteredPosts, ...others }) {
+  const stream = useStream();
+
+  return (
+    <Container className="py-5">
+      {/* Posts */}
+      <InnerStream filteredPosts={filteredPosts} {...others} />
     </Container>
   );
 }

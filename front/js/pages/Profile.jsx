@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
 import Container from 'react-bootstrap/Container';
-import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -10,9 +9,9 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import 'regenerator-runtime';
 
+import Stream from '../pages/Stream/index';
 import { useAuth } from '../context';
 import { Authenticated } from '../components/';
-import Post from 'unanimity/components/Post';
 import api from '../lib/api';
 import Moment from '../components/Moment';
 
@@ -20,14 +19,14 @@ import Moment from '../components/Moment';
 function Profile() {
 
   const { user } = useAuth();
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState();
+
+  const fetch = async () => {
+    let res = await api.users.posts(user.id);
+    setPosts(res);
+  };
 
   useEffect(() => {
-
-    const fetch = async () => {
-      let res = await api.users.posts(user.id);
-      setPosts(res);
-    };
     fetch();
 
   }, []);
@@ -48,17 +47,13 @@ function Profile() {
                 <span className=" mr-3"><Icon icon="user" /> <b>Profil utilisateur</b></span>
               </h2>
               {
-                user?<User user={user} />:<></>
-              }       
+                user ? <User user={user} /> : <></>
+              }
             </div>
           </Col>
           <Col xs={12} md={7}>
-          <hr />
-
             {
-              posts.map(post => {
-                return (<><Post post={post} isPreview /><hr /></>);
-              })
+              posts ? <Stream onlySpecificPosts={posts} /> : <></>
             }
           </Col>
         </Row>
@@ -123,15 +118,3 @@ const User = ({ user }) => {
 
 const AuthenticatedProfile = Authenticated(Profile);
 export default AuthenticatedProfile;
-
-
-/*
-
-              onDelete={onDelete}
-              onFlag={onFlag}
-              onFlagCancel={onFlagCancel}
-              onHide={onHide}
-              onVote={(vote) => onVote(post, vote)}
-              onPreview={onPreview}
-              onTag={onTag}
-*/
