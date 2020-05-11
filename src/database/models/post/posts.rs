@@ -1,20 +1,20 @@
-use chrono::Utc;
+use chrono::{Datelike, Utc};
 use diesel::prelude::*;
 use diesel::MysqlConnection;
 use std::convert::TryFrom;
 
-use crate::database;
 use crate::database::models::prelude::*;
 use crate::database::schema::posts::dsl;
 use crate::database::schema::posts_tags::dsl as posts_tags;
 use crate::database::schema::tags::dsl as tags;
+use crate::{database, lib};
 
 use crate::database::tables::{
     posts_reports_table, posts_table as table, posts_tags_table, tags_table,
 };
 use crate::database::SortOrder;
 use crate::lib::{self as conseq, Consequence, EntityError, PostError};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 // TODO - Move this in app state
 const BASE: f64 = 1.414213562;
@@ -170,8 +170,9 @@ impl PostEntity {
         }
 
         // filter on tag
-        for tag in tags {
-            query = query.filter(tags::label.eq(tag));
+        let tags_length = tags.len() as u32;
+        if tags_length > 0 {
+            query = query.filter(tags::label.eq_any(tags))
         }
 
         // filter on the search term given (in title)
@@ -191,19 +192,6 @@ impl PostEntity {
             query = query.filter(dsl::kind.eq(kind_id));
         }
 
-        // limit the results
-        if let Some(l) = limit {
-            query = query.limit(l as i64);
-        }
-
-        // offset the results
-        if let Some(o) = offset {
-            if limit.is_none() {
-                query = query.limit(10_000);
-            }
-            query = query.offset(o as i64);
-        }
-
         // order by
         let s = sort.unwrap_or(SortOrder::HighRank);
         query = match s {
@@ -219,8 +207,138 @@ impl PostEntity {
             }
         };
 
-        let results = query.distinct().load::<PostEntity>(conn)?;
-        Ok(results)
+        let results = query.load::<PostEntity>(conn)?;
+
+        Ok(Self::filter_out_tags(results, tags_length, limit, offset))
+    }
+
+    fn filter_out_tags(
+        posts: Vec<Self>,
+        number: u32,
+        limit: Option<u32>,
+        offset: Option<u32>,
+    ) -> Vec<Self> {
+        let mut tab: HashMap<u32, u32> = HashMap::new();
+        let mut check_duplicate: HashSet<u32> = HashSet::new();
+
+        for post in posts.iter() {
+            let e = tab.entry(post.id).or_insert(0);
+            *e += 1;
+        }
+
+        let filtered_posts = posts
+            .into_iter()
+            .filter(|entity| tab[&entity.id] >= number && check_duplicate.insert(entity.id))
+            .collect::<Vec<Self>>();
+
+        let from = match offset {
+            Some(o) => o,
+            None => 0,
+        } as usize;
+
+        let to = filtered_posts.len().min(match limit {
+            Some(l) => from + l as usize,
+            None => filtered_posts.len(),
+        } as usize);
+
+        filtered_posts[from..to].to_vec()
+    }
+
+    pub fn get_report_by_year(
+        conn: &MysqlConnection,
+        year: i32,
+    ) -> Consequence<Vec<ActivityReport>> {
+        struct EasyBoy {
+            pub post: PostEntity,
+            pub comments: Vec<CommentEntity>,
+            pub votes: Vec<RelPostVoteEntity>,
+        }
+
+        let mut tab: HashMap<u32, ActivityReport> = HashMap::new();
+        let months = lib::months();
+        for i in 1..=12 {
+            tab.insert(
+                i,
+                ActivityReport {
+                    month: months[&i].to_string(),
+                    new: 0,
+                    interaction: 0,
+                },
+            );
+        }
+
+        for easy_boy in PostEntity::all(conn)?
+            .into_iter()
+            .map(move |post_entity| -> Consequence<EasyBoy> {
+                let comments = CommentEntity::by_post_id(conn, &post_entity.id, true)?;
+                let votes = RelPostVoteEntity::by_post_id(conn, &post_entity.id)?;
+                Ok(EasyBoy {
+                    post: post_entity,
+                    comments,
+                    votes,
+                })
+            })
+            .filter(|object| object.is_ok())
+            .map(move |object| object.unwrap())
+            .filter(|easy_boy| {
+                easy_boy.post.created_at.year() == year
+                    || easy_boy.post.updated_at.year() == year
+                    || (easy_boy.post.hidden_at.is_some()
+                        && easy_boy.post.hidden_at.unwrap().year() == year)
+                    || (easy_boy.post.locked_at.is_some()
+                        && easy_boy.post.locked_at.unwrap().year() == year)
+                    || easy_boy.comments.iter().any(|comment| {
+                        comment.created_at.year() == year || comment.updated_at.year() == year
+                    })
+                    || easy_boy
+                        .votes
+                        .iter()
+                        .any(|vote| vote.voted_at.year() == year)
+            })
+            .collect::<Vec<EasyBoy>>()
+            .iter()
+        {
+            if easy_boy.post.created_at.year() == year {
+                tab.get_mut(&easy_boy.post.created_at.month())?.new += 1;
+            }
+
+            if easy_boy.post.updated_at.year() == year {
+                tab.get_mut(&easy_boy.post.updated_at.month())?.interaction += 1;
+            }
+
+            if easy_boy.post.hidden_at.is_some() && easy_boy.post.hidden_at.unwrap().year() == year
+            {
+                tab.get_mut(&easy_boy.post.hidden_at.unwrap().month())?
+                    .interaction += 1;
+            }
+
+            if easy_boy.post.locked_at.is_some() && easy_boy.post.locked_at.unwrap().year() == year
+            {
+                tab.get_mut(&easy_boy.post.locked_at.unwrap().month())?
+                    .interaction += 1;
+            }
+
+            for comment in easy_boy.comments.iter() {
+                if comment.created_at.year() == year {
+                    tab.get_mut(&comment.created_at.month())?.interaction += 1;
+                }
+
+                if comment.updated_at.year() == year {
+                    tab.get_mut(&comment.updated_at.month())?.interaction += 1;
+                }
+            }
+
+            for vote in easy_boy.votes.iter() {
+                if vote.voted_at.year() == year {
+                    tab.get_mut(&vote.voted_at.month())?.interaction += 1;
+                }
+            }
+        }
+
+        Ok(tab
+            .into_iter()
+            .map(move |(_, value)| value)
+            .collect::<Vec<ActivityReport>>())
     }
 
     pub fn get_deleted(conn: &MysqlConnection) -> Consequence<Vec<Self>> {
@@ -241,6 +359,12 @@ impl PostEntity {
             .into_iter()
             .map(move |(entity, _)| entity)
             .collect::<Vec<Self>>())
+    }
+
+    pub fn by_author_id(conn: &MysqlConnection, user_id: &u32) -> Consequence<Vec<Self>> {
+        Ok(table
+            .filter(dsl::deleted_at.is_null().and(dsl::author_id.eq(user_id)))
+            .load(conn)?)
     }
 
     /// Delete a post permanently (not used)
@@ -287,11 +411,11 @@ impl PostEntity {
     }
 
     pub fn calculate_score(&self, conn: &MysqlConnection) -> Consequence<i64> {
-        RelPostVoteEntity::sum_by_post_id(&conn, self.id)
+        RelPostVoteEntity::sum_by_post_id(&conn, &self.id)
     }
 
     pub fn count_votes(&self, conn: &MysqlConnection) -> Consequence<u64> {
-        Ok(RelPostVoteEntity::count_by_post_id(&conn, self.id)? as u64)
+        Ok(RelPostVoteEntity::count_by_post_id(&conn, &self.id)? as u64)
     }
 
     pub fn calculate_rank(&self) -> f64 {
@@ -532,5 +656,3 @@ impl PartialEq for Post {
         self.id == other.id
     }
 }
-
-impl Eq for Post {}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Moment from 'react-moment';
+import Moment from '../Moment';
 import { Badge, Card, Dropdown, DropdownButton } from 'react-bootstrap';
 import { DownVote, UpVote } from './Vote';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
@@ -78,9 +78,7 @@ const Preview = ({
                 {author.lastname}
               </a>{' '}
               -{' '}
-              <Moment locale="fr" fromNow>
-                {createdAt}
-              </Moment>
+              <Moment date={createdAt} />
             </span>
 
             <DropdownButton

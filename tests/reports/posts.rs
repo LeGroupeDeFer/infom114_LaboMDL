@@ -16,7 +16,7 @@ fn get_post_report() {
     let data: Vec<ActivityReport> = serde_json::from_str(&response.body_string().unwrap()).unwrap();
     for post_report in data {
         match post_report.month.as_ref() {
-            "janvier" => {
+            "Janvier" => {
                 assert_eq!(post_report.interaction, 0);
                 assert_eq!(post_report.new, 0);
             }

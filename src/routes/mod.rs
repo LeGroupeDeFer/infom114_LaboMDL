@@ -91,7 +91,7 @@ pub fn recover(_id: u32, _token: String) -> Option<Template> {
 ///
 /// Every `js`, `css` or image file found in the `/static/` folder is served
 /// with this route.
-#[get("/<file..>", rank = 3)]
+#[get("/<file..>", rank = 15)]
 pub fn files(file: PathBuf) -> Option<NamedFile> {
     NamedFile::open(Path::new("static/").join(file)).ok()
 }

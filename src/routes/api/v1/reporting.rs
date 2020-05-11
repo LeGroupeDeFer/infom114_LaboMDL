@@ -3,7 +3,7 @@ use crate::database::DBConnection;
 
 use crate::guards::Auth;
 use crate::http::responders::ApiResult;
-use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
+use chrono::{Datelike, Utc};
 use rocket_contrib::json::Json;
 
 pub fn collect() -> Vec<rocket::Route> {
@@ -54,17 +54,11 @@ pub fn get_tags_report(conn: DBConnection, auth: Auth) -> ApiResult<Vec<TagRepor
 }
 
 #[get("/api/v1/report/activity")]
-pub fn get_activity_report(_conn: DBConnection) -> ApiResult<Vec<ActivityReport>> {
-    for i in 1..=12 {
-        let _first_day_of_month = NaiveDateTime::new(
-            NaiveDate::from_ymd(2020, i, 1),
-            NaiveTime::from_hms(0, 0, 0),
-        );
-
-        // j'abandonne jpp
-    }
-
-    unimplemented!()
+pub fn get_activity_report(conn: DBConnection) -> ApiResult<Vec<ActivityReport>> {
+    Ok(Json(PostEntity::get_report_by_year(
+        &*conn,
+        Utc::today().year(),
+    )?))
 }
 
 #[get("/api/v1/report/post_reported")]

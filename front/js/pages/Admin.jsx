@@ -42,19 +42,22 @@ import {
 import api from '../lib/api';
 import 'regenerator-runtime';
 import clsx from 'clsx';
+import { May } from '../components/Auth';
 
-function Admin(props) {
-  const menuList = ['Tags', 'Roles', 'Users', 'Flagged Posts', 'Statistics'];
+
+
+function Admin() {
+  const menuList = ['Tags', 'Roles', 'Utilisateurs', 'Publications signalées', 'Statistiques'];
   const [currentMenu, setCurrentMenu] = useState('Tags');
 
   const Page = () => {
     if (currentMenu === 'Tags') {
       return <TagsPage />;
-    } else if (currentMenu === 'Users') {
+    } else if (currentMenu === 'Utilisateurs') {
       return <UsersPage />;
-    } else if (currentMenu === 'Statistics') {
+    } else if (currentMenu === 'Statistiques') {
       return <StatisticsPage />;
-    } else if (currentMenu === 'Flagged Posts') {
+    } else if (currentMenu === 'Publications signalées') {
       return <FlaggedPage />;
     } else {
       return <RolesPage />;
@@ -94,7 +97,7 @@ const Title = ({ icon, description }) => {
 
 const MenuBar = ({ currentMenu, onClick, menuList }) => {
   const icons = [
-    <Icon icony="tags" />,
+    <Icon icon= "tags" />,
     <Icon icon="clipboard-check" />,
     <Icon icon="users" />,
     <Icon icon="flag" />,
@@ -236,9 +239,28 @@ const StatisticsPage = () => {
     max = Math.max(...max) > 0 ? Math.max(...max) : 1;
     setFullMark([0, Math.ceil(max / 10) * 10]); //Setting the ladder
     //Posts data
-    //FIXME - waiting for the backend
+    let postsData = await api.posts.report();
+    const months = ["Janvier", 
+      "Février", 
+      "Mars", 
+      "Avril", 
+      "Mai", 
+      "Juin", 
+      "Juillet", 
+      "Août", 
+      "Septembre", 
+      "Octobre", 
+      "Novembre", 
+      "Décembre"];
+    postsData.forEach(post => {
+      months.forEach((month, index) => {
+        if (post.month === month) {
+          post.id = index + 1;
+        }
+      });  
+    });
 
-    //Transorming data if required
+    //Transorming data structure if required
     let connect = [
       {
         name: 'Connecté',
@@ -260,21 +282,7 @@ const StatisticsPage = () => {
       },
     ];
     let tag = tagsData;
-    let post = [
-      { name: 'Janvier', nouveau: 20, interaction: 124 },
-      { name: 'Février', nouveau: 13, interaction: 40 },
-      { name: 'Mars', nouveau: 24, interaction: 75 },
-      { name: 'Avril', nouveau: 40, interaction: 150 },
-      { name: 'Mai', nouveau: 5, interaction: 47 },
-      { name: 'Juin', nouveau: 0, interaction: 0 },
-      { name: 'Juillet', nouveau: 0, interaction: 0 },
-      { name: 'Aout', nouveau: 0, interaction: 0 },
-      { name: 'Septembre', nouveau: 0, interaction: 0 },
-      { name: 'Octobre', nouveau: 0, interaction: 0 },
-      { name: 'Novembre', nouveau: 0, interaction: 0 },
-      { name: 'Décembre', nouveau: 0, interaction: 0 },
-    ];
-
+    let post = postsData.slice().sort((a,b) => {return a.id - b.id});
     return { connect, active, tag, post };
   };
 
@@ -332,7 +340,7 @@ const StatisticsPage = () => {
             <Card style={{ padding: '1rem' }}>
               <Card.Title>Tags et leur utilisation</Card.Title>
               <Card.Subtitle className="mb-2 text-muted">
-                Montre le nombre de citation par tag ainsi que le type de post
+                Montre le nombre de citations par tag ainsi que le type de publication
                 associé
               </Card.Subtitle>
               <ResponsiveContainer height={300}>
@@ -374,9 +382,9 @@ const StatisticsPage = () => {
 
           <Col md={12}>
             <Card style={{ padding: '1rem' }}>
-              <Card.Title>Postes créés sur l'année</Card.Title>
+              <Card.Title>Publications créées sur l'année</Card.Title>
               <Card.Subtitle className="mb-2 text-muted">
-                Nombre de nouveaux postes depuis le début de l'année, ainsi que
+                Nombre de nouvelles publications depuis le début de l'année, ainsi que
                 l'interaction liée
               </Card.Subtitle>
               <ResponsiveContainer height={250}>
@@ -384,12 +392,12 @@ const StatisticsPage = () => {
                   data={graphData.post}
                   margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                 >
-                  <XAxis dataKey="name" />
+                  <XAxis dataKey="month" />
                   <YAxis />
                   <RechartsTooltip />
                   <Legend />
                   <CartesianGrid stroke="#f5f5f5" />
-                  <Bar dataKey="nouveau" barSize={20} fill={colors[0]} />
+                  <Bar dataKey="new" barSize={20} fill={colors[0]} />
                   <Line
                     type="monotone"
                     dataKey="interaction"
@@ -421,7 +429,7 @@ const FlaggedPage = () => {
     <>
       <Title
         icon={<Icon icon="flag" />}
-        description="Gestion des posts signalés"
+        description="Gestion des publications signalées"
       />
       <Container>
         {flaggedPosts.length !== 0 ? (
@@ -442,7 +450,7 @@ const FlaggedPage = () => {
             );
           })
         ) : (
-          <b>Pas de postes signalés</b>
+          <b>Pas de publications signalées</b>
         )}
       </Container>
     </>
@@ -697,6 +705,19 @@ const TagsPage = () => {
   );
 };
 
-const AuthenticatedAdmin = Authenticated(Admin);
+//Show an error if the user does not have the capability
+const checkAuthorisation = () => {
+
+  let unauthorised = () => { 
+
+    return (
+    <span><b>Vous n'avez pas la possibilité de consulter cette page</b>
+    <br/><a href="/">Revenir à l'accueil</a></span>
+    )
+  }
+  return May('admin:access', Admin, unauthorised)();
+}
+
+const AuthenticatedAdmin = Authenticated(checkAuthorisation);
 
 export default AuthenticatedAdmin;

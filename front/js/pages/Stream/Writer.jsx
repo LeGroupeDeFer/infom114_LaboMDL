@@ -16,7 +16,7 @@ import { Option } from 'unanimity/components/SearchBar';
 import { useStream } from 'unanimity/context';
 
 const types = [
-  { value: 'idea', label: Option({ icon: 'light-bulb', label: 'Idée' }) },
+  { value: 'idea', label: Option({ icon: 'lightbulb', label: 'Idée' }) },
   { value: 'info', label: Option({ icon: 'info', label: 'Information' }) },
   { value: 'poll', label: Option({ icon: 'balance-scale', label: 'Sondage' }) },
 ];
@@ -163,7 +163,7 @@ const Writer = Authenticated(() => {
         <Col>
           <h1 className="mb-4 text-dark writer-header">
             <Icon icon="pen-fancy" className="mr-3" />
-            <span>Créer un post</span>
+            <span>Écrire une publication</span>
             <hr />
           </h1>
         </Col>

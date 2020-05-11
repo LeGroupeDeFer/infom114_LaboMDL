@@ -28,7 +28,6 @@ fn create_comment_from_post_admin() {
 
 #[test]
 fn create_comment_from_post_normal_user() {
-
     let client = init::clean_client();
     let conn = init::database_connection();
     init::seed();
@@ -39,10 +38,10 @@ fn create_comment_from_post_normal_user() {
 
     let post = init::get_post_entity(false, false, false);
     let comment = send_comment_from_post(
-        &client, 
-        auth_token_header, 
-        &post.id, 
-        "Normal user should be able to post a comment like this!!!"
+        &client,
+        auth_token_header,
+        &post.id,
+        "Normal user should be able to post a comment like this!!!",
     );
 
     let comment_entity = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
@@ -62,10 +61,10 @@ fn create_duplicate_comments_from_post() {
     let post = init::get_post_entity(false, false, false);
     let token = login_admin();
     let comment_content = "There are 2 comments like this!!";
-    
+
     let comment1 = send_comment_from_post(&client, token.clone(), &post.id, comment_content);
     assert!(CommentEntity::by_id(&conn, &comment1.id).unwrap().is_some());
-    
+
     thread::sleep(time::Duration::from_millis(10000));
 
     let comment2 = send_comment_from_post(&client, token.clone(), &post.id, comment_content);
@@ -87,10 +86,7 @@ fn create_comment_from_post_unauthenticated() {
     let comment_content = "This is a test comment.";
     let json_data = format!("{{ \"content\": \"{}\" }}", comment_content);
 
-    let req = client
-        .post(route)
-        .header(ContentType::JSON)
-        .body(json_data);
+    let req = client.post(route).header(ContentType::JSON).body(json_data);
 
     let response = req.dispatch();
 
@@ -124,7 +120,9 @@ fn create_comment_from_post_bad_json() {
     let response = req.dispatch();
     assert_eq!(response.status(), Status::BadRequest);
     assert_eq!(
-        CommentEntity::by_post_id(&conn, &post.id, false).unwrap().len(), 
+        CommentEntity::by_post_id(&conn, &post.id, false)
+            .unwrap()
+            .len(),
         0
     );
 }
@@ -145,26 +143,22 @@ fn create_comment_from_unexisting_post() {
         &client,
         init::login_admin(),
         &unexisting_id,
-        comment_content
+        comment_content,
     );
-    assert_eq!(response_status, Status::BadRequest); 
+    assert_eq!(response_status, Status::BadRequest);
 }
 
 #[test]
 fn create_comment_from_locked_post() {
     let client = init::clean_client();
     init::seed();
-    
+
     let post = init::get_post_entity(true, false, false);
     let comment_content = "I am a comment, I cannot be submitted to a hidden post.";
 
-    let response_status = send_comment_from_unavailable_post(
-        &client,
-        init::login_admin(),
-        &post.id,
-        comment_content
-    );
-    assert_eq!(response_status, Status::Forbidden); 
+    let response_status =
+        send_comment_from_unavailable_post(&client, init::login_admin(), &post.id, comment_content);
+    assert_eq!(response_status, Status::Forbidden);
 }
 
 #[test]
@@ -178,13 +172,9 @@ fn create_comment_from_hidden_post_normal_user() {
     let post = init::get_post_entity(false, true, false);
     let comment_content = "I am a comment, I cannot be submitted to a hidden post.";
 
-    let response_status = send_comment_from_unavailable_post(
-        &client,
-        auth_token_header,
-        &post.id,
-        comment_content
-    );
-    assert_eq!(response_status, Status::BadRequest); 
+    let response_status =
+        send_comment_from_unavailable_post(&client, auth_token_header, &post.id, comment_content);
+    assert_eq!(response_status, Status::BadRequest);
 }
 
 #[test]
@@ -195,13 +185,9 @@ fn create_comment_from_hidden_post_admin() {
     let post = init::get_post_entity(false, true, false);
     let comment_content = "I am a comment, I cannot be submitted to a hidden post.";
 
-    let response_status = send_comment_from_unavailable_post(
-        &client,
-        init::login_admin(),
-        &post.id,
-        comment_content
-    );
-    assert_eq!(response_status, Status::Forbidden); 
+    let response_status =
+        send_comment_from_unavailable_post(&client, init::login_admin(), &post.id, comment_content);
+    assert_eq!(response_status, Status::Forbidden);
 }
 
 // create a comment from a soft-deleted post
@@ -209,17 +195,13 @@ fn create_comment_from_hidden_post_admin() {
 fn create_comment_from_soft_deleted_post() {
     let client = init::clean_client();
     init::seed();
-    
+
     let post = init::get_post_entity(false, false, true);
     let comment_content = "I am a comment, I cannot be submitted to a soft-deleted post.";
 
-    let response_status = send_comment_from_unavailable_post(
-        &client,
-        init::login_admin(),
-        &post.id,
-        comment_content
-    );
-    assert_eq!(response_status, Status::BadRequest); 
+    let response_status =
+        send_comment_from_unavailable_post(&client, init::login_admin(), &post.id, comment_content);
+    assert_eq!(response_status, Status::BadRequest);
 }
 
 #[test]
@@ -231,7 +213,8 @@ fn create_comment_from_comment() {
     let post = init::get_post_entity(false, false, false);
     let comment = init::get_comment_entity(post.id, false, false, false);
 
-    let reply = send_comment_from_comment(&client, login_admin(), &comment.id, "Test <<positive>> :D");
+    let reply =
+        send_comment_from_comment(&client, login_admin(), &comment.id, "Test <<positive>> :D");
 
     let comment_entity = CommentEntity::by_id(&conn, &reply.id).unwrap().unwrap();
     assert_eq!(comment_entity.id, reply.id);
@@ -244,7 +227,6 @@ fn create_comment_from_comment() {
 
 #[test]
 fn create_comment_from_comment_normal_user() {
-
     let client = init::clean_client();
     let conn = init::database_connection();
     init::seed();
@@ -256,7 +238,12 @@ fn create_comment_from_comment_normal_user() {
     let post = init::get_post_entity(false, false, false);
     let comment = init::get_comment_entity(post.id, false, false, false);
 
-    let reply = send_comment_from_comment(&client, auth_token_header, &comment.id, "Test <<positive>> too :D");
+    let reply = send_comment_from_comment(
+        &client,
+        auth_token_header,
+        &comment.id,
+        "Test <<positive>> too :D",
+    );
 
     let comment_entity = CommentEntity::by_id(&conn, &reply.id).unwrap().unwrap();
     assert_eq!(comment_entity.id, reply.id);
@@ -276,10 +263,10 @@ fn create_duplicate_comments_from_comment() {
     let comment = init::get_comment_entity(post.id, false, false, false);
     let token = login_admin();
     let reply_content = "There are 2 comments like this!!";
-    
+
     let reply1 = send_comment_from_comment(&client, token.clone(), &comment.id, reply_content);
     assert!(CommentEntity::by_id(&conn, &reply1.id).unwrap().is_some());
-    
+
     thread::sleep(time::Duration::from_millis(1000));
 
     let reply2 = send_comment_from_comment(&client, token.clone(), &comment.id, reply_content);
@@ -303,17 +290,16 @@ fn create_comment_from_comment_unauthenticated() {
     let reply_content = "Don't panic! Try your best!";
     let json_data = format!("{{ \"content\": \"{}\" }}", reply_content);
 
-    let req = client
-        .post(route)
-        .header(ContentType::JSON)
-        .body(json_data);
+    let req = client.post(route).header(ContentType::JSON).body(json_data);
 
     let response = req.dispatch();
 
     assert_eq!(response.status(), Status::Unauthorized);
 
     assert_eq!(
-        CommentEntity::by_comment_id(&conn, &comment.id, false).unwrap().len(), 
+        CommentEntity::by_comment_id(&conn, &comment.id, false)
+            .unwrap()
+            .len(),
         0
     );
 }
@@ -343,7 +329,9 @@ fn create_comment_from_comment_bad_json() {
     assert_eq!(response.status(), Status::BadRequest);
 
     assert_eq!(
-        CommentEntity::by_comment_id(&conn, &comment.id, false).unwrap().len(), 
+        CommentEntity::by_comment_id(&conn, &comment.id, false)
+            .unwrap()
+            .len(),
         0
     );
 }
@@ -354,19 +342,18 @@ fn create_comment_from_unexisting_comment() {
     let client = init::clean_client();
     init::seed();
     let conn = init::database_connection();
-    
+
     let mut unexisting_id = 12;
-    while CommentEntity::by_id(&conn, &unexisting_id).unwrap().is_some() {
+    while CommentEntity::by_id(&conn, &unexisting_id)
+        .unwrap()
+        .is_some()
+    {
         unexisting_id += 1;
     }
     let reply_content = "I should not be sucessfully submitted!.";
-    let response_status = send_comment_from_comment_ko(
-        &client,
-        init::login_admin(),
-        &unexisting_id,
-        reply_content
-    );
-    assert_eq!(response_status, Status::BadRequest); 
+    let response_status =
+        send_comment_from_comment_ko(&client, init::login_admin(), &unexisting_id, reply_content);
+    assert_eq!(response_status, Status::BadRequest);
 }
 
 // create a comment to a locked comment
@@ -374,18 +361,14 @@ fn create_comment_from_unexisting_comment() {
 fn create_comment_from_locked_comment() {
     let client = init::clean_client();
     init::seed();
-    
+
     let post = init::get_post_entity(false, false, false);
     let comment = init::get_comment_entity(post.id, true, false, false);
     let reply_content = "Don't panic! Try your best!";
 
-    let response_status = send_comment_from_comment_ko(
-        &client,
-        init::login_admin(),
-        &comment.id,
-        reply_content
-    );
-    assert_eq!(response_status, Status::Forbidden); 
+    let response_status =
+        send_comment_from_comment_ko(&client, init::login_admin(), &comment.id, reply_content);
+    assert_eq!(response_status, Status::Forbidden);
 }
 
 // create a comment to a hidden comment from a post
@@ -393,7 +376,7 @@ fn create_comment_from_locked_comment() {
 fn create_comment_from_hidden_comment_normal_user() {
     let client = init::clean_client();
     init::seed();
-    
+
     let (user, passwd) = init::get_user(true);
     let auth_token_header = init::login(&user.email, &passwd);
 
@@ -401,31 +384,23 @@ fn create_comment_from_hidden_comment_normal_user() {
     let comment = init::get_comment_entity(post.id, false, true, false);
     let reply_content = "Don't panic! Try your best!";
 
-    let response_status = send_comment_from_comment_ko(
-        &client,
-        auth_token_header,
-        &comment.id,
-        reply_content
-    );
-    assert_eq!(response_status, Status::BadRequest); 
+    let response_status =
+        send_comment_from_comment_ko(&client, auth_token_header, &comment.id, reply_content);
+    assert_eq!(response_status, Status::BadRequest);
 }
 
 #[test]
 fn create_comment_from_hidden_comment_admin() {
     let client = init::clean_client();
     init::seed();
-    
+
     let post = init::get_post_entity(false, false, false);
     let comment = init::get_comment_entity(post.id, false, true, false);
     let reply_content = "Don't panic! Try your best!";
 
-    let response_status = send_comment_from_comment_ko(
-        &client,
-        init::login_admin(),
-        &comment.id,
-        reply_content
-    );
-    assert_eq!(response_status, Status::Forbidden); 
+    let response_status =
+        send_comment_from_comment_ko(&client, init::login_admin(), &comment.id, reply_content);
+    assert_eq!(response_status, Status::Forbidden);
 }
 
 // create a comment to a soft-deleted comment from a post
@@ -433,42 +408,34 @@ fn create_comment_from_hidden_comment_admin() {
 fn create_comment_from_deleted_comment() {
     let client = init::clean_client();
     init::seed();
-    
+
     let post = init::get_post_entity(false, false, false);
     let comment = init::get_comment_entity(post.id, false, false, true);
     let reply_content = "Don't panic! Try your best!";
 
-    let response_status = send_comment_from_comment_ko(
-        &client,
-        init::login_admin(),
-        &comment.id,
-        reply_content
-    );
-    assert_eq!(response_status, Status::BadRequest); 
+    let response_status =
+        send_comment_from_comment_ko(&client, init::login_admin(), &comment.id, reply_content);
+    assert_eq!(response_status, Status::BadRequest);
 }
 
 #[test]
 fn create_comment_from_comment_in_locked_post() {
     let client = init::clean_client();
     init::seed();
-    
+
     let post = init::get_post_entity(true, false, false);
     let comment = init::get_comment_entity(post.id, false, false, false);
     let reply_content = "Don't panic! Try your best!";
 
-    let response_status = send_comment_from_comment_ko(
-        &client,
-        init::login_admin(),
-        &comment.id,
-        reply_content
-    );
-    assert_eq!(response_status, Status::Forbidden); 
+    let response_status =
+        send_comment_from_comment_ko(&client, init::login_admin(), &comment.id, reply_content);
+    assert_eq!(response_status, Status::Forbidden);
 }
 #[test]
 fn create_comment_from_comment_in_hidden_post_normal_user() {
     let client = init::clean_client();
     init::seed();
-    
+
     let (user, passwd) = init::get_user(true);
     let auth_token_header = init::login(&user.email, &passwd);
 
@@ -476,49 +443,37 @@ fn create_comment_from_comment_in_hidden_post_normal_user() {
     let comment = init::get_comment_entity(post.id, false, false, false);
     let reply_content = "Don't panic! Try your best!";
 
-    let response_status = send_comment_from_comment_ko(
-        &client,
-        auth_token_header,
-        &comment.id,
-        reply_content
-    );
-    assert_eq!(response_status, Status::BadRequest); 
+    let response_status =
+        send_comment_from_comment_ko(&client, auth_token_header, &comment.id, reply_content);
+    assert_eq!(response_status, Status::BadRequest);
 }
 
 #[test]
 fn create_comment_from_comment_in_hidden_post_admin() {
     let client = init::clean_client();
     init::seed();
-    
+
     let post = init::get_post_entity(false, true, false);
     let comment = init::get_comment_entity(post.id, false, false, false);
     let reply_content = "Don't panic! Try your best!";
 
-    let response_status = send_comment_from_comment_ko(
-        &client,
-        init::login_admin(),
-        &comment.id,
-        reply_content
-    );
-    assert_eq!(response_status, Status::Forbidden); 
+    let response_status =
+        send_comment_from_comment_ko(&client, init::login_admin(), &comment.id, reply_content);
+    assert_eq!(response_status, Status::Forbidden);
 }
 
 #[test]
 fn create_comment_from_comment_in_deleted_post() {
     let client = init::clean_client();
     init::seed();
-    
+
     let post = init::get_post_entity(false, false, true);
     let comment = init::get_comment_entity(post.id, false, false, false);
     let reply_content = "Don't panic! Try your best!";
 
-    let response_status = send_comment_from_comment_ko(
-        &client,
-        init::login_admin(),
-        &comment.id,
-        reply_content
-    );
-    assert_eq!(response_status, Status::BadRequest); 
+    let response_status =
+        send_comment_from_comment_ko(&client, init::login_admin(), &comment.id, reply_content);
+    assert_eq!(response_status, Status::BadRequest);
 }
 
 // get all comments from a post
@@ -561,7 +516,7 @@ fn get_normal_comment_admin() {
     init::seed();
     let a_post = init::get_post_entity(false, false, false);
     let a_comment = init::get_comment_entity(a_post.id, false, false, false);
-    
+
     let returned_comment = get_comment_admin_ok(&client, &a_comment.id);
     assert_eq!(a_comment.id, returned_comment.id);
 }
@@ -574,7 +529,7 @@ fn get_unexisting_comment_unauthenticated() {
     let unexisting_id = init::get_unexisting_comment_id();
 
     let response_status = get_comment_unauth_ko(&client, &unexisting_id);
-    assert_eq!(response_status, Status::BadRequest); 
+    assert_eq!(response_status, Status::BadRequest);
 }
 
 #[test]
@@ -584,7 +539,7 @@ fn get_unexisting_comment_authed() {
     let unexisting_id = init::get_unexisting_comment_id();
 
     let response_status = get_comment_normal_user_ko(&client, &unexisting_id);
-    assert_eq!(response_status, Status::BadRequest); 
+    assert_eq!(response_status, Status::BadRequest);
 }
 
 #[test]
@@ -593,7 +548,7 @@ fn get_comment_from_locked_post_unauthenticated() {
     init::seed();
     let a_post = init::get_post_entity(true, false, false);
     let a_comment = init::get_comment_entity(a_post.id, false, false, false);
-    
+
     let returned_comment = get_comment_unauth_ok(&client, &a_comment.id);
     assert_eq!(a_comment.id, returned_comment.id);
 }
@@ -604,7 +559,7 @@ fn get_comment_from_locked_post_normal_user() {
     init::seed();
     let a_post = init::get_post_entity(true, false, false);
     let a_comment = init::get_comment_entity(a_post.id, false, false, false);
-    
+
     let returned_comment = get_comment_normal_user_ok(&client, &a_comment.id);
     assert_eq!(a_comment.id, returned_comment.id);
 }
@@ -615,7 +570,7 @@ fn get_comment_from_locked_post_admin() {
     init::seed();
     let a_post = init::get_post_entity(true, false, false);
     let a_comment = init::get_comment_entity(a_post.id, false, false, false);
-    
+
     let returned_comment = get_comment_admin_ok(&client, &a_comment.id);
     assert_eq!(a_comment.id, returned_comment.id);
 }
@@ -638,7 +593,7 @@ fn get_comment_from_hidden_post_normal_user() {
     init::seed();
     let a_post = init::get_post_entity(false, true, false);
     let a_comment = init::get_comment_entity(a_post.id, false, false, false);
-    
+
     let response_status = get_comment_normal_user_ko(&client, &a_comment.id);
     assert_eq!(response_status, Status::BadRequest);
 }
@@ -654,7 +609,6 @@ fn get_comment_from_hidden_post_admin() {
     let returned_comment = get_comment_admin_ok(&client, &a_comment.id);
     assert_eq!(a_comment.id, returned_comment.id);
 }
-
 
 // get a specific comment from a soft-deleted post
 #[test]
@@ -690,7 +644,6 @@ fn get_comment_from_deleted_post_admin() {
     assert_eq!(response_status, Status::BadRequest);
 }
 
-
 // get a specific locked comment -> ok
 #[test]
 fn get_locked_comment_unauthenticated() {
@@ -703,14 +656,13 @@ fn get_locked_comment_unauthenticated() {
     assert_eq!(a_comment.id, returned_comment.id);
 }
 
-
 #[test]
 fn get_locked_comment_normal_user() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(false, false, false);
     let a_comment = init::get_comment_entity(a_post.id, true, false, false);
-    
+
     let returned_comment = get_comment_normal_user_ok(&client, &a_comment.id);
     assert_eq!(a_comment.id, returned_comment.id);
 }

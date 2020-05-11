@@ -122,6 +122,33 @@ fn read_all_post_query_tags_even() {
 }
 
 #[test]
+fn read_all_post_query_double_tags() {
+    // clean database
+    let client = init::clean_client();
+    init::seed();
+
+    // perform request
+    let req = client.get(format!("{}?tags=even:hollow", POSTS_ROUTE));
+    let mut response = req.dispatch();
+
+    //check the answer is Ok
+    assert_eq!(response.status(), Status::Ok);
+
+    // check the answer data is what we wanted
+    let data = response.body_string().unwrap();
+    let posts: Vec<Post> = serde_json::from_str(&data).unwrap();
+    assert_eq!(posts.len(), 2);
+
+    assert_eq!(
+        posts
+            .iter()
+            .filter(|&p| p.tags.contains(&"even".to_string()))
+            .count(),
+        posts.len()
+    )
+}
+
+#[test]
 fn read_all_post_query_search_lock_in_title() {
     // clean database
     let client = init::clean_client();
@@ -1708,4 +1735,24 @@ fn delete_post_hidden_by_author() {
     assert!(!not_updated.deleted);
     assert!(not_updated.hidden);
     assert_eq!(not_updated.id, p.id);
+}
+
+#[test]
+fn get_posts_from_user() {
+    let client = init::clean_client();
+    init::seed();
+    let conn = init::database_connection();
+
+    let user = UserEntity::by_email(&conn, "alan.smithee@unamur.be")
+        .unwrap()
+        .unwrap();
+
+    let mut response = client
+        .get(format!("/api/v1/user/{}/posts", user.id))
+        .header(init::login_admin())
+        .dispatch();
+    assert_eq!(response.status(), Status::Ok);
+
+    let posts: Vec<Post> = serde_json::from_str(&response.body_string().unwrap()).unwrap();
+    assert_eq!(posts.len(), 7);
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Badge, Container, Row, Col } from 'react-bootstrap';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import Moment from 'react-moment';
+import Moment from '../Moment';
 
 
 const FlaggedPost = ({ post, countFlag, reasons, onHide }) => {
@@ -24,9 +24,7 @@ const FlaggedPost = ({ post, countFlag, reasons, onHide }) => {
                     <span className="ml-1">{author.lastname}</span>
                   </a>
                   <span>-</span>
-                  <Moment locale="fr" fromNow className="ml-1">
-                    {createdAt}
-                  </Moment>
+                  <Moment date={createdAt} />
                 </span>
               </h5>
             </Col>

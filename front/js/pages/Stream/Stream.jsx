@@ -148,12 +148,13 @@ function SortDropdown({ onSort }) {
     <DropdownButton
       alignRight
       title={
-        <span>
-          <MdSort size={20} fill="white" /> {title}
+        <span className="text-light">
+          <MdSort size={20} fill="white" />
+          <span>{title}</span>
         </span>
       }
       variant="primary"
-      id="sort-post"
+      className="btn-order-post h-100 text-light"
     >
       {orders.map((order) => (
         <SortDropdownItem
@@ -161,6 +162,7 @@ function SortDropdown({ onSort }) {
           label={order.label}
           value={order.value}
           onSort={() => localOnSort(order.value, order.label)}
+          className="text-dark"
         />
       ))}
     </DropdownButton>
@@ -187,7 +189,7 @@ function Stream({ onSort, ...others }) {
       {/* Actions */}
       <Row className="pb-3">
         <Col className="d-flex justify-content-between">
-          <Link to="/write" className="shape-circle">
+          <Link to="/write" className="shape-circle btn-write-post">
             <OverlayTrigger overlay={<Tooltip>Créer un post</Tooltip>}>
               <Button variant="primary" className="h-100">
                 <div className="d-flex text-light">

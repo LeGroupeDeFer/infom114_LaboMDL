@@ -27,7 +27,6 @@ function links(user = null, token = null) {
   let admin = false;
   if (token!=null) {
     const caps = token.cap;
-    console.log(token.cap);
     
     for(let i = 0; i < caps.length; i++) {
         if (caps[i].name == 'admin:access') {

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import GoReply from '../../icons/reply.svg';
-import Moment from 'react-moment';
-import { DownVote, UpVote, VoteSection } from './Vote';
+import Moment from '../Moment';
+import { VoteSection } from './Vote';
 import { Container, Row, Col, Button, Card, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { WhenLogged } from '../Auth';
@@ -51,9 +51,7 @@ function Comment({ comment, onComment, onVote }) {
               </a>
               <span className=" mr-1">{comment.score} points</span>
               <span className=" mr-1">·</span>
-              <Moment locale="fr" fromNow>
-                {comment.creationDate}
-              </Moment>
+              <Moment date={comment.creationDate} />
             </span>
           </div>
         </Col>
