@@ -1,7 +1,6 @@
+use super::super::init;
 use rocket::http::{ContentType, Status};
 use unanimitylibrary::database::models::prelude::Comment;
-use super::super::init;
-
 
 pub const COMMENT_ROUTE: &'static str = "/api/v1/comment";
 pub const POST_ROUTE: &'static str = "/api/v1/post";
@@ -14,7 +13,7 @@ pub fn send_comment_from_post(
 ) -> Comment {
     let route = format!("{}/{}/comment", POST_ROUTE, post_id);
     let data_json = format!("{{ \"content\": \"{}\" }}", comment);
-    
+
     let mut response = client
         .post(route)
         .header(ContentType::JSON)
@@ -40,7 +39,7 @@ pub fn send_comment_from_unavailable_post(
         .header(ContentType::JSON)
         .header(auth_token)
         .body(data_json);
-    
+
     // I prefer returning a Response object but I don't know how
     req.dispatch().status()
 }
@@ -65,12 +64,12 @@ pub fn send_comment_from_comment(
     serde_json::from_str(&body).unwrap()
 }
 
-pub fn send_comment_from_comment_ko(
-    client: &rocket::local::Client,
+pub fn send_comment_from_comment_ko<'a>(
+    client: &'a rocket::local::Client,
     auth_token: rocket::http::Header<'static>,
     comment_id: &u32,
     reply: &str,
-) -> Status {
+) -> rocket::local::LocalResponse<'a> {
     let route = format!("{}/{}", COMMENT_ROUTE, comment_id);
     let data_json = format!("{{ \"content\": \"{}\" }}", reply);
     let req = client
@@ -78,9 +77,8 @@ pub fn send_comment_from_comment_ko(
         .header(ContentType::JSON)
         .header(auth_token)
         .body(data_json);
-    
-    // I prefer returning a Response object but I don't know how
-    req.dispatch().status()
+
+    req.dispatch()
 }
 
 pub fn get_comment(
@@ -90,54 +88,36 @@ pub fn get_comment(
 ) -> Comment {
     let route = format!("{}/{}", COMMENT_ROUTE, comment_id);
 
-    let mut response = client
-        .get(route)
-        .header(auth_token_header)
-        .dispatch();
+    let mut response = client.get(route).header(auth_token_header).dispatch();
     assert_eq!(response.status(), Status::Ok);
 
     let body = response.body_string().unwrap();
     serde_json::from_str(&body).unwrap()
 }
 
-pub fn get_comment_normal_user_ok(
-    client: &rocket::local::Client,
-    comment_id: &u32,
-) -> Comment {
+pub fn get_comment_normal_user_ok(client: &rocket::local::Client, comment_id: &u32) -> Comment {
     let route = format!("{}/{}", COMMENT_ROUTE, comment_id);
     let (user, passwd) = init::get_user(true);
     let auth_token_header = init::login(&user.email, &passwd);
 
-    let mut response = client
-        .get(route)
-        .header(auth_token_header)
-        .dispatch();
+    let mut response = client.get(route).header(auth_token_header).dispatch();
     assert_eq!(response.status(), Status::Ok);
 
     let body = response.body_string().unwrap();
     serde_json::from_str(&body).unwrap()
 }
 
-pub fn get_comment_normal_user_ko(
-    client: &rocket::local::Client,
-    comment_id: &u32,
-) -> Status {
+pub fn get_comment_normal_user_ko(client: &rocket::local::Client, comment_id: &u32) -> Status {
     let route = format!("{}/{}", COMMENT_ROUTE, comment_id);
     let (user, passwd) = init::get_user(true);
     let auth_token_header = init::login(&user.email, &passwd);
 
-    let response = client
-        .get(route)
-        .header(auth_token_header)
-        .dispatch();
+    let response = client.get(route).header(auth_token_header).dispatch();
 
     response.status()
 }
 
-pub fn get_comment_unauth_ok(
-    client: &rocket::local::Client,
-    comment_id: &u32,
-) -> Comment {
+pub fn get_comment_unauth_ok(client: &rocket::local::Client, comment_id: &u32) -> Comment {
     let route = format!("{}/{}", COMMENT_ROUTE, comment_id);
     let mut response = client.get(route).dispatch();
     assert_eq!(response.status(), Status::Ok);
@@ -146,40 +126,25 @@ pub fn get_comment_unauth_ok(
     serde_json::from_str(&body).unwrap()
 }
 
-pub fn get_comment_unauth_ko(
-    client: &rocket::local::Client,
-    comment_id: &u32,
-) -> Status {
+pub fn get_comment_unauth_ko(client: &rocket::local::Client, comment_id: &u32) -> Status {
     let route = format!("{}/{}", COMMENT_ROUTE, comment_id);
     let response = client.get(route).dispatch();
 
     response.status()
 }
 
-pub fn get_comment_admin_ok(
-    client: &rocket::local::Client,
-    comment_id: &u32,
-) -> Comment {
+pub fn get_comment_admin_ok(client: &rocket::local::Client, comment_id: &u32) -> Comment {
     let route = format!("{}/{}", COMMENT_ROUTE, comment_id);
-    let mut response = client
-        .get(route)
-        .header(init::login_admin())
-        .dispatch();
+    let mut response = client.get(route).header(init::login_admin()).dispatch();
     assert_eq!(response.status(), Status::Ok);
 
     let body = response.body_string().unwrap();
     serde_json::from_str(&body).unwrap()
 }
 
-pub fn get_comment_admin_ko(
-    client: &rocket::local::Client,
-    comment_id: &u32,
-) -> Status {
+pub fn get_comment_admin_ko(client: &rocket::local::Client, comment_id: &u32) -> Status {
     let route = format!("{}/{}", COMMENT_ROUTE, comment_id);
-    let response = client
-        .get(route)
-        .header(init::login_admin())
-        .dispatch();
+    let response = client.get(route).header(init::login_admin()).dispatch();
 
     response.status()
 }
