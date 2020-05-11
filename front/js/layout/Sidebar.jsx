@@ -4,13 +4,11 @@ import { NavLink } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { useLocation } from 'react-router-dom';
 import Tooltip from 'react-bootstrap/Tooltip';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import { useAuth } from '../context';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import layout from '../lib/layout';
 
 function Sidebar({ open, links }) {
   const location = useLocation();
-  const { user } = useAuth();
   
   const localPath = `/${location.pathname.split('/')[1]}`;
   if (layout.layout(localPath) == 'alternate') return <></>;
@@ -44,19 +42,6 @@ function Sidebar({ open, links }) {
             </NavLink>
           </OverlayTrigger>
         ))}
-        {user ? (
-          <NavLink variant="danger" exact to="/logout" className="sidebar-exit">
-            <ListGroup.Item>
-              <Icon icon="door-open" />
-            </ListGroup.Item>
-          </NavLink>
-        ) : (
-          <NavLink variant="primary" exact to="/login" className="sidebar-enter">
-            <ListGroup.Item>
-              <Icon icon="sign-in-alt" />
-            </ListGroup.Item>
-          </NavLink>
-        )}
       </ListGroup>
     </nav>
   );

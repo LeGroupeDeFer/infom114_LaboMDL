@@ -145,6 +145,9 @@ Object.assign(auth, {
     const token = store.getItem('__refresh_token__');
     const [email, refreshToken] = token.split(':');
 
+    if (!token)
+      throw { code: 0, reason: 'Dead refresh token' };
+
     return auth('/refresh', { body: { email, refreshToken } })
       .then(({ accessToken, refreshToken, user }) => {
         currentAccessToken = accessToken;
@@ -220,14 +223,23 @@ Object.assign(posts, {
     if (cancel) return api(`/post/${id}/report`, { method: 'POST' });
     return api(`/post/${id}/report`, { method: 'POST', body: { reason } });
   },
-  watch(id) {
-    return api(`/post/${id}/watch`, { method: 'POST' });
+  watch(id, payload) {
+    return api(`/post/${id}/watch`, { method: 'POST', body: payload });
   },
   pollData(id) {
     return api(`/post/${id}/poll`);
   },
   pollVote(postId, answerId) {
     return api(`/post/${postId}/poll`, { method: 'POST', body: { answerId } });
+  },
+  comment(postId, comment) {
+    return api(`/post/${postId}/comment`, {
+      method: 'POST',
+      body: { content: comment },
+    });
+  },
+  comments(postId) {
+    return api(`/post/${postId}/comments`);
   },
 });
 
@@ -324,6 +336,10 @@ function postFlagged() {
   return api('/report/post_reported');
 }
 
+function userPosts(id) {
+  return api(`/user/${id}/posts`);
+}
+
 api.tags = tags;
 api.tags.add = addTag;
 api.tags.remove = removeTag;
@@ -337,7 +353,7 @@ api.capabilities = capabilities;
 api.users = users;
 api.users.addRole = addRoleToUser;
 api.users.removeRole = removeRoleFromUser;
-
+api.users.posts = userPosts;
 api.users.report = userStat;
 api.tags.report = tagStat;
 api.posts.report = postStat;

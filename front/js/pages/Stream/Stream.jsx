@@ -1,6 +1,6 @@
 import 'regenerator-runtime';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Container,
@@ -32,13 +32,20 @@ function InnerStream({
   onHide,
   onLock,
   onVote,
+  onLock,
   onPollVote,
   onTag,
   onDeleteConfirmation,
   onFlagConfirmation,
   onWatch,
+  //setAuthorPostFilter,
 }) {
-  const stream = useStream();
+  let stream = useStream();
+
+  //FIXME - Find a proper solution
+  // useEffect( () => {
+  //   userId ? setAuthorPostFilter(userId) : removeAllFilter();
+  // }, []);
 
   return (
     <div className="stream-content">
@@ -53,6 +60,7 @@ function InnerStream({
               onFlagCancel={onFlagCancel}
               onHide={onHide}
               onVote={onVote}
+              onLock={onLock}
               onPollVote={onPollVote}
               onPreview={onPreview}
               onTag={onTag}
@@ -150,6 +158,17 @@ function Stream({ onSort, ...others }) {
 
       {/* Posts */}
       <InnerStream {...others} />
+    </Container>
+  );
+}
+
+//Same as Stream() but does not give you a header 
+export function SpecificStream({ userId, ...others }) {
+
+  return (
+    <Container className="py-5">
+      {/* Posts */}
+      <InnerStream userId={userId} {...others} />
     </Container>
   );
 }

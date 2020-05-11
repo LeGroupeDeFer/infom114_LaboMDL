@@ -1,54 +1,14 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { Switch, Route, useRouteMatch } from 'react-router-dom';
-import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import {
-  Button,
-  ButtonGroup,
-  OverlayTrigger,
-  Tooltip,
-  Modal,
-  Toast,
-} from 'react-bootstrap';
-import Post from 'unanimity/components/Post';
-import clsx from 'clsx';
-
 import { useStream } from 'unanimity/context/streamContext';
 import { SearchBar } from 'unanimity/components';
-import { kinds } from 'unanimity/lib';
 
 import Stream from './Stream';
+import { SpecificStream } from './Stream';
 import Writer from './Writer';
 import Detail from './Detail';
-import { useAuth } from '../../context';
-
-// FilterBar :: Object => Component
-function KindSection() {
-  const stream = useStream();
-
-  return (
-    <ButtonGroup className="kind-section d-flex justify-content-between">
-      {kinds.map((kind) => (
-        <OverlayTrigger
-          key={kind.key}
-          placement="bottom"
-          overlay={<Tooltip id={kind.key}>{kind.label}</Tooltip>}
-        >
-          <Button
-            key={kind.key}
-            className={clsx(
-              'kind-choice',
-              stream.kind.value.key === kind.key && 'active'
-            )}
-            onClick={() => stream.kind.set(kind)}
-          >
-            <Icon icon={kind.icon} />
-          </Button>
-        </OverlayTrigger>
-      ))}
-    </ButtonGroup>
-  );
-}
+import Amend from './Amend';
 
 // Modals :: Object => Component
 function StreamModals({
@@ -95,9 +55,7 @@ function StreamModals({
 }
 
 // StreamContent :: None => Component
-function StreamContent() {
-  const { token } = useAuth();
-  console.log(token);
+function StreamContent({ userId }) {
   const { path } = useRouteMatch();
   const stream = useStream();
   const history = useHistory();
@@ -108,6 +66,7 @@ function StreamContent() {
     flagPost: false,
     toast: false,
     toastMsg: '',
+    onComment: (post, comment) => stream.posts.comment(post, comment),
     onFlag: (v) => setState((state) => ({ ...state, flagPost: v })),
     onFlagCancel: (post) => {
       stream.posts.flag(post, '', true).then(() =>
@@ -118,12 +77,15 @@ function StreamContent() {
         }))
       );
     },
+    //setAuthorPostFilter: (userId) => stream.posts.authorPostFilter(userId),
     onLock: (post) => stream.posts.lock(post),
     onHide: (post) => stream.posts.hide(post),
     onPollVote: (postId, answerId) => stream.posts.pollVote(postId, answerId),
     onVote: (post, vote) => stream.posts.vote(post, vote),
+
     onTag: (tag) => stream.tags.set(tag),
-    onWatch: (post) => stream.posts.watch(post),
+    onWatch: (post, event) => stream.posts.watch(post, event),
+    onLock: (post) => stream.posts.lock(post),
     onSort: (order) => stream.order.set(order),
     onPreview: (v) => setState((state) => ({ ...state, previewPost: v })),
     onDelete: (v, p) => {
@@ -154,11 +116,11 @@ function StreamContent() {
       }),
   });
 
+  if (userId) return <SpecificStream userId={userId} {...state} />;
+
   return (
     <>
-      <SearchBar>
-        <KindSection />
-      </SearchBar>
+      <SearchBar variant="kinds" />
 
       {/* Delete post modal */}
 
@@ -173,6 +135,9 @@ function StreamContent() {
         </Route>
         <Route path={`${path}detail/:id`}>
           <Detail {...state} />
+        </Route>
+        <Route path={`${path}amend/:id`}>
+          <Amend {...state} />
         </Route>
       </Switch>
     </>

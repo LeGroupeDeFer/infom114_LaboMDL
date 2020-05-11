@@ -19,6 +19,7 @@ pub fn collect() -> Vec<rocket::Route> {
             index,
             dynamic_routing,
             get_hollow_post,
+            get_hollow_amend,
             files,
             activate,
             recover
@@ -28,7 +29,7 @@ pub fn collect() -> Vec<rocket::Route> {
     .concat()
 }
 
-const ALLOWED_ROUTES: [&str; 13] = [
+const ALLOWED_ROUTES: [&str; 14] = [
     "profile",
     "notifications",
     "settings",
@@ -41,6 +42,7 @@ const ALLOWED_ROUTES: [&str; 13] = [
     "activate",
     "write",
     "detail",
+    "amend",
     "admin",
 ];
 
@@ -75,6 +77,13 @@ pub fn get_hollow_post(_post_id: u32) -> Template {
     Template::render("layout", &())
 }
 
+
+#[get("/amend/<_post_id>", rank = 2)]
+pub fn get_hollow_amend(_post_id: u32) -> Template {
+    Template::render("layout", &())
+}
+
+
 /// Hollow route to be accessed by activation link
 #[get("/activate/<_id>/<_token>", rank = 1)]
 pub fn activate(_id: u32, _token: String) -> Option<Template> {
@@ -91,7 +100,7 @@ pub fn recover(_id: u32, _token: String) -> Option<Template> {
 ///
 /// Every `js`, `css` or image file found in the `/static/` folder is served
 /// with this route.
-#[get("/<file..>", rank = 3)]
+#[get("/<file..>", rank = 15)]
 pub fn files(file: PathBuf) -> Option<NamedFile> {
     NamedFile::open(Path::new("static/").join(file)).ok()
 }

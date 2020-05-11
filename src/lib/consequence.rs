@@ -151,6 +151,36 @@ impl StdError for AuthError {
     }
 }
 
+// ----------------------------------------------------------------------------- WATCH EVENT ERRORS
+
+
+#[derive(Debug)]
+pub enum WatchEventError {
+    UnknownKind,
+    InvalidKind,
+    InvalidWatchTransition
+}
+
+impl FmtDisplay for WatchEventError {
+    fn fmt(&self, f: &mut FmtFormatter) -> FmtResult {
+        match self {
+            WatchEventError::UnknownKind => write!(f, "Unknown watch event kind"),
+            WatchEventError::InvalidKind => {
+                write!(f, "The watch event is invalid for the requested operation")
+            },
+            WatchEventError::InvalidWatchTransition => {
+                write!(f, "Previous watch event cannot lead to the requested event")
+            }
+        }
+    }
+}
+
+impl StdError for WatchEventError {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        None
+    }
+}
+
 // ---------------------------------------------------------------------------------- MODEL ERRORS
 
 #[derive(Debug)]
@@ -164,6 +194,7 @@ pub enum Error {
     EntityError(EntityError),
     AuthError(AuthError),
     PostError(PostError),
+    WatchEventError(WatchEventError)
 }
 
 impl FmtDisplay for Error {
@@ -178,6 +209,7 @@ impl FmtDisplay for Error {
             Error::UserError(e) => write!(f, "{}", e),
             Error::AuthError(e) => write!(f, "{}", e),
             Error::PostError(e) => write!(f, "{}", e),
+            Error::WatchEventError(e) => write!(f, "{}", e)
         }
     }
 }
@@ -193,6 +225,7 @@ impl StdError for Error {
             Error::EntityError(ref e) => Some(e),
             Error::AuthError(ref e) => Some(e),
             Error::PostError(ref e) => Some(e),
+            Error::WatchEventError(ref e ) => Some(e),
             _ => None,
         }
     }
@@ -264,4 +297,8 @@ impl From<PostError> for Error {
     fn from(error: PostError) -> Error {
         Error::PostError(error)
     }
+}
+
+impl From<WatchEventError> for Error {
+    fn from(error: WatchEventError) -> Error { Error::WatchEventError(error) }
 }

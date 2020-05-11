@@ -176,7 +176,7 @@ const Preview = ({
                 className="post-footer-btn mr-2"
                 href="#"
               >
-                <Icon icon="comment-alt" size="1.25em" className="mr-1" />
+                <Icon icon="comment-alt" size="1x" className="mr-1" />
                 <span className="text-muted">
                   {comments.length}
                   {comments.length <= 1 ? 'commentaire' : 'commentaires'}

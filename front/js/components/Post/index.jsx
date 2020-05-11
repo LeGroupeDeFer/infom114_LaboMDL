@@ -10,6 +10,7 @@ import {
   Card,
   OverlayTrigger,
   Tooltip,
+  Alert,
 } from 'react-bootstrap';
 import { Switch, Route, useRouteMatch } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
@@ -65,19 +66,12 @@ const LockPost = May('post:lock', ({ onClick, post }) => {
   );
 });
 
-const WatchPost = May('post:watch', ({ onClick, watched }) => {
-  if (watched) {
-    return (
-      <Dropdown.Item as="button" onClick={onClick}>
-        <Icon icon="dove" className="mr-2" />
-        <span>Retirer promotion</span>
-      </Dropdown.Item>
-    );
-  }
+const WatchPost = May('post:watch', ({ post }) => {
+  const history = useHistory();
   return (
-    <Dropdown.Item as="button" onClick={onClick}>
+    <Dropdown.Item as="button" onClick={() => history.push(`amend/${post.id}`)}>
       <Icon icon="dove" className="mr-2" />
-      <span>Promouvoir</span>
+      <span>Amender</span>
     </Dropdown.Item>
   );
 });
@@ -163,12 +157,6 @@ export function PostContent({ isPreview, post, onComment, onPollVote }) {
           <br />
         </>
       )}
-      <Comment.Editor onComment={(comment) => onComment(post, comment)} />
-      <div className="post-comments">
-        {post.comments.map((comment) => (
-          <Comment comment={comment} onComment={onComment} />
-        ))}
-      </div>
     </div>
   );
 }
@@ -186,7 +174,6 @@ export function Post({
   onTag,
   onLock,
   onWatch,
-  onPromote,
   onComment,
   isPreview,
   onPreview,
@@ -253,6 +240,9 @@ export function Post({
 
             <Col className="expand-preview">
               <Flexbox reverse align={'center'} className="h-100">
+                {post.locked && <LockSymbol className="px-2 ml-2 py-1" />}
+                {post.watched && <WatchSymbol className="px-2 ml-2 py-1" />}
+
                 {isLogged && (
                   <DropdownButton
                     alignRight
@@ -285,15 +275,12 @@ export function Post({
                     />
 
                     <LockPost onClick={() => onLock(post)} post={post} />
-
                     <WatchPost
-                      watched={post.watched}
-                      onClick={() => onWatch(post)}
+                      post={post}
+                      onClick={(event) => onWatch(post, event)}
                     />
                   </DropdownButton>
                 )}
-                {post.locked && <LockSymbol className="px-2 ml-2 py-1" />}
-                {post.watched && <WatchSymbol className="px-2 ml-2 py-1" />}
               </Flexbox>
             </Col>
           </Row>
@@ -324,6 +311,7 @@ export function Post({
                 </a>
               ))}
             </div>
+
             <PostContent
               isPreview={isPreview}
               post={post}
@@ -332,6 +320,13 @@ export function Post({
               onPollVote={onPollVote}
               className="expand-preview"
             />
+
+            <div className="mt-2">
+              <strong className="status">Accepté le 18 Avril 2020</strong>
+              <Alert variant="success">
+                Les vaccances seront prolongées de 2 semaines.
+              </Alert>
+            </div>
 
             <Flexbox reverse className="post-footer mt-2">
               <Link
@@ -359,6 +354,18 @@ export function Post({
                 </a>
               </FacebookShareButton>
             </Flexbox>
+            {!isPreview && (
+              <div className="mt-2">
+                <Comment.Editor
+                  onComment={(comment) => onComment(post, comment)}
+                />
+                <div className="post-comments">
+                  {post.comments.map((comment) => (
+                    <Comment comment={comment} onComment={onComment} />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </Card.Body>

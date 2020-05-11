@@ -9,22 +9,21 @@ const layouts = {
 
 const nobodyLinks = [
   link('stream', '/', 'stream', "Fil d'actualité", 1),
-  link('about', '/about', 'info-circle', 'À propos', 2),
-  // link('settings', '/settings', "cogs", 'Paramètres', 3)
+  link('about', '/about', 'info-circle', 'À propos', 3),
+  // link('settings', '/settings', "cogs", 'Paramètres', 4),
+  link('profile', '/profile', 'user-circle', 'Profil', 2),
 ];
 
-const authenticatedLinks = [
-  link('profile', '/profile', 'user-circle', 'Profil', 3),
-  link('notifications', '/notifications', 'bell', 'Notifications', 4),
-];
+const authenticatedLinks = [];
+//  link for notifications but not implemented yet
+//  link('notifications', '/notifications', "bell", 'Notifications', 2)
 
-const adminLinks = [link('admin', '/admin', 'user-shield', 'Admin', 5)];
+const adminLinks = [link('admin', '/admin', 'user-shield', 'Admin', 4)];
 
 function links(user = null, token = null) {
   let admin = false;
   if (token != null) {
     const caps = token.cap;
-    console.log(token.cap);
 
     for (let i = 0; i < caps.length; i++) {
       if (caps[i].name == 'admin:access') {

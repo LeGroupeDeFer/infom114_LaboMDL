@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context';
 
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
@@ -42,8 +43,11 @@ import {
 import api from '../lib/api';
 import 'regenerator-runtime';
 import clsx from 'clsx';
+import { May } from '../components/Auth';
 
-function Admin(props) {
+
+
+function Admin() {
   const menuList = ['Tags', 'Roles', 'Utilisateurs', 'Publications signalées', 'Statistiques'];
   const [currentMenu, setCurrentMenu] = useState('Tags');
 
@@ -94,7 +98,7 @@ const Title = ({ icon, description }) => {
 
 const MenuBar = ({ currentMenu, onClick, menuList }) => {
   const icons = [
-    <Icon icony="tags" />,
+    <Icon icon= "tags" />,
     <Icon icon="clipboard-check" />,
     <Icon icon="users" />,
     <Icon icon="flag" />,
@@ -104,12 +108,13 @@ const MenuBar = ({ currentMenu, onClick, menuList }) => {
 
   return (
     <Row>
-      <Col xs={2}></Col>
-      <Col xs={8}>
+      <Col xs={0} md={3}></Col>
+      <Col xs={12} md={6}>
         <ButtonGroup className="kind-section d-flex justify-content-between">
           {menuList.map((menu, i) => {
             return (
               <OverlayTrigger
+                key={i}
                 placement="bottom"
                 overlay={<Tooltip>{menu}</Tooltip>}
               >
@@ -128,7 +133,7 @@ const MenuBar = ({ currentMenu, onClick, menuList }) => {
           })}
         </ButtonGroup>
       </Col>
-      <Col xs={2}></Col>
+      <Col xs={0} md={3}></Col>
     </Row>
   );
 };
@@ -184,6 +189,9 @@ const UsersPage = () => {
 };
 
 const StatisticsPage = () => {
+
+  const {user} = useAuth();
+
   const colors = ['#A0C55F', '#0D6759', '#1B4079', '#FC440F'];
   const [graphData, setGraphData] = useState({
     connect: [],
@@ -228,6 +236,8 @@ const StatisticsPage = () => {
     // Fetching Data
     //User data
     let usersData = await api.users.report();
+    console.log(usersData);
+    console.log(user);
     //Tags data
     let tagsData = await api.tags.report();
     let max = tagsData.map((tag) => {
@@ -702,6 +712,19 @@ const TagsPage = () => {
   );
 };
 
-const AuthenticatedAdmin = Authenticated(Admin);
+//Show an error if the user does not have the capability
+const checkAuthorisation = () => {
+
+  let unauthorised = () => { 
+
+    return (
+    <span><b>Vous n'avez pas la possibilité de consulter cette page</b>
+    <br/><a href="/">Revenir à l'accueil</a></span>
+    )
+  }
+  return May('admin:access', Admin, unauthorised)();
+}
+
+const AuthenticatedAdmin = Authenticated(checkAuthorisation);
 
 export default AuthenticatedAdmin;

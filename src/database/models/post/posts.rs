@@ -9,14 +9,14 @@ use crate::database::schema::posts_tags::dsl as posts_tags;
 use crate::database::schema::tags::dsl as tags;
 use crate::{database, lib};
 
-use std::iter::FilterMap;
-
 use crate::database::tables::{
-    posts_reports_table, posts_table as table, posts_tags_table, tags_table,
+    posts_reports_table, posts_table as table, posts_tags_table, tags_table, watch_events_table
 };
 use crate::database::SortOrder;
-use crate::lib::{self as conseq, Consequence, EntityError, PostError};
-use std::collections::HashMap;
+use crate::lib::{Consequence, EntityError};
+use std::collections::{HashMap, HashSet};
+use crate::database::models::post::WatchEventEntity;
+
 
 // TODO - Move this in app state
 const BASE: f64 = 1.414213562;
@@ -24,77 +24,41 @@ const EPOCH: u32 = 1577840400; // 01/01/2020
 const EASING: u32 = 24 * 3600; // 1 day
 const WATCH_BONUS: u32 = 200;
 
-pub enum PostKind {
-    Info,
-    Poll,
-    Idea,
-    Decision,
-    Discussion,
-}
+/* Diesel helpers */
 
-impl TryFrom<u8> for PostKind {
-    type Error = conseq::Error;
+type AllColumns = (
+    dsl::id,
+    dsl::title,
+    dsl::content,
+    dsl::author_id,
+    dsl::created_at,
+    dsl::updated_at,
+    dsl::deleted_at,
+    dsl::hidden_at,
+    dsl::locked_at,
+    dsl::watched_at,
+    dsl::votes,
+    dsl::score,
+    dsl::rank,
+    dsl::kind,
+);
 
-    fn try_from(n: u8) -> Consequence<PostKind> {
-        Ok(match n {
-            0 => PostKind::Info,
-            1 => PostKind::Idea,
-            2 => PostKind::Poll,
-            3 => PostKind::Decision,
-            4 => PostKind::Discussion,
-            _ => Err(PostError::UnknownKind)?,
-        })
-    }
-}
-
-impl TryFrom<String> for PostKind {
-    type Error = conseq::Error;
-
-    fn try_from(s: String) -> Consequence<PostKind> {
-        Ok(match &*s.to_lowercase() {
-            "poll" => PostKind::Poll,
-            "idea" => PostKind::Idea,
-            "info" => PostKind::Info,
-            "decision" => PostKind::Decision,
-            "discussion" => PostKind::Discussion,
-            _ => Err(PostError::UnknownKind)?,
-        })
-    }
-}
-
-impl From<PostKind> for u8 {
-    fn from(kind: PostKind) -> u8 {
-        u8::from(&kind)
-    }
-}
-impl From<&PostKind> for u8 {
-    fn from(kind: &PostKind) -> u8 {
-        match kind {
-            PostKind::Info => 0,
-            PostKind::Idea => 1,
-            PostKind::Poll => 2,
-            PostKind::Decision => 3,
-            PostKind::Discussion => 4,
-        }
-    }
-}
-
-impl From<PostKind> for String {
-    fn from(kind: PostKind) -> String {
-        String::from(&kind)
-    }
-}
-impl From<&PostKind> for String {
-    fn from(kind: &PostKind) -> String {
-        match kind {
-            PostKind::Info => "info".into(),
-            PostKind::Idea => "idea".into(),
-            PostKind::Poll => "poll".into(),
-            PostKind::Decision => "decision".into(),
-            PostKind::Discussion => "discussion".into(),
-        }
-    }
-}
+const ALL_COLUMNS: AllColumns = (
+    dsl::id,
+    dsl::title,
+    dsl::content,
+    dsl::author_id,
+    dsl::created_at,
+    dsl::updated_at,
+    dsl::deleted_at,
+    dsl::hidden_at,
+    dsl::locked_at,
+    dsl::watched_at,
+    dsl::votes,
+    dsl::score,
+    dsl::rank,
+    dsl::kind,
+);
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Post {
@@ -117,7 +81,9 @@ pub struct Post {
     pub comments: Vec<Comment>,
     pub user_vote: Option<i16>,
     pub user_flag: Option<bool>,
+    pub watch_events: Vec<WatchEventEntity>,
 }
+
 
 impl PostEntity {
     /// Get `author_id` from a `post_id`
@@ -139,44 +105,34 @@ impl PostEntity {
         tags: Vec<String>,
         keywords: Vec<String>,
         sort: Option<SortOrder>,
-        kind: Option<String>, // type
+        kind: Option<String>,
+        author: Option<u32>,
         limit: Option<u32>,
-        offset: Option<u32>,
+        offset: Option<u32>
     ) -> Consequence<Vec<Self>> {
+        let tags_length = tags.len() as u32;
+
         let mut query = table
             .inner_join(posts_tags_table.inner_join(tags_table))
-            .select((
-                dsl::id,
-                dsl::title,
-                dsl::content,
-                dsl::author_id,
-                dsl::created_at,
-                dsl::updated_at,
-                dsl::deleted_at,
-                dsl::hidden_at,
-                dsl::locked_at,
-                dsl::watched_at,
-                dsl::votes,
-                dsl::score,
-                dsl::rank,
-                dsl::kind,
-            ))
+            .left_join(watch_events_table)
+            .select(ALL_COLUMNS)
+            .filter(dsl::deleted_at.is_null())
             .into_boxed();
 
-        // filter out deleted
-        query = query.filter(dsl::deleted_at.is_null());
+        /* ---------------------------------------------------------- HIDDEN */
 
-        // filter out hidden
         if !can_see_hidden {
             query = query.filter(dsl::hidden_at.is_null());
         }
 
-        // filter on tag
-        for tag in tags {
-            query = query.filter(tags::label.eq(tag));
+        /* ----------------------------------------------- TAGS (INCOMPLETE) */
+
+        if tags_length > 0 {
+            query = query.filter(tags::label.eq_any(tags))
         }
 
-        // filter on the search term given (in title)
+        /* -------------------------------------------------------- KEYWORDS */
+
         for keyword in keywords {
             query = query.filter(
                 dsl::title
@@ -185,30 +141,27 @@ impl PostEntity {
             );
         }
 
-        let post_kind = kind
-            .and_then(|v| if &*v == "all" { None } else { Some(v) })
-            .map(|v| PostKind::try_from(v));
-        if let Some(kind) = post_kind {
-            let kind_id: u8 = kind?.into();
-            query = query.filter(dsl::kind.eq(kind_id));
+        /* ------------------------------------------------------------ KIND */
+
+        let kid: Option<u8> = kind
+            .and_then(|v| if &*v == "all" { None } else { Some(v) })  // Option<String>
+            .map(|v| PostKind::try_from(v))                       // Option<Result<PostKind>>
+            .transpose()?                                                           // Option<PostKind>
+            .map(|k| k.into());
+
+        if let Some(id) = kid {
+            query = query.filter(dsl::kind.eq(id));
         }
 
-        // limit the results
-        if let Some(l) = limit {
-            query = query.limit(l as i64);
+        /* ---------------------------------------------------------- AUTHOR */
+
+        if let Some(author_id) = author {
+            query = query.filter(dsl::author_id.eq(author_id));
         }
 
-        // offset the results
-        if let Some(o) = offset {
-            if limit.is_none() {
-                query = query.limit(10_000);
-            }
-            query = query.offset(o as i64);
-        }
+        /* -------------------------------------------------------- ORDER BY */
 
-        // order by
-        let s = sort.unwrap_or(SortOrder::HighRank);
-        query = match s {
+        query = match sort.unwrap_or(SortOrder::HighRank) {
             SortOrder::New => query.order(dsl::created_at.desc()),
             SortOrder::Old => query.order(dsl::created_at.asc()),
             SortOrder::HighScore => query.order((dsl::score.desc(), dsl::created_at.desc())),
@@ -221,8 +174,38 @@ impl PostEntity {
             }
         };
 
-        let results = query.distinct().load::<PostEntity>(conn)?;
-        Ok(results)
+        /* ---------------------------------------------------- END OF QUERY */
+
+        let results = query.load::<PostEntity>(conn)?;
+
+        Ok(Self::filter_out_tags(results, tags_length, limit, offset))
+    }
+
+    fn filter_out_tags(
+        posts: Vec<Self>,
+        number: u32,
+        limit: Option<u32>,
+        offset: Option<u32>,
+    ) -> Vec<Self> {
+        let mut tab: HashMap<u32, u32> = HashMap::new();
+        let mut check_duplicate: HashSet<u32> = HashSet::new();
+
+        for post in posts.iter() {
+            let e = tab.entry(post.id).or_insert(0);
+            *e += 1;
+        }
+
+        let filtered_posts = posts
+            .into_iter()
+            .filter(|entity| tab[&entity.id] >= number && check_duplicate.insert(entity.id))
+            .collect::<Vec<Self>>();
+
+        let from = offset.unwrap_or(0) as usize;
+        let to = filtered_posts.len().min(
+            limit.map(|l| from + l as usize).unwrap_or(filtered_posts.len())
+        );
+
+        filtered_posts[from..to].to_vec()
     }
 
     pub fn get_report_by_year(
@@ -342,6 +325,12 @@ impl PostEntity {
             .collect::<Vec<Self>>())
     }
 
+    pub fn by_author_id(conn: &MysqlConnection, user_id: &u32) -> Consequence<Vec<Self>> {
+        Ok(table
+            .filter(dsl::deleted_at.is_null().and(dsl::author_id.eq(user_id)))
+            .load(conn)?)
+    }
+
     /// Delete a post permanently (not used)
     pub fn hard_delete(&self, conn: &MysqlConnection) -> Consequence<()> {
         diesel::delete(self).execute(conn)?;
@@ -378,7 +367,6 @@ impl PostEntity {
         self.score = self.calculate_score(&conn)?;
         self.votes = self.count_votes(&conn)?;
         self.rank = self.calculate_rank();
-        println!("NEW RANK: {}", self.rank);
 
         // update self
         self.update(&conn)?;
@@ -394,11 +382,10 @@ impl PostEntity {
     }
 
     pub fn calculate_rank(&self) -> f64 {
-        let elapsed = self.created_at.timestamp() as u32 - EPOCH;
+        let elapsed = self.watched_at.unwrap_or(self.created_at).timestamp() as u32 - EPOCH;
         let logarithm = (self.votes as f64).log(BASE);
         let order = logarithm.max(1.0);
-        let bonus = self.watched_at.map_or(0, |_| WATCH_BONUS);
-        order + (elapsed / EASING) as f64 + bonus as f64
+        order + (elapsed / EASING) as f64
     }
 
     pub fn toggle_visibility(&mut self, conn: &MysqlConnection) -> Consequence<()> {
@@ -408,7 +395,6 @@ impl PostEntity {
             None
         };
         self.update(conn)?;
-        println!("HIDDEN {}", self.is_hidden());
         Ok(())
     }
 
@@ -520,6 +506,11 @@ impl PostEntity {
             .map(move |(_, entity)| entity)
             .collect::<Vec<ReportedPost>>())
     }
+
+    pub fn watch_now(&mut self) {
+        self.watched_at = Some(Utc::now().naive_local());
+        self.rank = self.calculate_rank();
+    }
 }
 
 impl Post {
@@ -529,7 +520,8 @@ impl Post {
         tags: Vec<String>,
         keywords: Vec<String>,
         sort: Option<SortOrder>,
-        kind: Option<String>, // type
+        kind: Option<String>,
+        author: Option<u32>,
         limit: Option<u32>,
         offset: Option<u32>,
     ) -> Consequence<Vec<Self>> {
@@ -540,6 +532,7 @@ impl Post {
             keywords,
             sort,
             kind,
+            author,
             limit,
             offset,
         )?;
@@ -622,6 +615,8 @@ impl From<PostEntity> for Post {
                 .collect::<Vec<Comment>>(),
             user_vote: None,
             user_flag: None,
+            // TODO - Check the extend to which we need to create a WatchEvent wrapper
+            watch_events: WatchEventEntity::by_post_id(&conn, &pe.id).unwrap()
         }
     }
 }
@@ -631,5 +626,3 @@ impl PartialEq for Post {
         self.id == other.id
     }
 }
-
-impl Eq for Post {}

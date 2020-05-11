@@ -30,4 +30,11 @@ impl CapabilityEntity {
             .optional()
             .map(Ok)?
     }
+
+    pub fn with_names(conn: &MysqlConnection, names: &Vec<&str>) -> Consequence<Vec<Self>> {
+        table
+            .filter(dsl::name.eq_any(names))
+            .load::<Self>(conn)
+            .map(Ok)?
+    }
 }

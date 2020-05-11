@@ -33,61 +33,61 @@ const Content = (_) => {
 
       <div className={`offset ${layoutStyle}`}>
         <main role="main">
-          <div className="content">
-            <Suspense fallback={<Loading />}>
-              <Switch>
-                <Route path="/profile">
-                  <Profile />
-                </Route>
+          <StreamProvider>
+            <div className="content">
+              <Suspense fallback={<Loading />}>
+                <Switch>
+                  <Route path="/profile">
+                    <Profile />
+                  </Route>
 
-                <Route path="/notifications">
-                  <Notifications />
-                </Route>
+                  <Route path="/notifications">
+                    <Notifications />
+                  </Route>
 
-                <Route path="/settings">
-                  <Settings />
-                </Route>
+                  <Route path="/settings">
+                    <Settings />
+                  </Route>
 
-                <Route path="/about">
-                  <About />
-                </Route>
+                  <Route path="/about">
+                    <About />
+                  </Route>
 
-                <Route path="/login">
-                  <Login />
-                </Route>
+                  <Route path="/login">
+                    <Login />
+                  </Route>
 
-                <Route path="/logout">
-                  <Logout />
-                </Route>
+                  <Route path="/logout">
+                    <Logout />
+                  </Route>
 
-                <Route path="/register">
-                  <Register />
-                </Route>
+                  <Route path="/register">
+                    <Register />
+                  </Route>
 
-                <Route path="/activate/:id?/:token?">
-                  <Activate />
-                </Route>
+                  <Route path="/activate/:id?/:token?">
+                    <Activate />
+                  </Route>
 
-                <Route path="/admin">
-                  <AuthenticatedAdmin />
-                </Route>
+                  <Route path="/admin">
+                    <AuthenticatedAdmin />
+                  </Route>
 
-                <Route path="/restore">
-                  <Restore />
-                </Route>
+                  <Route path="/restore">
+                    <Restore />
+                  </Route>
 
-                <Route path="/recover/:id?/:token?">
-                  <Recover />
-                </Route>
+                  <Route path="/recover/:id?/:token?">
+                    <Recover />
+                  </Route>
 
-                <Route path="/">
-                  <StreamProvider>
-                    <Stream />
-                  </StreamProvider>
-                </Route>
-              </Switch>
-            </Suspense>
-          </div>
+                  <Route path="/">
+                      <Stream />
+                 </Route>
+                </Switch>
+              </Suspense>
+            </div>
+          </StreamProvider>
         </main>
       </div>
     </>

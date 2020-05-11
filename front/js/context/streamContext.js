@@ -62,9 +62,11 @@ export function StreamProvider({ children }) {
   // avoid that is to allow react to execute its diff algorithm.
   const [state, setState] = useState({
     posts: {
+      focus: null,
       value: [],
-
       _updatePost(promise) {
+        const that = this;
+
         pushEffect([
           promise,
           (post) =>
@@ -88,17 +90,15 @@ export function StreamProvider({ children }) {
       },
 
       of(id) {
-        const prefetch = this.value.filter((p) => p.id == id);
-        let promise;
-        if (prefetch.length) {
-          promise = Promise.resolve(prefetch[0]);
-        } else {
-          promise = api.posts.of(id);
-        }
+        const prefetch = this.value.filter((p) => Number(p.id) === Number(id));
+        const promise = Promise.all([
+          prefetch.length ? Promise.resolve(prefetch[0]) : api.posts.of(id),
+          api.posts.comments(id)
+        ]);
 
-        return promise
-          .then((post) => {
-            if (post.kind != 'poll') return post;
+        return this._updatePost(promise.then(([post, comments]) => {
+          post.comments = comments;
+          if (post.kind === 'poll') {
             return api.posts.pollData(id).then((pollData) => {
               post.answers = pollData.answers;
               post.userAnswer = pollData.userAnswer;
@@ -122,6 +122,7 @@ export function StreamProvider({ children }) {
             )
           );
       },
+
       add(post) {
         const promise = api.posts.add(post);
         pushEffect([
@@ -152,8 +153,7 @@ export function StreamProvider({ children }) {
         return promise;
       },
       comment(post, comment) {
-        trace('TODO - COMMENT');
-        return Promise.resolve(comment);
+        return this._updatePost(api.posts.comment(post.id, comment));
       },
       vote(post, vote) {
         return this._updatePost(api.posts.vote(post.id, vote));
@@ -167,8 +167,8 @@ export function StreamProvider({ children }) {
       lock(post) {
         return this._updatePost(api.posts.lock(post.id));
       },
-      watch(post) {
-        return this._updatePost(api.posts.watch(post.id));
+      watch(id, payload) {
+        return this._updatePost(api.posts.watch(id, payload));
       },
       pollData(id) {
         return api.posts.pollData(id);
@@ -176,6 +176,15 @@ export function StreamProvider({ children }) {
       pollVote(postId, answerId) {
         return this._updatePost(api.posts.pollVote(postId, answerId));
       },
+      authorPostFilter(authorId) {
+        const promise = api.users.posts(authorId);
+        pushEffect([
+          promise,
+          value => setState(s => ({ ...s, posts: { ...s.posts, value: value }})),
+          printerr
+        ]);
+        return promise;
+      }
     },
 
     kind: {
@@ -200,7 +209,7 @@ export function StreamProvider({ children }) {
       value: [],
       add(tag) {
         if (this.value.includes(tag)) return;
-        const tags = [...state.tags.value, tag];
+        const tags = [...this.value, tag];
         setState((s) => ({ ...s, tags: { ...s.tags, value: tags } }));
       },
       remove(tag) {
@@ -217,8 +226,7 @@ export function StreamProvider({ children }) {
     keywords: {
       value: [],
       add(kw) {
-        if (this.value.includes(kw)) return;
-        const keywords = [...state.keywords.value, kw];
+        const keywords = [...this.value, trace(kw)];
         setState((s) => ({
           ...s,
           keywords: { ...s.keywords, value: keywords },
@@ -250,7 +258,7 @@ export function StreamProvider({ children }) {
       state.kind.value,
       state.order.value,
       state.tags.value,
-      state.keywords.value,
+      state.keywords.value
     ]
   );
 

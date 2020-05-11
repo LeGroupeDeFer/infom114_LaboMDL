@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "UNAnimity",
-    "version": "0.2.4"
+    "version": "0.4.2"
   },
   "servers": [
     {
@@ -657,6 +657,12 @@
               ]
             },
             "description": "The type used to filter posts"
+          },
+          {
+            "in": "query",
+            "name": "author",
+            "schema": {"type": "integer"},
+            "description": "The id of an author"
           },
           {
             "in": "query",
@@ -1734,14 +1740,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Ok",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Comment"
-                }
-              }
-            }
+            "description": "Ok"
           },
           "400": {
             "description": "Bad Request",
@@ -1807,6 +1806,16 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportReason"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -2643,6 +2652,68 @@
         ]
       }
     },
+    "/api/user/{user_id}/posts": {
+      "get": {
+        "tags": [
+          "post", "user"
+        ],
+        "summary": "Get the posts written by the given user",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "description": "Id of the user",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Post"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "Missing capability"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                },
+                "example": {
+                  "message": "User is not authenticated"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "UserAuth": []
+          }
+        ]
+      }
+    },
     "/api/user/subscriptions": {
       "get": {
         "tags": [
@@ -3334,9 +3405,6 @@
         "properties": {
           "content": {
             "type": "string"
-          },
-          "watch": {
-            "type": "boolean"
           }
         }
       },

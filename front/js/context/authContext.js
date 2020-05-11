@@ -19,19 +19,23 @@ export function AuthProvider({ children }) {
     user: null,
     token: null,
     error: null,
+    pending: false,
 
     login(email, password) {
       if (state.user !== null)
         throw new AuthError('User already connected');
+      setState(s => ({ ...s, pending: true }));
       const promise = api.auth.login(email, password);
       pushEffect([
         promise,
-        data => setState(state => ({
-            ...state,
-            user: data.user,
-            token: jwtDecode(data.accessToken)
+        data => setState(s => ({
+          ...s,
+          pending: false,
+          user: data.user,
+          error: null,
+          token: jwtDecode(data.accessToken)
         })) || data,
-        error => setState(state => ({ ...state, error }))
+        error => setState(s => ({ ...s, pending: false, error }))
       ]);
       return promise;
     },
@@ -40,8 +44,8 @@ export function AuthProvider({ children }) {
       const promise = api.auth.logout();
       pushEffect([
         promise,
-        setState(state => ({ ...state, user: null, token: null })),
-        error => setState(state => ({ ...state, error }))
+        setState(s => ({ ...s, user: null, token: null, error: null })),
+        error => setState(s => ({ ...s, error }))
       ]);
       return promise;
     },
@@ -55,13 +59,14 @@ export function AuthProvider({ children }) {
   })
 
   useEffect(() => api.auth.session() && pushEffect([
-    api.auth.refresh(),
+    setState(s => ({ ...s, pending: true })) || api.auth.refresh(),
     data => setState(state => ({
       ...state,
+      pending: false,
       user: data.user,
       token: jwtDecode(data.accessToken)
     })) || data,
-    error => setState(state => ({ ...state, error, user: null, token: null }))
+    error => setState(state => ({ ...state, pending: false, error, user: null, token: null }))
   ]) || undefined, []);
 
   // Refresh loop
@@ -71,12 +76,13 @@ export function AuthProvider({ children }) {
 
     setTimeout(() => pushEffect([
       api.auth.refresh(),
-      data => setState(state => ({
-        ...state,
+      data => setState(s => ({
+        ...s,
         user: data.user,
+        error: null,
         token: jwtDecode(data.accessToken)
       })),
-      error => setState(state => ({ ...state, error, user: null, token: null }))
+      error => setState(s => ({ ...s, error, user: null, token: null }))
     ]), expiration - now);
 
   }, [state.token]);

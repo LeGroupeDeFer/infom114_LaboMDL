@@ -6,10 +6,13 @@ use crate::http::{
     helpers::StringVector,
     responders::{ok, ApiResult},
 };
-use crate::lib::{AuthError, Consequence, EntityError};
+use crate::lib::{AuthError, Consequence, EntityError, WatchEventError};
 
 use rocket_contrib::json::Json;
 use serde::export::TryFrom;
+use crate::database::models::post::{WatchEventEntity, WatchEventKind, WatchEventMinima, WatchEventData};
+use std::borrow::BorrowMut;
+use std::convert::{AsRef, TryInto};
 
 pub fn collect() -> Vec<rocket::Route> {
     routes!(
@@ -65,7 +68,8 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult
     });
 
     match post_kind {
-        PostKind::Info => {}
+        PostKind::Info => {},
+        PostKind::Idea => {},
         PostKind::Poll => match post_request.options {
             Some(options) => {
                 PollAnswerEntity::bulk_insert(
@@ -91,7 +95,7 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult
 
 // typo on tape is intentional : `type` is a rust reserved keyword
 #[get(
-    "/api/v1/posts?<tags>&<keywords>&<order>&<kind>&<limit>&<offset>",
+    "/api/v1/posts?<tags>&<keywords>&<order>&<kind>&<author>&<limit>&<offset>",
     rank = 1
 )]
 fn get_all_posts_authenticated(
@@ -101,6 +105,7 @@ fn get_all_posts_authenticated(
     keywords: StringVector,
     order: Option<String>,
     kind: Option<String>,
+    author: Option<u32>,
     limit: Option<u32>,
     offset: Option<u32>,
 ) -> ApiResult<Vec<Post>> {
@@ -116,6 +121,7 @@ fn get_all_posts_authenticated(
         (*keywords).clone(),
         sort_order,
         kind,
+        author,
         limit,
         offset,
     )?
@@ -129,7 +135,7 @@ fn get_all_posts_authenticated(
 }
 
 #[get(
-    "/api/v1/posts?<tags>&<keywords>&<order>&<kind>&<limit>&<offset>",
+    "/api/v1/posts?<tags>&<keywords>&<order>&<kind>&<author>&<limit>&<offset>",
     rank = 2
 )]
 fn get_all_posts(
@@ -137,7 +143,8 @@ fn get_all_posts(
     tags: StringVector,
     keywords: StringVector,
     order: Option<String>,
-    kind: Option<String>, // type
+    kind: Option<String>,
+    author: Option<u32>,
     limit: Option<u32>,
     offset: Option<u32>,
 ) -> ApiResult<Vec<Post>> {
@@ -152,6 +159,7 @@ fn get_all_posts(
         (*keywords).clone(),
         sort_order,
         kind,
+        author,
         limit,
         offset,
     )?))
@@ -347,27 +355,57 @@ fn manage_post_report(
     Ok(Json(p))
 }
 
-#[post("/api/v1/post/<_post_id>/watch")]
+#[post("/api/v1/post/<_post_id>/watch", format = "json", data = "<data>")]
 fn watch_post(
     conn: DBConnection,
     auth: Auth,
     post_guard: PostGuard,
     _post_id: u32,
+    data: Json<WatchEventData>
 ) -> ApiResult<Post> {
-    if post_guard.post().is_deleted() {
-        Err(EntityError::InvalidID)?;
-    } else if false
-        || (post_guard.post().is_locked() && !auth.has_capability(&*conn, "post:edit_locked"))
-        || (post_guard.post().is_hidden() && !auth.has_capability(&*conn, "post:view_hidden"))
-    {
-        Err(AuthError::MissingCapability)?;
-    }
-
+    let payload = data.into_inner();
     let mut post = post_guard.post_clone();
-    post.toggle_watch(&*conn)?;
 
-    let mut p = Post::from(post);
+    // Validation
+    if (&post).is_deleted() { Err(EntityError::InvalidID)?; }
+
+    let mut caps = vec!("post:watch");
+    if (&post).is_locked() { caps.push("post:edit_locked"); }
+    if (&post).is_hidden() { caps.push("post:view_hidden"); }
+    auth.check_capabilities(&*conn, caps)?;
+
+    let post_kind: PostKind = (&post).kind.try_into()?;
+    // if post_kind == PostKind::Info {
+    //     Err(WatchEventError::InvalidWatchTransition)?
+    // }
+
+    let post_id = post.id;
+    let mut past_events: Vec<WatchEventEntity> = WatchEventEntity::by_post_id(&*conn, &post_id)?;
+    let last_event: Option<WatchEventKind> = WatchEventEntity::last(&mut past_events)
+        .map(|le| WatchEventKind::try_from(le.event)) // Option<Result<WatchEventKind>>
+        .transpose()?; // Result<Option<WatchEventKind>>
+    let new_event = WatchEventKind::try_from(payload.code)?;
+
+    WatchEventEntity::validate_transition((&last_event).as_ref(), &new_event)?;
+    // End of validation
+
+    let wem = WatchEventMinima {
+        post_id,
+        author_id: auth.sub,
+        comment: payload.comment,
+        event: new_event.into()
+    };
+
+    // RIP wee :'(
+    WatchEventEntity::insert_new(&*conn, &wem)?;
+
+    // Update post rank
+    post.watch_now();
+    post.update(&*conn)?;
+
+    let mut p = Post::from(post.clone());
     p.set_user_info(&*conn, &auth.sub);
+
     Ok(Json(p))
 }
 
