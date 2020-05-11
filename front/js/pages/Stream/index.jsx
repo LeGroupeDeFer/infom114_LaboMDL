@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
+import { Toast } from 'react-bootstrap';
 import { Switch, Route, useRouteMatch } from 'react-router-dom';
 import { useStream } from 'unanimity/context/streamContext';
 import { SearchBar } from 'unanimity/components';
+import Post from 'unanimity/components/Post';
 
 import Stream from './Stream';
 import { SpecificStream } from './Stream';
 import Writer from './Writer';
 import Detail from './Detail';
 import Amend from './Amend';
+
 
 // Modals :: Object => Component
 function StreamModals({

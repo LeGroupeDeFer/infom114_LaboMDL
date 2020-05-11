@@ -30,7 +30,6 @@ function InnerStream({
   onFlag,
   onFlagCancel,
   onHide,
-  onLock,
   onVote,
   onLock,
   onPollVote,
@@ -60,7 +59,6 @@ function InnerStream({
               onFlagCancel={onFlagCancel}
               onHide={onHide}
               onVote={onVote}
-              onLock={onLock}
               onPollVote={onPollVote}
               onPreview={onPreview}
               onTag={onTag}

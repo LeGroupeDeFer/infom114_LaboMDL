@@ -26,21 +26,20 @@ const LockedT = ({ children }) => {
 };
 
 const Hollow = ({ children, setLockedCap }) => {
-  console.log('in');
   setLockedCap(false);
   return <>{children}</>;
 };
 
-// May :: (String, Component, Component) => Component
-// typeof Hollow == Component
-// typeof <Hollow /> !== Component
+const Temp = May('post:edit_locked', Hollow, LockedT);
+
+
 
 function VoteOverlay({ isLogged, isLocked, children, setLockedCap }) {
-  if (isLogged && !isLocked) return <>{children}</>;
+  if (isLogged && !isLocked)
+    return <>{children}</>;
 
-  if (isLogged && isLocked) {
-    return May('post:edit_locked', Hollow, LockedT)({ children, setLockedCap });
-  }
+  if (isLogged && isLocked)
+    return <Temp setLockedCap={setLockedCap}>{children}</Temp>;
 
   return (
     <OverlayTrigger

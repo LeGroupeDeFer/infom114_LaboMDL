@@ -104,23 +104,8 @@ export function StreamProvider({ children }) {
               post.userAnswer = pollData.userAnswer;
               return post;
             });
-          })
-          .then((post) =>
-            setState(
-              (s) =>
-                ({
-                  ...s,
-                  posts: {
-                    ...s.posts,
-                    value: replaceOrAppend(
-                      s.posts.value,
-                      post
-                      //(x, y) => x.id === y.id
-                    ),
-                  },
-                } || post)
-            )
-          );
+          }
+        }));
       },
 
       add(post) {
