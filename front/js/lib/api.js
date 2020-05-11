@@ -229,6 +229,15 @@ Object.assign(posts, {
   pollVote(postId, answerId) {
     return api(`/post/${postId}/poll`, { method: 'POST', body: { answerId } });
   },
+  comment(postId, comment) {
+    return api(`/post/${postId}/comment`, {
+      method: 'POST',
+      body: { content: comment },
+    });
+  },
+  comments(postId) {
+    return api(`/post/${postId}/comments`);
+  },
 });
 
 /* --------------------------------- Tags --------------------------------- */
@@ -324,6 +333,10 @@ function postFlagged() {
   return api('/report/post_reported');
 }
 
+function userPosts(id) {
+  return api(`/user/${id}/posts`);
+}
+
 api.tags = tags;
 api.tags.add = addTag;
 api.tags.remove = removeTag;
@@ -337,7 +350,7 @@ api.capabilities = capabilities;
 api.users = users;
 api.users.addRole = addRoleToUser;
 api.users.removeRole = removeRoleFromUser;
-
+api.users.posts = userPosts;
 api.users.report = userStat;
 api.tags.report = tagStat;
 api.posts.report = postStat;

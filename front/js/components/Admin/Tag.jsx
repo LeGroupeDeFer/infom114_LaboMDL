@@ -12,6 +12,7 @@ import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 
 import api from '../../lib/api';
 
+import { prevent } from '../../lib';
 
 const Tag = ({ name, deleteTag, setNotification, tags, setTags }) => {
   const [modalShow, setModalShow] = useState(false);
@@ -61,7 +62,7 @@ const Tag = ({ name, deleteTag, setNotification, tags, setTags }) => {
                 <a
                   className="footer-primary-btn mr-3"
                   href="#"
-                  onClick={() => setModalShow(true)}
+                  onClick={e => prevent(e, () => setModalShow(true))}
                 >
                   <Icon icon="pen" className="fa-primary mr-1" />
                   <span className="text-muted">Renommer</span>
