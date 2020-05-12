@@ -36,6 +36,7 @@ import Comment from './Comment';
 import Poll from './Poll';
 import DeleteModal from './DeleteModal';
 import ReportModal from './ReportModal';
+import {trace} from "../../lib";
 
 /* ------------------------------ Post actions ----------------------------- */
 
@@ -171,6 +172,7 @@ export function WatchStatus({ events, isPreview }) {
 }
 
 export function PostContent({ isPreview, post, onComment, onPollVote }) {
+
   if (isPreview)
     return (
       <div className="post-preview expand-preview">
@@ -270,7 +272,7 @@ export function Post({
   );
 
   return (
-    <Card {...others} {...cardProps} className={cls} id={id}>
+    <Card {...cardProps} className={cls} id={id}>
       <Card.Header className="post-header">
         <Container className="p-0">
           <Row>

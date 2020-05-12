@@ -7,7 +7,6 @@ export function Simple({ error, className }) {
 
   const cls = clsx('bg-dark text-center text-light p-2', className);
 
-  console.log(error);
   return error ? (
     <div className={cls}>
       <Icon

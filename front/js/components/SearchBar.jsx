@@ -78,8 +78,6 @@ function SearchBar({ variant, pending }) {
   const routeMatch = useRouteMatch();
   const history = useHistory();
 
-  console.log(pending);
-
   const options = stream.tags.available.map(({ label, id }) => ({
     value: label,
     label: <Option icon="tag" label={label} />,

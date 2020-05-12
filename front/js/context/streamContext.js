@@ -13,7 +13,7 @@ import { useAuth } from './authContext';
 import isEqual from 'lodash/isEqual';
 import remove from 'lodash/remove';
 import without from 'lodash/without';
-import { clean } from '../lib';
+import {clean, head} from '../lib';
 
 export const PostsChange = /*       */ 0b00000001;
 export const TagsChange = /*        */ 0b00000010;
@@ -56,6 +56,7 @@ const query = (state) => ({
   author: state.author.value
 });
 
+
 export function StreamProvider({ children }) {
   const pushEffect = useEffectQueue();
   const auth = useAuth();
@@ -89,24 +90,9 @@ export function StreamProvider({ children }) {
 
       of(id) {
         const prefetch = this.value.filter((p) => Number(p.id) === Number(id));
-        setState(s => ({ ...s, pending: true }));
-        const promise = Promise.all([
-          prefetch.length ? Promise.resolve(prefetch[0]) : api.posts.of(id),
-          api.posts.comments(id),
-        ]);
-
-        return this._updatePost(
-          promise.then(([post, comments]) => {
-            post.comments = comments;
-            return post.kind !== 'poll'
-              ? post
-              : api.posts.pollData(id).then((pollData) => {
-                  post.answers = pollData.answers;
-                  post.userAnswer = pollData.userAnswer;
-                  return post;
-                });
-          })
-        );
+        const promise = prefetch.length ? Promise.resolve(prefetch[0]) : api.posts.of(id);
+        promise.then(focus => setState(s => ({ ...s, focus })) || focus);
+        return this._updatePost(promise);
       },
 
       add(post) {
@@ -145,29 +131,39 @@ export function StreamProvider({ children }) {
       comment(post, comment) {
         return this._updatePost(api.posts.comment(post.id, comment));
       },
+
       reply(commentId, reply) {
         return this._updatePost(api.posts.reply(commentId, reply));
       },
+
       vote(post, vote) {
         return this._updatePost(api.posts.vote(post.id, vote));
       },
+
       flag(post, reason, cancel) {
         return this._updatePost(api.posts.flag(post.id, reason, cancel));
       },
+
       hide(post) {
         return this._updatePost(api.posts.hide(post.id));
       },
+
       lock(post) {
         return this._updatePost(api.posts.lock(post.id));
       },
+
       watch(id, payload) {
         return this._updatePost(api.posts.watch(id, payload));
       },
+
       pollData(id) {
         return api.posts.pollData(id);
       },
+
       pollVote(postId, answerId) {
-        return this._updatePost(api.posts.pollVote(postId, answerId));
+        /* Fixme, only update the necessary pollVote */
+        return api.posts.pollVote(postId, answerId)
+          .then(() => this.of(postId))
       }
     },
 
@@ -210,7 +206,7 @@ export function StreamProvider({ children }) {
     keywords: {
       value: [],
       add(kw) {
-        const keywords = [...this.value, trace(kw)];
+        const keywords = [...this.value, kw];
         setState((s) => ({
           ...s,
           pending: true,

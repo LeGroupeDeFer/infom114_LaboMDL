@@ -39,7 +39,7 @@ function Poll({ postId, answers, userAnswer, onPollVote }) {
         <Card.Body>
           {userVote == null && (
             <>
-              {answers.map((opt, index) => {
+              {(answers || []).map((opt, index) => {
                 return (
                   <Form.Check
                     type="radio"
