@@ -22,14 +22,14 @@ import clsx from 'clsx';
 import { useAuth } from 'unanimity/context';
 import { May } from '../Auth';
 import { UpVote, DownVote, Vote, VoteSection } from './Vote';
-import { preview, previewLength } from 'unanimity/lib';
+import { kindOf, empty, last, preview, previewLength } from 'unanimity/lib';
 import { Circle, Flexbox } from '../';
 
 import Comment from './Comment';
 import Poll from './Poll';
 import DeleteModal from './DeleteModal';
 import ReportModal from './ReportModal';
-import {kindOf} from "../../lib";
+import {WATCH_EVENT} from "../../lib";
 
 /* ------------------------------ Post actions ----------------------------- */
 
@@ -137,6 +137,32 @@ const LockSymbol = ({ className }) => (
   </OverlayTrigger>
 );
 
+export function WatchStatus({ events, isPreview }) {
+  if (empty(events))
+      return <></>;
+
+  const lastEvent = last(events.sort((a, b) => a.event - b.event));
+  const label = WATCH_EVENT[lastEvent.event].doneLabel;
+  const icon = WATCH_EVENT[lastEvent.event].icon;
+  if (isPreview)
+    return (
+      <Container className="watch-event-preview">
+        <Row>
+          <Col xs={8} md={10} className="py-2 px-3">
+            <p className="watch-event-content">
+              <Icon icon={icon} className="mr-3" />
+              {preview(lastEvent.comment, 80)}
+            </p>
+          </Col>
+          <Col xs={4} md={2} className="bg-secondary py-2 px-3 text-center">
+            <Moment date={lastEvent.time} relative capitalized />
+          </Col>
+        </Row>
+      </Container>
+    );
+
+}
+
 export function PostContent({ isPreview, post, onComment, onPollVote }) {
   if (isPreview)
     return (
@@ -165,6 +191,7 @@ export function PostContent({ isPreview, post, onComment, onPollVote }) {
     </div>
   );
 }
+
 
 /* --------------------------------- Post ---------------------------------- */
 
@@ -205,13 +232,13 @@ export function Post({
     kind,
     id,
     createdAt,
-    userVote,
     score,
     tags,
     title,
     comments,
     userFlag,
   } = post;
+
 
   const cls = clsx(
     'post expand-preview',
@@ -228,7 +255,7 @@ export function Post({
       <Card.Header className="post-header">
         <Container className="p-0">
           <Row>
-            <Col className="expand-preview" sm={10}>
+            <Col className="expand-preview" xs={12} sm={10}>
               <h5 className="ml-1 expand-preview">
                 <Badge className={`post-${kind} mr-1`}>{kindOf(kind).labelSingular}</Badge>
                 <span className="mr-1">{title}</span>
@@ -243,7 +270,7 @@ export function Post({
               </h5>
             </Col>
 
-            <Col className="expand-preview">
+            <Col className="expand-preview" xs={12} sm={2}>
               <Flexbox reverse align={'center'} className="h-100">
                 {post.locked && <LockSymbol className="px-2 ml-3 py-1" />}
                 {post.watched && <WatchSymbol className="px-2 ml-3 py-1" />}
@@ -366,7 +393,9 @@ export function Post({
               </div>
             )}
           </div>
+
         </div>
+        <WatchStatus isPreview={isPreview} events={post.watchEvents} />
       </Card.Body>
     </Card>
   );

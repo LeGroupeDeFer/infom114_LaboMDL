@@ -2,36 +2,19 @@ import React, {useEffect, useState} from 'react';
 import { useParams } from 'react-router-dom';
 import { Container, Row, Col, Tab, ListGroup, Form, Badge } from 'react-bootstrap';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+import clsx from "clsx";
+
 import { useStream } from 'unanimity/context';
 import { Loading, Moment, Flexbox } from 'unanimity/components';
 import { Simple as SimpleError } from 'unanimity/components/Error';
-import { last, trace, head, identity, KIND } from 'unanimity/lib';
-import clsx from "clsx";
-import {AutoForm} from "../../components";
+import { last, head, KIND, WATCH_EVENT, WATCH_EVENT_FSM } from 'unanimity/lib';
+import { AutoForm } from 'unanimity/components';
 
-
-const WATCH_EVENT_FSM = Object.freeze([
-  [false, true, false, false, false, false],  // Void
-  [false, false, true, true, false, false],   // Submit
-  [false, false, false, false, true, true],   // Accept
-  [false, false, false, false, false, false], // Refuse
-  [false, false, false, false, false, true],  // Progress - TODO progress -> progress
-  [false, false, false, false, false, false], // Over
-]);
 
 const adjacent = code => WATCH_EVENT_FSM[code]
   .map((e, i) => [e, i])
   .filter(([e, _]) => e)
   .map(([_, i]) => i);
-
-const WATCH_EVENT = Object.freeze([
-  { event: 0,                                                                           },
-  { event: 1, doneLabel: 'Suivi',      actionLabel: 'Suivre',     icon: 'envelope-open' },
-  { event: 2, doneLabel: 'Acceptée',   actionLabel: 'Accepter',   icon: 'check-circle'  },
-  { event: 3, doneLabel: 'Déclinée',   actionLabel: 'Décliner',   icon: 'stop-circle'   },
-  { event: 4, doneLabel: 'En progrès', actionLabel: 'Progresser', icon: 'tasks'         },
-  { event: 5, doneLabel: 'Terminée',   actionLabel: 'Terminer',   icon: 'genderless'    }
-]);
 
 
 function WatchEventTab({ event, tip }) {

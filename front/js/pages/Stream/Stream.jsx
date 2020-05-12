@@ -132,8 +132,8 @@ function Stream({ onSort, ...others }) {
       <Row>
         <Col>
           <h1 className="text-dark stream-header">
-            <Icon icon={stream.kind.value.icon} className="mr-3" />
-            <span>{stream.kind.value.label}</span>
+            <Icon icon={stream.kind.value.icon} className="d-inline-block w-auto" />
+            <span className="ml-3 d-inline-block">{stream.kind.value.label}</span>
           </h1>
           <hr />
         </Col>

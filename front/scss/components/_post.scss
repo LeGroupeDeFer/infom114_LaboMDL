@@ -9,11 +9,23 @@
 /*  Posts */
 
 .post-content p {
+    // Pas fort supporté (https://caniuse.com/#search=overflow-wrap%3A%20anywhere)
     overflow-wrap: anywhere;
 }
 
 .post-preview {
+    // Pas fort supporté (https://caniuse.com/#search=overflow-wrap%3A%20anywhere)
     overflow-wrap: anywhere;
+}
+
+.watch-event-preview {
+    background-color: theme-color("primary");
+    color: white;
+    font-weight: bold;
+
+    p {
+        margin: 0;
+    }
 }
 
 .vote {

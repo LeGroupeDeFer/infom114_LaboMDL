@@ -1,9 +1,5 @@
 @use '../themes' as *;
 
-.amend-content {
-  padding-top: 3rem;
-}
-
 .amend-event {
   // Choice
   &:not(.active) {
