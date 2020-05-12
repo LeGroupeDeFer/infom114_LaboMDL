@@ -1,0 +1,60 @@
+@use '../themes' as *;
+
+@use '../abstract/mixins' as *;
+
+.menu-bar-container {
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+  
+    box-shadow: rgba(0, 0, 0, 0.1) 5px 0px 10px;
+    background: white;
+  }
+
+  .kind-section {
+    z-index: 0 !important;
+
+  }
+  
+  .kind-choice {
+    max-width: 2em !important;
+    height: 2em;
+
+    /* reset default style */
+    border: none !important;
+    border-radius-topleft: 50% !important;
+    border-radius-topright: 50% !important;
+    border-radius-bottomleft: 50% !important;
+    border-radius-bottomright: 50% !important;
+  
+    border-radius: 50% !important;
+    font-size: 1.4em;
+    padding: .2em !important;
+  
+    background: none !important;
+    color: gray("500") !important;
+  
+    &:focus, &:active {
+      outline: none !important;
+      box-shadow: none !important;
+    }
+  
+    &:hover {
+      color: $primary !important;
+    }
+  
+  }
+  
+  @media (min-width: 768px) {
+
+    .fixed-info {
+      position:fixed;
+  }
+
+}
+
+.profile-pic {
+  max-width: 10em !important;
+  height: 10em;
+}
+

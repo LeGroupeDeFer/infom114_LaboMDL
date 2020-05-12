@@ -4,13 +4,13 @@ import { useStream } from 'unanimity/context/streamContext';
 import { SearchBar } from 'unanimity/components';
 
 import Stream from './Stream';
+import { SpecificStream } from './Stream';
 import Writer from './Writer';
 import Detail from './Detail';
 
-
 // StreamContent :: None => Component
-function StreamContent() {
-  const { path } = useRouteMatch();
+function StreamContent({ userId }) {
+   const { path } = useRouteMatch();
   const stream = useStream();
   const [state, setState] = useState({
     previewPost: false,
@@ -18,6 +18,7 @@ function StreamContent() {
     flagPost: false,
     toast: false,
     toastMsg: '',
+    onComment: (post, comment) => stream.posts.comment(post, comment),
     onFlag: (v) => setState((state) => ({ ...state, flagPost: v })),
     onFlagCancel: (post) => {
       stream.posts.flag(post, '', true).then(() =>
@@ -28,22 +29,24 @@ function StreamContent() {
         }))
       );
     },
+    //setAuthorPostFilter: (userId) => stream.posts.authorPostFilter(userId),
     onHide: (post) => stream.posts.hide(post),
     onPollVote: (postId, answerId) => stream.posts.pollVote(postId, answerId),
     onVote: (post, vote) => stream.posts.vote(post, vote),
-    onTag: tag => stream.tags.set(tag),
-    onWatch: post => stream.posts.watch(post),
-    onSort: order => stream.order.set(order),
-    onPreview: v => setState(state => ({ ...state, previewPost: v })),
-    onDelete: v => setState(state => ({ ...state, deletePost: v })),
-    onToast: v => setState({ ...state, toast: v }),
-    onDeleteConfirmation: post => stream.posts.remove(post).then(
-      () => setState(state => ({
-        ...state,
-        deletePost: false,
-        toast: false
-      }))
-    ),
+    onTag: (tag) => stream.tags.set(tag),
+    onWatch: (post) => stream.posts.watch(post),
+    onSort: (order) => stream.order.set(order),
+    onPreview: (v) => setState((state) => ({ ...state, previewPost: v })),
+    onDelete: (v) => setState((state) => ({ ...state, deletePost: v })),
+    onToast: (v) => setState({ ...state, toast: v }),
+    onDeleteConfirmation: (post) =>
+      stream.posts.remove(post).then(() =>
+        setState((state) => ({
+          ...state,
+          deletePost: false,
+          toast: false,
+        }))
+      ),
     onFlagConfirmation: (post, reason) =>
       stream.posts.flag(post, reason, false).then(() =>
         setState((state) => ({
@@ -52,24 +55,30 @@ function StreamContent() {
           toast: true,
           toastMsg: 'Votre signalement a été enregistré',
         }))
-      )
+      ),
   });
 
   return (
     <>
-      <SearchBar variant="kinds" />
-
-      <Switch>
-        <Route exact path={path}>
-          <Stream {...state} />
-        </Route>
-        <Route path={`${path}write`}>
-          <Writer {...state} />
-        </Route>
-        <Route path={`${path}detail/:id`}>
-          <Detail {...state} />
-        </Route>
-      </Switch>
+      { 
+      ! userId ? 
+        <>
+          <SearchBar variant="kinds" />
+          <Switch>
+            <Route exact path={path}>
+              <Stream {...state} />
+            </Route>
+            <Route path={`${path}write`}>
+              <Writer {...state} />
+            </Route>
+            <Route path={`${path}detail/:id`}>
+              <Detail {...state} />
+            </Route>
+          </Switch> 
+        </>
+      :
+        <SpecificStream userId={userId} {...state} />                 
+      }
     </>
   );
 }

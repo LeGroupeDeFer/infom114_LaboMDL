@@ -85,14 +85,17 @@ export function StreamProvider({ children }) {
         }
 
         return promise.then((post) => {
-          if (post.kind == 'poll') {
-            return api.posts.pollData(id).then((pollData) => {
-              post.answers = pollData.answers;
-              post.userAnswer = pollData.userAnswer;
-              return post;
-            });
-          }
-          return post;
+          return api.posts.comments(id).then((comments) => {
+            post.comments = comments;
+            if (post.kind == 'poll') {
+              return api.posts.pollData(id).then((pollData) => {
+                post.answers = pollData.answers;
+                post.userAnswer = pollData.userAnswer;
+                return post;
+              });
+            }
+            return post;
+          });
         });
       },
       add(post) {
@@ -125,8 +128,7 @@ export function StreamProvider({ children }) {
         return promise;
       },
       comment(post, comment) {
-        trace('TODO - COMMENT');
-        return Promise.resolve(comment);
+        return this._updatePost(api.posts.comment(post.id, comment));
       },
       vote(post, vote) {
         return this._updatePost(api.posts.vote(post.id, vote));
@@ -149,6 +151,15 @@ export function StreamProvider({ children }) {
       pollVote(postId, answerId) {
         return this._updatePost(api.posts.pollVote(postId, answerId));
       },
+      authorPostFilter(authorId) {
+        const promise = api.users.posts(authorId);
+        pushEffect([
+          promise,
+          value => setState(s => ({ ...s, posts: { ...s.posts, value: value }})),
+          printerr
+        ]);
+        return promise;
+      }
     },
 
     kind: {
@@ -223,6 +234,7 @@ export function StreamProvider({ children }) {
       state.order.value,
       state.tags.value,
       state.keywords.value,
+      state.posts.value,
     ]
   );
 
