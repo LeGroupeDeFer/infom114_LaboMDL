@@ -69,12 +69,10 @@ export function StreamProvider({ children }) {
       focus: null,
       value: [],
       _updatePost(promise) {
-        const that = this;
-
+        setState(s => ({ ...s, pending: true }));
         pushEffect([
-          setState(s => ({ ...s, pending: true })) || promise,
+          promise,
           (post) => setState((s) => {
-
             const currentPosts = s.posts.value;
             let updatedPosts;
             if (s.posts.value.some(p => p.id === post.id))
@@ -91,25 +89,31 @@ export function StreamProvider({ children }) {
 
       of(id) {
         const prefetch = this.value.filter((p) => Number(p.id) === Number(id));
+        setState(s => ({ ...s, pending: true }));
         const promise = Promise.all([
           prefetch.length ? Promise.resolve(prefetch[0]) : api.posts.of(id),
-          api.posts.comments(id)
+          api.posts.comments(id),
         ]);
 
-        return this._updatePost(promise.then(([post, comments]) => {
-          post.comments = comments;
-          return post.kind !== 'poll' ? post : api.posts.pollData(id).then((pollData) => {
-            post.answers = pollData.answers;
-            post.userAnswer = pollData.userAnswer;
-            return post;
-          });
-        }));
+        return this._updatePost(
+          promise.then(([post, comments]) => {
+            post.comments = comments;
+            return post.kind !== 'poll'
+              ? post
+              : api.posts.pollData(id).then((pollData) => {
+                  post.answers = pollData.answers;
+                  post.userAnswer = pollData.userAnswer;
+                  return post;
+                });
+          })
+        );
       },
 
       add(post) {
         const promise = api.posts.add(post);
+        setState(s => ({ ...s, pending: true }));
         pushEffect([
-          setState(s => ({ ...s, pending: true })) || promise,
+          promise,
           (post) =>
             setState(s => ({
               ...s,
@@ -122,8 +126,9 @@ export function StreamProvider({ children }) {
       },
       remove(post) {
         const promise = api.posts.delete(post.id);
+        setState(s => ({ ...s, pending: true }));
         pushEffect([
-          setState(s => ({ ...s, pending: true })) || promise,
+          promise,
           () =>
             setState((s) => ({
               ...s,
@@ -139,6 +144,9 @@ export function StreamProvider({ children }) {
       },
       comment(post, comment) {
         return this._updatePost(api.posts.comment(post.id, comment));
+      },
+      reply(commentId, reply) {
+        return this._updatePost(api.posts.reply(commentId, reply));
       },
       vote(post, vote) {
         return this._updatePost(api.posts.vote(post.id, vote));
@@ -160,15 +168,6 @@ export function StreamProvider({ children }) {
       },
       pollVote(postId, answerId) {
         return this._updatePost(api.posts.pollVote(postId, answerId));
-      },
-      authorPostFilter(authorId) {
-        const promise = api.users.posts(authorId);
-        pushEffect([
-          promise,
-          value => setState(s => ({ ...s, posts: { ...s.posts, pending: true, value: value }})),
-          error => setState(s => ({ ...s, pending: false, error }))
-        ]);
-        return promise;
       }
     },
 
@@ -177,7 +176,7 @@ export function StreamProvider({ children }) {
       value: KIND.ALL,
       set(kind) {
         if (this.value === kind) return;
-        setState((s) => ({ ...s, kind: { ...this, value: kind } }));
+        setState((s) => ({ ...s, pending: true, kind: { ...this, value: kind } }));
       },
     },
 
@@ -185,7 +184,7 @@ export function StreamProvider({ children }) {
       available: orders,
       value: ORDER.RANK.DESC,
       set(order) {
-        setState((s) => ({ ...s, order: { ...this, value: order } }));
+        setState((s) => ({ ...s, pending: true, order: { ...this, value: order } }));
       },
     },
 
@@ -195,16 +194,16 @@ export function StreamProvider({ children }) {
       add(tag) {
         if (this.value.includes(tag)) return;
         const tags = [...this.value, tag];
-        setState((s) => ({ ...s, tags: { ...s.tags, value: tags } }));
+        setState((s) => ({ ...s, pending: true, tags: { ...s.tags, value: tags } }));
       },
       remove(tag) {
         if (!this.value.includes(tag)) return;
         const tags = without(this.value, tag);
-        setState((s) => ({ ...s, tags: { ...s.tags, value: tags } }));
+        setState((s) => ({ ...s, pending: true, tags: { ...s.tags, value: tags } }));
       },
       set(tag) {
         const tags = tag instanceof Array ? tag : [tag];
-        setState((s) => ({ ...s, tags: { ...s.tags, value: tags } }));
+        setState((s) => ({ ...s, pending: true, tags: { ...s.tags, value: tags } }));
       },
     },
 
@@ -214,6 +213,7 @@ export function StreamProvider({ children }) {
         const keywords = [...this.value, trace(kw)];
         setState((s) => ({
           ...s,
+          pending: true,
           keywords: { ...s.keywords, value: keywords },
         }));
       },
@@ -222,6 +222,7 @@ export function StreamProvider({ children }) {
         const keywords = without(state.keywords.value, kw);
         setState((s) => ({
           ...s,
+          pending: true,
           keywords: { ...s.keywords, value: keywords },
         }));
       },
@@ -231,7 +232,7 @@ export function StreamProvider({ children }) {
       value: null,
       set(author_id) {
         if (this.value === author_id) return;
-        setState(s => ({ ...s, author: { ...state.author, value: author_id } }));
+        setState(s => ({ ...s, pending: true, author: { ...state.author, value: author_id } }));
       }
     }
   });
@@ -245,7 +246,7 @@ export function StreamProvider({ children }) {
         return;
 
       pushEffect([
-        setState(s => ({ ...s, pending: true })) || api.posts.where(clean(query(state), true)),
+        api.posts.where(clean(query(state), true)),
         (posts) =>
           setState((s) => ({
             ...s,

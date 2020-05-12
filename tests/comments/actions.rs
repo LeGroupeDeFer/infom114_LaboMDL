@@ -13,7 +13,7 @@ fn upvote_downvote_comment() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
 
     let (user1, password1) = init::get_user(true);
     let (user2, password2) = init::get_user(true);
@@ -63,7 +63,7 @@ fn upvote_comment_unauthenticated() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
 
     let resp = client
         .post(format!("{}/{}/vote", COMMENT_ROUTE, &comment.id))
@@ -79,7 +79,7 @@ fn upvote_comment_malformed_json() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
 
     let resp = client
         .post(format!("{}/{}/vote", COMMENT_ROUTE, &comment.id))
@@ -96,7 +96,7 @@ fn upvote_comment_missing_property() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
 
     let resp = client
         .post(format!("{}/{}/vote", COMMENT_ROUTE, &comment.id))
@@ -113,7 +113,7 @@ fn upvote_comment_deleted() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, true);
+    let comment = init::get_comment_entity(post.id, None, false, false, true);
 
     let resp = client
         .post(format!("{}/{}/vote", COMMENT_ROUTE, &comment.id))
@@ -153,7 +153,7 @@ fn upvote_comment_locked() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, true, false, false);
+    let comment = init::get_comment_entity(post.id, None, true, false, false);
 
     let resp = client
         .post(format!("{}/{}/vote", COMMENT_ROUTE, &comment.id))
@@ -170,7 +170,7 @@ fn upvote_comment_locked_missing_capability() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, true, false, false);
+    let comment = init::get_comment_entity(post.id, None, true, false, false);
     let (user, password) = init::get_user(true);
     let auth_token = init::login(&user.email, &password);
 
@@ -189,7 +189,7 @@ fn upvote_comment_post_locked_missing_capability() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(true, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
     let (user, password) = init::get_user(true);
     let auth_token = init::login(&user.email, &password);
 
@@ -208,7 +208,7 @@ fn upvote_comment_hidden() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, true, false);
+    let comment = init::get_comment_entity(post.id, None, false, true, false);
 
     let resp = client
         .post(format!("{}/{}/vote", COMMENT_ROUTE, &comment.id))
@@ -225,7 +225,7 @@ fn upvote_comment_hidden_missing_capability() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, true, false);
+    let comment = init::get_comment_entity(post.id, None, false, true, false);
     let (user, password) = init::get_user(true);
     let auth_token = init::login(&user.email, &password);
 
@@ -244,7 +244,7 @@ fn upvote_comment_post_hidden_missing_capability() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, true, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
     let (user, password) = init::get_user(true);
     let auth_token = init::login(&user.email, &password);
 
@@ -263,7 +263,7 @@ fn hide_unhide_comment() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, false, false);
-    let comment_entity = init::get_comment_entity(post.id, false, false, false);
+    let comment_entity = init::get_comment_entity(post.id, None, false, false, false);
 
     let comment = get_comment(&client, init::login_admin(), &comment_entity.id);
     assert!(!comment.hidden);
@@ -299,7 +299,7 @@ fn hide_comment_missing_capability() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, false, false);
-    let comment_entity = init::get_comment_entity(post.id, false, false, false);
+    let comment_entity = init::get_comment_entity(post.id, None, false, false, false);
     let (user, password) = init::get_user(true);
 
     let route = format!("{}/{}/hide", COMMENT_ROUTE, &comment_entity.id);
@@ -315,7 +315,7 @@ fn lock_unlock_comment() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, false, false);
-    let comment_entity = init::get_comment_entity(post.id, false, false, false);
+    let comment_entity = init::get_comment_entity(post.id, None, false, false, false);
 
     let comment = get_comment(&client, init::login_admin(), &comment_entity.id);
     assert!(!comment.locked);
@@ -351,7 +351,7 @@ fn lock_comment_missing_capability() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, false, false);
-    let comment_entity = init::get_comment_entity(post.id, false, false, false);
+    let comment_entity = init::get_comment_entity(post.id, None, false, false, false);
     let (user, password) = init::get_user(true);
 
     let route = format!("{}/{}/lock", COMMENT_ROUTE, &comment_entity.id);
@@ -367,7 +367,7 @@ fn report_a_comment() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
     let conn = init::database_connection();
     let mut tmp_comment: Comment;
     let auth_token = init::login_admin();

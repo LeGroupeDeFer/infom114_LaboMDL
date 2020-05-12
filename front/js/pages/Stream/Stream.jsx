@@ -17,6 +17,7 @@ import MdSort from '../../icons/sort.svg';
 import { useStream } from 'unanimity/context/streamContext';
 import { ORDER } from 'unanimity/lib';
 import Post from 'unanimity/components/Post';
+import {trace} from "../../lib";
 
 // InnerStream :: Object => Component
 function InnerStream({
@@ -132,8 +133,8 @@ function Stream({ onSort, ...others }) {
       <Row>
         <Col>
           <h1 className="text-dark stream-header">
-            <Icon icon={stream.kind.value.icon} className="mr-3" />
-            <span>{stream.kind.value.label}</span>
+            <Icon icon={stream.kind.value.icon} className="d-inline-block w-auto" />
+            <span className="ml-3 d-inline-block">{stream.kind.value.label}</span>
           </h1>
           <hr />
         </Col>

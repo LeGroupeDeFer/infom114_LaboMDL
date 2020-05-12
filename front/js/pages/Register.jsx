@@ -4,7 +4,7 @@ import { Container, Row, Col, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 import { AutoForm, Flexbox, Image, Unauthenticated } from '../components';
-import {subscribed, usePositiveEffect} from '../hooks';
+import { subscribed, usePositiveEffect } from '../hooks';
 import { api, aggregate } from '../lib';
 import { isUnamurEmail, isValidNatural, isValidPassword, isValidPhoneNumber } from '../lib/validators';
 
@@ -16,19 +16,19 @@ const confirmPassword = ({ password, confirmPassword }) =>
 function Header() {
   return (
     <Flexbox justify="center" align="end" className="mb-3 form-header">
-      <h4 className="mb-1 mx-2">
+      <h5 className="mb-1 mx-2">
         <Link to="/" className="text-secondary">
           <Icon icon="arrow-left" className="mr-2" />
-          HOME
+          ACCUEIL
         </Link>
-      </h4>
-      <h1 className="mb-0 mx-2">SIGN UP</h1>
-      <h4 className="mb-1 mx-2">
+      </h5>
+      <h2 className="mb-0 mx-2">INSCRIPTION</h2>
+      <h5 className="mb-1 mx-2">
         <Link to="/login" className="text-secondary">
-          SIGN IN
+          CONNEXION
           <Icon icon="arrow-right" className="ml-2" />
         </Link>
-      </h4>
+      </h5>
     </Flexbox>
   );
 }
@@ -48,7 +48,7 @@ function RegisterForm() {
               type="text"
             />
             <Form.Label>
-              <small><b>FIRSTNAME*</b></small>
+              <small><b>PRENOM*</b></small>
             </Form.Label>
             <span className="underline" />
             <div className="highlight" />
@@ -62,7 +62,7 @@ function RegisterForm() {
               type="text"
             />
             <Form.Label>
-              <small><b>LASTNAME*</b></small>
+              <small><b>NOM*</b></small>
             </Form.Label>
             <span className="underline" />
             <div className="highlight" />
@@ -98,7 +98,7 @@ function RegisterForm() {
               validator={isValidPhoneNumber}
             />
             <Form.Label>
-              <small><b>PHONE*</b></small>
+              <small><b>TÉLEPHONE*</b></small>
             </Form.Label>
             <span className="underline" />
             <div className="highlight" />
@@ -119,7 +119,7 @@ function RegisterForm() {
               type="text"
             />
             <Form.Label>
-              <small><b>STREET</b></small>
+              <small><b>RUE</b></small>
             </Form.Label>
             <span className="underline" />
             <div className="highlight" />
@@ -137,7 +137,7 @@ function RegisterForm() {
               validator={isValidNatural}
             />
             <Form.Label>
-              <small><b>NUMBER</b></small>
+              <small><b>NUMÉRO</b></small>
             </Form.Label>
             <span className="underline" />
             <div className="highlight" />
@@ -153,7 +153,7 @@ function RegisterForm() {
               className="flex-grow-1"
             />
             <Form.Label>
-              <small><b>BOX</b></small>
+              <small><b>BOÎTE</b></small>
             </Form.Label>
             <span className="underline" />
             <div className="highlight" />
@@ -177,7 +177,7 @@ function RegisterForm() {
               validator={isValidNatural}
             />
             <Form.Label>
-              <small><b>ZIP CODE</b></small>
+              <small><b>CODE POSTAL</b></small>
             </Form.Label>
             <span className="underline" />
             <div className="highlight" />
@@ -193,7 +193,7 @@ function RegisterForm() {
               className='flex-grow-4'
             />
             <Form.Label>
-              <small><b>CITY</b></small>
+              <small><b>VILLE</b></small>
             </Form.Label>
             <span className="underline" />
             <div className="highlight" />
@@ -215,7 +215,7 @@ function RegisterForm() {
               validator={isValidPassword}
             />
             <Form.Label>
-              <small><b>PASSWORD*</b></small>
+              <small><b>MOT DE PASSE*</b></small>
             </Form.Label>
             <span className="underline" />
             <div className="highlight" />
@@ -231,7 +231,7 @@ function RegisterForm() {
               validator={isValidPassword}
             />
             <Form.Label>
-              <small><b>CONFIRM*</b></small>
+              <small><b>CONFIRMATION*</b></small>
             </Form.Label>
             <span className="underline" />
             <div className="highlight" />
@@ -246,7 +246,7 @@ function RegisterForm() {
           variant="secondary"
           id="terms"
           name="terms"
-          label="I accept the general terms and conditions"
+          label="J'accepte les conditions générales d'utilisation"
           className="mx-auto my-3"
         />
       </Row>
@@ -257,7 +257,7 @@ function RegisterForm() {
           variant="secondary"
           className="d-block px-5 my-2 mx-auto"
         >
-          Register
+          S'enregistrer
         </AutoForm.Submit>
       </Row>
 
@@ -271,28 +271,49 @@ function RegistrationSuccess({ email }) {
     <Flexbox className="h-100 text-center" align="center" direction="column" justify="center">
       <Icon icon="check-circle" className="display-4 pb-3" />
       <h1 className="pb-3 text-secondary font-weight-bold">
-        Registration success
+        Succès
       </h1>
       <p>
-        We have sent you an email at <i className="px-1 text-primary bg-light">{email}</i>.
-        Follow the instructions in that message to pursue the registration process.
+        Nous vous avons envoyé un email à <i className="px-1 text-primary bg-light">{email}</i>.
+        Suivez les instructions dans ce message pour poursuivre le processus d'enregistrement.
       </p>
     </Flexbox>
   );
 }
 
 
+const EmailConflict = ({ className }) => (
+  <p className={className}>
+    Ce compte existe déjà, avez vous
+    <Link to="/restore" className="text-primary"> oublié votre mot de passe</Link> ?
+  </p>
+);
+
+const InvalidInfo = ({ className }) => (
+  <p className={className}>Ces informations sont invalides</p>
+);
+
+const errorMessages = {
+  409: EmailConflict,
+  422: InvalidInfo
+}
+
 function ErrorMessage({ error }) {
-  return error ? (
+  if (!error)
+    return <></>;
+
+  const LocalError = errorMessages[error.code];
+
+  return (
     <div className="bg-dark text-center p-2">
       <Icon
         icon="exclamation-circle"
         className="text-danger mr-2"
         style={{ display: 'inline-box' }}
       />
-    <p className="m-0">{error.reason}</p>
+      <LocalError className="m-0" />
     </div>
-  ) : false;
+  );
 }
 
 
@@ -322,7 +343,7 @@ const Register = Unauthenticated((props) => {
   usePositiveEffect(subscribed(
     state.promise,
     () => setState(s => ({ ...s, success: true, error: false, promise: null })),
-    () => setState(s => ({ ...s, success: false, error: true, promise: null })),
+    error => setState(s => ({ ...s, success: false, error, promise: null })),
   ), [state.promise]);
 
   const { email, error, success } = state;

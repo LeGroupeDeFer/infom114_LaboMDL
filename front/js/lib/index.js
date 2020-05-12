@@ -58,6 +58,24 @@ const VOTE = Object.freeze({
 const voteOf =
     v => head(Object.keys(VOTE).map(k => VOTE[k]).filter(vote => vote === v));
 
+const WATCH_EVENT_FSM = Object.freeze([
+  [false, true, false, false, false, false],  // Void
+  [false, false, true, true, false, false],   // Submit
+  [false, false, false, false, true, true],   // Accept
+  [false, false, false, false, false, false], // Refuse
+  [false, false, false, false, false, true],  // Progress - TODO progress -> progress
+  [false, false, false, false, false, false], // Over
+]);
+
+const WATCH_EVENT = Object.freeze([
+  { event: 0,                                                                           },
+  { event: 1, doneLabel: 'Suivi',      actionLabel: 'Suivre',     icon: 'envelope-open' },
+  { event: 2, doneLabel: 'Acceptée',   actionLabel: 'Accepter',   icon: 'check-circle'  },
+  { event: 3, doneLabel: 'Déclinée',   actionLabel: 'Décliner',   icon: 'stop-circle'   },
+  { event: 4, doneLabel: 'En progrès', actionLabel: 'Progresser', icon: 'tasks'         },
+  { event: 5, doneLabel: 'Terminée',   actionLabel: 'Terminer',   icon: 'genderless'    }
+]);
+
 /* ------------------------------- I/O utils ------------------------------- */
 
 /* istanbul ignore next */
@@ -334,6 +352,8 @@ export {
   kindOf,
   VOTE,
   voteOf,
+  WATCH_EVENT,
+  WATCH_EVENT_FSM,
 
   println,
   printerr,

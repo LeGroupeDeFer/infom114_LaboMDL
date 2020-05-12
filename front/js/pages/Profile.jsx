@@ -27,15 +27,17 @@ function Profile() {
         <Row>
           <Col xs={12} md={5}>
             <div className="fixed-info">
-              <h2 className="mb-3 mt-3">
-                <span className=" mr-3">
-                  <Icon icon="user" /> <b>Profil utilisateur</b>
-                </span>
-              </h2>
+              <h1 className="p-3 text-dark">
+                <h3><b>{user.firstname} {user.lastname}</b></h3>
+              </h1>
               {user ? <User user={user} /> : <></>}
             </div>
           </Col>
           <Col xs={12} md={7}>
+            <h2 className="text-dark px-3">
+              <b>Vos publications</b>
+              <hr />
+            </h2>
             {user ? <StreamContent userId={user.id} /> : <></>}
           </Col>
         </Row>
@@ -69,29 +71,10 @@ const Menu = () => {
 const User = ({ user }) => {
   return (
     <Row>
-      <Col xs={6} md={12}>
-        <div>
-          <img
-            src="https://www.freelogodesign.org/file/app/client/thumb/93b27fc8-6653-43ea-a4c4-3f22893f93dd_200x200.png?1585111496240"
-            alt="logo"
-            className="profile-pic"
-          />
-        </div>
-      </Col>
-      <Col xs={6} md={7}>
+      <Col>
         <hr />
-        <span>
-          <b>{user.firstname}</b>{' '}
-        </span>
-        <span>
-          <b>{user.lastname}</b>{' '}
-        </span>
-        <hr />
-        <span>Email : {user.email}</span>
-        <br />
-        <span>
-          A rejoint le : <Moment date={user.creationDate} />
-        </span>
+        <p><b className="text-secondary">Email :</b> {user.email}</p>
+        <p><b className="text-secondary">A rejoint le :</b> <Moment date={user.creationDate} /></p>
         <hr />
       </Col>
     </Row>

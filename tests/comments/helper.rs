@@ -244,3 +244,53 @@ pub fn delete_comment(
     let response = client.delete(route).header(auth_token).dispatch();
     assert_eq!(response.status(), Status::Ok);
 }
+
+pub fn get_all_comments_ok (
+    client: &rocket::local::Client,
+    auth_token: Option<rocket::http::Header<'static>>,
+    can_view_hidden: bool,
+    post_id: u32,
+) {
+    
+    // normal comments: 1, 2, 7
+    // locked comments: 3, 6, 9
+    // hidden comments: 4, 8
+    // deleted comments: 5
+    // these numbers are not comment.id
+    for i in 1..10 {
+        let c = init::get_comment_entity(post_id, None, i%3==0, i%4==0, i%5==0);
+        if i < 5 {
+            for j in 1..5 {
+                init::get_comment_entity(post_id, Some(c.id), j%3==0, j%4==0, j%5==0);
+            }
+        }
+    }
+
+    // a simple test first: no queries
+    let route = format!("{}/{}/comments", POST_ROUTE, post_id);
+    let mut response = match auth_token {
+        Some(token) => client.get(route).header(token).dispatch(),
+        None => client.get(route).dispatch(),
+    };
+
+    assert_eq!(response.status(), Status::Ok);
+
+    let data = response.body_string().unwrap();
+    let comments: Vec<Comment> = serde_json::from_str(&data).unwrap();
+
+    // anyone can see locked comments
+    assert_eq!(comments.iter().filter(|c| c.locked).count(), 3);
+    
+    // no one can see deleted comments
+    assert_eq!(comments.iter().filter(|c| c.deleted).count(), 0);
+
+    // admin can see hidden comments, user can't
+    if can_view_hidden {
+        assert_eq!(comments.len(), 8); 
+        assert_eq!(comments.iter().filter(|c| c.hidden).count(), 2);
+    } else {
+        assert_eq!(comments.len(), 6); 
+        assert_eq!(comments.iter().filter(|c| c.hidden).count(), 0);
+    }
+    // TODO replies
+}

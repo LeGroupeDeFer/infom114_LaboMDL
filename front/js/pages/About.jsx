@@ -1,12 +1,18 @@
 import React from 'react';
 import { Accordion, Card, Container, Button } from 'react-bootstrap';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+
 
 export default function About(props) {
   return (
     <Container className="py-5">
-      <h4 className="text-center"> Unanimity en chiffres</h4>
+
+      { /* Title */ }
+      <h1 className="text-center text-dark my-5"><b>Unanimity en chiffres</b></h1>
       <hr />
-      <Card className="mb-4">
+
+      { /* Numbers */ }
+      <Card className="mb-5">
         <Card.Body>
           <div className="text-center">
             <p>
@@ -16,14 +22,14 @@ export default function About(props) {
           </div>
         </Card.Body>
       </Card>
-      <br />
-      <br />
-      <img
-        id="faq-img"
-        src="https://axanar.com/wp-content/uploads/2016/01/faq-icon-1024x361.png"
-        className="mx-auto d-block"
-      ></img>
-      <hr />
+
+      { /* FAQ */ }
+      <h2 className="text-center text-dark faq-header mb-5">
+        <Icon icon="lightbulb" className="mr-4"/>
+        <span>FAQ</span>
+        <hr />
+      </h2>
+
       <Accordion>
         <Card>
           <Card.Header>
