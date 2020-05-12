@@ -40,11 +40,11 @@ export default function About(props) {
           <Accordion.Collapse eventKey="0">
             <Card.Body>Unanimity est une plateforme participative intégrée à l'UNamur. Son but est de rassembler 
             les membres de l'université qu'ils soient membres du personnel éducatif ou étudiant afin de:
-            <ul class="list-group mt-3">
-                <li class="list-group-item"><b>Mieux informer</b></li>
-                <li class="list-group-item"><b>Débattre</b></li>       
-                <li class="list-group-item"><b>Soumettre des idées</b></li>
-                <li class="list-group-item"><b>Avoir un impact sur les décisions de l’Université au niveau étudiant, facultaire et institutionnel</b></li>
+            <ul className="list-group mt-3">
+                <li className="list-group-item"><b>Mieux informer</b></li>
+                <li className="list-group-item"><b>Débattre</b></li>       
+                <li className="list-group-item"><b>Soumettre des idées</b></li>
+                <li className="list-group-item"><b>Avoir un impact sur les décisions de l’Université au niveau étudiant, facultaire et institutionnel</b></li>
             </ul>
             </Card.Body>
           </Accordion.Collapse>
