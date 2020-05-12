@@ -36,10 +36,10 @@
     position: relative;
 }
 
-.vote-col {
-    padding-right: 0;
-    padding-left: 0;
-}
+// .vote-col {
+//     padding-right: 0;
+//     padding-left: 0;
+// }
 
 .vote-col .btn {
     z-index: 10;
@@ -49,4 +49,23 @@
 
 #white-mask {
     background-color: white;
+}
+
+.comment-vote .vote-section {
+    background-color: transparent;
+    border-right: none;
+}
+
+.comment .col {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.comment .row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.comment .score {
+    display: none;
 }

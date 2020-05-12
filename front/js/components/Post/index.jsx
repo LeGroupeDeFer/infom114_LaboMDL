@@ -237,7 +237,7 @@ export function Post({
                     {author.firstname} {' ' + author.lastname}
                   </a>
                   <span>-</span>
-                  <Moment date={createdAt} className="post-moment"/>
+                  <Moment date={createdAt} className="post-moment" />
                 </span>
               </h5>
             </Col>
@@ -326,12 +326,12 @@ export function Post({
               className="expand-preview"
             />
 
-            <div className="mt-2">
+            {/* <div className="mt-2">
               <strong className="status">Accepté le 18 Avril 2020</strong>
               <Alert variant="success">
                 Les vaccances seront prolongées de 2 semaines.
               </Alert>
-            </div>
+            </div> */}
 
             <Flexbox reverse className="post-footer mt-2">
               <Link

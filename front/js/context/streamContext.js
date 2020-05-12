@@ -52,7 +52,7 @@ const query = (state) => ({
   order: state.order.value,
   tags: state.tags.value,
   keywords: state.keywords.value,
-  author: trace(state.author.value)
+  author: trace(state.author.value),
 });
 
 export function StreamProvider({ children }) {
@@ -70,17 +70,18 @@ export function StreamProvider({ children }) {
 
         pushEffect([
           promise,
-          (post) => setState((s) => {
+          (post) =>
+            setState((s) => {
+              const currentPosts = s.posts.value;
+              let updatedPosts;
+              if (s.posts.value.some((p) => p.id === post.id))
+                updatedPosts = currentPosts.map((p) =>
+                  p.id === post.id ? post : p
+                );
+              else updatedPosts = [...currentPosts, post];
 
-            const currentPosts = s.posts.value;
-            let updatedPosts;
-            if (s.posts.value.some(p => p.id === post.id))
-              updatedPosts = currentPosts.map(p => (p.id === post.id ? post : p));
-            else
-              updatedPosts = [ ...currentPosts, post ];
-
-            return { ...s, posts: { ...s.posts, value: updatedPosts } };
-          }) || post,
+              return { ...s, posts: { ...s.posts, value: updatedPosts } };
+            }) || post,
           printerr, // TODO
         ]);
         return promise;
@@ -90,17 +91,21 @@ export function StreamProvider({ children }) {
         const prefetch = this.value.filter((p) => Number(p.id) === Number(id));
         const promise = Promise.all([
           prefetch.length ? Promise.resolve(prefetch[0]) : api.posts.of(id),
-          api.posts.comments(id)
+          api.posts.comments(id),
         ]);
 
-        return this._updatePost(promise.then(([post, comments]) => {
-          post.comments = comments;
-          return post.kind !== 'poll' ? post : api.posts.pollData(id).then((pollData) => {
-            post.answers = pollData.answers;
-            post.userAnswer = pollData.userAnswer;
-            return post;
-          });
-        }));
+        return this._updatePost(
+          promise.then(([post, comments]) => {
+            post.comments = comments;
+            return post.kind !== 'poll'
+              ? post
+              : api.posts.pollData(id).then((pollData) => {
+                  post.answers = pollData.answers;
+                  post.userAnswer = pollData.userAnswer;
+                  return post;
+                });
+          })
+        );
       },
 
       add(post) {
@@ -135,6 +140,9 @@ export function StreamProvider({ children }) {
       comment(post, comment) {
         return this._updatePost(api.posts.comment(post.id, comment));
       },
+      reply(commentId, reply) {
+        return this._updatePost(api.posts.reply(commentId, reply));
+      },
       vote(post, vote) {
         return this._updatePost(api.posts.vote(post.id, vote));
       },
@@ -160,11 +168,12 @@ export function StreamProvider({ children }) {
         const promise = api.users.posts(authorId);
         pushEffect([
           promise,
-          value => setState(s => ({ ...s, posts: { ...s.posts, value: value }})),
-          printerr
+          (value) =>
+            setState((s) => ({ ...s, posts: { ...s.posts, value: value } })),
+          printerr,
         ]);
         return promise;
-      }
+      },
     },
 
     kind: {
@@ -226,9 +235,12 @@ export function StreamProvider({ children }) {
       value: null,
       set(author_id) {
         if (this.value === author_id) return;
-        setState(s => ({ ...s, author: { ...state.author, value: author_id } }));
-      }
-    }
+        setState((s) => ({
+          ...s,
+          author: { ...state.author, value: author_id },
+        }));
+      },
+    },
   });
 
   useEffect(
@@ -247,7 +259,7 @@ export function StreamProvider({ children }) {
       state.order.value,
       state.tags.value,
       state.keywords.value,
-      state.author.value
+      state.author.value,
     ]
   );
 

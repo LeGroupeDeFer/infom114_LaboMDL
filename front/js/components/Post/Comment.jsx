@@ -10,7 +10,7 @@ import { VOTE } from '../../lib';
 
 const CommentInteraction = WhenLogged(({ onResponse, onMask, onFlag }) => {
   return (
-    <Row className="pl-3">
+    <Row className="pl-1 pt-1">
       <a className="post-footer-btn mr-2" onClick={onResponse}>
         <GoReply size="1em" className="mr-1" />
         <span className="text-muted">Répondre</span>
@@ -26,13 +26,28 @@ const CommentInteraction = WhenLogged(({ onResponse, onMask, onFlag }) => {
 });
 
 function Comment({ comment, onComment, onVote }) {
+  console.log(comment);
   const isLogged = !!useAuth().user;
   const [reply, setReply] = useState('');
 
+  // const nestedComments = (comment.children || []).map((cmmt) => {
+  //   return (
+  //     <Comment
+  //       ancestor_id={ancestor_id}
+  //       key={cmmt.id}
+  //       comment={cmmt}
+  //       add_comment_editor={add_comment_editor}
+  //       toggle_comment_editor={toggle_comment_editor}
+  //       comment_editors={comment_editors}
+  //       add_reply={add_reply}
+  //     />
+  //   );
+  // });
+
   return (
-    <Container className="comment">
-      <Row className="comment-first-row">
-        <Col>
+    <div className="comment">
+      <Row>
+        <Col className="col-auto comment-vote">
           <VoteSection
             onVote={onVote}
             score={comment.score || 0}
@@ -40,35 +55,35 @@ function Comment({ comment, onComment, onVote }) {
             vote={comment.userVote || VOTE.NONE}
           />
         </Col>
-        <Col>
+        <Col className="pt-2">
           <div>
             <span className="text-muted">
               <a
                 href={`/profile/${comment.author.id}`}
-                className="text-dark mr-1 ml-1"
+                className="text-dark mr-1"
               >
-                {comment.author}
+                {comment.author.firstname}
+                {'  '}
+                {comment.author.lastname}
               </a>
               <span className=" mr-1">{comment.score} points</span>
               <span className=" mr-1">·</span>
-              <Moment date={comment.creationDate} />
+              <Moment date={comment.createdAt} />
             </span>
+          </div>
+
+          <div>
+            <div className="comment-text">{comment.content}</div>
+            <CommentInteraction
+              onComment={() => console.log('Wanna comment!')}
+              onMask={() => console.log('Wanna mask!')}
+              onFlag={() => console.log('Wanna flag!')}
+            />
+            {/* <CommentEditor onComment={(c) => console.log('Commented ' + c)} /> */}
           </div>
         </Col>
       </Row>
-
-      <Row className="comment-content">
-        <Col>
-          <div className="comment-text">{comment.text}</div>
-          <CommentInteraction
-            onComment={() => console.log('Wanna comment!')}
-            onMask={() => console.log('Wanna mask!')}
-            onFlag={() => console.log('Wanna flag!')}
-          />
-          <CommentEditor onComment={(c) => console.log('Commented ' + c)} />
-        </Col>
-      </Row>
-    </Container>
+    </div>
   );
 }
 
