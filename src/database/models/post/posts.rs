@@ -9,20 +9,18 @@ use crate::database::schema::posts_tags::dsl as posts_tags;
 use crate::database::schema::tags::dsl as tags;
 use crate::{database, lib};
 
+use crate::database::models::post::WatchEventEntity;
 use crate::database::tables::{
-    posts_reports_table, posts_table as table, posts_tags_table, tags_table, watch_events_table
+    posts_reports_table, posts_table as table, posts_tags_table, tags_table, watch_events_table,
 };
 use crate::database::SortOrder;
 use crate::lib::{Consequence, EntityError};
 use std::collections::{HashMap, HashSet};
-use crate::database::models::post::WatchEventEntity;
-
 
 // TODO - Move this in app state
 const BASE: f64 = 1.414213562;
 const EPOCH: u32 = 1577840400; // 01/01/2020
 const EASING: u32 = 24 * 3600; // 1 day
-const WATCH_BONUS: u32 = 200;
 
 /* Diesel helpers */
 
@@ -84,7 +82,6 @@ pub struct Post {
     pub watch_events: Vec<WatchEventEntity>,
 }
 
-
 impl PostEntity {
     /// Get `author_id` from a `post_id`
     pub fn get_author_id_by_post_id(
@@ -108,7 +105,7 @@ impl PostEntity {
         kind: Option<String>,
         author: Option<u32>,
         limit: Option<u32>,
-        offset: Option<u32>
+        offset: Option<u32>,
     ) -> Consequence<Vec<Self>> {
         let tags_length = tags.len() as u32;
 
@@ -144,9 +141,9 @@ impl PostEntity {
         /* ------------------------------------------------------------ KIND */
 
         let kid: Option<u8> = kind
-            .and_then(|v| if &*v == "all" { None } else { Some(v) })  // Option<String>
-            .map(|v| PostKind::try_from(v))                       // Option<Result<PostKind>>
-            .transpose()?                                                           // Option<PostKind>
+            .and_then(|v| if &*v == "all" { None } else { Some(v) }) // Option<String>
+            .map(|v| PostKind::try_from(v)) // Option<Result<PostKind>>
+            .transpose()? // Option<PostKind>
             .map(|k| k.into());
 
         if let Some(id) = kid {
@@ -202,7 +199,9 @@ impl PostEntity {
 
         let from = offset.unwrap_or(0) as usize;
         let to = filtered_posts.len().min(
-            limit.map(|l| from + l as usize).unwrap_or(filtered_posts.len())
+            limit
+                .map(|l| from + l as usize)
+                .unwrap_or(filtered_posts.len()),
         );
 
         filtered_posts[from..to].to_vec()
@@ -616,7 +615,7 @@ impl From<PostEntity> for Post {
             user_vote: None,
             user_flag: None,
             // TODO - Check the extend to which we need to create a WatchEvent wrapper
-            watch_events: WatchEventEntity::by_post_id(&conn, &pe.id).unwrap()
+            watch_events: WatchEventEntity::by_post_id(&conn, &pe.id).unwrap(),
         }
     }
 }

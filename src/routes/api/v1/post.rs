@@ -6,12 +6,13 @@ use crate::http::{
     helpers::StringVector,
     responders::{ok, ApiResult},
 };
-use crate::lib::{AuthError, Consequence, EntityError, WatchEventError};
+use crate::lib::{AuthError, Consequence, EntityError};
 
+use crate::database::models::post::{
+    WatchEventData, WatchEventEntity, WatchEventKind, WatchEventMinima,
+};
 use rocket_contrib::json::Json;
 use serde::export::TryFrom;
-use crate::database::models::post::{WatchEventEntity, WatchEventKind, WatchEventMinima, WatchEventData};
-use std::borrow::BorrowMut;
 use std::convert::{AsRef, TryInto};
 
 pub fn collect() -> Vec<rocket::Route> {
@@ -68,8 +69,8 @@ fn create_post(conn: DBConnection, auth: Auth, data: Json<NewPost>) -> ApiResult
     });
 
     match post_kind {
-        PostKind::Info => {},
-        PostKind::Idea => {},
+        PostKind::Info => {}
+        PostKind::Idea => {}
         PostKind::Poll => match post_request.options {
             Some(options) => {
                 PollAnswerEntity::bulk_insert(
@@ -361,23 +362,26 @@ fn watch_post(
     auth: Auth,
     post_guard: PostGuard,
     _post_id: u32,
-    data: Json<WatchEventData>
+    data: Json<WatchEventData>,
 ) -> ApiResult<Post> {
     let payload = data.into_inner();
     let mut post = post_guard.post_clone();
 
     // Validation
-    if (&post).is_deleted() { Err(EntityError::InvalidID)?; }
+    if (&post).is_deleted() {
+        Err(EntityError::InvalidID)?;
+    }
 
-    let mut caps = vec!("post:watch");
-    if (&post).is_locked() { caps.push("post:edit_locked"); }
-    if (&post).is_hidden() { caps.push("post:view_hidden"); }
+    let mut caps = vec!["post:watch"];
+    if (&post).is_locked() {
+        caps.push("post:edit_locked");
+    }
+    if (&post).is_hidden() {
+        caps.push("post:view_hidden");
+    }
     auth.check_capabilities(&*conn, caps)?;
 
-    let post_kind: PostKind = (&post).kind.try_into()?;
-    // if post_kind == PostKind::Info {
-    //     Err(WatchEventError::InvalidWatchTransition)?
-    // }
+    let _post_kind: PostKind = (&post).kind.try_into()?;
 
     let post_id = post.id;
     let mut past_events: Vec<WatchEventEntity> = WatchEventEntity::by_post_id(&*conn, &post_id)?;
@@ -393,7 +397,7 @@ fn watch_post(
         post_id,
         author_id: auth.sub,
         comment: payload.comment,
-        event: new_event.into()
+        event: new_event.into(),
     };
 
     // RIP wee :'(

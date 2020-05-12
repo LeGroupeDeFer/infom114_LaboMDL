@@ -29,8 +29,8 @@ table! {
         deleted_at -> Nullable<Timestamp>,
         hidden_at -> Nullable<Timestamp>,
         locked_at -> Nullable<Timestamp>,
-        votes -> Unsigned<Integer>,
-        score -> Integer,
+        votes -> Unsigned<Bigint>,
+        score -> Bigint,
     }
 }
 
@@ -166,7 +166,7 @@ table! {
         comment_id -> Unsigned<Integer>,
         user_id -> Unsigned<Integer>,
         voted_at -> Timestamp,
-        vote_value -> Bool,
+        vote_value -> Smallint,
     }
 }
 
@@ -185,7 +185,7 @@ table! {
         post_id -> Unsigned<Integer>,
         author_id -> Unsigned<Integer>,
         event -> Unsigned<Tinyint>,
-        time -> Datetime,
+        time -> Timestamp,
         comment -> Text,
     }
 }
