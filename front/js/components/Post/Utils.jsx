@@ -141,7 +141,7 @@ export function WatchStatus({ events, isPreview }) {
   return (
     <Container className="watch-event-preview mb-5">
       {localEvents.map(event => (
-        <Row>
+        <Row key={event.id}>
           <Col xs={8} md={10} className="py-2 px-3">
             <p className="watch-event-content">
               <Icon icon={icon} className="mr-3" />

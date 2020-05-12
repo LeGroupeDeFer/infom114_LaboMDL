@@ -295,6 +295,7 @@ export function Post({
           </div>
         </div>
       </Card.Body>
+      {isPreview && <WatchStatus isPreview={isPreview} events={post.watchEvents} />}
     </Card>
   );
 }
