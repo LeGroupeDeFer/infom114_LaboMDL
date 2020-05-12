@@ -17,14 +17,13 @@ import MdSort from '../../icons/sort.svg';
 import { useStream } from 'unanimity/context/streamContext';
 import { ORDER } from 'unanimity/lib';
 import Post from 'unanimity/components/Post';
-import {trace} from "../../lib";
+import { trace } from '../../lib';
 
 // InnerStream :: Object => Component
 function InnerStream({
   deletePost,
   flagPost,
   onDelete,
-  onPreview,
   toast,
   onToast,
   toastMsg,
@@ -61,7 +60,6 @@ function InnerStream({
               onHide={onHide}
               onVote={onVote}
               onPollVote={onPollVote}
-              onPreview={onPreview}
               onTag={onTag}
               onWatch={onWatch}
               onLock={onLock}
@@ -133,8 +131,13 @@ function Stream({ onSort, ...others }) {
       <Row>
         <Col>
           <h1 className="text-dark stream-header">
-            <Icon icon={stream.kind.value.icon} className="d-inline-block w-auto" />
-            <span className="ml-3 d-inline-block">{stream.kind.value.label}</span>
+            <Icon
+              icon={stream.kind.value.icon}
+              className="d-inline-block w-auto"
+            />
+            <span className="ml-3 d-inline-block">
+              {stream.kind.value.label}
+            </span>
           </h1>
           <hr />
         </Col>
@@ -162,7 +165,7 @@ function Stream({ onSort, ...others }) {
   );
 }
 
-//Same as Stream() but does not give you a header 
+//Same as Stream() but does not give you a header
 export function SpecificStream({ userId, onAuthor, ...others }) {
   useEffect(() => onAuthor(userId), []);
   return (

@@ -215,6 +215,7 @@ export function Post({
   onLock,
   onWatch,
   onComment,
+  onReply,
   isPreview,
   onPreview,
   className,
@@ -228,7 +229,11 @@ export function Post({
   const [editors, setEditors] = useState({});
 
   function addEditor(commentId) {
-    if (editors.hasOwnProperty(commentId)) return;
+    if (editors.hasOwnProperty(commentId)) {
+      toggleEditor(commentId);
+      return;
+    }
+
     let tmp = { ...editors };
     tmp[commentId] = { show: true };
     setEditors(tmp);
@@ -417,6 +422,7 @@ export function Post({
                       editors={editors}
                       addEditor={addEditor}
                       toggleEditor={toggleEditor}
+                      onReply={onReply}
                     />
                   ))}
                 </div>
