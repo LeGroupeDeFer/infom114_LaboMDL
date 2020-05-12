@@ -36,6 +36,7 @@ import Comment from './Comment';
 import Poll from './Poll';
 import DeleteModal from './DeleteModal';
 import ReportModal from './ReportModal';
+import { Loading } from 'unanimity/components';
 
 /* ------------------------------ Post actions ----------------------------- */
 
@@ -184,16 +185,17 @@ export function PostContent({ isPreview, post, onComment, onPollVote }) {
   return (
     <div className="post-content">
       <p className="mb-4">{post.content}</p>
-      {post.kind === 'poll' && (
-        <>
-          <Poll
-            postId={post.id}
-            answers={post.answers}
-            userAnswer={post.userAnswer}
-            onPollVote={onPollVote}
-          />
-          <br />
-        </>
+      {post.kind === 'poll' && post.answers != undefined ? (
+        <Poll
+          postId={post.id}
+          answers={post.answers}
+          userAnswer={post.userAnswer}
+          onPollVote={onPollVote}
+        />
+      ) : (
+        <div id="poll-loader">
+          <Loading />
+        </div>
       )}
     </div>
   );
