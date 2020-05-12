@@ -7,34 +7,62 @@ import { Link } from 'react-router-dom';
 import { WhenLogged } from '../Auth';
 import { useAuth } from 'unanimity/context';
 import { VOTE } from '../../lib';
+import { May } from '../Auth';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 
-const CommentInteraction = WhenLogged(({ onResponse, onMask, onFlag }) => {
+const HideComment = May('comment:hide', ({ onMask }) => {
   return (
-    <Row className="pl-1 pt-1 pb-2">
-      <a href="#" className="post-footer-btn mr-2" onClick={onResponse}>
-        <GoReply size="1em" className="mr-1" />
-        <span className="text-muted">Répondre</span>
-      </a>
-      <a href="#" className="post-footer-btn mr-2" onClick={onMask}>
-        <span className="text-muted">Masquer</span>
-      </a>
-      <a href="#" className="post-footer-btn mr-2" onClick={onFlag}>
-        <span className="text-muted">Signaler</span>
-      </a>
-    </Row>
+    <a href="#" className="post-footer-btn mr-2" onClick={onMask}>
+      {/* <Icon icon="eye-slash" className="mr-2" /> */}
+      <span className="text-muted">Masquer</span>
+    </a>
   );
 });
+
+const LockComment = May('comment:hide', ({ onLock }) => {
+  return (
+    <a href="#" className="post-footer-btn mr-2" onClick={onLock}>
+      {/* <Icon icon="lock" className="mr-2" /> */}
+      <span className="text-muted">Vérouiller</span>
+    </a>
+  );
+});
+
+const CommentInteraction = WhenLogged(
+  ({ onResponse, onMask, onFlag, onDelete, onLock }) => {
+    return (
+      <Row className="pl-1 pt-1 pb-2">
+        <a href="#" className="post-footer-btn mr-2" onClick={onResponse}>
+          <GoReply size="1em" className="mr-1" />
+          <span className="text-muted">Répondre</span>
+        </a>
+        <a href="#" className="post-footer-btn mr-2" onClick={onFlag}>
+          {/* <Icon icon="flag" className="mr-2" /> */}
+          <span className="text-muted">Signaler</span>
+        </a>
+        <a href="#" className="post-footer-btn mr-2" onClick={onDelete}>
+          {/* <Icon icon="trash" className="mr-2" /> */}
+          <span className="text-muted">Supprimer</span>
+        </a>
+        <LockComment onLock={onLock} />
+        <HideComment onMask={onMask} />
+      </Row>
+    );
+  }
+);
 
 function Comment({
   comment,
   onComment,
   onReply,
   onVote,
+  onCommentVote,
   editors,
   addEditor,
   toggleEditor,
 }) {
   const isLogged = !!useAuth().user;
+  console.log(useAuth().token);
   const [reply, setReply] = useState('');
 
   const nestedComments = (comment.replies || []).map((cmmt) => {
@@ -47,6 +75,7 @@ function Comment({
         addEditor={addEditor}
         toggleEditor={toggleEditor}
         editors={editors}
+        onCommentVote={onCommentVote}
       />
     );
   });
@@ -56,7 +85,7 @@ function Comment({
       <Row>
         <Col className="col-auto comment-vote">
           <VoteSection
-            onVote={onVote}
+            onVote={(vote) => onCommentVote(comment.id, vote)}
             score={comment.score || 0}
             isLogged={isLogged}
             vote={comment.userVote || VOTE.NONE}

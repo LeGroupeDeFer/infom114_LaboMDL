@@ -13,7 +13,7 @@ import { useAuth } from './authContext';
 import isEqual from 'lodash/isEqual';
 import remove from 'lodash/remove';
 import without from 'lodash/without';
-import {clean, head} from '../lib';
+import { clean, head } from '../lib';
 
 export const PostsChange = /*       */ 0b00000001;
 export const TagsChange = /*        */ 0b00000010;
@@ -56,7 +56,6 @@ const query = (state) => ({
   author: state.author.value,
 });
 
-
 export function StreamProvider({ children }) {
   const pushEffect = useEffectQueue();
   const auth = useAuth();
@@ -93,9 +92,12 @@ export function StreamProvider({ children }) {
         return promise;
       },
 
-      of(id, hard= false) {
-        const prefetch = !hard && this.value.filter((p) => Number(p.id) === Number(id));
-        const promise = prefetch.length ? Promise.resolve(prefetch[0]) : api.posts.of(id);
+      of(id, hard = false) {
+        const prefetch =
+          !hard && this.value.filter((p) => Number(p.id) === Number(id));
+        const promise = prefetch.length
+          ? Promise.resolve(prefetch[0])
+          : api.posts.of(id);
         return this._updatePost(promise);
       },
 
@@ -134,12 +136,26 @@ export function StreamProvider({ children }) {
         return promise;
       },
 
+      deleteComment(id) {
+        const promise = api.posts.deleteCommente(id);
+        // TODO : update state
+        return promise;
+      },
+
+      flagComment(id, reason, cancel) {
+        return this._updatePost(api.posts.flagComment(id, reason, cancel));
+      },
+
       comment(post, comment) {
         return this._updatePost(api.posts.comment(post.id, comment));
       },
 
       reply(commentId, reply) {
         return this._updatePost(api.posts.reply(commentId, reply));
+      },
+
+      commentVote(id, vote) {
+        return this._updatePost(api.posts.commentVote(id, vote));
       },
 
       vote(post, vote) {
@@ -171,21 +187,21 @@ export function StreamProvider({ children }) {
         const promise = api.posts.pollVote(postId, answerId);
         pushEffect([
           promise,
-          ({ answers, userAnswer }) => setState(s => ({
-            ...s,
-            posts: {
-              ...s.posts,
-              value: s.posts.value.map(p => {
-                if (p.id === postId)
-                  return { ...p, answers, userAnswer };
-                return p;
-              })
-            }
-          })),
-          error => setState(s => ({ ...s, error }))
+          ({ answers, userAnswer }) =>
+            setState((s) => ({
+              ...s,
+              posts: {
+                ...s.posts,
+                value: s.posts.value.map((p) => {
+                  if (p.id === postId) return { ...p, answers, userAnswer };
+                  return p;
+                }),
+              },
+            })),
+          (error) => setState((s) => ({ ...s, error })),
         ]);
         return promise;
-      }
+      },
     },
 
     kind: {

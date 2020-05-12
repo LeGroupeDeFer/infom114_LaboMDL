@@ -1,14 +1,20 @@
 import React from 'react';
-import {May} from "../Auth";
-import {Col, Container, Dropdown, OverlayTrigger, Row, Tooltip} from "react-bootstrap";
-import {FontAwesomeIcon as Icon} from "@fortawesome/react-fontawesome";
-import {useHistory} from "react-router-dom";
-import clsx from "clsx";
+import { May } from '../Auth';
+import {
+  Col,
+  Container,
+  Dropdown,
+  OverlayTrigger,
+  Row,
+  Tooltip,
+} from 'react-bootstrap';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+import { useHistory } from 'react-router-dom';
+import clsx from 'clsx';
 
-import {Circle} from "../index";
+import { Circle } from '../index';
 import { empty, last, WATCH_EVENT, preview } from 'unanimity/lib';
-import Moment from "../Moment";
-
+import Moment from '../Moment';
 
 export const HidePost = May('post:hide', ({ onClick, hidden }) => {
   if (hidden)
@@ -46,7 +52,10 @@ export const LockPost = May('post:lock', ({ onClick, post }) => {
 export const WatchPost = May('post:watch', ({ post }) => {
   const history = useHistory();
   return (
-    <Dropdown.Item as="button" onClick={() => history.push(`/amend/${post.id}`)}>
+    <Dropdown.Item
+      as="button"
+      onClick={() => history.push(`/amend/${post.id}`)}
+    >
       <Icon icon="dove" className="mr-2" />
       <span>Suivre</span>
     </Dropdown.Item>
@@ -140,7 +149,7 @@ export function WatchStatus({ events, isPreview }) {
 
   return (
     <Container className="watch-event-preview mb-5">
-      {localEvents.map(event => (
+      {localEvents.map((event) => (
         <Row key={event.id}>
           <Col xs={8} md={10} className="py-2 px-3">
             <p className="watch-event-content">

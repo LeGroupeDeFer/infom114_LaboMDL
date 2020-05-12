@@ -7,6 +7,9 @@ import {
   Badge,
   DropdownButton,
   Card,
+  Fade,
+  Collapse,
+  Button,
 } from 'react-bootstrap';
 import { useRouteMatch } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
@@ -17,22 +20,27 @@ import clsx from 'clsx';
 
 import { useAuth } from 'unanimity/context';
 import { UpVote, DownVote, Vote, VoteSection } from './Vote';
-import {
-  kindOf,
-  preview,
-  previewLength,
-} from 'unanimity/lib';
+import { kindOf, preview, previewLength } from 'unanimity/lib';
 import { Flexbox } from '../';
 
 import Comment from './Comment';
 import Poll from './Poll';
 import DeleteModal from './DeleteModal';
 import ReportModal from './ReportModal';
-import { WatchStatus, FlagPost, LockPost, HidePost, DeletePost, LockSymbol, WatchPost, WatchSymbol } from './Utils'
+import {
+  WatchStatus,
+  FlagPost,
+  LockPost,
+  HidePost,
+  DeletePost,
+  LockSymbol,
+  WatchPost,
+  WatchSymbol,
+} from './Utils';
 import { Loading } from 'unanimity/components';
 
-
 export function PostContent({ isPreview, post, onComment, onPollVote }) {
+  const [openCollapse, setOpenCollapse] = useState(false);
   if (isPreview)
     return (
       <div className="post-preview expand-preview">
@@ -62,7 +70,20 @@ export function PostContent({ isPreview, post, onComment, onPollVote }) {
           )}
         </>
       )}
-      <WatchStatus events={post.watchEvents} />
+
+      <Button
+        onClick={() => setOpenCollapse(!openCollapse)}
+        aria-controls="status-info"
+        aria-expanded={openCollapse}
+        className="mb-2"
+      >
+        Informations de suivi
+      </Button>
+      <Collapse in={openCollapse}>
+        <div id="status-info">
+          <WatchStatus events={post.watchEvents} />
+        </div>
+      </Collapse>
     </div>
   );
 }
@@ -82,6 +103,7 @@ export function Post({
   onWatch,
   onComment,
   onReply,
+  onCommentVote,
   isPreview,
   onPreview,
   className,
@@ -287,6 +309,7 @@ export function Post({
                       addEditor={addEditor}
                       toggleEditor={toggleEditor}
                       onReply={onReply}
+                      onCommentVote={onCommentVote}
                     />
                   ))}
                 </div>
@@ -295,7 +318,9 @@ export function Post({
           </div>
         </div>
       </Card.Body>
-      {isPreview && <WatchStatus isPreview={isPreview} events={post.watchEvents} />}
+      {isPreview && (
+        <WatchStatus isPreview={isPreview} events={post.watchEvents} />
+      )}
     </Card>
   );
 }

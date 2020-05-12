@@ -23,6 +23,9 @@ function StreamModals({
   onFlag,
   onDeleteConfirmation,
   onFlagConfirmation,
+  deleteComment,
+  onDeleteComment,
+  onDeleteCommentConfirmation,
 }) {
   return (
     <>
@@ -64,9 +67,22 @@ function StreamContent({ userId }) {
   let pathWhenDelete = path;
   const [state, setState] = useState({
     deletePost: false,
+    deleteComment: false,
     flagPost: false,
     toast: false,
     toastMsg: '',
+    onDeleteComment: (id) =>
+      setState((state) => ({ ...state, deleteComment: id })),
+    onDeleteCommentConfirmation: (id) =>
+      stream.posts.deleteComment(id).then(() => {
+        setState((state) => ({
+          ...state,
+          deleteComment: false,
+          toast: true,
+          toastMsg: 'Votre commentaire a bien été supprimé',
+        }));
+      }),
+    onCommentVote: (id, vote) => stream.posts.commentVote(id, vote),
     onComment: (post, comment) => stream.posts.comment(post, comment),
     onReply: (commentId, reply) => stream.posts.reply(commentId, reply),
     onFlag: (v) => setState((state) => ({ ...state, flagPost: v })),

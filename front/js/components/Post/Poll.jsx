@@ -14,6 +14,7 @@ import CheckCircle from '../../icons/check-circle-regular.svg';
 import { useAuth } from 'unanimity/context';
 
 function Poll({ postId, answers, userAnswer, onPollVote }) {
+  console.log('debug =' + answers);
   const { user } = useAuth();
   const isLogged = !!user;
   const [userVote, setUserVote] = useState(

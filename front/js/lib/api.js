@@ -247,6 +247,16 @@ Object.assign(posts, {
       body: { content: reply },
     });
   },
+  commentVote(id, vote) {
+    return api(`/comment/${id}/vote`, { body: { vote } });
+  },
+  deleteComment(id) {
+    return api(`/comment/${id}`, { method: 'DELETE' });
+  },
+  flagComment(id, reason, cancel) {
+    if (cancel) return api(`/comment/${id}/report`, { method: 'POST' });
+    return api(`/comment/${id}/report`, { method: 'POST', body: { reason } });
+  },
 });
 
 /* --------------------------------- Tags --------------------------------- */
