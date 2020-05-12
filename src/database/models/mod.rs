@@ -28,7 +28,6 @@ use diesel::MysqlConnection;
 use either::*;
 
 use crate::lib::consequence::*;
-use crate::database::models::post::{PostKind, WatchEventMinima, WatchEventKind};
 
 pub trait Entity: Sized {
     type Minima;

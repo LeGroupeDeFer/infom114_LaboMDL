@@ -12,7 +12,6 @@ import Writer from './Writer';
 import Detail from './Detail';
 import Amend from './Amend';
 
-
 // Modals :: Object => Component
 function StreamModals({
   deletePost,
@@ -88,7 +87,7 @@ function StreamContent({ userId }) {
     onWatch: (post, event) => stream.posts.watch(post, event),
     onLock: (post) => stream.posts.lock(post),
     onSort: (order) => stream.order.set(order),
-    onAuthor: author => stream.author.set(author),
+    onAuthor: (author) => stream.author.set(author),
     onPreview: (v) => setState((state) => ({ ...state, previewPost: v })),
     onDelete: (v, p) => {
       pathWhenDelete = p;
@@ -119,13 +118,16 @@ function StreamContent({ userId }) {
   });
 
   if (userId)
-    return <SpecificStream userId={userId} {...state} />;
+    return (
+      <>
+        <StreamModals {...state} />
+        <SpecificStream userId={userId} {...state} />
+      </>
+    );
 
   return (
     <>
       <SearchBar variant="kinds" pending={stream.pending} />
-
-      {/* Delete post modal */}
 
       <StreamModals {...state} />
 

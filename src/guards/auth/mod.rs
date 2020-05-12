@@ -74,7 +74,10 @@ impl Auth {
         refresh_lifetime: &u32,
     ) -> Consequence<(Self, TokenEntity, UserEntity)> {
         // Get user info
-        let mut user = UserEntity::by_email(conn, email)??;
+        let mut user = match UserEntity::by_email(conn, email)? {
+            Some(u) => u,
+            None => Err(AuthError::InvalidIDs)?,
+        };
         let verification = user.verify(password)?;
 
         // Check the info
@@ -157,7 +160,11 @@ impl Auth {
         }
     }
 
-    pub fn check_capabilities(&self, conn: &MysqlConnection, capabilities: Vec<&str>) -> Consequence<()> {
+    pub fn check_capabilities(
+        &self,
+        conn: &MysqlConnection,
+        capabilities: Vec<&str>,
+    ) -> Consequence<()> {
         if !self.has_capabilities(conn, capabilities) {
             Err(AuthError::MissingCapability)?
         } else {

@@ -5,7 +5,7 @@ CREATE TABLE watch_events(
     author_id   INT UNSIGNED        NOT NULL,
 
     event       TINYINT UNSIGNED    NOT NULL,
-    time        DATETIME            NOT NULL    DEFAULT NOW(),
+    time        TIMESTAMP            NOT NULL    DEFAULT CURRENT_TIMESTAMP,
     comment     TEXT                NOT NULL,
 
     PRIMARY KEY (id),
