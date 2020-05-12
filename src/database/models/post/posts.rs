@@ -80,6 +80,7 @@ pub struct Post {
     pub user_vote: Option<i16>,
     pub user_flag: Option<bool>,
     pub watch_events: Vec<WatchEventEntity>,
+    pub poll_info: Option<PostPoll>,
 }
 
 impl PostEntity {
@@ -576,18 +577,28 @@ impl Post {
                     .collect::<Vec<Comment>>()
             }
         }
+
+        if let Some(post_poll) = self.poll_info.as_mut() {
+            post_poll.set_user_info(conn, user_id).unwrap();
+        }
     }
 }
 
 impl From<PostEntity> for Post {
     fn from(pe: PostEntity) -> Self {
         let conn = database::connection(&database::url());
+        let kind = PostKind::try_from(pe.kind).unwrap();
+        let poll_info = if kind == PostKind::Poll {
+            Some(PostPoll::try_from(&pe).unwrap())
+        } else {
+            None
+        };
         // fixme : optimize db request
         Self {
             id: pe.id,
             title: pe.title.to_string(),
             content: pe.content.to_string(),
-            kind: PostKind::try_from(pe.kind).unwrap().into(),
+            kind: kind.into(),
             created_at: pe.created_at.to_string(),
             updated_at: pe.updated_at.to_string(),
             locked: pe.locked_at.is_some(),
@@ -616,6 +627,7 @@ impl From<PostEntity> for Post {
             user_flag: None,
             // TODO - Check the extend to which we need to create a WatchEvent wrapper
             watch_events: WatchEventEntity::by_post_id(&conn, &pe.id).unwrap(),
+            poll_info,
         }
     }
 }
