@@ -182,8 +182,6 @@ function Amend({}) {
       </Col></Row>
     </Container>
   );
-
-  return <h1>Amend #{id}</h1>;
 }
 
 

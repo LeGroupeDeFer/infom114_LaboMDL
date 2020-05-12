@@ -12,21 +12,21 @@ function Header() {
 
   return (
     <Flexbox justify="center" align="end" className='mb-3 form-header'>
-      <h4 className="mb-1 mx-2">
+      <h5 className="mb-1 mx-2">
         <Link to='/' className="text-secondary">
           <Icon icon="arrow-left" className="mr-2" />
-          HOME
+          ACCUEIL
         </Link>
-      </h4>
-      <h1 className="mb-0 mx-2">
-        SIGN IN
-      </h1>
-      <h4 className="mb-1 mx-2">
+      </h5>
+      <h2 className="mb-0 mx-2">
+        CONNEXION
+      </h2>
+      <h5 className="mb-1 mx-2">
         <Link to='/register' className="text-secondary">
-          SIGN UP
+          INSCRIPTION
           <Icon icon="arrow-right" className="ml-2" />
         </Link>
-      </h4>
+      </h5>
     </Flexbox>
   );
 
@@ -57,7 +57,7 @@ function LoginForm() {
           eraseOnFailure={true}
           validator={isValidPassword}
         />
-        <Form.Label><small><b>PASSWORD</b></small></Form.Label>
+        <Form.Label><small><b>MOT DE PASSE</b></small></Form.Label>
         <span className="underline" />
         <div className="highlight" />
       </Form.Group>
@@ -65,7 +65,7 @@ function LoginForm() {
       <AutoForm.Submit
         variant="secondary"
         className="d-block px-5 my-2 mx-auto"
-      >Login</AutoForm.Submit>
+      >Connexion</AutoForm.Submit>
     </>
   );
 
@@ -95,7 +95,7 @@ const Login = Unauthenticated(() => {
             <hr />
 
             <Link to="/restore" className="d-block text-center text-light">
-              Forgot your password?
+              Oublié votre mot de passe?
             </Link>
           </AutoForm>
 

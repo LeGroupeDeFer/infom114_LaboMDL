@@ -1,12 +1,18 @@
 import React from 'react';
 import { Accordion, Card, Container, Button } from 'react-bootstrap';
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+
 
 export default function About(props) {
   return (
     <Container className="py-5">
-      <h4 className="text-center"> Unanimity en chiffres</h4>
+
+      { /* Title */ }
+      <h1 className="text-center text-dark my-5"><b>Unanimity en chiffres</b></h1>
       <hr />
-      <Card className="mb-4">
+
+      { /* Numbers */ }
+      <Card className="mb-5">
         <Card.Body>
           <div className="text-center">
             <p>
@@ -16,14 +22,14 @@ export default function About(props) {
           </div>
         </Card.Body>
       </Card>
-      <br />
-      <br />
-      <img
-        id="faq-img"
-        src="https://axanar.com/wp-content/uploads/2016/01/faq-icon-1024x361.png"
-        className="mx-auto d-block"
-      ></img>
-      <hr />
+
+      { /* FAQ */ }
+      <h2 className="text-center text-dark faq-header mb-5">
+        <Icon icon="lightbulb" className="mr-4"/>
+        <span>FAQ</span>
+        <hr />
+      </h2>
+
       <Accordion>
         <Card>
           <Card.Header>
@@ -32,7 +38,15 @@ export default function About(props) {
             </Accordion.Toggle>
           </Card.Header>
           <Accordion.Collapse eventKey="0">
-            <Card.Body>A rien wallah</Card.Body>
+            <Card.Body>Unanimity est une plateforme participative intégrée à l'UNamur. Son but est de rassembler 
+            les membres de l'université qu'ils soient membres du personnel éducatif ou étudiant afin de:
+            <ul className="list-group mt-3">
+                <li className="list-group-item"><b>Mieux informer</b></li>
+                <li className="list-group-item"><b>Débattre</b></li>       
+                <li className="list-group-item"><b>Soumettre des idées</b></li>
+                <li className="list-group-item"><b>Avoir un impact sur les décisions de l’Université au niveau étudiant, facultaire et institutionnel</b></li>
+            </ul>
+            </Card.Body>
           </Accordion.Collapse>
         </Card>
         <Card>
@@ -56,7 +70,7 @@ export default function About(props) {
                 rejetter.
               </p>
               <p>
-                <b>- Les sondages</b> : Blablabla..
+                <b>- Les sondages</b> : Similaires aux idées mais permettent aux membres de voter différentes propositions 
               </p>
             </Card.Body>
           </Accordion.Collapse>
@@ -64,10 +78,26 @@ export default function About(props) {
         <Card>
           <Card.Header>
             <Accordion.Toggle as={Button} variant="link" eventKey="2">
-              Comment fonctionne l'algorithme de rang des publications ?
+              Mon idée/vote peut-elle/il aboutir à quelque chose de concret ?
             </Accordion.Toggle>
           </Card.Header>
           <Accordion.Collapse eventKey="2">
+            <Card.Body>
+              <p><b>Oui !</b> Certains modérateurs ont pour tâche de juger les idées 
+              et permettre un suivi sur les plus pertinents. Ce suivi pourra alors
+              aboutir à une acceptation ou un rejet. Dans le premier cas, de réelles démarches seront mises en places 
+              afin d'arriver à un aboutissement concret sur le campus universitaire.
+              </p>
+            </Card.Body>
+          </Accordion.Collapse>
+        </Card>
+        <Card>
+          <Card.Header>
+            <Accordion.Toggle as={Button} variant="link" eventKey="3">
+              Comment fonctionne l'algorithme de rang des publications ?
+            </Accordion.Toggle>
+          </Card.Header>
+          <Accordion.Collapse eventKey="3">
             <Card.Body>
               <p>C'est magique</p>
             </Card.Body>

@@ -15,10 +15,9 @@ function RestoreForm() {
   if (success)
     return (
       <>
-        <h4 className="text-secondary"><b>Almost done...</b></h4>
+        <h4 className="text-secondary"><b>Presque...</b></h4>
         <p><b>
-          Please click on the link that has just been sent to your mailbox to
-          proceed.
+          Veuillez cliquer sur le lien qui vient d'être envoyé à votre boîte email pour continuer.
         </b></p>
       </>
     );
@@ -28,7 +27,7 @@ function RestoreForm() {
       <>
         <h4 className="text-danger"><b>Failure</b></h4>
         <p><b>
-          The code you provided is either invalid or has expired.
+          Le code fourni est invalide ou a expiré.
         </b></p>
       </>
     );
@@ -53,7 +52,7 @@ function RestoreForm() {
         variant="secondary"
         className="d-block px-5 my-2 mx-auto"
       >
-        Submit
+        Soumettre
       </AutoForm.Submit>
     </AutoForm>
   );
@@ -63,7 +62,7 @@ function RestoreForm() {
 
 const Restore = Unauthenticated(() => {
   return (
-    <Dialog icon="user-lock" title="Account restoration">
+    <Dialog icon="user-lock" title="Récupération de compte">
       <RestoreForm />
     </Dialog>
   );

@@ -18,6 +18,7 @@ import AddForm from '../components/Admin/AddForm';
 import User from '../components/Admin/User';
 import FlaggedPost from '../components/Admin/FlaggedPost';
 import { Authenticated } from '../components/';
+import { Loading } from '../components'
 
 
 import {
@@ -138,16 +139,35 @@ const MenuBar = ({ currentMenu, onClick, menuList }) => {
 };
 
 const UsersPage = () => {
-  const [{ users, roles }, setState] = useState({ users: [], roles: [] });
-
+  const [users, setUsers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [notification, setNotification] = useState('');
+  const [getPromise, setGetPromise] = useState(null);
 
   const Notification = () =>
     notification === '' ? <></> : <Toast text={notification} />;
 
+  // Get the users
   useEffect(() => {
-    Promise.all([api.users(), api.roles()])
-      .then(([users, roles]) => setState({ users, roles }));
+    if (!getPromise) return;
+    let isRendering = false;
+    // On peut faire des changements d'état ici.
+
+    getPromise
+      .then((data) => {
+        if (!isRendering) {
+          setUsers(data);
+          setIsLoading(false);
+        }
+      })
+      .finally(() => setGetPromise(null));
+
+    // A partir d'ici on ne peut plus.
+    return () => (isRendering = true);
+  }, [getPromise]);
+
+  useEffect(() => {
+    setGetPromise(api.users());
   }, []);
 
   return (
@@ -157,30 +177,30 @@ const UsersPage = () => {
         icon={<Icon icon="users" />}
         description="Gestion des utilisateurs"
       />
-      {users.length ? (
+      { isLoading 
+      ? <Loading />
+      : <>{users.length ? (
         users.map((user) => (
           <Row key={user.id} className="mb-3 user-edit-row">
             <Col>
               <User
                 user={user}
-                roles={roles}
                 setNotification={setNotification}
               />
             </Col>
           </Row>
         )
       )) : (
-        <b>Vous n'avez pas le droit d'accéder à cette page</b>
-      )}
+        <b>Aucun utilisateur</b>
+      )}</>
+      }   
     </>
   );
 };
 
 const StatisticsPage = () => {
 
-  const {user} = useAuth();
-
-  const colors = ['#A0C55F', '#0D6759', '#1B4079', '#FC440F'];
+  const colors = ['#A6C48A', '#3AAED8', '#798478', '#48416D'];
   const [graphData, setGraphData] = useState({
     connect: [],
     active: [],
@@ -407,10 +427,12 @@ const StatisticsPage = () => {
 
 const FlaggedPage = () => {
   const [flaggedPosts, setFlaggedPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchFlaggedPosts = async () => {
     let posts = await api.posts.flagged();
     setFlaggedPosts(posts);
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -424,11 +446,12 @@ const FlaggedPage = () => {
         description="Gestion des publications signalées"
       />
       <Container>
-        {flaggedPosts.length !== 0 ? (
-          flaggedPosts.map((flaggedPost) => {
+      { isLoading
+        ? <Loading />
+        : <>{flaggedPosts.length !== 0 ? (
+          flaggedPosts.map((flaggedPost, i) => {
             return (
-              <>
-                <Row>
+                <Row className="mb-3" key={i}>
                   <Col>
                     <FlaggedPost
                       post={flaggedPost.post}
@@ -437,13 +460,12 @@ const FlaggedPage = () => {
                     />
                   </Col>
                 </Row>
-                <br />
-              </>
             );
           })
         ) : (
-          <b>Pas de publications signalées</b>
-        )}
+          <b>Aucunes publications signalées</b>
+        )}</>
+      }      
       </Container>
     </>
   );
@@ -452,6 +474,7 @@ const FlaggedPage = () => {
 const RolesPage = () => {
   const [{ roles, capabilities }, setState] = useState({ roles: [], capabilities: [] });
   const [notification, setNotification] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   const Notification = () =>
     notification === '' ? <></> : <Toast text={notification} />;
@@ -459,6 +482,7 @@ const RolesPage = () => {
   useEffect(() => {
     Promise.all([api.roles(), api.capabilities()])
       .then(([roles, capabilities]) => setState({ roles, capabilities }))
+    setIsLoading(false);
   }, []);
 
   //Gets all information about a role
@@ -534,7 +558,9 @@ const RolesPage = () => {
 
       <AddForm add={addRole} />
       <br />
-      {roles.length ? (
+      { isLoading
+        ? <Loading />
+        : <>{roles.length ? (
         roles.map((role, i) => {
           return (
             <Row key={role.id} className="mb-3 role-edit-row">
@@ -553,8 +579,9 @@ const RolesPage = () => {
           );
         })
       ) : (
-        <b>Vous n'avez pas le droit d'accéder à cette page</b>
-      )}
+        <b>Aucun role</b>
+      )}</>
+      }
     </>
   );
 };
@@ -565,6 +592,7 @@ const TagsPage = () => {
   const [getPromise, setGetPromise] = useState(null);
   const [delPromise, setDelPromise] = useState(null);
   const [notification, setNotification] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   //value of form input
   const [input, setInput] = useState('');
 
@@ -589,6 +617,7 @@ const TagsPage = () => {
             setInput('');
           } else {
             setTags(data.tags);
+            setIsLoading(false);
           }
       })
       .finally(() => setGetPromise(null));
@@ -661,10 +690,11 @@ const TagsPage = () => {
     <>
       <Notification />
       <Title icon={<Icon icon="tags" />} description="Gestion des tags" />
-
-      <AddForm add={addTag} />
+      { isLoading
+      ? <Loading />
+      : <><AddForm add={addTag} />
       <br />
-      {tags.length ? (
+      { tags.length ? (
         tags.map((tag, i) => {
           return (
             <Row key={tag.id} className="mb-3 tag-edit-row">
@@ -681,8 +711,10 @@ const TagsPage = () => {
           );
         })
       ) : (
-        <b>Vous n'avez pas le droit d'accéder à cette page</b>
-      )}
+        <b>Aucun tag</b>
+      )}  </>     
+      }
+      
     </>
   );
 };
