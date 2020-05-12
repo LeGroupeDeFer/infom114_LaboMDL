@@ -93,7 +93,7 @@ export function StreamProvider({ children }) {
         return promise;
       },
 
-      of(id, hard=false) {
+      of(id, hard= false) {
         const prefetch = !hard && this.value.filter((p) => Number(p.id) === Number(id));
         const promise = prefetch.length ? Promise.resolve(prefetch[0]) : api.posts.of(id);
         return this._updatePost(promise);
@@ -114,6 +114,7 @@ export function StreamProvider({ children }) {
         ]);
         return promise;
       },
+
       remove(post) {
         const promise = api.posts.delete(post.id);
         setState((s) => ({ ...s, pending: true }));
@@ -132,6 +133,7 @@ export function StreamProvider({ children }) {
         ]);
         return promise;
       },
+
       comment(post, comment) {
         return this._updatePost(api.posts.comment(post.id, comment));
       },

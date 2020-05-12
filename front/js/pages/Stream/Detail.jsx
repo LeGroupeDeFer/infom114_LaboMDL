@@ -8,20 +8,18 @@ import { Loading } from 'unanimity/components';
 import {head} from "../../lib";
 
 
-let i = 0;
 function Detail(props) {
 
   const id = Number(useParams().id);
   const stream = useStream();
   const [post, setPost] = useState(null);
 
-  useEffect(() => { stream.posts.of(id); }, []);
+  useEffect(() => { stream.posts.of(id, true); }, []);
   useEffect(() => {
     const target = head(stream.posts.value.filter(p => p.id === id));
     setPost(target);
   }, [stream.posts.value])
 
-  console.log(post);
   if (!post)
     return <Loading />;
 

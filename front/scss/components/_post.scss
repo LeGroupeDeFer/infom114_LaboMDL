@@ -8,9 +8,15 @@
 
 /*  Posts */
 
-.post-content p {
-    // Pas fort supporté (https://caniuse.com/#search=overflow-wrap%3A%20anywhere)
-    overflow-wrap: anywhere;
+.post-content {
+    p {
+        // Pas fort supporté (https://caniuse.com/#search=overflow-wrap%3A%20anywhere)
+        overflow-wrap: anywhere;
+    }
+
+    .card {
+        border: none;
+    }
 }
 
 .post-preview {

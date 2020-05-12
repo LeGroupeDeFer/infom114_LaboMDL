@@ -5,14 +5,10 @@ import {
   Row,
   Col,
   Badge,
-  Dropdown,
   DropdownButton,
   Card,
-  OverlayTrigger,
-  Tooltip,
-  Alert,
 } from 'react-bootstrap';
-import { Switch, Route, useRouteMatch } from 'react-router-dom';
+import { useRouteMatch } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import FacebookSquare from '../../icons/facebook-square.svg';
 import { FacebookShareButton } from 'react-share';
@@ -20,157 +16,21 @@ import Moment from '../Moment';
 import clsx from 'clsx';
 
 import { useAuth } from 'unanimity/context';
-import { May } from '../Auth';
 import { UpVote, DownVote, Vote, VoteSection } from './Vote';
 import {
   kindOf,
-  empty,
-  last,
   preview,
   previewLength,
-  WATCH_EVENT,
 } from 'unanimity/lib';
-import { Circle, Flexbox } from '../';
+import { Flexbox } from '../';
 
 import Comment from './Comment';
 import Poll from './Poll';
 import DeleteModal from './DeleteModal';
 import ReportModal from './ReportModal';
-import { trace } from '../../lib';
+import { WatchStatus, FlagPost, LockPost, HidePost, DeletePost, LockSymbol, WatchPost, WatchSymbol } from './Utils'
 import { Loading } from 'unanimity/components';
 
-/* ------------------------------ Post actions ----------------------------- */
-
-const HidePost = May('post:hide', ({ onClick, hidden }) => {
-  if (hidden)
-    return (
-      <Dropdown.Item as="button" onClick={onClick}>
-        <Icon icon="eye" className="mr-2" />
-        <span>Rendre visible</span>
-      </Dropdown.Item>
-    );
-  return (
-    <Dropdown.Item as="button" onClick={onClick}>
-      <Icon icon="eye-slash" className="mr-2" />
-      <span>Masquer</span>
-    </Dropdown.Item>
-  );
-});
-
-const LockPost = May('post:lock', ({ onClick, post }) => {
-  if (post.locked)
-    return (
-      <Dropdown.Item as="button" onClick={onClick}>
-        <Icon icon="unlock" className="mr-2" />
-        <span>Dévérouiller</span>
-      </Dropdown.Item>
-    );
-
-  return (
-    <Dropdown.Item as="button" onClick={onClick}>
-      <Icon icon="lock" className="mr-2" />
-      <span>Vérouiller</span>
-    </Dropdown.Item>
-  );
-});
-
-const WatchPost = May('post:watch', ({ post }) => {
-  const history = useHistory();
-  return (
-    <Dropdown.Item as="button" onClick={() => history.push(`amend/${post.id}`)}>
-      <Icon icon="dove" className="mr-2" />
-      <span>Suivre</span>
-    </Dropdown.Item>
-  );
-});
-
-const FlagPost = ({ post, userFlag, onFlag, onFlagCancel }) => {
-  if (userFlag) {
-    return (
-      <Dropdown.Item as="button" onClick={() => onFlagCancel(post)}>
-        <Icon icon="flag" className="mr-2" />
-        <span>Annuler signalement</span>
-      </Dropdown.Item>
-    );
-  }
-  return (
-    <Dropdown.Item as="button" onClick={() => onFlag(post)}>
-      <Icon icon="flag" className="mr-2" />
-      <span>Signaler</span>
-    </Dropdown.Item>
-  );
-};
-
-const DeletePost = ({ owner, onClick }) =>
-  owner ? (
-    <Dropdown.Item as="button" onClick={() => onClick()}>
-      <Icon icon="trash-alt" className="mr-2" />
-      <span>Supprimer</span>
-    </Dropdown.Item>
-  ) : (
-    <></>
-  );
-
-/* --------------------------------- Utils --------------------------------- */
-
-const WatchSymbol = ({ className }) => (
-  <OverlayTrigger
-    placement="left"
-    overlay={
-      <Tooltip id="watched">
-        Une attention spéciale est portée à cette publication
-      </Tooltip>
-    }
-  >
-    <Circle
-      width="2em"
-      className={clsx('text-light', 'watch-symbol', className)}
-    >
-      <Icon icon="dove" />
-    </Circle>
-  </OverlayTrigger>
-);
-
-const LockSymbol = ({ className }) => (
-  <OverlayTrigger
-    placement="auto"
-    overlay={<Tooltip>Cette publication est vérouillée</Tooltip>}
-  >
-    <Circle
-      width="2em"
-      className={clsx('text-light', 'lock-symbol', 'ml-2', className)}
-    >
-      <Icon icon="lock" />
-    </Circle>
-  </OverlayTrigger>
-);
-
-export function WatchStatus({ events, isPreview }) {
-  if (empty(events)) return <></>;
-
-  const lastEvent = last(events.sort((a, b) => a.event - b.event));
-  const label = WATCH_EVENT[lastEvent.event].doneLabel;
-  const icon = WATCH_EVENT[lastEvent.event].icon;
-  if (isPreview)
-    return (
-      <Container className="watch-event-preview">
-        <Row>
-          <Col xs={8} md={10} className="py-2 px-3">
-            <p className="watch-event-content">
-              <Icon icon={icon} className="mr-3" />
-              {preview(lastEvent.comment, 80)}
-            </p>
-          </Col>
-          <Col xs={4} md={2} className="bg-secondary py-2 px-3 text-center">
-            <Moment date={lastEvent.time} relative capitalized />
-          </Col>
-        </Row>
-      </Container>
-    );
-
-  // TODO
-  return <></>;
-}
 
 export function PostContent({ isPreview, post, onComment, onPollVote }) {
   if (isPreview)
@@ -188,11 +48,11 @@ export function PostContent({ isPreview, post, onComment, onPollVote }) {
       <p className="mb-4">{post.content}</p>
       {post.kind === 'poll' && (
         <>
-          {post.answers != undefined ? (
+          {post.pollInfo != undefined ? (
             <Poll
               postId={post.id}
-              answers={post.answers}
-              userAnswer={post.userAnswer}
+              answers={post.pollInfo.answers}
+              userAnswer={post.pollInfo.userAnswer}
               onPollVote={onPollVote}
             />
           ) : (
@@ -202,6 +62,7 @@ export function PostContent({ isPreview, post, onComment, onPollVote }) {
           )}
         </>
       )}
+      <WatchStatus events={post.watchEvents} />
     </div>
   );
 }
@@ -341,10 +202,7 @@ export function Post({
 
                     <LockPost onClick={() => onLock(post)} post={post} />
 
-                    <WatchPost
-                      post={post}
-                      onClick={(event) => onWatch(post, event)}
-                    />
+                    <WatchPost post={post} />
                   </DropdownButton>
                 )}
               </Flexbox>
@@ -413,6 +271,7 @@ export function Post({
                 </a>
               </FacebookShareButton>
             </Flexbox>
+
             {!isPreview && (
               <div className="mt-2">
                 <Comment.Editor
@@ -435,7 +294,6 @@ export function Post({
             )}
           </div>
         </div>
-        <WatchStatus isPreview={isPreview} events={post.watchEvents} />
       </Card.Body>
     </Card>
   );

@@ -30,7 +30,7 @@ function Poll({ postId, answers, userAnswer, onPollVote }) {
 
   return (
     <>
-      <Card onClick={(e) => e.preventDefault} className="poll mb-2">
+      <Card onClick={(e) => e.preventDefault} className="poll my-2 w-100">
         <Card.Header>
           <span className="ml-3">
             {toltalVote} {toltalVote > 1 ? ' votes' : ' vote'}
