@@ -67,7 +67,6 @@ export function StreamProvider({ children }) {
   const [state, setState] = useState({
     pending: false,
     posts: {
-      focus: null,
       value: [],
       _updatePost(promise) {
         setState((s) => ({ ...s, pending: true }));
@@ -94,10 +93,9 @@ export function StreamProvider({ children }) {
         return promise;
       },
 
-      of(id) {
-        const prefetch = this.value.filter((p) => Number(p.id) === Number(id));
+      of(id, hard=false) {
+        const prefetch = !hard && this.value.filter((p) => Number(p.id) === Number(id));
         const promise = prefetch.length ? Promise.resolve(prefetch[0]) : api.posts.of(id);
-        promise.then(focus => setState(s => ({ ...s, focus })) || focus);
         return this._updatePost(promise);
       },
 
@@ -168,8 +166,23 @@ export function StreamProvider({ children }) {
 
       pollVote(postId, answerId) {
         /* Fixme, only update the necessary pollVote */
-        return api.posts.pollVote(postId, answerId)
-          .then(() => this.of(postId));
+        const promise = api.posts.pollVote(postId, answerId);
+        pushEffect([
+          promise,
+          ({ answers, userAnswer }) => setState(s => ({
+            ...s,
+            posts: {
+              ...s.posts,
+              value: s.posts.value.map(p => {
+                if (p.id === postId)
+                  return { ...p, answers, userAnswer };
+                return p;
+              })
+            }
+          })),
+          error => setState(s => ({ ...s, error }))
+        ]);
+        return promise;
       }
     },
 

@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import { useStream } from 'unanimity/context';
 import { Post } from 'unanimity/components';
 import { Loading } from 'unanimity/components';
+import {head} from "../../lib";
 
 
 let i = 0;
@@ -14,9 +15,13 @@ function Detail(props) {
   const stream = useStream();
   const [post, setPost] = useState(null);
 
-  useEffect(() => { stream.posts.of(id) }, []);
-  useEffect(() => setPost(stream.focus), [stream.focus])
+  useEffect(() => { stream.posts.of(id); }, []);
+  useEffect(() => {
+    const target = head(stream.posts.value.filter(p => p.id === id));
+    setPost(target);
+  }, [stream.posts.value])
 
+  console.log(post);
   if (!post)
     return <Loading />;
 
