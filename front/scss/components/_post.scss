@@ -1,5 +1,5 @@
 @use '../themes'as *;
-@use '../animation' as *;
+@use '../animation'as *;
 
 
 .title-part2 {
@@ -131,17 +131,14 @@
         }
 
         &.post-watched {
-            .post-header {
-            }
+            .post-header {}
 
-            .post-subtitle, .post-author {
-            }
+            .post-subtitle,
+            .post-author {}
 
-            .post-author {
-            }
+            .post-author {}
 
-            .post-time {
-            }
+            .post-time {}
         }
     }
 
@@ -180,7 +177,8 @@
         }
     }
 
-    .watch-symbol, .lock-symbol {
+    .watch-symbol,
+    .lock-symbol {
         background: theme-color("secondary") !important;
     }
 
@@ -208,7 +206,7 @@
 }
 
 
-.watch-event {
-
+#poll-loader {
+    top: 30%;
+    position: relative;
 }
-

@@ -37,6 +37,8 @@ import Poll from './Poll';
 import DeleteModal from './DeleteModal';
 import ReportModal from './ReportModal';
 import {trace} from "../../lib";
+import { Loading } from 'unanimity/components';
+
 
 /* ------------------------------ Post actions ----------------------------- */
 
@@ -186,16 +188,17 @@ export function PostContent({ isPreview, post, onComment, onPollVote }) {
   return (
     <div className="post-content">
       <p className="mb-4">{post.content}</p>
-      {post.kind === 'poll' && (
-        <>
-          <Poll
-            postId={post.id}
-            answers={post.answers}
-            userAnswer={post.userAnswer}
-            onPollVote={onPollVote}
-          />
-          <br />
-        </>
+      {post.kind === 'poll' && post.answers != undefined ? (
+        <Poll
+          postId={post.id}
+          answers={post.answers}
+          userAnswer={post.userAnswer}
+          onPollVote={onPollVote}
+        />
+      ) : (
+        <div id="poll-loader">
+          <Loading />
+        </div>
       )}
     </div>
   );
@@ -215,6 +218,7 @@ export function Post({
   onLock,
   onWatch,
   onComment,
+  onReply,
   isPreview,
   onPreview,
   className,
@@ -228,7 +232,11 @@ export function Post({
   const [editors, setEditors] = useState({});
 
   function addEditor(commentId) {
-    if (editors.hasOwnProperty(commentId)) return;
+    if (editors.hasOwnProperty(commentId)) {
+      toggleEditor(commentId);
+      return;
+    }
+
     let tmp = { ...editors };
     tmp[commentId] = { show: true };
     setEditors(tmp);
@@ -417,6 +425,7 @@ export function Post({
                       editors={editors}
                       addEditor={addEditor}
                       toggleEditor={toggleEditor}
+                      onReply={onReply}
                     />
                   ))}
                 </div>

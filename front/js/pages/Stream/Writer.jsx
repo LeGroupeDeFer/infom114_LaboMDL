@@ -111,7 +111,7 @@ function PollOptions() {
         </a>
       )}
 
-      <Form.Check
+      {/* <Form.Check
         type="checkbox"
         id={'checkbox-trace'}
         label={
@@ -132,7 +132,7 @@ function PollOptions() {
           </>
         }
         className="mt-1"
-      />
+      /> */}
     </Form.Group>
   );
 }

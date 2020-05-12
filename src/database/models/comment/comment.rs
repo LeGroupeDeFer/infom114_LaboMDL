@@ -117,7 +117,7 @@ impl CommentEntity {
     ) -> Consequence<Vec<Self>> {
         let mut query = table.into_boxed();
         query = query.filter(dsl::deleted_at.is_null());
-        query = query.filter(dsl::post_id.eq(post_id));
+        query = query.filter(dsl::post_id.eq(post_id).and(dsl::parent_id.is_null()));
 
         if !can_see_hidden {
             query = query.filter(dsl::hidden_at.is_null());
@@ -132,11 +132,11 @@ impl CommentEntity {
         hidden: bool,
     ) -> Consequence<Vec<Self>> {
         let mut query = table.into_boxed();
-        query = query.filter(dsl::deleted_at.is_not_null());
+        query = query.filter(dsl::deleted_at.is_null());
         query = query.filter(dsl::parent_id.eq(comment_id));
 
         if !hidden {
-            query = query.filter(dsl::hidden_at.is_not_null());
+            query = query.filter(dsl::hidden_at.is_null());
         }
 
         Ok(query.load(conn)?)
@@ -276,7 +276,7 @@ impl CommentEntity {
 
         // filter out replies: keep only entries whoses parent_id is null
         query = query.filter(dsl::parent_id.is_null());
-        
+
         // tquery = tquery.filter(dsl::parent_id.is_null());
         // filter out deleted
         query = query.filter(dsl::deleted_at.is_null());
@@ -312,5 +312,4 @@ impl CommentEntity {
 
         Ok(results[from..to].to_vec())
     }
-
 }
