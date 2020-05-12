@@ -1,0 +1,32 @@
+@use '../themes' as *;
+
+.amend-content {
+  padding-top: 3rem;
+}
+
+.amend-event {
+  // Choice
+  &:not(.active) {
+    background-color: transparent;
+    transition: .1s ease-out;
+    &:hover {
+      transition: .1s ease-out;
+      background: theme-color("primary");
+      color: white;
+    }
+  }
+
+  // Done
+  &.amend-done {
+
+  }
+
+  // Locked
+  &.amend-locked {
+    cursor: not-allowed;
+    opacity: .6;
+  }
+
+}
+
+

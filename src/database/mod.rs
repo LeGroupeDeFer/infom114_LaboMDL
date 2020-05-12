@@ -17,6 +17,7 @@ use rocket_contrib::databases::diesel;
 use serde::export::TryFrom;
 use std::collections::HashMap;
 
+
 // --------------------- DB OBJECT --------------------------------------------
 
 #[database("mariadb_pool")]
@@ -98,6 +99,10 @@ pub enum SortOrder {
     LowScore,
     HighRank,
     LowRank,
+}
+
+impl SortOrder {
+    // Returns a SortOrder where equivalents are, themselves, sorted on a secondary SortOrder
 }
 
 impl TryFrom<&str> for SortOrder {

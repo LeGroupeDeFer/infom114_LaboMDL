@@ -5,13 +5,13 @@ export default function DeleteModal({ post, show, onHide, onDelete }) {
   return (
     <Modal className="modal-delete" show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
-        <Modal.Title>Suprimer le post</Modal.Title>
+        <Modal.Title>Suprimer la publication</Modal.Title>
       </Modal.Header>
 
       <Modal.Body>
         <br />
         <p>
-          Voulez-vous vraiment supprimer votre post ? Cette action est
+          Voulez-vous vraiment supprimer votre publication ? Cette action est
           irréversible.
         </p>
         <div className="float-right">

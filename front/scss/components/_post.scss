@@ -1,11 +1,10 @@
 @use '../themes'as *;
+@use '../animation' as *;
 
 
 .title-part2 {
     font-size: 0.95rem;
 }
-
-
 
 /*  Posts */
 
@@ -20,24 +19,28 @@
 .vote {
     padding: 0 0 0 0;
     border: none;
-    background-color: transparent !important;
+    background-color: transparent;
 
     &:disabled {
         cursor: not-allowed;
+        background-color: transparent !important;
     }
 
     &.up:hover,
     &.up:focus,
     &.up.active {
         color: theme-color("primary") !important;
-        ;
+        background-color: #e8e8e8 !important;
+        box-shadow: none !important;
+
     }
 
     &.down:hover,
     &.down:focus,
     &.down.active {
         color: theme-color("danger") !important;
-        ;
+        background-color: #e8e8e8 !important;
+        box-shadow: none !important;
     }
 }
 
@@ -79,23 +82,9 @@
     color: gray("800");
 }
 
-@keyframes post-appearance {
-    from {
-        transform: translate3d(-3em, 0, 0);
-        visibility: visible;
-        opacity: 0;
-    }
-
-    to {
-        transform: none;
-        visibility: visible;
-        opacity: 1;
-    }
-}
-
 .post-row {
     visibility: hidden;
-    animation: post-appearance .5s ease-out;
+    animation: fade-appearance .5s ease-out;
     animation-fill-mode: forwards;
 }
 
@@ -113,7 +102,8 @@
 
     &.post-preview {
 
-        box-shadow: rgba(0, 0, 0, 0.05) 0 0 10px;
+        // Slows down performance by quite a bit
+        // box-shadow: rgba(0, 0, 0, 0.05) 0 0 10px;
         transition: .1s ease-out;
 
         &:hover {
@@ -130,7 +120,15 @@
 
         &.post-watched {
             .post-header {
-                border-color: theme-color("secondary");
+            }
+
+            .post-subtitle, .post-author {
+            }
+
+            .post-author {
+            }
+
+            .post-time {
             }
         }
     }
@@ -144,7 +142,8 @@
             padding: 0 0 0 0;
         }
 
-        .dropdown-toggle:after {
+        .dropdown-toggle:after,
+        .dropdown-toggle:before {
             content: none
         }
 
@@ -155,11 +154,7 @@
     }
 
     .card-header {
-        padding: 0.7rem 1.25rem 0.4rem 1.25rem;
-    }
-
-    &.post-detail {
-        margin-top: 5rem;
+        padding: 0.7rem 1.25rem;
     }
 
     &:not(.post-preview, .post-detail) {
@@ -172,6 +167,19 @@
             border: none;
         }
     }
+
+    .watch-symbol, .lock-symbol {
+        background: theme-color("secondary") !important;
+    }
+
+}
+
+.lock-symbol svg {
+    padding-left: 2px; // FIXME - The lock is not centered
+}
+
+.fa-comment-alt {
+    vertical-align: -0.3em;
 }
 
 .tag {
@@ -186,3 +194,9 @@
 .alert {
     padding: 0.75rem 1rem;
 }
+
+
+.watch-event {
+
+}
+

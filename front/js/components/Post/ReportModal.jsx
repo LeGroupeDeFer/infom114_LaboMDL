@@ -11,7 +11,7 @@ export default function ReportModal({ post, show, onHide, onFlag }) {
   return (
     <Modal className="modal-report" show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
-        <Modal.Title>Signaler le post</Modal.Title>
+        <Modal.Title>Signaler la publication</Modal.Title>
       </Modal.Header>
 
       <Modal.Body>

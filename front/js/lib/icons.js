@@ -19,7 +19,9 @@ import { faSignInAlt } from '@fortawesome/free-solid-svg-icons/faSignInAlt';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons/faArrowLeft';
 import { faArrowRight } from '@fortawesome/free-solid-svg-icons/faArrowRight';
 import { faEyeSlash } from '@fortawesome/free-solid-svg-icons/faEyeSlash';
+import { faEye } from '@fortawesome/free-solid-svg-icons/faEye';
 import { faLock } from '@fortawesome/free-solid-svg-icons/faLock';
+import { faUnlock } from '@fortawesome/free-solid-svg-icons/faUnlock';
 import { faEllipsisH } from '@fortawesome/free-solid-svg-icons/faEllipsisH';
 import { faCommentAlt } from '@fortawesome/free-solid-svg-icons/faCommentAlt';
 import { faBalanceScale } from '@fortawesome/free-solid-svg-icons/faBalanceScale';
@@ -40,6 +42,10 @@ import { faBell } from '@fortawesome/free-solid-svg-icons/faBell';
 import { faUserShield } from '@fortawesome/free-solid-svg-icons/faUserShield';
 import { faGlobeEurope } from '@fortawesome/free-solid-svg-icons/faGlobeEurope';
 import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons/faQuestionCircle';
+import { faEnvelopeOpen } from '@fortawesome/free-solid-svg-icons/faEnvelopeOpen';
+import { faStopCircle } from '@fortawesome/free-solid-svg-icons/faStopCircle';
+import { faTasks } from '@fortawesome/free-solid-svg-icons/faTasks';
+import { faGenderless } from '@fortawesome/free-solid-svg-icons/faGenderless';
 
 library.add(
   // fab
@@ -57,26 +63,32 @@ library.add(
   faCommentAlt,
   faDoorOpen,
   faDove,
-  faFlag,
+  faEnvelopeOpen,
   faEdit,
   faEllipsisH,
   faEyeSlash,
+  faEye,
   faExclamationCircle,
+  faFlag,
+  faGenderless,
   faGlobeEurope,
   faInfo,
   faInfoCircle,
   faLightbulb,
   faLink,
   faLock,
+  faUnlock,
   faMailBulk,
   faPen,
   faPenFancy,
   faPlusSquare,
   faSignInAlt,
   faSearch,
+  faStopCircle,
   faStream,
   faTag,
   faTags,
+  faTasks,
   faTimesCircle,
   faTrashAlt,
   faUser,

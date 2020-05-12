@@ -12,7 +12,7 @@ import {
   Tooltip,
   Alert,
 } from 'react-bootstrap';
-
+import { Switch, Route, useRouteMatch } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import FacebookSquare from '../../icons/facebook-square.svg';
 import { FacebookShareButton } from 'react-share';
@@ -29,42 +29,66 @@ import Comment from './Comment';
 import Poll from './Poll';
 import DeleteModal from './DeleteModal';
 import ReportModal from './ReportModal';
+import {kindOf} from "../../lib";
 
 /* ------------------------------ Post actions ----------------------------- */
 
-const HidePost = May('post:hide', ({ onClick }) => (
-  <Dropdown.Item as="button" onClick={onClick}>
-    <Icon icon="eye-slash" className="mr-2" />
-    <span>Masquer</span>
-  </Dropdown.Item>
-));
-
-const LockPost = May('post:lock', ({ onClick }) => (
-  <Dropdown.Item as="button" onClick={onClick}>
-    <Icon icon="lock" className="mr-2" />
-    <span>Vérouiller</span>
-  </Dropdown.Item>
-));
-
-const WatchPost = May('post:watch', ({ onClick }) => (
-  <Dropdown.Item as="button" onClick={onClick}>
-    <Icon icon="dove" className="mr-2" />
-    <span>Promouvoir</span>
-  </Dropdown.Item>
-));
-
-const FlagPost = ({ post, userFlag, onFlag, onFlagCancel }) => {
-  if (userFlag != null && !userFlag)
+const HidePost = May('post:hide', ({ onClick, hidden }) => {
+  if (hidden)
     return (
-      <Dropdown.Item as="button" onClick={() => onFlag(post)}>
-        <Icon icon="flag" className="mr-2" />
-        <span>Signaler</span>
+      <Dropdown.Item as="button" onClick={onClick}>
+        <Icon icon="eye" className="mr-2" />
+        <span>Rendre visible</span>
       </Dropdown.Item>
     );
   return (
-    <Dropdown.Item as="button" onClick={() => onFlagCancel(post)}>
+    <Dropdown.Item as="button" onClick={onClick}>
+      <Icon icon="eye-slash" className="mr-2" />
+      <span>Masquer</span>
+    </Dropdown.Item>
+  );
+});
+
+const LockPost = May('post:lock', ({ onClick, post }) => {
+  if (post.locked)
+    return (
+      <Dropdown.Item as="button" onClick={onClick}>
+        <Icon icon="unlock" className="mr-2" />
+        <span>Dévérouiller</span>
+      </Dropdown.Item>
+    );
+
+  return (
+    <Dropdown.Item as="button" onClick={onClick}>
+      <Icon icon="lock" className="mr-2" />
+      <span>Vérouiller</span>
+    </Dropdown.Item>
+  );
+});
+
+const WatchPost = May('post:watch', ({ post }) => {
+  const history = useHistory();
+  return (
+    <Dropdown.Item as="button" onClick={() => history.push(`amend/${post.id}`)}>
+      <Icon icon="dove" className="mr-2" />
+      <span>Suivre</span>
+    </Dropdown.Item>
+  );
+});
+
+const FlagPost = ({ post, userFlag, onFlag, onFlagCancel }) => {
+  if (userFlag) {
+    return (
+      <Dropdown.Item as="button" onClick={() => onFlagCancel(post)}>
+        <Icon icon="flag" className="mr-2" />
+        <span>Annuler signalement</span>
+      </Dropdown.Item>
+    );
+  }
+  return (
+    <Dropdown.Item as="button" onClick={() => onFlag(post)}>
       <Icon icon="flag" className="mr-2" />
-      <span>Annuler signalement</span>
+      <span>Signaler</span>
     </Dropdown.Item>
   );
 };
@@ -92,14 +116,28 @@ const WatchSymbol = ({ className }) => (
   >
     <Circle
       width="2em"
-      className={clsx('bg-secondary', 'text-light', 'watch-symbol', className)}
+      className={clsx('text-light', 'watch-symbol', className)}
     >
       <Icon icon="dove" />
     </Circle>
   </OverlayTrigger>
 );
 
-export function PostContent({ isPreview, post, onPollVote }) {
+const LockSymbol = ({ className }) => (
+  <OverlayTrigger
+    placement="auto"
+    overlay={<Tooltip>Cette publication est vérouillée</Tooltip>}
+  >
+    <Circle
+      width="2em"
+      className={clsx('text-light', 'lock-symbol', 'ml-2', className)}
+    >
+      <Icon icon="lock" />
+    </Circle>
+  </OverlayTrigger>
+);
+
+export function PostContent({ isPreview, post, onComment, onPollVote }) {
   if (isPreview)
     return (
       <div className="post-preview expand-preview">
@@ -149,6 +187,7 @@ export function Post({
 }) {
   const { user } = useAuth();
   const history = useHistory();
+  const { path } = useRouteMatch();
   const isLogged = !!user;
   const owner = isLogged && post.author.id === user.id;
 
@@ -191,52 +230,63 @@ export function Post({
           <Row>
             <Col className="expand-preview" sm={10}>
               <h5 className="ml-1 expand-preview">
-                <Badge className={`post-${kind} mr-1`}>{kind}</Badge>
+                <Badge className={`post-${kind} mr-1`}>{kindOf(kind).labelSingular}</Badge>
                 <span className="mr-1">{title}</span>
 
-                <span className="text-muted title-part2">
-                  <a href="#" className="text-dark mx-1">
-                    <span>{author.firstname}</span>
-                    <span className="ml-1">{author.lastname}</span>
+                <span className="text-muted post-subtitle">
+                  <a href="#" className="post-author text-dark mx-1">
+                    {author.firstname} {' ' + author.lastname}
                   </a>
                   <span>-</span>
-                  <Moment date={createdAt} />
+                  <Moment date={createdAt} className="post-moment"/>
                 </span>
               </h5>
             </Col>
 
             <Col className="expand-preview">
               <Flexbox reverse align={'center'} className="h-100">
-                {post.watched && <WatchSymbol className="px-2 ml-2 py-1" />}
+                {post.locked && <LockSymbol className="px-2 ml-3 py-1" />}
+                {post.watched && <WatchSymbol className="px-2 ml-3 py-1" />}
 
-                <DropdownButton
-                  alignRight
-                  id={`post-${id}-actions`}
-                  title={
-                    <div className="px-2 py-1">
-                      <Icon icon="ellipsis-h" />
-                    </div>
-                  }
-                  variant="link"
-                  className="more btn-link"
-                  onClick={() => {}}
-                  href="#"
-                >
-                  <HidePost onClick={() => onHide(post)} />
+                {isLogged && (
+                  <DropdownButton
+                    drop="left"
+                    id={`post-${id}-actions`}
+                    title={
+                      <div className="px-2 py-1">
+                        <Icon icon="ellipsis-h" />
+                      </div>
+                    }
+                    variant="link"
+                    className="more btn-link"
+                    onClick={() => {}}
+                    href="#"
+                  >
+                    <HidePost
+                      hidden={post.hidden}
+                      onClick={() => onHide(post)}
+                    />
 
-                  <FlagPost
-                    post={post}
-                    onFlag={onFlag}
-                    userFlag={userFlag}
-                    onFlagCancel={onFlagCancel}
-                  />
+                    <FlagPost
+                      post={post}
+                      onFlag={onFlag}
+                      userFlag={userFlag}
+                      onFlagCancel={onFlagCancel}
+                    />
 
-                  <DeletePost owner={owner} onClick={() => onDelete(post)} />
+                    <DeletePost
+                      owner={owner}
+                      onClick={() => onDelete(post, path)}
+                    />
 
-                  <LockPost onClick={() => onLock(post)} />
+                    <LockPost onClick={() => onLock(post)} post={post} />
 
-                  <WatchPost onClick={() => onWatch(post)} />
-                </DropdownButton>
+                    <WatchPost
+                      post={post}
+                      onClick={(event) => onWatch(post, event)}
+                    />
+                  </DropdownButton>
+                )}
               </Flexbox>
             </Col>
           </Row>
@@ -249,7 +299,8 @@ export function Post({
             onVote={(vote) => onVote(post, vote)}
             score={score}
             isLogged={isLogged}
-            vote={userVote}
+            isLocked={post.locked}
+            vote={post.userVote}
           />
 
           <div className="px-3 pb-3 pt-2 w-100">
@@ -259,7 +310,7 @@ export function Post({
                   href="#"
                   key={tag}
                   className="mr-2 tag"
-                  onClick={() => onTag(tag)}
+                  // onClick={() => onTag(tag)}
                 >
                   <Icon icon="tag" className="mr-1" />
                   <span>{tag}</span>
@@ -275,13 +326,6 @@ export function Post({
               onPollVote={onPollVote}
               className="expand-preview"
             />
-
-            <div className="mt-2">
-              <strong className="status">Accepté le 18 Avril 2020</strong>
-              <Alert variant="success">
-                Les vaccances seront prolongées de 2 semaines.
-              </Alert>
-            </div>
 
             <Flexbox reverse className="post-footer mt-2">
               <Link

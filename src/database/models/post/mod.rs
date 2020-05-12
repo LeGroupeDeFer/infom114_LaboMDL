@@ -5,6 +5,8 @@ pub mod posts;
 pub mod reports;
 pub mod tags;
 pub mod votes;
+pub mod kind;
+pub mod watch_events;
 
 pub use entity::*;
 pub use forms::*;
@@ -13,3 +15,5 @@ pub use posts::*;
 pub use reports::*;
 pub use tags::*;
 pub use votes::*;
+pub use kind::*;
+pub use watch_events::*;

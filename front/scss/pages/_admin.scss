@@ -2,10 +2,27 @@
 
 @use '../abstract/mixins' as *;
 
-//#menu-bar .active {
-//    background-color: $primary;
-//    border-color: $primary;
-//}
+@use '../animation' as *;
+
+.admin-header {
+  padding-top: 5rem;
+  // animation: fade-appearance .5s ease-out;
+}
+
+.tag-edit-row,
+.role-edit-row,
+.user-edit-row {
+  visibility: hidden;
+  animation: fade-appearance .5s ease-out;
+  animation-fill-mode: forwards;
+}
+
+@for $i from 1 through 10 {
+  .tag-edit-row:nth-of-type(#{$i}) {
+    animation-delay: #{$i * 0.1}s;
+  }
+}
+
 
 .button-group {
     margin-left: auto;
@@ -52,12 +69,12 @@
   }
 
   &:hover {
-    color: $primary !important;
+    color: theme-color("primary") !important;
   }
 
   &.active {
     outline: none !important;
-    color: $primary !important;
+    color: theme-color("primary") !important;
     border: none !important;
   }
 }
