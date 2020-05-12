@@ -2,6 +2,7 @@ use crate::database;
 use crate::database::models::prelude::*;
 use crate::database::schema::comments::dsl;
 use crate::database::tables::comments_table as table;
+use crate::database::SortOrder;
 use crate::lib::{Consequence, EntityError};
 
 use chrono::Utc;
@@ -12,12 +13,15 @@ use diesel::MysqlConnection;
 pub struct Comment {
     pub id: u32,
     pub post_id: u32,
+    pub parent_id: Option<u32>,
     pub content: String,
     pub author: User,
     pub created_at: String,
     pub updated_at: String,
+    // pub deleted_at: String,
     pub hidden: bool,
     pub locked: bool,
+    pub deleted: bool,
     pub votes: u64,
     pub score: i64,
     pub flags: u64,
@@ -83,6 +87,7 @@ impl From<CommentEntity> for Comment {
         Self {
             id: ce.id,
             post_id: ce.post_id,
+            parent_id: ce.parent_id,
             content: ce.content.to_string(),
             author: UserEntity::by_id(&conn, &ce.author_id)
                 .unwrap()
@@ -90,8 +95,10 @@ impl From<CommentEntity> for Comment {
                 .unwrap(),
             created_at: ce.created_at.to_string(),
             updated_at: ce.updated_at.to_string(),
+            // deleted_at: ce.deleted_at.to_string(),
             hidden: ce.is_hidden(),
             locked: ce.is_locked(),
+            deleted: ce.is_deleted(),
             votes: ce.votes,
             score: ce.score,
             flags: RelCommentReportEntity::count_by_comment_id(&conn, &ce.id).unwrap(),
@@ -109,11 +116,11 @@ impl CommentEntity {
         hidden: bool,
     ) -> Consequence<Vec<Self>> {
         let mut query = table.into_boxed();
-        query = query.filter(dsl::deleted_at.is_not_null());
+        query = query.filter(dsl::deleted_at.is_null());
         query = query.filter(dsl::post_id.eq(post_id));
 
         if !hidden {
-            query = query.filter(dsl::hidden_at.is_not_null());
+            query = query.filter(dsl::hidden_at.is_null());
         }
 
         Ok(query.load(conn)?)
@@ -193,7 +200,7 @@ impl CommentEntity {
             _ => Err(EntityError::InvalidAttribute)?,
         }
 
-        // get post score
+        // get comment score
         self.score = self.calculate_score(&conn)?;
         self.votes = self.count_votes(&conn)?;
 
@@ -239,4 +246,71 @@ impl CommentEntity {
         }
         Ok(())
     }
+
+    pub fn get_all(
+        conn: &MysqlConnection,
+        post_id: &u32,
+        can_see_hidden: bool,
+        sort: Option<SortOrder>,
+        limit: Option<u32>,
+        offset: Option<u32>,
+    ) -> Consequence<Vec<Self>> {
+        let mut query = table
+            .select((
+                dsl::id,
+                dsl::post_id,
+                dsl::parent_id,
+                dsl::content,
+                dsl::author_id,
+                dsl::created_at,
+                dsl::updated_at,
+                dsl::deleted_at,
+                dsl::hidden_at,
+                dsl::locked_at,
+                dsl::votes,
+                dsl::score,
+            ))
+            .into_boxed();
+
+        query = query.filter(dsl::post_id.eq(post_id));
+
+        // filter out replies: keep only entries whoses parent_id is null
+        query = query.filter(dsl::parent_id.is_null());
+        
+        // tquery = tquery.filter(dsl::parent_id.is_null());
+        // filter out deleted
+        query = query.filter(dsl::deleted_at.is_null());
+
+        // filter out hidden
+        if !can_see_hidden {
+            query = query.filter(dsl::hidden_at.is_null());
+        }
+
+        // order by
+        let s = sort.unwrap_or(SortOrder::HighRank);
+        query = match s {
+            SortOrder::New => query.order(dsl::created_at.desc()),
+            SortOrder::Old => query.order(dsl::created_at.asc()),
+            SortOrder::HighScore => query.order((dsl::score.desc(), dsl::created_at.desc())),
+            SortOrder::LowScore => query.order((dsl::score.asc(), dsl::created_at.desc())),
+            _ => query.order(dsl::created_at.asc()),
+            // SortOrder::HighRank => {
+            //     query.order((dsl::rank.desc(), dsl::score.desc(), dsl::created_at.desc()))
+            // },
+            // SortOrder::LowRank => {
+            //     query.order((dsl::rank.asc(), dsl::score.asc(), dsl::created_at.desc()))
+            // }
+        };
+
+        let results = query.load::<CommentEntity>(conn)?;
+
+        let from = offset.unwrap_or(0) as usize;
+        let to = results.len().min(match limit {
+            Some(l) => from + l as usize,
+            None => results.len(),
+        } as usize);
+
+        Ok(results[from..to].to_vec())
+    }
+
 }

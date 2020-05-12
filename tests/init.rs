@@ -259,6 +259,7 @@ pub fn get_post_entity(locked: bool, hidden: bool, deleted: bool) -> PostEntity 
 
 pub fn get_comment_entity(
     post_id: u32,
+    parent_id: Option<u32>,
     locked: bool,
     hidden: bool,
     deleted: bool,
@@ -268,7 +269,7 @@ pub fn get_comment_entity(
         post_id,
         content: lorem_ipsum(),
         author_id: get_admin().id,
-        parent_id: None,
+        parent_id,
     };
 
     let mut comment = CommentEntity::insert_new(&conn, &cm).unwrap();

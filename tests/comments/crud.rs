@@ -231,7 +231,7 @@ fn create_comment_from_comment_admin() {
     init::seed();
 
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
     let reply_content = "Test <<positive>>";
     let reply = send_comment_from_comment(&client, init::login_admin(), &comment.id, reply_content);
 
@@ -252,7 +252,7 @@ fn create_comment_from_comment_normal_user() {
     let auth_token_header = init::login(&user.email, &passwd);
 
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
     let reply_content = "Test <<positive>> too :D";
     let reply = send_comment_from_comment(&client, auth_token_header, &comment.id, reply_content);
 
@@ -271,7 +271,7 @@ fn create_duplicate_comments_from_comment() {
     init::seed();
 
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
     let token = init::login_admin();
     let reply_content = "There are 2 comments like this!!";
 
@@ -295,7 +295,7 @@ fn create_comment_from_comment_unauthenticated() {
     let conn = init::database_connection();
 
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
     let route = format!("/api/v1/comment/{}", comment.id);
 
     let reply_content = "Don't panic! Try your best!";
@@ -321,7 +321,7 @@ fn create_comment_from_comment_bad_json() {
     let conn = init::database_connection();
     let auth_header = init::login_admin();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
     let route = format!("/api/v1/comment/{}", comment.id);
 
     let reply_content = "Don't panic! Try your best!";
@@ -366,7 +366,7 @@ fn create_comment_from_locked_comment_normal_user() {
     let auth_token_header = init::login(&user.email, &passwd);
 
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, true, false, false);
+    let comment = init::get_comment_entity(post.id, None, true, false, false);
     let reply_content = "Don't panic! Try your best!";
 
     let response =
@@ -380,7 +380,7 @@ fn create_comment_from_locked_comment_admin() {
     init::seed();
 
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, true, false, false);
+    let comment = init::get_comment_entity(post.id, None, true, false, false);
     let reply_content = "Admin can still reply to a locked comment!";
     let reply = send_comment_from_comment(&client, init::login_admin(), &comment.id, reply_content);
 
@@ -399,7 +399,7 @@ fn create_comment_from_hidden_comment_normal_user() {
     let auth_token_header = init::login(&user.email, &passwd);
 
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, true, false);
+    let comment = init::get_comment_entity(post.id, None, false, true, false);
     let reply_content = "Normal user cannot reply to a hidden comment!";
 
     let response =
@@ -413,7 +413,7 @@ fn create_comment_from_hidden_comment_admin() {
     init::seed();
 
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, true, false);
+    let comment = init::get_comment_entity(post.id, None, false, true, false);
     let reply_content = "Admin can still reply to a hidden comment!";
 
     let reply = send_comment_from_comment(&client, init::login_admin(), &comment.id, reply_content);
@@ -430,7 +430,7 @@ fn create_comment_from_deleted_comment() {
     init::seed();
 
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, true);
+    let comment = init::get_comment_entity(post.id, None, false, false, true);
     let reply_content = "No one can reply to a (soft) deleted comment!";
 
     let response =
@@ -444,7 +444,7 @@ fn create_comment_from_comment_in_locked_post() {
     init::seed();
 
     let post = init::get_post_entity(true, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
     let reply_content = "Admin can still reply to a comment on a locked post!";
     let reply = send_comment_from_comment(&client, init::login_admin(), &comment.id, reply_content);
 
@@ -460,7 +460,7 @@ fn create_comment_from_comment_in_locked_post_missing_capability() {
 
     let (user, password) = init::get_user(true);
     let post = init::get_post_entity(true, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
     let reply_content = "Don't panic! Try your best!";
 
     let response = send_comment_from_comment_ko(
@@ -481,7 +481,7 @@ fn create_comment_from_comment_in_hidden_post_normal_user() {
     let auth_token_header = init::login(&user.email, &passwd);
 
     let post = init::get_post_entity(false, true, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
     let reply_content = "Don't panic! Try your best!";
     let response =
         send_comment_from_comment_ko(&client, auth_token_header, &comment.id, reply_content);
@@ -494,7 +494,7 @@ fn create_comment_from_comment_in_hidden_post_admin() {
     init::seed();
 
     let post = init::get_post_entity(false, true, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
     let reply_content = "Admin can still reply to a comment on a locked post!";
     let reply = send_comment_from_comment(&client, init::login_admin(), &comment.id, reply_content);
 
@@ -509,7 +509,7 @@ fn create_comment_from_comment_in_deleted_post() {
     init::seed();
 
     let post = init::get_post_entity(false, false, true);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
     let reply_content = "Don't panic! Try your best!";
 
     let response =
@@ -518,6 +518,15 @@ fn create_comment_from_comment_in_deleted_post() {
 }
 
 // get all comments from a post
+#[test]
+fn get_all_comments_authenticated() {
+    let client = init::clean_client();
+    init::seed();
+
+    let p = init::get_post_entity(false, false, false);
+    get_all_comments_ok(&client, init::login_admin(), true, p.id);
+}
+
 // get all comments from an unexisting post
 // get all comments from a soft-deleted post
 // get all comments from a hidden post (admin)
@@ -534,7 +543,7 @@ fn get_normal_comment_unauthenticated() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(false, false, false);
-    let a_comment = init::get_comment_entity(a_post.id, false, false, false);
+    let a_comment = init::get_comment_entity(a_post.id, None, false, false, false);
 
     let returned_comment = get_comment_unauth_ok(&client, &a_comment.id);
     assert_eq!(a_comment.id, returned_comment.id);
@@ -545,7 +554,7 @@ fn get_normal_comment_normal_user() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(false, false, false);
-    let a_comment = init::get_comment_entity(a_post.id, false, false, false);
+    let a_comment = init::get_comment_entity(a_post.id, None, false, false, false);
 
     let returned_comment = get_comment_normal_user_ok(&client, &a_comment.id);
     assert_eq!(a_comment.id, returned_comment.id);
@@ -556,7 +565,7 @@ fn get_normal_comment_admin() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(false, false, false);
-    let a_comment = init::get_comment_entity(a_post.id, false, false, false);
+    let a_comment = init::get_comment_entity(a_post.id, None, false, false, false);
 
     let returned_comment = get_comment_admin_ok(&client, &a_comment.id);
     assert_eq!(a_comment.id, returned_comment.id);
@@ -588,7 +597,7 @@ fn get_comment_from_locked_post_unauthenticated() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(true, false, false);
-    let a_comment = init::get_comment_entity(a_post.id, false, false, false);
+    let a_comment = init::get_comment_entity(a_post.id, None, false, false, false);
 
     let returned_comment = get_comment_unauth_ok(&client, &a_comment.id);
     assert_eq!(a_comment.id, returned_comment.id);
@@ -599,7 +608,7 @@ fn get_comment_from_locked_post_normal_user() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(true, false, false);
-    let a_comment = init::get_comment_entity(a_post.id, false, false, false);
+    let a_comment = init::get_comment_entity(a_post.id, None, false, false, false);
 
     let returned_comment = get_comment_normal_user_ok(&client, &a_comment.id);
     assert_eq!(a_comment.id, returned_comment.id);
@@ -610,7 +619,7 @@ fn get_comment_from_locked_post_admin() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(true, false, false);
-    let a_comment = init::get_comment_entity(a_post.id, false, false, false);
+    let a_comment = init::get_comment_entity(a_post.id, None, false, false, false);
 
     let returned_comment = get_comment_admin_ok(&client, &a_comment.id);
     assert_eq!(a_comment.id, returned_comment.id);
@@ -622,7 +631,7 @@ fn get_comment_from_hidden_post_unauthenticated() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(false, true, false);
-    let a_comment = init::get_comment_entity(a_post.id, false, false, false);
+    let a_comment = init::get_comment_entity(a_post.id, None, false, false, false);
 
     let response_status = get_comment_unauth_ko(&client, &a_comment.id);
     assert_eq!(response_status, Status::BadRequest);
@@ -633,7 +642,7 @@ fn get_comment_from_hidden_post_normal_user() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(false, true, false);
-    let a_comment = init::get_comment_entity(a_post.id, false, false, false);
+    let a_comment = init::get_comment_entity(a_post.id, None, false, false, false);
 
     let response_status = get_comment_normal_user_ko(&client, &a_comment.id);
     assert_eq!(response_status, Status::BadRequest);
@@ -645,7 +654,7 @@ fn get_comment_from_hidden_post_admin() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(false, true, false);
-    let a_comment = init::get_comment_entity(a_post.id, false, false, false);
+    let a_comment = init::get_comment_entity(a_post.id, None, false, false, false);
 
     let returned_comment = get_comment_admin_ok(&client, &a_comment.id);
     assert_eq!(a_comment.id, returned_comment.id);
@@ -657,7 +666,7 @@ fn get_comment_from_deleted_post_unauthenticated() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(false, false, true);
-    let a_comment = init::get_comment_entity(a_post.id, false, false, false);
+    let a_comment = init::get_comment_entity(a_post.id, None, false, false, false);
 
     let response_status = get_comment_unauth_ko(&client, &a_comment.id);
     assert_eq!(response_status, Status::BadRequest);
@@ -668,7 +677,7 @@ fn get_comment_from_deleted_post_normal_user() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(false, false, true);
-    let a_comment = init::get_comment_entity(a_post.id, false, false, false);
+    let a_comment = init::get_comment_entity(a_post.id, None, false, false, false);
 
     let response_status = get_comment_normal_user_ko(&client, &a_comment.id);
     assert_eq!(response_status, Status::BadRequest);
@@ -679,7 +688,7 @@ fn get_comment_from_deleted_post_admin() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(false, false, true);
-    let a_comment = init::get_comment_entity(a_post.id, false, false, false);
+    let a_comment = init::get_comment_entity(a_post.id, None, false, false, false);
 
     let response_status = get_comment_admin_ko(&client, &a_comment.id);
     assert_eq!(response_status, Status::BadRequest);
@@ -691,7 +700,7 @@ fn get_locked_comment_unauthenticated() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(false, false, false);
-    let a_comment = init::get_comment_entity(a_post.id, true, false, false);
+    let a_comment = init::get_comment_entity(a_post.id, None, true, false, false);
 
     let returned_comment = get_comment_unauth_ok(&client, &a_comment.id);
     assert_eq!(a_comment.id, returned_comment.id);
@@ -702,7 +711,7 @@ fn get_locked_comment_normal_user() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(false, false, false);
-    let a_comment = init::get_comment_entity(a_post.id, true, false, false);
+    let a_comment = init::get_comment_entity(a_post.id, None, true, false, false);
 
     let returned_comment = get_comment_normal_user_ok(&client, &a_comment.id);
     assert_eq!(a_comment.id, returned_comment.id);
@@ -713,7 +722,7 @@ fn get_locked_comment_post_admin() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(false, false, false);
-    let a_comment = init::get_comment_entity(a_post.id, true, false, false);
+    let a_comment = init::get_comment_entity(a_post.id, None, true, false, false);
 
     let returned_comment = get_comment_admin_ok(&client, &a_comment.id);
     assert_eq!(a_comment.id, returned_comment.id);
@@ -725,7 +734,7 @@ fn get_hidden_comment_unauthenticated() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(false, false, false);
-    let a_comment = init::get_comment_entity(a_post.id, false, true, false);
+    let a_comment = init::get_comment_entity(a_post.id, None, false, true, false);
 
     let response_status = get_comment_unauth_ko(&client, &a_comment.id);
     assert_eq!(response_status, Status::BadRequest);
@@ -736,7 +745,7 @@ fn get_hidden_comment_normal_user() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(false, false, false);
-    let a_comment = init::get_comment_entity(a_post.id, false, true, false);
+    let a_comment = init::get_comment_entity(a_post.id, None, false, true, false);
 
     let response_status = get_comment_normal_user_ko(&client, &a_comment.id);
     assert_eq!(response_status, Status::BadRequest);
@@ -747,7 +756,7 @@ fn get_hidden_comment_admin() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(false, false, false);
-    let a_comment = init::get_comment_entity(a_post.id, false, true, false);
+    let a_comment = init::get_comment_entity(a_post.id, None, false, true, false);
 
     let returned_comment = get_comment_admin_ok(&client, &a_comment.id);
     assert_eq!(a_comment.id, returned_comment.id);
@@ -759,7 +768,7 @@ fn get_deleted_comment_unauthenticated() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(false, false, false);
-    let a_comment = init::get_comment_entity(a_post.id, false, false, true);
+    let a_comment = init::get_comment_entity(a_post.id, None, false, false, true);
 
     let response_status = get_comment_unauth_ko(&client, &a_comment.id);
     assert_eq!(response_status, Status::BadRequest);
@@ -770,7 +779,7 @@ fn get_deleted_comment_normal_user() {
     let client = init::clean_client();
     init::seed();
     let a_post = init::get_post_entity(false, false, false);
-    let a_comment = init::get_comment_entity(a_post.id, false, false, true);
+    let a_comment = init::get_comment_entity(a_post.id, None, false, false, true);
 
     let response_status = get_comment_normal_user_ko(&client, &a_comment.id);
     assert_eq!(response_status, Status::BadRequest);
@@ -780,10 +789,10 @@ fn get_deleted_comment_normal_user() {
 fn get_deleted_comment_admin() {
     let client = init::clean_client();
     init::seed();
-    let a_post = init::get_post_entity(false, false, false);
-    let a_comment = init::get_comment_entity(a_post.id, false, false, true);
+    let post = init::get_post_entity(false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, true);
 
-    let response_status = get_comment_admin_ko(&client, &a_comment.id);
+    let response_status = get_comment_admin_ko(&client, &comment.id);
     assert_eq!(response_status, Status::BadRequest);
 }
 
@@ -792,7 +801,7 @@ fn update_comment_admin() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, false, false);
-    let comment_entity = init::get_comment_entity(post.id, false, false, false);
+    let comment_entity = init::get_comment_entity(post.id, None, false, false, false);
 
     let content = "I am so unique !";
     assert_ne!(&comment_entity.content, content);
@@ -866,7 +875,7 @@ fn update_comment_non_authenticated() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
 
     let content = "I am so unique !";
     assert_ne!(&comment.content, content);
@@ -914,7 +923,7 @@ fn update_comment_deleted() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, true);
+    let comment = init::get_comment_entity(post.id, None, false, false, true);
 
     let content = "I am so unique !";
     assert_ne!(&comment.content, content);
@@ -937,7 +946,7 @@ fn update_comment_hidden_post_admin() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, true, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
 
     let content = "I am so unique !";
     assert_ne!(&comment.content, content);
@@ -950,7 +959,7 @@ fn update_comment_locked_post_admin() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(true, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
 
     let content = "I am so unique !";
     assert_ne!(&comment.content, content);
@@ -963,7 +972,7 @@ fn update_comment_hidden_comment_admin() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, true, false);
+    let comment = init::get_comment_entity(post.id, None, false, true, false);
 
     let content = "I am so unique !";
     assert_ne!(&comment.content, content);
@@ -976,7 +985,7 @@ fn update_comment_locked_comment_admin() {
     let client = init::clean_client();
     init::seed();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, true, false, false);
+    let comment = init::get_comment_entity(post.id, None, true, false, false);
 
     let content = "I am so unique !";
     assert_ne!(&comment.content, content);
@@ -994,7 +1003,7 @@ fn delete_comment_admin() {
     init::seed();
     let conn = init::database_connection();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
 
     let before_deletion_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
     assert!(before_deletion_comment.deleted_at.is_none());
@@ -1034,7 +1043,7 @@ fn delete_comment_missing_capability() {
     init::seed();
     let conn = init::database_connection();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
 
     let (user, passwd) = init::get_user(true);
     let auth_token_header = init::login(&user.email, &passwd);
@@ -1059,7 +1068,7 @@ fn delete_comment_unauthenticated() {
     init::seed();
     let conn = init::database_connection();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
 
     let before_deletion_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
     assert!(before_deletion_comment.deleted_at.is_none());
@@ -1097,7 +1106,7 @@ fn delete_comment_comment_deleted() {
     init::seed();
     let conn = init::database_connection();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, true);
+    let comment = init::get_comment_entity(post.id, None, false, false, true);
 
     let before_deletion_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
     assert!(before_deletion_comment.deleted_at.is_some());
@@ -1116,7 +1125,7 @@ fn delete_comment_post_deleted() {
     init::seed();
     let conn = init::database_connection();
     let post = init::get_post_entity(false, false, true);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
 
     let comment_before_deletion = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
     assert!(comment_before_deletion.deleted_at.is_none());
@@ -1135,7 +1144,7 @@ fn delete_comment_post_hidden_admin() {
     init::seed();
     let conn = init::database_connection();
     let post = init::get_post_entity(false, true, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
 
     let before_deletion_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
     assert!(before_deletion_comment.deleted_at.is_none());
@@ -1151,7 +1160,7 @@ fn delete_comment_comment_hidden_admin() {
     init::seed();
     let conn = init::database_connection();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, false, true, false);
+    let comment = init::get_comment_entity(post.id, None, false, true, false);
 
     let before_deletion_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
     assert!(before_deletion_comment.deleted_at.is_none());
@@ -1167,7 +1176,7 @@ fn delete_comment_post_locked_admin() {
     init::seed();
     let conn = init::database_connection();
     let post = init::get_post_entity(true, false, false);
-    let comment = init::get_comment_entity(post.id, false, false, false);
+    let comment = init::get_comment_entity(post.id, None, false, false, false);
 
     let before_deletion_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
     assert!(before_deletion_comment.deleted_at.is_none());
@@ -1183,7 +1192,7 @@ fn delete_comment_comment_locked_admin() {
     init::seed();
     let conn = init::database_connection();
     let post = init::get_post_entity(false, false, false);
-    let comment = init::get_comment_entity(post.id, true, false, false);
+    let comment = init::get_comment_entity(post.id, None, true, false, false);
 
     let before_deletion_comment = CommentEntity::by_id(&conn, &comment.id).unwrap().unwrap();
     assert!(before_deletion_comment.deleted_at.is_none());
