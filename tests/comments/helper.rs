@@ -247,7 +247,7 @@ pub fn delete_comment(
 
 pub fn get_all_comments_ok (
     client: &rocket::local::Client,
-    auth_token: rocket::http::Header<'static>,
+    auth_token: Option<rocket::http::Header<'static>>,
     can_view_hidden: bool,
     post_id: u32,
 ) {
@@ -268,8 +268,10 @@ pub fn get_all_comments_ok (
 
     // a simple test first: no queries
     let route = format!("{}/{}/comments", POST_ROUTE, post_id);
-    let req = client.get(route).header(auth_token);
-    let mut response = req.dispatch();
+    let mut response = match auth_token {
+        Some(token) => client.get(route).header(token).dispatch(),
+        None => client.get(route).dispatch(),
+    };
 
     assert_eq!(response.status(), Status::Ok);
 

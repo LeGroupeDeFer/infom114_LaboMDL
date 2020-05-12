@@ -1,6 +1,7 @@
 use std::{thread, time};
 
 use super::super::init;
+use chrono::NaiveDateTime;
 use rocket::http::{ContentType, Status};
 use unanimitylibrary::database::models::prelude::*;
 
@@ -519,24 +520,149 @@ fn create_comment_from_comment_in_deleted_post() {
 
 // get all comments from a post
 #[test]
-fn get_all_comments_authenticated() {
+fn get_all_comments_unauthenticated() {
     let client = init::clean_client();
     init::seed();
 
     let p = init::get_post_entity(false, false, false);
-    get_all_comments_ok(&client, init::login_admin(), true, p.id);
+    get_all_comments_ok(&client, None, false, p.id);
+}
+#[test]
+fn get_all_comments_normal_user() {
+    let client = init::clean_client();
+    init::seed();
+    let (user, passwd) = init::get_user(true);
+    let auth_token_header = init::login(&user.email, &passwd);
+
+    let p = init::get_post_entity(false, false, false);
+    get_all_comments_ok(&client, Some(auth_token_header), false, p.id);
 }
 
-// get all comments from an unexisting post
-// get all comments from a soft-deleted post
-// get all comments from a hidden post (admin)
-// get all comments from a hidden post (unauthenticated)
-// get all comments from a locked post -> ok
-// get all comments ordered by time asc
-// get all comments ordered by time desc
-// get all comments ordered by score asc
-// get all comments ordered by score desc
-// get all comments with limit & offset
+#[test]
+fn get_all_comments_admin() {
+    let client = init::clean_client();
+    init::seed();
+
+    let p = init::get_post_entity(false, false, false);
+    get_all_comments_ok(&client, Some(init::login_admin()), true, p.id);
+}
+
+// TODO get all comments from an unexisting post
+// TODO get all comments from a soft-deleted post
+// TODO get all comments from a hidden post (admin)
+// TODO get all comments from a hidden post (unauthenticated)
+// TODO get all comments from a locked post -> ok
+
+#[test]
+fn get_all_comments_ordered_by_old() {
+    let client = init::clean_client();
+    init::seed();
+
+    let p = init::get_post_entity(false, false, false);
+    for _i in 1..10 {
+        init::get_comment_entity(p.id, None, false, false, false);
+        thread::sleep(time::Duration::from_millis(1000));
+    }
+    let route = format!("/api/v1/post/{}/comments?order=old", p.id);
+    let mut response = client.get(route).dispatch();
+    assert_eq!(response.status(), Status::Ok);
+    
+    let data = response.body_string().unwrap();
+    let comments: Vec<Comment> = serde_json::from_str(&data).unwrap();
+    let mut asc_time = NaiveDateTime::from_timestamp(i32::MIN as i64, 0);
+
+    for cmt in comments {
+        let comparable_time =
+            NaiveDateTime::parse_from_str(cmt.created_at.as_ref(), "%Y-%m-%d %H:%M:%S").unwrap();
+        assert!(asc_time <= comparable_time);
+        if comparable_time > asc_time {
+            asc_time = comparable_time;
+        }
+    }
+}
+
+#[test]
+fn get_all_comments_ordered_by_new() {
+    let client = init::clean_client();
+    init::seed();
+
+    let p = init::get_post_entity(false, false, false);
+    for _i in 1..10 {
+        init::get_comment_entity(p.id, None, false, false, false);
+        thread::sleep(time::Duration::from_millis(1000));
+    }
+    let route = format!("/api/v1/post/{}/comments?order=new", p.id);
+    let mut response = client.get(route).dispatch();
+    assert_eq!(response.status(), Status::Ok);
+    
+    let data = response.body_string().unwrap();
+    let comments: Vec<Comment> = serde_json::from_str(&data).unwrap();
+    let mut desc_time = NaiveDateTime::from_timestamp(i32::MAX as i64, 0);
+
+    for cmt in comments {
+        let comparable_time =
+            NaiveDateTime::parse_from_str(cmt.created_at.as_ref(), "%Y-%m-%d %H:%M:%S").unwrap();
+        assert!(desc_time >= comparable_time);
+        if comparable_time < desc_time {
+            desc_time = comparable_time;
+        }
+    }
+}
+
+#[test]
+fn get_all_comments_ordered_by_top() {
+    let client = init::clean_client();
+    init::seed();
+
+    let p = init::get_post_entity(false, false, false);
+    for _i in 1..10 {
+        init::get_comment_entity(p.id, None, false, false, false);
+        thread::sleep(time::Duration::from_millis(1000));
+    }
+    let route = format!("/api/v1/post/{}/comments?order=top", p.id);
+    let mut response = client.get(route).dispatch();
+    assert_eq!(response.status(), Status::Ok);
+
+    let data = response.body_string().unwrap();
+    let comments: Vec<Comment> = serde_json::from_str(&data).unwrap();
+
+    let mut desc_score = i64::MAX;
+    for cmt in comments {
+        assert!(desc_score >= cmt.score);
+        if cmt.score < desc_score {
+            desc_score = cmt.score;
+        }
+    }
+}
+
+#[test]
+fn get_all_comments_ordered_by_low() {
+    let client = init::clean_client();
+    init::seed();
+
+    let p = init::get_post_entity(false, false, false);
+    for _i in 1..10 {
+        init::get_comment_entity(p.id, None, false, false, false);
+        thread::sleep(time::Duration::from_millis(1000));
+    }
+    let route = format!("/api/v1/post/{}/comments?order=low", p.id);
+    let mut response = client.get(route).dispatch();
+    assert_eq!(response.status(), Status::Ok);
+
+    let data = response.body_string().unwrap();
+    let comments: Vec<Comment> = serde_json::from_str(&data).unwrap();
+
+    let mut asc_score = i64::MIN;
+    for cmt in comments {
+        assert!(asc_score <= cmt.score);
+        if cmt.score > asc_score {
+            asc_score = cmt.score;
+        }
+    }
+}
+
+// TODO get all comments with limit & offset
+
 
 #[test]
 fn get_normal_comment_unauthenticated() {

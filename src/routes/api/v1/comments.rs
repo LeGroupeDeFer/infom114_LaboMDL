@@ -67,17 +67,32 @@ pub fn get_all_from_post_authenticated(
     ))
 }
 
-#[get("/api/v1/post/<_post_id>/comments", rank = 2)]
+#[get("/api/v1/post/<_post_id>/comments?<order>&<limit>&<offset>", rank = 2)]
 pub fn get_all_from_post_unauthenticated(
     conn: DBConnection,
     post_guard: PostGuard,
+    order: Option<String>,
+    limit: Option<u32>,
+    offset: Option<u32>,
     _post_id: u32,
 ) -> ApiResult<Vec<Comment>> {
+    let mut sort_order: Option<SortOrder> = None;
+    if let Some(value) = order {
+        sort_order = Some(SortOrder::try_from(value.as_ref())?)
+    }
+
     Ok(Json(
-        CommentEntity::by_post_id(&*conn, &post_guard.post().id, false)?
-            .into_iter()
-            .map(move |entity| Comment::from(entity))
-            .collect::<Vec<Comment>>(),
+        CommentEntity::get_all(
+            &*conn,
+            &post_guard.post().id,
+            false,
+            sort_order,
+            limit,
+            offset,
+        )?
+        .into_iter()
+        .map(move |entity| Comment::from(entity))
+        .collect::<Vec<Comment>>(),
     ))
 }
 
