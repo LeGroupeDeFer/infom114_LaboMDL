@@ -93,11 +93,11 @@ export default function About(props) {
         </Card>
         <Card>
           <Card.Header>
-            <Accordion.Toggle as={Button} variant="link" eventKey="2">
+            <Accordion.Toggle as={Button} variant="link" eventKey="3">
               Comment fonctionne l'algorithme de rang des publications ?
             </Accordion.Toggle>
           </Card.Header>
-          <Accordion.Collapse eventKey="2">
+          <Accordion.Collapse eventKey="3">
             <Card.Body>
               <p>C'est magique</p>
             </Card.Body>
