@@ -63,12 +63,12 @@ function StreamContent({ userId }) {
   const history = useHistory();
   let pathWhenDelete = path;
   const [state, setState] = useState({
-    previewPost: false,
     deletePost: false,
     flagPost: false,
     toast: false,
     toastMsg: '',
     onComment: (post, comment) => stream.posts.comment(post, comment),
+    onReply: (commentId, reply) => stream.posts.reply(commentId, reply),
     onFlag: (v) => setState((state) => ({ ...state, flagPost: v })),
     onFlagCancel: (post) => {
       stream.posts.flag(post, '', true).then(() =>
@@ -88,7 +88,6 @@ function StreamContent({ userId }) {
     onLock: (post) => stream.posts.lock(post),
     onSort: (order) => stream.order.set(order),
     onAuthor: (author) => stream.author.set(author),
-    onPreview: (v) => setState((state) => ({ ...state, previewPost: v })),
     onDelete: (v, p) => {
       pathWhenDelete = p;
       setState((state) => ({ ...state, deletePost: v }));

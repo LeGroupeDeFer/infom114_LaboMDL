@@ -27,8 +27,10 @@ function Profile() {
         <Row>
           <Col xs={12} md={5}>
             <div className="fixed-info">
-              <h1 className="p-3 text-dark">
-                <h3><b>{user.firstname} {user.lastname}</b></h3>
+              <h1 className="p-3 text-dark username">
+                <b>
+                  {user.firstname} {user.lastname}
+                </b>
               </h1>
               {user ? <User user={user} /> : <></>}
             </div>
@@ -73,8 +75,13 @@ const User = ({ user }) => {
     <Row>
       <Col>
         <hr />
-        <p><b className="text-secondary">Email :</b> {user.email}</p>
-        <p><b className="text-secondary">A rejoint le :</b> <Moment date={user.creationDate} /></p>
+        <p>
+          <b className="text-secondary">Email :</b> {user.email}
+        </p>
+        <p>
+          <b className="text-secondary">A rejoint le :</b>{' '}
+          <Moment date={user.creationDate} />
+        </p>
         <hr />
       </Col>
     </Row>

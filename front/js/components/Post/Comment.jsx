@@ -10,7 +10,7 @@ import { VOTE } from '../../lib';
 
 const CommentInteraction = WhenLogged(({ onResponse, onMask, onFlag }) => {
   return (
-    <Row className="pl-1 pt-1">
+    <Row className="pl-1 pt-1 pb-2">
       <a href="#" className="post-footer-btn mr-2" onClick={onResponse}>
         <GoReply size="1em" className="mr-1" />
         <span className="text-muted">Répondre</span>
@@ -28,6 +28,7 @@ const CommentInteraction = WhenLogged(({ onResponse, onMask, onFlag }) => {
 function Comment({
   comment,
   onComment,
+  onReply,
   onVote,
   editors,
   addEditor,
@@ -36,19 +37,19 @@ function Comment({
   const isLogged = !!useAuth().user;
   const [reply, setReply] = useState('');
 
-  // const nestedComments = (comment.children || []).map((cmmt) => {
-  //   return (
-  //     <Comment
-  //       ancestor_id={ancestor_id}
-  //       key={cmmt.id}
-  //       comment={cmmt}
-  //       add_comment_editor={add_comment_editor}
-  //       toggle_comment_editor={toggle_comment_editor}
-  //       comment_editors={comment_editors}
-  //       add_reply={add_reply}
-  //     />
-  //   );
-  // });
+  const nestedComments = (comment.replies || []).map((cmmt) => {
+    return (
+      <Comment
+        key={cmmt.id}
+        ancestorId={comment.id}
+        comment={cmmt}
+        onReply={onReply}
+        addEditor={addEditor}
+        toggleEditor={toggleEditor}
+        editors={editors}
+      />
+    );
+  });
 
   return (
     <div className="comment">
@@ -88,20 +89,22 @@ function Comment({
             />
 
             {editors.hasOwnProperty(comment.id) && editors[comment.id].show && (
-              <CommentEditor
+              <Comment.Editor
                 type="reply"
+                onReply={(reply) => onReply(comment.id, reply)}
                 isVisible={false}
                 toggleEditor={() => toggleEditor(comment.id)}
               />
             )}
           </div>
+          {nestedComments}
         </Col>
       </Row>
     </div>
   );
 }
 
-function CommentEditor({ onComment, type, toggleEditor }) {
+function CommentEditor({ onReply, onComment, type, toggleEditor }) {
   const isLogged = !!useAuth().user;
   const [comment, setComment] = useState('');
 
@@ -114,6 +117,11 @@ function CommentEditor({ onComment, type, toggleEditor }) {
 
   const addComment = () => {
     comment ? onComment(comment) : undefined;
+    setComment('');
+  };
+
+  const addReply = () => {
+    comment ? onReply(comment) : undefined;
     setComment('');
   };
 
@@ -160,7 +168,7 @@ function CommentEditor({ onComment, type, toggleEditor }) {
           <Button
             variant="primary"
             className=" mt-1"
-            onClick={() => addComment()}
+            onClick={() => addReply()}
           >
             Répondre
           </Button>
