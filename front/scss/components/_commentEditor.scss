@@ -15,5 +15,14 @@
 }
 
 .comment-editor textarea {
-  border: 1px solid #ced4da !important;
+  padding: 1em;
+  border-radius: 1em;
+  background: gray("200");
+  border: none !important;
+  margin: 1.5em 0 1em 0;
+  resize: none;
+
+  &:active, &:focus {
+    background-color: gray("200") !important;
+  }
 }

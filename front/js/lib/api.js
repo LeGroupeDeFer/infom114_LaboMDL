@@ -199,14 +199,7 @@ function posts() {
 
 Object.assign(posts, {
   of(id) {
-    return api(`/post/${id}`).then(post => {
-      return post.kind === 'poll'
-        ? api.posts.pollData(id).then((pollData) => {
-          post.answers = pollData.answers;
-          post.userAnswer = pollData.userAnswer;
-          return post;
-        }) : post;
-    });
+    return api(`/post/${id}`);
   },
   vote(id, vote) {
     return api(`/post/${id}/vote`, { body: { vote } });
