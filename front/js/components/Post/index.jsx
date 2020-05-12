@@ -161,6 +161,8 @@ export function WatchStatus({ events, isPreview }) {
       </Container>
     );
 
+  // TODO
+  return <></>;
 }
 
 export function PostContent({ isPreview, post, onComment, onPollVote }) {
