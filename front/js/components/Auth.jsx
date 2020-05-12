@@ -1,30 +1,30 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { useAuth } from '../context';
 import { Container, Row, Col } from 'react-bootstrap';
 import { useHistory, Link } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 
 export function Authenticated(Component) {
-  return function (props) {
+  return function(props) {
     const { user } = useAuth();
     const history = useHistory();
-    if (!user) {
-      // Should be a flash instead
-      console.log('Not authenticated!');
-      history.push('/login');
-    }
+
+    useEffect(() => user ? undefined : history.replace('/login'), []);
+    if (!user)
+      return <></>;
+
     return <Component {...props} />;
   };
 }
 
 export function Unauthenticated(Component) {
-  return function (props) {
+  return function(props) {
     const { user } = useAuth();
     const history = useHistory();
-    if (user) {
-      // Should be a flash instead
-      history.replace('/');
-    }
+
+    useEffect(() => user ? history.replace('/login') : undefined, []);
+    if (user)
+      return <></>;
 
     return <Component {...props} />;
   };
@@ -73,7 +73,7 @@ export const Dialog = Unauthenticated(({ icon, title, children }) => {
           <Link to="/login" className="text-secondary mr-2">
             <b>Login</b>
           </Link>
-          <Link to="/faq" className="text-secondary">
+          <Link to="/about" className="text-secondary">
             <b>FAQ</b>
           </Link>
         </Col>

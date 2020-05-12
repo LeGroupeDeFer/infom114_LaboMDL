@@ -69,13 +69,10 @@ export function StreamProvider({ children }) {
       focus: null,
       value: [],
       _updatePost(promise) {
-        const that = this;
-
+        setState(s => ({ ...s, pending: true }));
         pushEffect([
           promise,
-          setState(s => ({ ...s, pending: true })) || promise,
           (post) => setState((s) => {
-
             const currentPosts = s.posts.value;
             let updatedPosts;
             if (s.posts.value.some(p => p.id === post.id))

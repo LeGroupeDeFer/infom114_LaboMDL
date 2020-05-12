@@ -17,6 +17,7 @@ import MdSort from '../../icons/sort.svg';
 import { useStream } from 'unanimity/context/streamContext';
 import { ORDER } from 'unanimity/lib';
 import Post from 'unanimity/components/Post';
+import {trace} from "../../lib";
 
 // InnerStream :: Object => Component
 function InnerStream({
