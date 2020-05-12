@@ -200,7 +200,7 @@ const UsersPage = () => {
 
 const StatisticsPage = () => {
 
-  const colors = ['#A6C48A', '#798478', '#3AAED8', '#48416D'];
+  const colors = ['#A6C48A', '#3AAED8', '#798478', '#48416D'];
   const [graphData, setGraphData] = useState({
     connect: [],
     active: [],
