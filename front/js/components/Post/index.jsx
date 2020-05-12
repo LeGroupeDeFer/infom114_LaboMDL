@@ -29,6 +29,7 @@ import Comment from './Comment';
 import Poll from './Poll';
 import DeleteModal from './DeleteModal';
 import ReportModal from './ReportModal';
+import { kindOf } from '../../lib';
 
 /* ------------------------------ Post actions ----------------------------- */
 
@@ -70,7 +71,7 @@ const WatchPost = May('post:watch', ({ post }) => {
   return (
     <Dropdown.Item as="button" onClick={() => history.push(`amend/${post.id}`)}>
       <Icon icon="dove" className="mr-2" />
-      <span>Amender</span>
+      <span>Suivre</span>
     </Dropdown.Item>
   );
 });
@@ -229,7 +230,9 @@ export function Post({
           <Row>
             <Col className="expand-preview" sm={10}>
               <h5 className="ml-1 expand-preview">
-                <Badge className={`post-${kind} mr-1`}>{kind}</Badge>
+                <Badge className={`post-${kind} mr-1`}>
+                  {kindOf(kind).labelSingular}
+                </Badge>
                 <span className="mr-1">{title}</span>
 
                 <span className="text-muted post-subtitle">
@@ -249,7 +252,7 @@ export function Post({
 
                 {isLogged && (
                   <DropdownButton
-                    alignRight
+                    drop="left"
                     id={`post-${id}-actions`}
                     title={
                       <div className="px-2 py-1">
@@ -299,7 +302,7 @@ export function Post({
             score={score}
             isLogged={isLogged}
             isLocked={post.locked}
-            vote={userVote}
+            vote={post.userVote}
           />
 
           <div className="px-3 pb-3 pt-2 w-100">
@@ -325,13 +328,6 @@ export function Post({
               onPollVote={onPollVote}
               className="expand-preview"
             />
-
-            {/* <div className="mt-2">
-              <strong className="status">Accepté le 18 Avril 2020</strong>
-              <Alert variant="success">
-                Les vaccances seront prolongées de 2 semaines.
-              </Alert>
-            </div> */}
 
             <Flexbox reverse className="post-footer mt-2">
               <Link

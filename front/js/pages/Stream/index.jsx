@@ -127,7 +127,7 @@ function StreamContent({ userId }) {
 
   return (
     <>
-      <SearchBar variant="kinds" />
+      <SearchBar variant="kinds" pending={stream.pending} />
 
       <StreamModals {...state} />
 

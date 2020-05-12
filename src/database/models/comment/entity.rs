@@ -81,13 +81,13 @@ impl Entity for CommentEntity {
         match &minima.parent_id {
             Some(_id) => filtered
                 .filter(dsl::parent_id.eq(&minima.parent_id))
-                .order(dsl::created_at.desc())            
+                .order(dsl::id.desc())            
                 .first::<Self>(conn)
                 .optional()
                 .map(Ok)?,
             None => filtered
                 .filter(dsl::parent_id.is_null())
-                .order(dsl::created_at.desc())            
+                .order(dsl::id.desc())            
                 .first::<Self>(conn)
                 .optional()
                 .map(Ok)?,
@@ -95,7 +95,7 @@ impl Entity for CommentEntity {
     }
 
     fn update(&self, conn: &MysqlConnection) -> Consequence<&Self> {
-        diesel::update(table)
+        diesel::update(self)
             .set(self)
             .execute(conn)
             .map(|_| self)

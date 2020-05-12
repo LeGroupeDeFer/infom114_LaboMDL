@@ -9,6 +9,7 @@ import {
   printerr,
   trace,
 } from 'unanimity/lib';
+import { useAuth } from './authContext';
 import isEqual from 'lodash/isEqual';
 import remove from 'lodash/remove';
 import without from 'lodash/without';
@@ -52,16 +53,22 @@ const query = (state) => ({
   order: state.order.value,
   tags: state.tags.value,
   keywords: state.keywords.value,
+<<<<<<< HEAD
   author: trace(state.author.value),
+=======
+  author: state.author.value
+>>>>>>> ecdbc9968a5a2cef79016f4b653b082c649a9952
 });
 
 export function StreamProvider({ children }) {
   const pushEffect = useEffectQueue();
+  const auth = useAuth();
 
   // Don't move the methods ouf the state, as this is a context, any change to
   // the values given to children will provoke a rerender, the best way to
   // avoid that is to allow react to execute its diff algorithm.
   const [state, setState] = useState({
+    pending: false,
     posts: {
       focus: null,
       value: [],
@@ -69,6 +76,7 @@ export function StreamProvider({ children }) {
         const that = this;
 
         pushEffect([
+<<<<<<< HEAD
           promise,
           (post) =>
             setState((s) => {
@@ -83,6 +91,21 @@ export function StreamProvider({ children }) {
               return { ...s, posts: { ...s.posts, value: updatedPosts } };
             }) || post,
           printerr, // TODO
+=======
+          setState(s => ({ ...s, pending: true })) || promise,
+          (post) => setState((s) => {
+
+            const currentPosts = s.posts.value;
+            let updatedPosts;
+            if (s.posts.value.some(p => p.id === post.id))
+              updatedPosts = currentPosts.map(p => (p.id === post.id ? post : p));
+            else
+              updatedPosts = [ ...currentPosts, post ];
+
+            return { ...s, pending: false, posts: { ...s.posts, value: updatedPosts } };
+          }) || post,
+          error => setState(s => ({ ...s, pending: false, error }))
+>>>>>>> ecdbc9968a5a2cef79016f4b653b082c649a9952
         ]);
         return promise;
       },
@@ -111,10 +134,11 @@ export function StreamProvider({ children }) {
       add(post) {
         const promise = api.posts.add(post);
         pushEffect([
-          promise,
+          setState(s => ({ ...s, pending: true })) || promise,
           (post) =>
-            setState((s) => ({
-              ...state,
+            setState(s => ({
+              ...s,
+              pending: false,
               posts: { ...this, value: [...this.value, post] },
             })) || post,
           printerr, // TODO
@@ -124,10 +148,11 @@ export function StreamProvider({ children }) {
       remove(post) {
         const promise = api.posts.delete(post.id);
         pushEffect([
-          promise,
+          setState(s => ({ ...s, pending: true })) || promise,
           () =>
             setState((s) => ({
               ...s,
+              pending: false,
               posts: {
                 ...this,
                 value: remove(s.posts.value, (p) => p.id !== post.id),
@@ -168,9 +193,14 @@ export function StreamProvider({ children }) {
         const promise = api.users.posts(authorId);
         pushEffect([
           promise,
+<<<<<<< HEAD
           (value) =>
             setState((s) => ({ ...s, posts: { ...s.posts, value: value } })),
           printerr,
+=======
+          value => setState(s => ({ ...s, posts: { ...s.posts, pending: true, value: value }})),
+          error => setState(s => ({ ...s, pending: false, error }))
+>>>>>>> ecdbc9968a5a2cef79016f4b653b082c649a9952
         ]);
         return promise;
       },
@@ -244,22 +274,34 @@ export function StreamProvider({ children }) {
   });
 
   useEffect(
-    () =>
+    () => {
+      // We need to avoid a race condition between the auth loading and our posts list,
+      // the auth primes over posts as it may affect those. Therefore in the event the auth is loading,
+      // we await for it to end loading
+      if (auth.pending)
+        return;
+
       pushEffect([
-        api.posts.where(clean(query(state), true)),
+        setState(s => ({ ...s, pending: true })) || api.posts.where(clean(query(state), true)),
         (posts) =>
           setState((s) => ({
             ...s,
+            pending: false,
             posts: { ...s.posts, value: posts },
           })),
-        printerr, // TODO
-      ]),
+        error => setState(s => ({ ...s, pending: false, error })),
+      ])
+    },
     [
       state.kind.value,
       state.order.value,
       state.tags.value,
       state.keywords.value,
       state.author.value,
+<<<<<<< HEAD
+=======
+      auth.pending
+>>>>>>> ecdbc9968a5a2cef79016f4b653b082c649a9952
     ]
   );
 
@@ -267,13 +309,13 @@ export function StreamProvider({ children }) {
   useEffect(
     () =>
       pushEffect([
-        api.tags(),
+        setState(s => ({...s, pending: true })) || api.tags(),
         ({ tags }) =>
           setState((state) => ({
             ...state,
             tags: { ...state.tags, available: tags },
           })),
-        printerr, // TODO
+        error => setState(s => ({ ...s, error, pending: false })), // TODO
       ]),
     []
   );

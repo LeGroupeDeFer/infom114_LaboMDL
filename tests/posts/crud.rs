@@ -43,7 +43,7 @@ fn read_all_posts_while_logged_in() {
     assert_eq!(
         posts
             .iter()
-            .filter(|p| !p.hidden && !p.hidden && !p.locked)
+            .filter(|p| !p.locked && !p.hidden && !p.locked)
             .count(),
         5
     );

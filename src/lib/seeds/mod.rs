@@ -26,7 +26,6 @@ pub fn clean_all_table(conn: &MysqlConnection) {
         .unwrap();
     diesel::delete(roles_table).execute(conn).unwrap();
     diesel::delete(tags_table).execute(conn).unwrap();
-    diesel::delete(capabilities_table).execute(conn).unwrap();
     diesel::delete(posts_reports_table).execute(conn).unwrap();
     diesel::delete(comments_reports_table).execute(conn).unwrap();
     diesel::sql_query("ALTER TABLE comments DROP FOREIGN KEY IF EXISTS comments_parentid").execute(conn).unwrap();

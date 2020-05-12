@@ -2,11 +2,11 @@
 
 .stream-header,
 .writer-header {
-  margin-top: 5rem;
+  animation: fade-appearance .5s ease-out;
 }
 
 .dropdown-item:hover {
-  background-color: $primary;
+  background-color: theme-color("primary");
 }
 
 .modal-80w {

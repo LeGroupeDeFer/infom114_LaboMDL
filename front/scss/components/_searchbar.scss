@@ -1,7 +1,7 @@
 @use '../themes' as *;
 
 .search-container {
-  position: fixed;
+  position: sticky;
   top: 0;
   z-index: 1000;
 
@@ -125,12 +125,12 @@
   }
 
   &:hover {
-    color: $primary !important;
+    color: theme-color("primary") !important;
   }
 
   &.active {
     outline: none !important;
-    color: $primary !important;
+    color: theme-color("primary") !important;
     border: none !important;
   }
 }

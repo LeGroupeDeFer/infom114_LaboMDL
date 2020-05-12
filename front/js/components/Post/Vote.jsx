@@ -8,6 +8,7 @@ import clsx from 'clsx';
 import { VOTE } from 'unanimity/lib';
 import Flexbox from '../Flexbox';
 import { May } from '../Auth';
+import {useAuth} from "../../context";
 
 const LockedT = ({ children }) => {
   return (
@@ -48,7 +49,8 @@ function VoteOverlay({ isLogged, isLocked, children, setLockedCap }) {
   );
 }
 
-export function Vote({ isLogged, isLocked, vote, direction, onClick }) {
+export function Vote({ isLocked, vote, direction, onClick }) {
+  const isLogged = !!useAuth().user;
   const upvote = direction === VOTE.UP;
   const active = vote === direction;
   const cls = clsx('vote p-0', (upvote && 'up') || 'down', active && 'active');

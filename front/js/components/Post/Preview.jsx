@@ -82,13 +82,16 @@ const Preview = ({
             </span>
 
             <DropdownButton
+              renderMenuOnMount={true}
+              drop="left"
+              id="contextual-post-action"
               title={
                 <span>
                   <Icon icon="ellipsis-h" />
                 </span>
               }
-              variant="link"
-              className="float-right more btn-link"
+              variant="primary"
+              className="more btn-link"
               onClick={(e) => e.stopPropagation()}
             >
               {caps.some((e) => e.name === 'post:hide') && (
