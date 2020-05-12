@@ -12,7 +12,7 @@ import Form from 'react-bootstrap/Form';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 
 
-const User = ({ user, roles, setNotification }) => {
+const User = ({ user, setNotification }) => {
   const [modalShow, setModalShow] = useState(false);
 
   return (
@@ -49,7 +49,6 @@ const User = ({ user, roles, setNotification }) => {
 
       <EditModal
         user={user}
-        roles={roles}
         show={modalShow}
         onHide={() => setModalShow(false)}
         setNotification={setNotification}

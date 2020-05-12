@@ -139,17 +139,35 @@ const MenuBar = ({ currentMenu, onClick, menuList }) => {
 };
 
 const UsersPage = () => {
-  const [{ users, roles }, setState] = useState({ users: [], roles: [] });
+  const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [notification, setNotification] = useState('');
+  const [getPromise, setGetPromise] = useState(null);
 
   const Notification = () =>
     notification === '' ? <></> : <Toast text={notification} />;
 
+  // Get the users
   useEffect(() => {
-    Promise.all([api.users(), api.roles()])
-      .then(([users, roles]) => setState({ users, roles }));
-    setIsLoading(false);
+    if (!getPromise) return;
+    let isRendering = false;
+    // On peut faire des changements d'état ici.
+
+    getPromise
+      .then((data) => {
+        if (!isRendering) {
+          setUsers(data);
+          setIsLoading(false);
+        }
+      })
+      .finally(() => setGetPromise(null));
+
+    // A partir d'ici on ne peut plus.
+    return () => (isRendering = true);
+  }, [getPromise]);
+
+  useEffect(() => {
+    setGetPromise(api.users());
   }, []);
 
   return (
@@ -167,7 +185,6 @@ const UsersPage = () => {
             <Col>
               <User
                 user={user}
-                roles={roles}
                 setNotification={setNotification}
               />
             </Col>
@@ -182,8 +199,6 @@ const UsersPage = () => {
 };
 
 const StatisticsPage = () => {
-
-  const {user} = useAuth();
 
   const colors = ['#A0C55F', '#0D6759', '#1B4079', '#FC440F'];
   const [graphData, setGraphData] = useState({
