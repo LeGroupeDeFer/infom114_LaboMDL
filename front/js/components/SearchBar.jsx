@@ -8,6 +8,8 @@ import clsx from 'clsx';
 
 import { useStream } from 'unanimity/context/streamContext';
 import { last, kinds } from 'unanimity/lib';
+import {Flexbox, Loading} from "./index";
+import Spinner from "react-bootstrap/Spinner";
 
 
 // FilterBar :: Object => Component
@@ -71,7 +73,7 @@ const searchVariant = {
 };
 
 // SearchBar :: None => Component
-function SearchBar({ variant }) {
+function SearchBar({ variant, pending }) {
   const stream = useStream();
   const routeMatch = useRouteMatch();
   const history = useHistory();
@@ -126,6 +128,16 @@ function SearchBar({ variant }) {
             routeMatch={routeMatch}
             history={history}
           />
+        </Col>
+
+        <Col md={4} style={{ display: pending ? 'block' : 'none' }}>
+          <Flexbox reverse align="center" className="h-100">
+            <Spinner
+              animation="border"
+              variant="primary"
+              role="status"
+            />
+          </Flexbox>
         </Col>
       </Row>
     </Container>

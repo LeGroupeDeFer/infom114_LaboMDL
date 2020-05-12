@@ -40,7 +40,7 @@
     }
   
     &:hover {
-      color: $primary !important;
+      color: theme-color("primary") !important;
     }
   
   }

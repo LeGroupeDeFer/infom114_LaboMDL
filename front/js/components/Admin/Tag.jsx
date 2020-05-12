@@ -43,7 +43,6 @@ const Tag = ({ name, deleteTag, setNotification, tags, setTags }) => {
             : error.reason;
         setNotification('');
         setNotification(reason);
-        console.log(error);
       });
   };
 
@@ -51,7 +50,7 @@ const Tag = ({ name, deleteTag, setNotification, tags, setTags }) => {
 
   return (
     <>
-      <Card style={{ width: '100vw' }}>
+      <Card className="tag-edit-preview w-100">
         <Card.Body>
           <Container>
             <Row>

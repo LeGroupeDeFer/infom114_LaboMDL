@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../lib/api';
-import { prevent } from '../../lib';
+import {prevent, trace} from '../../lib';
 
 import Card from 'react-bootstrap/Card';
 import Container from 'react-bootstrap/Container';
@@ -17,7 +17,7 @@ const User = ({ user, roles, setNotification }) => {
 
   return (
     <>
-      <Card style={{ width: '100vw' }}>
+      <Card className="w-100">
         <Card.Body>
           <Container>
             <Row>
@@ -120,7 +120,6 @@ const EditModal = ({ user, show, onHide, setNotification }) => {
               : error.reason;
           setNotification('');
           setNotification(reason);
-          console.log(error);
         });
     } else {
       removeRoleFromUser(user.id, e.target.id)
@@ -140,7 +139,6 @@ const EditModal = ({ user, show, onHide, setNotification }) => {
               : error.reason;
           setNotification('');
           setNotification(reason);
-          console.log(error);
         });
     }
   };
@@ -160,24 +158,21 @@ const EditModal = ({ user, show, onHide, setNotification }) => {
       </Modal.Header>
       <Modal.Body>
         <hr />
-        {rolesList.map((role) => {
+        {rolesList.map((role, i) => {
           return (
-            <>
-              <Row key={role.id}>
-                <Col>{role.name}</Col>
-                <Col md="auto">
-                  <Form.Check
-                    key={role.id}
-                    type="switch"
-                    id={role.id}
-                    label={' '}
-                    checked={role.assigned}
-                    onChange={handleEdit}
-                  />
-                </Col>
-              </Row>
-              <hr />
-            </>
+            <Row key={role.id} className="pb-1">
+              <Col>{role.name}</Col>
+              <Col md="auto">
+                <Form.Check
+                  key={role.id}
+                  type="switch"
+                  id={role.id}
+                  label={' '}
+                  checked={role.assigned}
+                  onChange={handleEdit}
+                />
+              </Col>
+            </Row>
           );
         })}
       </Modal.Body>

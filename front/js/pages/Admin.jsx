@@ -46,7 +46,6 @@ import clsx from 'clsx';
 import { May } from '../components/Auth';
 
 
-
 function Admin() {
   const menuList = ['Tags', 'Roles', 'Utilisateurs', 'Publications signalées', 'Statistiques'];
   const [currentMenu, setCurrentMenu] = useState('Tags');
@@ -88,7 +87,7 @@ function Admin() {
 const Title = ({ icon, description }) => {
   return (
     <>
-      <h2 className="mb-3 mt-3">
+      <h2 className="mb-3 mt-3 pt-5 admin-header">
         <span className="mr-3">{icon}</span> {description}
       </h2>
       <hr />
@@ -139,8 +138,7 @@ const MenuBar = ({ currentMenu, onClick, menuList }) => {
 };
 
 const UsersPage = () => {
-  const [users, setUsers] = useState([]);
-  const [roles, setRoles] = useState([]);
+  const [{ users, roles }, setState] = useState({ users: [], roles: [] });
 
   const [notification, setNotification] = useState('');
 
@@ -148,18 +146,8 @@ const UsersPage = () => {
     notification === '' ? <></> : <Toast text={notification} />;
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      let users = await api.users();
-      setUsers(users);
-    };
-
-    const fetchRoles = async () => {
-      let roles = await api.roles();
-      setRoles(roles);
-    };
-
-    fetchUsers();
-    fetchRoles();
+    Promise.all([api.users(), api.roles()])
+      .then(([users, roles]) => setState({ users, roles }));
   }, []);
 
   return (
@@ -170,18 +158,18 @@ const UsersPage = () => {
         description="Gestion des utilisateurs"
       />
       {users.length ? (
-        users.map((user) => {
-          return (
-            <Row key={user.id} className="mb-3">
+        users.map((user) => (
+          <Row key={user.id} className="mb-3 user-edit-row">
+            <Col>
               <User
                 user={user}
                 roles={roles}
                 setNotification={setNotification}
               />
-            </Row>
-          );
-        })
-      ) : (
+            </Col>
+          </Row>
+        )
+      )) : (
         <b>Vous n'avez pas le droit d'accéder à cette page</b>
       )}
     </>
@@ -218,7 +206,6 @@ const StatisticsPage = () => {
               : error.reason;
           setNotification('');
           setNotification(reason);
-          console.log(error);
         });
     };
 
@@ -236,8 +223,6 @@ const StatisticsPage = () => {
     // Fetching Data
     //User data
     let usersData = await api.users.report();
-    console.log(usersData);
-    console.log(user);
     //Tags data
     let tagsData = await api.tags.report();
     let max = tagsData.map((tag) => {
@@ -465,26 +450,15 @@ const FlaggedPage = () => {
 };
 
 const RolesPage = () => {
-  const [roles, setRoles] = useState([]);
+  const [{ roles, capabilities }, setState] = useState({ roles: [], capabilities: [] });
   const [notification, setNotification] = useState('');
-  const [capabilities, setCapabilities] = useState([]);
 
   const Notification = () =>
     notification === '' ? <></> : <Toast text={notification} />;
 
   useEffect(() => {
-    const fetchRoles = async () => {
-      let roles = await api.roles();
-      setRoles(roles);
-    };
-
-    const fetchCapabilities = async () => {
-      let capabilities = await api.capabilities();
-      setCapabilities(capabilities);
-    };
-
-    fetchRoles();
-    fetchCapabilities();
+    Promise.all([api.roles(), api.capabilities()])
+      .then(([roles, capabilities]) => setState({ roles, capabilities }))
   }, []);
 
   //Gets all information about a role
@@ -514,7 +488,7 @@ const RolesPage = () => {
               capabilities: role.capabilities,
             },
           ];
-          setRoles(newRoles);
+          setState(s => ({ ...s, roles: newRoles }));
         })
         .catch((error) => {
           let reason =
@@ -523,7 +497,6 @@ const RolesPage = () => {
               : error.reason;
           setNotification('');
           setNotification(reason);
-          console.log(error);
         });
     };
     sendRole(roleName);
@@ -537,7 +510,7 @@ const RolesPage = () => {
           let remainingRoles = roles.filter(
             (remainingRole) => remainingRole.id !== id
           );
-          setRoles(remainingRoles); //remainingRoles is correct but it does not rerender well
+          setState(s => ({ ...s, roles: remainingRoles })); //remainingRoles is correct but it does not rerender well
         })
         .catch((error) => {
           let reason =
@@ -546,7 +519,6 @@ const RolesPage = () => {
               : error.reason;
           setNotification('');
           setNotification(reason);
-          console.log(error);
         });
     };
     deleteRole(roleId);
@@ -565,16 +537,18 @@ const RolesPage = () => {
       {roles.length ? (
         roles.map((role, i) => {
           return (
-            <Row key={role.id} className="mb-3">
-              <Role
-                roleId={role.id}
-                roleName={role.name}
-                roleColor={role.color}
-                roleCapabilities={role.capabilities}
-                deleteRole={handleDelete}
-                setNotification={setNotification}
-                allCapabilities={capabilities}
-              />
+            <Row key={role.id} className="mb-3 role-edit-row">
+              <Col>
+                <Role
+                  roleId={role.id}
+                  roleName={role.name}
+                  roleColor={role.color}
+                  roleCapabilities={role.capabilities}
+                  deleteRole={handleDelete}
+                  setNotification={setNotification}
+                  allCapabilities={capabilities}
+                />
+              </Col>
             </Row>
           );
         })
@@ -672,7 +646,6 @@ const TagsPage = () => {
               : error.reason;
           setNotification('');
           setNotification(reason);
-          console.log(error);
         });
     };
     //send data to server
@@ -694,14 +667,16 @@ const TagsPage = () => {
       {tags.length ? (
         tags.map((tag, i) => {
           return (
-            <Row key={tag.id} className="mb-3">
-              <Tag
-                name={tag.label}
-                deleteTag={onDelete}
-                setNotification={setNotification}
-                tags={tags}
-                setTags={setTags}
-              ></Tag>
+            <Row key={tag.id} className="mb-3 tag-edit-row">
+              <Col>
+                <Tag
+                  name={tag.label}
+                  deleteTag={onDelete}
+                  setNotification={setNotification}
+                  tags={tags}
+                  setTags={setTags}
+                />
+              </Col>
             </Row>
           );
         })
