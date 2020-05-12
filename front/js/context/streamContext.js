@@ -73,6 +73,7 @@ export function StreamProvider({ children }) {
 
         pushEffect([
           promise,
+          setState(s => ({ ...s, pending: true })) || promise,
           (post) => setState((s) => {
 
             const currentPosts = s.posts.value;
@@ -94,17 +95,21 @@ export function StreamProvider({ children }) {
         setState(s => ({ ...s, pending: true }));
         const promise = Promise.all([
           prefetch.length ? Promise.resolve(prefetch[0]) : api.posts.of(id),
-          api.posts.comments(id)
+          api.posts.comments(id),
         ]);
 
-        return this._updatePost(promise.then(([post, comments]) => {
-          post.comments = comments;
-          return post.kind !== 'poll' ? post : api.posts.pollData(id).then((pollData) => {
-            post.answers = pollData.answers;
-            post.userAnswer = pollData.userAnswer;
-            return post;
-          });
-        }));
+        return this._updatePost(
+          promise.then(([post, comments]) => {
+            post.comments = comments;
+            return post.kind !== 'poll'
+              ? post
+              : api.posts.pollData(id).then((pollData) => {
+                  post.answers = pollData.answers;
+                  post.userAnswer = pollData.userAnswer;
+                  return post;
+                });
+          })
+        );
       },
 
       add(post) {
@@ -143,6 +148,9 @@ export function StreamProvider({ children }) {
       comment(post, comment) {
         return this._updatePost(api.posts.comment(post.id, comment));
       },
+      reply(commentId, reply) {
+        return this._updatePost(api.posts.reply(commentId, reply));
+      },
       vote(post, vote) {
         return this._updatePost(api.posts.vote(post.id, vote));
       },
@@ -163,15 +171,6 @@ export function StreamProvider({ children }) {
       },
       pollVote(postId, answerId) {
         return this._updatePost(api.posts.pollVote(postId, answerId));
-      },
-      authorPostFilter(authorId) {
-        const promise = api.users.posts(authorId);
-        pushEffect([
-          promise,
-          value => setState(s => ({ ...s, pending: true, posts: { ...s.posts, value: value }})),
-          error => setState(s => ({ ...s, pending: false, error }))
-        ]);
-        return promise;
       }
     },
 

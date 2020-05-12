@@ -27,21 +27,18 @@ const LockedT = ({ children }) => {
 };
 
 const Hollow = ({ children, setLockedCap }) => {
-  setLockedCap(false);
+  // On peut pas faire ça ici, update l'état d'un autre composant c'est pas permit par React
+  // setLockedCap(false);
   return <>{children}</>;
 };
 
 const Temp = May('post:edit_locked', Hollow, LockedT);
 
-
 function VoteOverlay({ isLogged, isLocked, children, setLockedCap }) {
-  if (isLogged && !isLocked)
-    return <>{children}</>;
+  if (isLogged && !isLocked) return <>{children}</>;
 
-  /*
   if (isLogged && isLocked)
     return <Temp setLockedCap={setLockedCap}>{children}</Temp>;
-  */
 
   return (
     <OverlayTrigger
@@ -84,7 +81,7 @@ export const DownVote = (props) => <Vote direction={VOTE.DOWN} {...props} />;
 
 export function Score({ score, vote }) {
   const didVote = vote !== VOTE.NONE;
-  const cls = clsx('text-center', didVote && 'active');
+  const cls = clsx('text-center score', didVote && 'active');
   return (
     <div className={cls}>
       <b>{score}</b>

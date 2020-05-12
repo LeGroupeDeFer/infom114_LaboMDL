@@ -3,8 +3,9 @@
 //! Route related to the comment management
 
 use crate::database::models::prelude::*;
-use crate::database::DBConnection;
+use crate::database::{DBConnection, SortOrder};
 
+use std::convert::TryFrom;
 use crate::guards::{Auth, CommentGuard, ForwardAuth, PostGuard};
 
 use crate::http::responders::{ok, ApiResult};
@@ -32,18 +33,29 @@ pub fn collect() -> Vec<Route> {
     )
 }
 
-#[get("/api/v1/post/<_post_id>/comments", rank = 1)]
+#[get("/api/v1/post/<_post_id>/comments?<order>&<limit>&<offset>", rank = 1)]
 pub fn get_all_from_post_authenticated(
     conn: DBConnection,
     auth: ForwardAuth,
     post_guard: PostGuard,
+    order: Option<String>,
+    limit: Option<u32>,
+    offset: Option<u32>,
     _post_id: u32,
 ) -> ApiResult<Vec<Comment>> {
+    let mut sort_order: Option<SortOrder> = None;
+    if let Some(value) = order {
+        sort_order = Some(SortOrder::try_from(value.as_ref())?)
+    }
+
     Ok(Json(
-        CommentEntity::by_post_id(
+        CommentEntity::get_all(
             &*conn,
             &post_guard.post().id,
             auth.deref().has_capability(&*conn, "comment:view_hidden"),
+            sort_order,
+            limit,
+            offset,
         )?
         .into_iter()
         .map(move |entity| {
@@ -55,17 +67,32 @@ pub fn get_all_from_post_authenticated(
     ))
 }
 
-#[get("/api/v1/post/<_post_id>/comments", rank = 2)]
+#[get("/api/v1/post/<_post_id>/comments?<order>&<limit>&<offset>", rank = 2)]
 pub fn get_all_from_post_unauthenticated(
     conn: DBConnection,
     post_guard: PostGuard,
+    order: Option<String>,
+    limit: Option<u32>,
+    offset: Option<u32>,
     _post_id: u32,
 ) -> ApiResult<Vec<Comment>> {
+    let mut sort_order: Option<SortOrder> = None;
+    if let Some(value) = order {
+        sort_order = Some(SortOrder::try_from(value.as_ref())?)
+    }
+
     Ok(Json(
-        CommentEntity::by_post_id(&*conn, &post_guard.post().id, false)?
-            .into_iter()
-            .map(move |entity| Comment::from(entity))
-            .collect::<Vec<Comment>>(),
+        CommentEntity::get_all(
+            &*conn,
+            &post_guard.post().id,
+            false,
+            sort_order,
+            limit,
+            offset,
+        )?
+        .into_iter()
+        .map(move |entity| Comment::from(entity))
+        .collect::<Vec<Comment>>(),
     ))
 }
 
@@ -144,7 +171,7 @@ fn create_reply_to_comment(
         parent_id: Some(comment_guard.comment().id),
     };
 
-    let ce = CommentEntity::insert_either(&*conn, &new_comment)?;
+    let ce = CommentEntity::insert_new(&*conn, &new_comment)?;
     Ok(Json(Comment::from(ce)))
 }
 

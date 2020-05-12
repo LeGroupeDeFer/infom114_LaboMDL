@@ -22,14 +22,14 @@ import clsx from 'clsx';
 import { useAuth } from 'unanimity/context';
 import { May } from '../Auth';
 import { UpVote, DownVote, Vote, VoteSection } from './Vote';
-import { kindOf, empty, last, preview, previewLength } from 'unanimity/lib';
+import { kindOf, empty, last, preview, previewLength, WATCH_EVENT } from 'unanimity/lib';
 import { Circle, Flexbox } from '../';
 
 import Comment from './Comment';
 import Poll from './Poll';
 import DeleteModal from './DeleteModal';
 import ReportModal from './ReportModal';
-import {WATCH_EVENT} from "../../lib";
+
 
 /* ------------------------------ Post actions ----------------------------- */
 
@@ -257,7 +257,9 @@ export function Post({
           <Row>
             <Col className="expand-preview" xs={12} sm={10}>
               <h5 className="ml-1 expand-preview">
-                <Badge className={`post-${kind} mr-1`}>{kindOf(kind).labelSingular}</Badge>
+                <Badge className={`post-${kind} mr-1`}>
+                  {kindOf(kind).labelSingular}
+                </Badge>
                 <span className="mr-1">{title}</span>
 
                 <span className="text-muted post-subtitle">
@@ -265,7 +267,7 @@ export function Post({
                     {author.firstname} {' ' + author.lastname}
                   </a>
                   <span>-</span>
-                  <Moment date={createdAt} className="post-moment"/>
+                  <Moment date={createdAt} className="post-moment" />
                 </span>
               </h5>
             </Col>

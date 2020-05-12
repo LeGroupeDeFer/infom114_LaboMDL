@@ -146,16 +146,17 @@ Object.assign(auth, {
     const token = store.getItem('__refresh_token__');
     const [email, refreshToken] = token.split(':');
 
-    if (!token)
-      throw { code: 0, reason: 'Dead refresh token' };
+    if (!token) throw { code: 0, reason: 'Dead refresh token' };
 
     return auth('/refresh', { body: { email, refreshToken } })
       .then(({ accessToken, refreshToken, user }) => {
         currentAccessToken = accessToken;
         store.setItem('__refresh_token__', `${email}:${refreshToken}`);
         return { accessToken, user };
-      }).catch(({ code, reason }) => {
-        if (code === 403) // Token expired
+      })
+      .catch(({ code, reason }) => {
+        if (code === 403)
+          // Token expired
           auth.clear();
         return Promise.reject({ code, reason });
       });
@@ -239,6 +240,12 @@ Object.assign(posts, {
   },
   comments(postId) {
     return api(`/post/${postId}/comments`);
+  },
+  reply(commentId, reply) {
+    return api(`/comment/${commentId}`, {
+      method: 'POST',
+      body: { content: reply },
+    });
   },
 });
 
