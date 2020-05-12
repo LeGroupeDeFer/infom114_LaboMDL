@@ -5,7 +5,7 @@ use std::io::Cursor;
 use std::result::Result as StdResult;
 
 use crate::lib::consequence::{
-    AuthError, EntityError, Error, JWTErrorKind, PostError, TokenError, UserError,
+    AuthError, EntityError, Error, JWTErrorKind, PostError, TokenError, UserError, WatchEventError
 };
 
 fn response_code(error: &Error) -> u16 {
@@ -52,6 +52,11 @@ fn response_code(error: &Error) -> u16 {
             AuthError::MissingHeader => 400,
             AuthError::InvalidHeader => 400,
             AuthError::MissingCapability => 403,
+        },
+        Error::WatchEventError(e) => match e {
+            WatchEventError::UnknownKind => 422,
+            WatchEventError::InvalidKind => 422,
+            WatchEventError::InvalidWatchTransition => 422
         },
     }
 }

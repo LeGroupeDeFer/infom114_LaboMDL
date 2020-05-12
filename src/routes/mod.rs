@@ -19,6 +19,7 @@ pub fn collect() -> Vec<rocket::Route> {
             index,
             dynamic_routing,
             get_hollow_post,
+            get_hollow_amend,
             files,
             activate,
             recover
@@ -28,7 +29,7 @@ pub fn collect() -> Vec<rocket::Route> {
     .concat()
 }
 
-const ALLOWED_ROUTES: [&str; 13] = [
+const ALLOWED_ROUTES: [&str; 14] = [
     "profile",
     "notifications",
     "settings",
@@ -41,6 +42,7 @@ const ALLOWED_ROUTES: [&str; 13] = [
     "activate",
     "write",
     "detail",
+    "amend",
     "admin",
 ];
 
@@ -74,6 +76,13 @@ pub fn dynamic_routing(route: String) -> Option<Template> {
 pub fn get_hollow_post(_post_id: u32) -> Template {
     Template::render("layout", &())
 }
+
+
+#[get("/amend/<_post_id>", rank = 2)]
+pub fn get_hollow_amend(_post_id: u32) -> Template {
+    Template::render("layout", &())
+}
+
 
 /// Hollow route to be accessed by activation link
 #[get("/activate/<_id>/<_token>", rank = 1)]

@@ -20,24 +20,28 @@
 .vote {
     padding: 0 0 0 0;
     border: none;
-    background-color: transparent !important;
+    background-color: transparent;
 
     &:disabled {
         cursor: not-allowed;
+        background-color: transparent !important;
     }
 
     &.up:hover,
     &.up:focus,
     &.up.active {
         color: theme-color("primary") !important;
-        ;
+        background-color: #e8e8e8 !important;
+        box-shadow: none !important;
+
     }
 
     &.down:hover,
     &.down:focus,
     &.down.active {
         color: theme-color("danger") !important;
-        ;
+        background-color: #e8e8e8 !important;
+        box-shadow: none !important;
     }
 }
 
@@ -113,7 +117,8 @@
 
     &.post-preview {
 
-        box-shadow: rgba(0, 0, 0, 0.05) 0 0 10px;
+        // Slows down performance by quite a bit
+        // box-shadow: rgba(0, 0, 0, 0.05) 0 0 10px;
         transition: .1s ease-out;
 
         &:hover {
@@ -130,7 +135,21 @@
 
         &.post-watched {
             .post-header {
-                border-color: theme-color("secondary");
+                background-color: theme-color("secondary");
+                color: white;
+            }
+
+            .post-subtitle, .post-author {
+                opacity: .8;
+                color: white !important;
+            }
+
+            .post-author {
+                font-weight: bold !important;
+            }
+
+            .post-time {
+                opacity: .8;
             }
         }
     }
@@ -172,6 +191,19 @@
             border: none;
         }
     }
+
+    .watch-symbol, .lock-symbol {
+        background: darken(theme-color("secondary"), 5) !important;
+    }
+
+}
+
+.lock-symbol svg {
+    padding-left: 2px; // FIXME - The lock is not centered
+}
+
+.fa-comment-alt {
+    vertical-align: -0.3em;
 }
 
 .tag {
@@ -186,3 +218,9 @@
 .alert {
     padding: 0.75rem 1rem;
 }
+
+
+.watch-event {
+
+}
+

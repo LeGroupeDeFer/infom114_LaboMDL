@@ -5,7 +5,7 @@ import { Route, Switch, useLocation } from 'react-router-dom';
 import { Loading } from 'unanimity/components';
 import Sidebar from './Sidebar';
 import layout from '../lib/layout';
-import {StreamProvider, useAuth} from '../context';
+import { StreamProvider, useAuth } from '../context';
 
 const Stream = lazy(() => import('../pages/Stream/index'));
 const Profile = lazy(() => import('../pages/Profile'));
@@ -20,11 +20,10 @@ const AuthenticatedAdmin = lazy(() => import('../pages/Admin'));
 const Recover = lazy(() => import('../pages/Recover'));
 const Restore = lazy(() => import('../pages/Restore'));
 
-
 const Content = (_) => {
   const location = useLocation();
   const { user, token } = useAuth();
- 
+
   const layoutStyle = layout.layout(`/${location.pathname.split('/')[1]}`);
   const links = layout.links(user, token);
 

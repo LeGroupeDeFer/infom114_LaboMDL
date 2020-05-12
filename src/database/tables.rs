@@ -2,6 +2,7 @@ pub use super::schema::{
     addresses::dsl::addresses as addresses_table,
     capabilities::dsl::capabilities as capabilities_table,
     comments::dsl::comments as comments_table,
+    comments_reports::dsl::comments_reports as comments_reports_table,
     poll_answers::dsl::poll_answers as poll_answers_table, posts::dsl::posts as posts_table,
     posts_reports::dsl::posts_reports as posts_reports_table,
     posts_tags::dsl::posts_tags as posts_tags_table, roles::dsl::roles as roles_table,
@@ -13,4 +14,5 @@ pub use super::schema::{
     users_roles::dsl::users_roles as users_roles_table,
     votes_comments::dsl::votes_comments as votes_comments_table,
     votes_posts::dsl::votes_posts as votes_posts_table,
+    watch_events::dsl::watch_events as watch_events_table,
 };

@@ -7,7 +7,7 @@ export { Unauthenticated, Authenticated, Dialog } from './Auth';
 export { default as SearchBar } from './SearchBar';
 export { default as Post } from './Post';
 export { Simple } from './Error';
-
+export { default as Moment } from './Moment';
 
 import React from 'react';
 import Spinner from 'react-bootstrap/Spinner';

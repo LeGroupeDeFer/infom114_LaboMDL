@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
-import { Button, Card, Row, Col } from 'react-bootstrap';
+import {
+  Button,
+  Card,
+  Row,
+  Col,
+  OverlayTrigger,
+  Tooltip,
+} from 'react-bootstrap';
+
 import Form from 'react-bootstrap/Form';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import CheckCircle from '../../icons/check-circle-regular.svg';
-
+import { useAuth } from 'unanimity/context';
 
 function Poll({ postId, answers, userAnswer, onPollVote }) {
+  const { user } = useAuth();
+  const isLogged = !!user;
   const [userVote, setUserVote] = useState(
     userAnswer == null ? null : userAnswer.id
   );
@@ -42,13 +52,30 @@ function Poll({ postId, answers, userAnswer, onPollVote }) {
                   />
                 );
               })}
-              <Button
-                variant="primary"
-                onClick={() => vote()}
-                disabled={optionSelected == null}
-              >
-                Voter
-              </Button>
+
+              {isLogged ? (
+                <Button
+                  variant="primary"
+                  onClick={() => vote()}
+                  disabled={optionSelected == null}
+                >
+                  Voter
+                </Button>
+              ) : (
+                <OverlayTrigger
+                  placement="right"
+                  overlay={
+                    <Tooltip>
+                      Il faut être authentifié pour pouvoir partiticiper à un
+                      sondage
+                    </Tooltip>
+                  }
+                >
+                  <Button variant="primary" disabled>
+                    Voter
+                  </Button>
+                </OverlayTrigger>
+              )}
             </>
           )}
 

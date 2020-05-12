@@ -29,6 +29,8 @@ use crate::lib::consequence::Consequence;
     Clone,
     Debug,
     PartialEq,
+    Eq,
+    Hash
 )]
 #[table_name = "capabilities"]
 pub struct CapabilityEntity {

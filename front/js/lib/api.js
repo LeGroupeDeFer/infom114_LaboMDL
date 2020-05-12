@@ -115,6 +115,7 @@ Object.assign(auth, {
    * @returns {Promise<api.User|api.Response>}
    */
   login(email, password) {
+    auth.clear();
     return auth('/login', {
       body: { email, password },
     }).then(({ user, accessToken, refreshToken }) => {
@@ -145,15 +146,16 @@ Object.assign(auth, {
     const token = store.getItem('__refresh_token__');
     const [email, refreshToken] = token.split(':');
 
+    if (!token)
+      throw { code: 0, reason: 'Dead refresh token' };
+
     return auth('/refresh', { body: { email, refreshToken } })
       .then(({ accessToken, refreshToken, user }) => {
         currentAccessToken = accessToken;
         store.setItem('__refresh_token__', `${email}:${refreshToken}`);
         return { accessToken, user };
-      })
-      .catch(({ code, reason }) => {
-        if (code == 403)
-          // Token expired
+      }).catch(({ code, reason }) => {
+        if (code === 403) // Token expired
           auth.clear();
         return Promise.reject({ code, reason });
       });
@@ -220,8 +222,8 @@ Object.assign(posts, {
     if (cancel) return api(`/post/${id}/report`, { method: 'POST' });
     return api(`/post/${id}/report`, { method: 'POST', body: { reason } });
   },
-  watch(id) {
-    return api(`/post/${id}/watch`, { method: 'POST' });
+  watch(id, payload) {
+    return api(`/post/${id}/watch`, { method: 'POST', body: payload });
   },
   pollData(id) {
     return api(`/post/${id}/poll`);

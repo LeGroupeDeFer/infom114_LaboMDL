@@ -14,11 +14,12 @@ import remove from 'lodash/remove';
 import without from 'lodash/without';
 import { clean } from '../lib';
 
-export const PostsChange = 0b00000001;
-export const TagsChange = 0b00000010;
-export const KeywordChange = 0b00000100;
-export const KindChange = 0b00001000;
-export const OrderChange = 0b00010000;
+export const PostsChange = /*       */ 0b00000001;
+export const TagsChange = /*        */ 0b00000010;
+export const KeywordChange = /*     */ 0b00000100;
+export const KindChange = /*        */ 0b00001000;
+export const OrderChange = /*       */ 0b00010000;
+export const AuthorChange = /*      */ 0b00100000;
 
 export const StreamDiff = Object.freeze({
   PostsChange,
@@ -26,6 +27,7 @@ export const StreamDiff = Object.freeze({
   KeywordChange,
   KindChange,
   OrderChange,
+  AuthorChange,
 });
 
 function streamDifference(prev, next) {
@@ -38,6 +40,7 @@ function streamDifference(prev, next) {
   if (!isEqual(prev.keywords, next.keywords)) diff |= KeywordChange;
   if (!isEqual(prev.kind, next.kind)) diff |= KindChange;
   if (!isEqual(prev.order, next.order)) diff |= OrderChange;
+  if (!isEqual(prev.author, next.author)) diff |= AuthorChange;
 
   return diff;
 }
@@ -49,6 +52,7 @@ const query = (state) => ({
   order: state.order.value,
   tags: state.tags.value,
   keywords: state.keywords.value,
+  author: trace(state.author.value)
 });
 
 export function StreamProvider({ children }) {
@@ -59,45 +63,46 @@ export function StreamProvider({ children }) {
   // avoid that is to allow react to execute its diff algorithm.
   const [state, setState] = useState({
     posts: {
+      focus: null,
+      value: [],
       _updatePost(promise) {
+        const that = this;
+
         pushEffect([
           promise,
-          (post) =>
-            setState((s) => ({
-              ...s,
-              posts: {
-                ...this,
-                value: s.posts.value.map((p) => (p.id === post.id ? post : p)),
-              },
-            })) || post,
+          (post) => setState((s) => {
+
+            const currentPosts = s.posts.value;
+            let updatedPosts;
+            if (s.posts.value.some(p => p.id === post.id))
+              updatedPosts = currentPosts.map(p => (p.id === post.id ? post : p));
+            else
+              updatedPosts = [ ...currentPosts, post ];
+
+            return { ...s, posts: { ...s.posts, value: updatedPosts } };
+          }) || post,
           printerr, // TODO
         ]);
         return promise;
       },
-      value: [],
-      of(id) {
-        const prefetch = this.value.filter((p) => p.id == id);
-        let promise;
-        if (prefetch.length) {
-          promise = Promise.resolve(prefetch[0]);
-        } else {
-          promise = api.posts.of(id);
-        }
 
-        return promise.then((post) => {
-          return api.posts.comments(id).then((comments) => {
-            post.comments = comments;
-            if (post.kind == 'poll') {
-              return api.posts.pollData(id).then((pollData) => {
-                post.answers = pollData.answers;
-                post.userAnswer = pollData.userAnswer;
-                return post;
-              });
-            }
+      of(id) {
+        const prefetch = this.value.filter((p) => Number(p.id) === Number(id));
+        const promise = Promise.all([
+          prefetch.length ? Promise.resolve(prefetch[0]) : api.posts.of(id),
+          api.posts.comments(id)
+        ]);
+
+        return this._updatePost(promise.then(([post, comments]) => {
+          post.comments = comments;
+          return post.kind !== 'poll' ? post : api.posts.pollData(id).then((pollData) => {
+            post.answers = pollData.answers;
+            post.userAnswer = pollData.userAnswer;
             return post;
           });
-        });
+        }));
       },
+
       add(post) {
         const promise = api.posts.add(post);
         pushEffect([
@@ -142,8 +147,8 @@ export function StreamProvider({ children }) {
       lock(post) {
         return this._updatePost(api.posts.lock(post.id));
       },
-      watch(post) {
-        return this._updatePost(api.posts.watch(post.id));
+      watch(id, payload) {
+        return this._updatePost(api.posts.watch(id, payload));
       },
       pollData(id) {
         return api.posts.pollData(id);
@@ -159,17 +164,6 @@ export function StreamProvider({ children }) {
           printerr
         ]);
         return promise;
-      },
-      removeAllFilter() {
-        pushEffect([
-          api.posts.where(clean(query(state), true)),
-          (posts) =>
-            setState((s) => ({
-              ...s,
-              posts: { ...s.posts, value: posts },
-            })),
-          printerr, // TODO
-        ]) //FIXME - Find a proper solution
       }
     },
 
@@ -227,6 +221,14 @@ export function StreamProvider({ children }) {
         }));
       },
     },
+
+    author: {
+      value: null,
+      set(author_id) {
+        if (this.value === author_id) return;
+        setState(s => ({ ...s, author: { ...state.author, value: author_id } }));
+      }
+    }
   });
 
   useEffect(
@@ -245,6 +247,7 @@ export function StreamProvider({ children }) {
       state.order.value,
       state.tags.value,
       state.keywords.value,
+      state.author.value
     ]
   );
 

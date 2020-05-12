@@ -29,8 +29,8 @@ table! {
         deleted_at -> Nullable<Timestamp>,
         hidden_at -> Nullable<Timestamp>,
         locked_at -> Nullable<Timestamp>,
-        votes -> Unsigned<Integer>,
-        score -> Integer,
+        votes -> Unsigned<Bigint>,
+        score -> Bigint,
     }
 }
 
@@ -166,7 +166,7 @@ table! {
         comment_id -> Unsigned<Integer>,
         user_id -> Unsigned<Integer>,
         voted_at -> Timestamp,
-        vote_value -> Bool,
+        vote_value -> Smallint,
     }
 }
 
@@ -176,6 +176,17 @@ table! {
         user_id -> Unsigned<Integer>,
         voted_at -> Timestamp,
         vote_value -> Smallint,
+    }
+}
+
+table! {
+    watch_events (id) {
+        id -> Unsigned<Integer>,
+        post_id -> Unsigned<Integer>,
+        author_id -> Unsigned<Integer>,
+        event -> Unsigned<Tinyint>,
+        time -> Timestamp,
+        comment -> Text,
     }
 }
 
@@ -202,6 +213,8 @@ joinable!(votes_comments -> comments (comment_id));
 joinable!(votes_comments -> users (user_id));
 joinable!(votes_posts -> posts (post_id));
 joinable!(votes_posts -> users (user_id));
+joinable!(watch_events -> posts (post_id));
+joinable!(watch_events -> users (author_id));
 
 allow_tables_to_appear_in_same_query!(
     addresses,
@@ -222,4 +235,5 @@ allow_tables_to_appear_in_same_query!(
     users_roles,
     votes_comments,
     votes_posts,
+    watch_events,
 );
