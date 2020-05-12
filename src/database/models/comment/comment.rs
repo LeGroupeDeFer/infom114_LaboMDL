@@ -97,7 +97,7 @@ impl From<CommentEntity> for Comment {
             flags: RelCommentReportEntity::count_by_comment_id(&conn, &ce.id).unwrap(),
             replies,
             user_vote: None,
-            user_flag: None
+            user_flag: None,
         }
     }
 }
@@ -106,14 +106,14 @@ impl CommentEntity {
     pub fn by_post_id(
         conn: &MysqlConnection,
         post_id: &u32,
-        hidden: bool,
+        can_see_hidden: bool,
     ) -> Consequence<Vec<Self>> {
         let mut query = table.into_boxed();
-        query = query.filter(dsl::deleted_at.is_not_null());
+        query = query.filter(dsl::deleted_at.is_null());
         query = query.filter(dsl::post_id.eq(post_id));
 
-        if !hidden {
-            query = query.filter(dsl::hidden_at.is_not_null());
+        if !can_see_hidden {
+            query = query.filter(dsl::hidden_at.is_null());
         }
 
         Ok(query.load(conn)?)
