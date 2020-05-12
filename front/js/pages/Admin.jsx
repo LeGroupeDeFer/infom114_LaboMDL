@@ -44,8 +44,6 @@ import api from '../lib/api';
 import 'regenerator-runtime';
 import clsx from 'clsx';
 import { May } from '../components/Auth';
-import {trace} from "../lib";
-
 
 
 function Admin() {
@@ -208,7 +206,6 @@ const StatisticsPage = () => {
               : error.reason;
           setNotification('');
           setNotification(reason);
-          console.log(error);
         });
     };
 
@@ -226,8 +223,6 @@ const StatisticsPage = () => {
     // Fetching Data
     //User data
     let usersData = await api.users.report();
-    console.log(usersData);
-    console.log(user);
     //Tags data
     let tagsData = await api.tags.report();
     let max = tagsData.map((tag) => {
@@ -502,7 +497,6 @@ const RolesPage = () => {
               : error.reason;
           setNotification('');
           setNotification(reason);
-          console.log(error);
         });
     };
     sendRole(roleName);
@@ -525,7 +519,6 @@ const RolesPage = () => {
               : error.reason;
           setNotification('');
           setNotification(reason);
-          console.log(error);
         });
     };
     deleteRole(roleId);
@@ -544,7 +537,7 @@ const RolesPage = () => {
       {roles.length ? (
         roles.map((role, i) => {
           return (
-            <Row key={trace(role.id)} className="mb-3 role-edit-row">
+            <Row key={role.id} className="mb-3 role-edit-row">
               <Col>
                 <Role
                   roleId={role.id}
@@ -653,7 +646,6 @@ const TagsPage = () => {
               : error.reason;
           setNotification('');
           setNotification(reason);
-          console.log(error);
         });
     };
     //send data to server

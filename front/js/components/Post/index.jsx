@@ -71,7 +71,7 @@ const WatchPost = May('post:watch', ({ post }) => {
   return (
     <Dropdown.Item as="button" onClick={() => history.push(`amend/${post.id}`)}>
       <Icon icon="dove" className="mr-2" />
-      <span>Amender</span>
+      <span>Suivre</span>
     </Dropdown.Item>
   );
 });
@@ -250,7 +250,7 @@ export function Post({
 
                 {isLogged && (
                   <DropdownButton
-                    alignRight
+                    drop="left"
                     id={`post-${id}-actions`}
                     title={
                       <div className="px-2 py-1">
@@ -300,7 +300,7 @@ export function Post({
             score={score}
             isLogged={isLogged}
             isLocked={post.locked}
-            vote={userVote}
+            vote={post.userVote}
           />
 
           <div className="px-3 pb-3 pt-2 w-100">

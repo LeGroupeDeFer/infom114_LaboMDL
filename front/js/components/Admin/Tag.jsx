@@ -43,7 +43,6 @@ const Tag = ({ name, deleteTag, setNotification, tags, setTags }) => {
             : error.reason;
         setNotification('');
         setNotification(reason);
-        console.log(error);
       });
   };
 

@@ -120,7 +120,6 @@ const EditModal = ({ user, show, onHide, setNotification }) => {
               : error.reason;
           setNotification('');
           setNotification(reason);
-          console.log(error);
         });
     } else {
       removeRoleFromUser(user.id, e.target.id)
@@ -140,7 +139,6 @@ const EditModal = ({ user, show, onHide, setNotification }) => {
               : error.reason;
           setNotification('');
           setNotification(reason);
-          console.log(error);
         });
     }
   };

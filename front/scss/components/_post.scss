@@ -142,7 +142,8 @@
             padding: 0 0 0 0;
         }
 
-        .dropdown-toggle:after {
+        .dropdown-toggle:after,
+        .dropdown-toggle:before {
             content: none
         }
 
@@ -154,10 +155,6 @@
 
     .card-header {
         padding: 0.7rem 1.25rem;
-    }
-
-    &.post-detail {
-        margin-top: 5rem;
     }
 
     &:not(.post-preview, .post-detail) {

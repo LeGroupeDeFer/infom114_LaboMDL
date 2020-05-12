@@ -59,7 +59,6 @@ const Role = ({
             : error.reason;
         setNotification('');
         setNotification(reason);
-        console.log(reason);
       });
   };
 
@@ -125,7 +124,6 @@ const Role = ({
 };
 
 function RenameModal(props) {
-  //console.log({...props});
   const [newName, setNewName] = useState('');
 
   const handleRename = (e) => {
@@ -241,7 +239,6 @@ function EditModal({
                 : error.reason;
             setNotification('');
             setNotification(reason);
-            console.log(error);
           });
       }
       return e;

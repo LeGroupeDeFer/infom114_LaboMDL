@@ -123,7 +123,7 @@ function StreamContent({ userId }) {
 
   return (
     <>
-      <SearchBar variant="kinds" />
+      <SearchBar variant="kinds" pending={stream.pending} />
 
       {/* Delete post modal */}
 
