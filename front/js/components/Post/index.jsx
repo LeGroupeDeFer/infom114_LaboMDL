@@ -29,6 +29,7 @@ import Comment from './Comment';
 import Poll from './Poll';
 import DeleteModal from './DeleteModal';
 import ReportModal from './ReportModal';
+import {kindOf} from "../../lib";
 
 /* ------------------------------ Post actions ----------------------------- */
 
@@ -229,7 +230,7 @@ export function Post({
           <Row>
             <Col className="expand-preview" sm={10}>
               <h5 className="ml-1 expand-preview">
-                <Badge className={`post-${kind} mr-1`}>{kind}</Badge>
+                <Badge className={`post-${kind} mr-1`}>{kindOf(kind).labelSingular}</Badge>
                 <span className="mr-1">{title}</span>
 
                 <span className="text-muted post-subtitle">
@@ -325,13 +326,6 @@ export function Post({
               onPollVote={onPollVote}
               className="expand-preview"
             />
-
-            <div className="mt-2">
-              <strong className="status">Accepté le 18 Avril 2020</strong>
-              <Alert variant="success">
-                Les vaccances seront prolongées de 2 semaines.
-              </Alert>
-            </div>
 
             <Flexbox reverse className="post-footer mt-2">
               <Link

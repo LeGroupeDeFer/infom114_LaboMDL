@@ -125,12 +125,12 @@
   }
 
   &:hover {
-    color: $primary !important;
+    color: theme-color("primary") !important;
   }
 
   &.active {
     outline: none !important;
-    color: $primary !important;
+    color: theme-color("primary") !important;
     border: none !important;
   }
 }

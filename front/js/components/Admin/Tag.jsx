@@ -51,7 +51,7 @@ const Tag = ({ name, deleteTag, setNotification, tags, setTags }) => {
 
   return (
     <>
-      <Card style={{ width: '100vw' }}>
+      <Card className="tag-edit-preview w-100">
         <Card.Body>
           <Container>
             <Row>

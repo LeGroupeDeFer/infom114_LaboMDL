@@ -65,7 +65,7 @@ const Role = ({
 
   return (
     <>
-      <Card style={{ width: '100vw' }}>
+      <Card className="w-100">
         <Card.Body>
           <Container>
             <Row>
@@ -264,22 +264,19 @@ function EditModal({
         <hr />
         {capabilities.map((capability) => {
           return (
-            <>
-              <Row>
-                <Col>{capability.name}</Col>
-                <Col md="auto">
-                  <Form.Check
-                    key={capability.id}
-                    id={capability.id}
-                    type="switch"
-                    label={' '}
-                    checked={capability.assigned}
-                    onChange={(e) => handleEdit(e, capability)}
-                  />
-                </Col>
-              </Row>
-              <hr />
-            </>
+            <Row key={capability.id} className="pb-1">
+              <Col>{capability.name}</Col>
+              <Col md="auto">
+                <Form.Check
+                  key={capability.id}
+                  id={capability.id}
+                  type="switch"
+                  label={' '}
+                  checked={capability.assigned}
+                  onChange={(e) => handleEdit(e, capability)}
+                />
+              </Col>
+            </Row>
           );
         })}
       </Modal.Body>
