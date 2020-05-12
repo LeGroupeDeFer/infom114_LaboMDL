@@ -413,6 +413,7 @@ const StatisticsPage = () => {
 const FlaggedPage = () => {
   const [flaggedPosts, setFlaggedPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
   const fetchFlaggedPosts = async () => {
     let posts = await api.posts.flagged();
     setFlaggedPosts(posts);
@@ -433,10 +434,9 @@ const FlaggedPage = () => {
       { isLoading
         ? <Loading />
         : <>{flaggedPosts.length !== 0 ? (
-          flaggedPosts.map((flaggedPost) => {
+          flaggedPosts.map((flaggedPost, i) => {
             return (
-              <>
-                <Row>
+                <Row className="mb-3" key={i}>
                   <Col>
                     <FlaggedPost
                       post={flaggedPost.post}
@@ -445,8 +445,6 @@ const FlaggedPage = () => {
                     />
                   </Col>
                 </Row>
-                <br />
-              </>
             );
           })
         ) : (

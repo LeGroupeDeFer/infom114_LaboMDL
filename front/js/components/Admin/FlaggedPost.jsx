@@ -35,16 +35,13 @@ const FlaggedPost = ({ post, countFlag, reasons, onHide }) => {
       <Card.Body className="post-body p-0 expand-preview">
         <div className="d-flex expand-preview">
           <div className="px-3 pb-3 pt-2 w-100">
-            <Card.Text>
-              <div className="mb-1">
-                {tags.map((tag) => (
-                  <a key={tag} className="mr-2 tag">
-                    <Icon icon="tag" className="mr-1" />
-                    <span>{tag}</span>
-                  </a>
+            {tags.map((tag) => (
+              <a key={tag} className="mr-2 tag">
+                <Icon icon="tag" className="mr-1" />
+                <span>{tag}</span>
+              </a>
                 ))}
-              </div>
-
+            <Card.Text>
               <span>{content}</span>
             </Card.Text>
             <div className="post-footer mb-2">
@@ -79,17 +76,14 @@ const FlaggedPost = ({ post, countFlag, reasons, onHide }) => {
         <hr />
         {reasons.map((reason, i) => {
           return i + 1 === reasons.length ? (
-            <>
+            <div key={i} className="mb-3">
               {' '}
               {reason}
-              <br />
-            </>
+            </div>
           ) : (
-            <>
+            <div key={i} className="mb-3">
               {reason}
-              <br />
-              <hr />
-            </>
+            </div>
           );
         })}
       </Card.Footer>
