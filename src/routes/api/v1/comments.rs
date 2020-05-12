@@ -5,8 +5,8 @@
 use crate::database::models::prelude::*;
 use crate::database::{DBConnection, SortOrder};
 
-use std::convert::TryFrom;
 use crate::guards::{Auth, CommentGuard, ForwardAuth, PostGuard};
+use std::convert::TryFrom;
 
 use crate::http::responders::{ok, ApiResult};
 use crate::lib::{AuthError, EntityError};
@@ -25,9 +25,9 @@ pub fn collect() -> Vec<Route> {
         get_comment_authenticated,
         get_comment_unauthenticated,
         updown_vote,
-        toggle_vote_visibility,
+        toggle_comment_visibility,
         manage_comment_report,
-        toggle_vote_lock,
+        toggle_comment_lock,
         update_comment,
         delete_comment
     )
@@ -300,7 +300,7 @@ fn manage_comment_report(
 }
 
 #[post("/api/v1/comment/<_comment_id>/hide")]
-fn toggle_vote_visibility(
+fn toggle_comment_visibility(
     conn: DBConnection,
     auth: Auth,
     comment_guard: CommentGuard,
@@ -334,7 +334,7 @@ fn toggle_vote_visibility(
 }
 
 #[post("/api/v1/comment/<_comment_id>/lock")]
-fn toggle_vote_lock(
+fn toggle_comment_lock(
     conn: DBConnection,
     auth: Auth,
     comment_guard: CommentGuard,

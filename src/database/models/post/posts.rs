@@ -76,6 +76,7 @@ pub struct Post {
     pub flags: u64,
     pub author: User,
     pub tags: Vec<String>,
+    pub comment_count: u64,
     pub comments: Vec<Comment>,
     pub user_vote: Option<i16>,
     pub user_flag: Option<bool>,
@@ -574,7 +575,9 @@ impl Post {
                     .unwrap_or(vec![])
                     .into_iter()
                     .map(move |entity| Comment::from(entity))
-                    .collect::<Vec<Comment>>()
+                    .collect::<Vec<Comment>>();
+
+                self.comment_count = CommentEntity::count_by_post_id(conn, &self.id, true);
             }
         }
 
@@ -618,10 +621,11 @@ impl From<PostEntity> for Post {
                 .iter()
                 .map(|tag_entity| tag_entity.label.to_string())
                 .collect::<Vec<String>>(),
+            comment_count: CommentEntity::count_by_post_id(&conn, &pe.id, false),
             comments: CommentEntity::by_post_id(&conn, &pe.id, false)
                 .unwrap()
-                .drain(..)
-                .map(|comment_entity| Comment::from(comment_entity))
+                .into_iter()
+                .map(move |comment_entity| Comment::from(comment_entity))
                 .collect::<Vec<Comment>>(),
             user_vote: None,
             user_flag: None,

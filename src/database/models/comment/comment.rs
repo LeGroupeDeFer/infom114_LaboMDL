@@ -126,6 +126,17 @@ impl CommentEntity {
         Ok(query.load(conn)?)
     }
 
+    pub fn count_by_post_id(conn: &MysqlConnection, post_id: &u32, can_see_hidden: bool) -> u64 {
+        let mut query = table.into_boxed();
+        query = query.filter(dsl::deleted_at.is_null().and(dsl::post_id.eq(post_id)));
+
+        if !can_see_hidden {
+            query = query.filter(dsl::hidden_at.is_null());
+        }
+
+        query.load::<Self>(conn).unwrap_or(vec![]).iter().count() as u64
+    }
+
     pub fn by_comment_id(
         conn: &MysqlConnection,
         comment_id: &u32,
