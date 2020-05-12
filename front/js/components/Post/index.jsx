@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useHistory, Link } from 'react-router-dom';
 import {
   Container,
@@ -22,14 +22,20 @@ import clsx from 'clsx';
 import { useAuth } from 'unanimity/context';
 import { May } from '../Auth';
 import { UpVote, DownVote, Vote, VoteSection } from './Vote';
-import { kindOf, empty, last, preview, previewLength, WATCH_EVENT } from 'unanimity/lib';
+import {
+  kindOf,
+  empty,
+  last,
+  preview,
+  previewLength,
+  WATCH_EVENT,
+} from 'unanimity/lib';
 import { Circle, Flexbox } from '../';
 
 import Comment from './Comment';
 import Poll from './Poll';
 import DeleteModal from './DeleteModal';
 import ReportModal from './ReportModal';
-
 
 /* ------------------------------ Post actions ----------------------------- */
 
@@ -138,8 +144,7 @@ const LockSymbol = ({ className }) => (
 );
 
 export function WatchStatus({ events, isPreview }) {
-  if (empty(events))
-      return <></>;
+  if (empty(events)) return <></>;
 
   const lastEvent = last(events.sort((a, b) => a.event - b.event));
   const label = WATCH_EVENT[lastEvent.event].doneLabel;
@@ -194,7 +199,6 @@ export function PostContent({ isPreview, post, onComment, onPollVote }) {
   );
 }
 
-
 /* --------------------------------- Post ---------------------------------- */
 
 export function Post({
@@ -219,6 +223,20 @@ export function Post({
   const { path } = useRouteMatch();
   const isLogged = !!user;
   const owner = isLogged && post.author.id === user.id;
+  const [editors, setEditors] = useState({});
+
+  function addEditor(commentId) {
+    if (editors.hasOwnProperty(commentId)) return;
+    let tmp = { ...editors };
+    tmp[commentId] = { show: true };
+    setEditors(tmp);
+  }
+
+  function toggleEditor(commentId) {
+    let tmp = { ...editors };
+    tmp[commentId].show = !tmp[commentId].show;
+    setEditors(tmp);
+  }
 
   const cardProps = isPreview
     ? {
@@ -240,7 +258,6 @@ export function Post({
     comments,
     userFlag,
   } = post;
-
 
   const cls = clsx(
     'post expand-preview',
@@ -388,16 +405,22 @@ export function Post({
               <div className="mt-2">
                 <Comment.Editor
                   onComment={(comment) => onComment(post, comment)}
+                  type="comment"
                 />
                 <div className="post-comments">
                   {post.comments.map((comment) => (
-                    <Comment comment={comment} onComment={onComment} />
+                    <Comment
+                      comment={comment}
+                      onComment={onComment}
+                      editors={editors}
+                      addEditor={addEditor}
+                      toggleEditor={toggleEditor}
+                    />
                   ))}
                 </div>
               </div>
             )}
           </div>
-
         </div>
         <WatchStatus isPreview={isPreview} events={post.watchEvents} />
       </Card.Body>

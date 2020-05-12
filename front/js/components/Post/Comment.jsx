@@ -11,22 +11,28 @@ import { VOTE } from '../../lib';
 const CommentInteraction = WhenLogged(({ onResponse, onMask, onFlag }) => {
   return (
     <Row className="pl-1 pt-1">
-      <a className="post-footer-btn mr-2" onClick={onResponse}>
+      <a href="#" className="post-footer-btn mr-2" onClick={onResponse}>
         <GoReply size="1em" className="mr-1" />
         <span className="text-muted">Répondre</span>
       </a>
-      <a className="post-footer-btn mr-2" onClick={onMask}>
+      <a href="#" className="post-footer-btn mr-2" onClick={onMask}>
         <span className="text-muted">Masquer</span>
       </a>
-      <a className="post-footer-btn mr-2" onClick={onFlag}>
+      <a href="#" className="post-footer-btn mr-2" onClick={onFlag}>
         <span className="text-muted">Signaler</span>
       </a>
     </Row>
   );
 });
 
-function Comment({ comment, onComment, onVote }) {
-  console.log(comment);
+function Comment({
+  comment,
+  onComment,
+  onVote,
+  editors,
+  addEditor,
+  toggleEditor,
+}) {
   const isLogged = !!useAuth().user;
   const [reply, setReply] = useState('');
 
@@ -78,8 +84,16 @@ function Comment({ comment, onComment, onVote }) {
               onComment={() => console.log('Wanna comment!')}
               onMask={() => console.log('Wanna mask!')}
               onFlag={() => console.log('Wanna flag!')}
+              onResponse={() => addEditor(comment.id)}
             />
-            {/* <CommentEditor onComment={(c) => console.log('Commented ' + c)} /> */}
+
+            {editors.hasOwnProperty(comment.id) && editors[comment.id].show && (
+              <CommentEditor
+                type="reply"
+                isVisible={false}
+                toggleEditor={() => toggleEditor(comment.id)}
+              />
+            )}
           </div>
         </Col>
       </Row>
@@ -87,7 +101,7 @@ function Comment({ comment, onComment, onVote }) {
   );
 }
 
-function CommentEditor({ onComment }) {
+function CommentEditor({ onComment, type, toggleEditor }) {
   const isLogged = !!useAuth().user;
   const [comment, setComment] = useState('');
 
@@ -103,7 +117,7 @@ function CommentEditor({ onComment }) {
     setComment('');
   };
 
-  if (isLogged)
+  if (isLogged && type == 'comment')
     return (
       <div className="comment-editor">
         <Form.Control
@@ -121,6 +135,36 @@ function CommentEditor({ onComment }) {
         >
           Commenter
         </Button>
+      </div>
+    );
+
+  if (isLogged && type == 'reply')
+    return (
+      <div className="comment-editor">
+        <Form.Control
+          as="textarea"
+          rows="3"
+          placeholder="Répondre"
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          onKeyDown={onKeyPressed}
+        />
+        <div className="float-right">
+          <Button
+            variant="light"
+            className="mt-1 mr-1"
+            onClick={() => toggleEditor()}
+          >
+            Annuler
+          </Button>
+          <Button
+            variant="primary"
+            className=" mt-1"
+            onClick={() => addComment()}
+          >
+            Répondre
+          </Button>
+        </div>
       </div>
     );
 
