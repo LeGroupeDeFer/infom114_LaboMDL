@@ -27,6 +27,8 @@ import Comment from './Comment';
 import Poll from './Poll';
 import DeleteModal from './DeleteModal';
 import ReportModal from './ReportModal';
+import DeleteCommentModal from './DeleteCommentModal';
+import ReportCommentModal from './ReportCommentModal';
 import { empty } from 'unanimity/lib';
 import {
   WatchStatus,
@@ -106,10 +108,12 @@ export function Post({
   onLock,
   onWatch,
   onComment,
+  onDeleteComment,
   onReply,
   onCommentVote,
   isPreview,
   onPreview,
+  onFlagComment,
   className,
   ...others
 }) {
@@ -305,8 +309,9 @@ export function Post({
                   type="comment"
                 />
                 <div className="post-comments">
-                  {post.comments.map((comment) => (
+                  {post.comments.map((comment, index) => (
                     <Comment
+                      key={index}
                       comment={comment}
                       onComment={onComment}
                       editors={editors}
@@ -314,6 +319,8 @@ export function Post({
                       toggleEditor={toggleEditor}
                       onReply={onReply}
                       onCommentVote={onCommentVote}
+                      onDeleteComment={onDeleteComment}
+                      onFlagComment={onFlagComment}
                     />
                   ))}
                 </div>
@@ -336,6 +343,8 @@ Object.assign(Post, {
   DownVote,
   Delete: DeleteModal,
   Report: ReportModal,
+  ReportComment: ReportCommentModal,
+  DeleteComment: DeleteCommentModal,
 });
 
 export default Post;

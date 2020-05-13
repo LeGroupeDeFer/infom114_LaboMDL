@@ -14,18 +14,21 @@ import Amend from './Amend';
 
 // Modals :: Object => Component
 function StreamModals({
-  deletePost,
-  flagPost,
-  onDelete,
   toast,
   onToast,
   toastMsg,
+  deletePost,
+  flagPost,
+  deleteComment,
+  flagComment,
+  onDelete,
   onFlag,
+  onDeleteComment,
+  onFlagComment,
   onDeleteConfirmation,
   onFlagConfirmation,
-  deleteComment,
-  onDeleteComment,
   onDeleteCommentConfirmation,
+  onFlagCommentConfirmation,
 }) {
   return (
     <>
@@ -37,11 +40,27 @@ function StreamModals({
         onToast={onToast}
       />
 
+      <Post.DeleteComment
+        post={deleteComment}
+        show={!!deleteComment}
+        onHide={() => onDeleteComment(false)}
+        onDelete={onDeleteCommentConfirmation}
+        onToast={onToast}
+      />
+
       <Post.Report
         post={flagPost}
         show={!!flagPost}
         onHide={() => onFlag(false)}
         onFlag={onFlagConfirmation}
+        onToast={onToast}
+      />
+
+      <Post.ReportComment
+        post={flagComment}
+        show={!!flagComment}
+        onHide={() => onFlagComment(false)}
+        onFlag={onFlagCommentConfirmation}
         onToast={onToast}
       />
       <Toast
@@ -69,6 +88,7 @@ function StreamContent({ userId }) {
     deletePost: false,
     deleteComment: false,
     flagPost: false,
+    flagComment: false,
     toast: false,
     toastMsg: '',
     onDeleteComment: (id) =>
@@ -84,8 +104,19 @@ function StreamContent({ userId }) {
       }),
     onCommentVote: (id, vote) => stream.posts.commentVote(id, vote),
     onComment: (post, comment) => stream.posts.comment(post, comment),
-    onReply: (postId, commentId, reply) => stream.posts.reply(postId, commentId, reply),
+    onReply: (postId, commentId, reply) =>
+      stream.posts.reply(postId, commentId, reply),
     onFlag: (v) => setState((state) => ({ ...state, flagPost: v })),
+    onFlagComment: (v) => setState((state) => ({ ...state, flagComment: v })),
+    onFlagCommentCancel: (id) => {
+      stream.posts.flagComment(post, '', true).then(() =>
+        setState((state) => ({
+          ...state,
+          toast: true,
+          toastMsg: 'Votre signalement a été annulé',
+        }))
+      );
+    },
     onFlagCancel: (post) => {
       stream.posts.flag(post, '', true).then(() =>
         setState((state) => ({
@@ -126,6 +157,15 @@ function StreamContent({ userId }) {
         setState((state) => ({
           ...state,
           flagPost: false,
+          toast: true,
+          toastMsg: 'Votre signalement a été enregistré',
+        }));
+      }),
+    onFlagCommentConfirmation: (id, reason) =>
+      stream.posts.flagComment(id, reason, false).then(() => {
+        setState((state) => ({
+          ...state,
+          flagComment: false,
           toast: true,
           toastMsg: 'Votre signalement a été enregistré',
         }));

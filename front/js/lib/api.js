@@ -242,6 +242,8 @@ Object.assign(posts, {
     return api(`/post/${postId}/comments`);
   },
   reply(commentId, reply) {
+    console.log('comId = ' + commentId);
+    console.log('rep =' + reply);
     return api(`/comment/${commentId}`, {
       method: 'POST',
       body: { content: reply },
