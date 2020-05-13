@@ -136,48 +136,6 @@ export function StreamProvider({ children }) {
         return promise;
       },
 
-      deleteComment(postId, commentId) {
-        return api.posts
-          .deleteComment(commentId)
-          .then(() => this.of(postId, true));
-      },
-
-      flagComment(postId, commentId, reason, cancel) {
-        return this._updatePost(
-          api.posts
-            .flagComment(commentId, reason, cancel)
-            .then(() => this.of(postId, true))
-        );
-      },
-
-      lockComment(postId, commentId) {
-        return this._updatePost(api.posts.lockComment(commentId)).then(() =>
-          this.of(postId, true)
-        );
-      },
-      hideComment(postId, commentId) {
-        return this._updatePost(api.posts.hideComment(commentId)).then(() =>
-          this.of(postId, true)
-        );
-      },
-      comment(post, comment) {
-        return api.posts
-          .comment(post.id, comment)
-          .then((response) => this.of(post.id, true) || response);
-      },
-
-      reply(postId, commentId, reply) {
-        return api.posts
-          .reply(commentId, reply)
-          .then((response) => this.of(postId, true) || response);
-      },
-
-      commentVote(postId, commentId, vote) {
-        return api.posts
-          .commentVote(commentId, vote)
-          .then(() => this.of(postId, true));
-      },
-
       vote(post, vote) {
         return this._updatePost(api.posts.vote(post.id, vote));
       },
@@ -221,6 +179,48 @@ export function StreamProvider({ children }) {
           (error) => setState((s) => ({ ...s, error })),
         ]);
         return promise;
+      },
+
+      /* Comments */
+
+      deleteComment(postId, commentId) {
+        return api.posts
+          .deleteComment(commentId)
+          .then(() => this.of(postId, true));
+      },
+
+      flagComment(postId, commentId, reason, cancel) {
+        return api.posts
+          .flagComment(commentId, reason, cancel)
+          .then(() => this.of(postId, true))
+      },
+
+      lockComment(postId, commentId) {
+        return api.posts
+          .lockComment(commentId)
+          .then(() => this.of(postId, true));
+      },
+      hideComment(postId, commentId) {
+        return api.posts
+          .hideComment(commentId)
+          .then(() => this.of(postId, true));
+      },
+      comment(post, comment) {
+        return api.posts
+          .comment(post.id, comment)
+          .then((response) => this.of(post.id, true) || response);
+      },
+
+      reply(postId, commentId, reply) {
+        return api.posts
+          .reply(commentId, reply)
+          .then((response) => this.of(postId, true) || response);
+      },
+
+      commentVote(postId, commentId, vote) {
+        return api.posts
+          .commentVote(commentId, vote)
+          .then(() => this.of(postId, true));
       },
     },
 
