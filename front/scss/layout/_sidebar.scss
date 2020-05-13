@@ -53,6 +53,12 @@ $sidebar-dim: 60px;
     }
 }
 
+
+.sidebar-logo {
+    position: absolute;
+    z-index: 1000;
+}
+
 .sidebar-exit {
     position: absolute;
     top: 100%;

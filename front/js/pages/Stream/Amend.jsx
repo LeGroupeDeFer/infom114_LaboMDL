@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { useParams } from 'react-router-dom';
+import {Link, useParams} from 'react-router-dom';
 import { Container, Row, Col, Tab, ListGroup, Form, Badge } from 'react-bootstrap';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import clsx from "clsx";
@@ -111,7 +111,12 @@ function AmendContent({ post, error }) {
         <Col>
           <h1 className="text-dark">
             <Flexbox justify="between">
-              <span>{post.title}</span>
+              <div>
+                <span className="mr-2">{post.title}</span>
+                <Link to={`/detail/${post.id}`}>
+                  <Icon icon="link" size="xs"/>
+                </Link>
+              </div>
               <div>
                 <Icon icon={kind.icon} className="mr-3"/>
                 <Badge variant="secondary" className="ml-3">
