@@ -106,6 +106,7 @@ export function Post({
   onHide,
   onTag,
   onLock,
+  onLockComment,
   onWatch,
   onComment,
   onDeleteComment,
@@ -115,6 +116,7 @@ export function Post({
   onPreview,
   onFlagComment,
   className,
+  onHideComment,
   ...others
 }) {
   const { user } = useAuth();
@@ -315,6 +317,8 @@ export function Post({
                       onCommentVote={onCommentVote}
                       onDeleteComment={onDeleteComment}
                       onFlagComment={onFlagComment}
+                      onLockComment={onLockComment}
+                      onHideComment={onHideComment}
                     />
                   ))}
                 </div>

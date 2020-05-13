@@ -168,6 +168,27 @@ export default function About(props) {
             </Card.Body>
           </Accordion.Collapse>
         </Card>
+        <Card>
+          <Card.Header>
+            <Accordion.Toggle as={Button} variant="link" eventKey="4">
+              Une publication ayant un score négatif possède un meilleur <i>rank</i> que la mienne. Comment est-ce possible?
+            </Accordion.Toggle>
+          </Card.Header>
+          <Accordion.Collapse eventKey="4">
+            <Card.Body>
+              <p>
+                Le <i>ranking</i> de l'application se base surtout sur l'activité de la publication.
+                Cela signifie que toutes les interactions avec une publication vont augmenter la pertinence qu'elle a d'être "poussée vers le haut".
+              </p>
+              <p>
+                Si je juge qu'une publication n'est pas intéressante, la meilleure façon de réagir est de ne pas intéragir avec celle-ci.
+              </p>
+              <p>
+                Par contre il m'est possible de faire remarquer à un modérateur qu'une publication ne respecte pas la politique d'utilisation de l'appliation via l'action "signaler" .
+              </p>
+            </Card.Body>
+          </Accordion.Collapse>
+        </Card>
       </Accordion>
     </Container>
   );

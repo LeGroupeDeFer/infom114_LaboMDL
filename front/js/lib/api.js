@@ -242,8 +242,6 @@ Object.assign(posts, {
     return api(`/post/${postId}/comments`);
   },
   reply(commentId, reply) {
-    console.log('comId = ' + commentId);
-    console.log('rep =' + reply);
     return api(`/comment/${commentId}`, {
       method: 'POST',
       body: { content: reply },
@@ -258,6 +256,12 @@ Object.assign(posts, {
   flagComment(id, reason, cancel) {
     if (cancel) return api(`/comment/${id}/report`, { method: 'POST' });
     return api(`/comment/${id}/report`, { method: 'POST', body: { reason } });
+  },
+  lockComment(id) {
+    return api(`/comment/${id}/lock`, { method: 'POST' });
+  },
+  hideComment(id) {
+    return api(`/comment/${id}/hide`, { method: 'POST' });
   },
 });
 

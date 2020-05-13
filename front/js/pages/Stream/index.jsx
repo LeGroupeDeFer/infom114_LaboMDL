@@ -20,7 +20,9 @@ function StreamModals({
   deletePost,
   flagPost,
   deleteComment,
+  deleteCommentPostId,
   flagComment,
+  flagCommentPostId,
   onDelete,
   onFlag,
   onDeleteComment,
@@ -41,7 +43,8 @@ function StreamModals({
       />
 
       <Post.DeleteComment
-        post={deleteComment}
+        postId={deleteCommentPostId}
+        commentId={deleteComment}
         show={!!deleteComment}
         onHide={() => onDeleteComment(false)}
         onDelete={onDeleteCommentConfirmation}
@@ -57,7 +60,8 @@ function StreamModals({
       />
 
       <Post.ReportComment
-        post={flagComment}
+        commentId={flagComment}
+        postId={flagCommentPostId}
         show={!!flagComment}
         onHide={() => onFlagComment(false)}
         onFlag={onFlagCommentConfirmation}
@@ -87,14 +91,20 @@ function StreamContent({ userId }) {
   const [state, setState] = useState({
     deletePost: false,
     deleteComment: false,
+    deleteCommentPostId: false,
     flagPost: false,
     flagComment: false,
+    flagCommentPostId: false,
     toast: false,
     toastMsg: '',
-    onDeleteComment: (id) =>
-      setState((state) => ({ ...state, deleteComment: id })),
-    onDeleteCommentConfirmation: (id) =>
-      stream.posts.deleteComment(id).then(() => {
+    onDeleteComment: (postId, commentId) =>
+      setState((state) => ({
+        ...state,
+        deleteComment: commentId,
+        deleteCommentPostId: postId,
+      })),
+    onDeleteCommentConfirmation: (postId, commentId) =>
+      stream.posts.deleteComment(postId, commentId).then(() => {
         setState((state) => ({
           ...state,
           deleteComment: false,
@@ -102,12 +112,18 @@ function StreamContent({ userId }) {
           toastMsg: 'Votre commentaire a bien été supprimé',
         }));
       }),
-    onCommentVote: (id, vote) => stream.posts.commentVote(id, vote),
+    onCommentVote: (postId, commentId, vote) =>
+      stream.posts.commentVote(postId, commentId, vote),
     onComment: (post, comment) => stream.posts.comment(post, comment),
     onReply: (postId, commentId, reply) =>
       stream.posts.reply(postId, commentId, reply),
     onFlag: (v) => setState((state) => ({ ...state, flagPost: v })),
-    onFlagComment: (v) => setState((state) => ({ ...state, flagComment: v })),
+    onFlagComment: (postId, commentId) =>
+      setState((state) => ({
+        ...state,
+        flagComment: commentId,
+        flagCommentPostId: postId,
+      })),
     onFlagCommentCancel: (id) => {
       stream.posts.flagComment(post, '', true).then(() =>
         setState((state) => ({
@@ -128,11 +144,15 @@ function StreamContent({ userId }) {
     },
     //setAuthorPostFilter: (userId) => stream.posts.authorPostFilter(userId),
     onHide: (post) => stream.posts.hide(post),
+    onHideComment: (postId, commentId) =>
+      stream.posts.hideComment(postId, commentId),
     onPollVote: (postId, answerId) => stream.posts.pollVote(postId, answerId),
     onVote: (post, vote) => stream.posts.vote(post, vote),
     onTag: (tag) => stream.tags.set(tag),
     onWatch: (post, event) => stream.posts.watch(post, event),
     onLock: (post) => stream.posts.lock(post),
+    onLockComment: (postId, commentId) =>
+      stream.posts.lockComment(postId, commentId),
     onSort: (order) => stream.order.set(order),
     onAuthor: (author) => stream.author.set(author),
     onDelete: (v, p) => {
@@ -161,8 +181,8 @@ function StreamContent({ userId }) {
           toastMsg: 'Votre signalement a été enregistré',
         }));
       }),
-    onFlagCommentConfirmation: (id, reason) =>
-      stream.posts.flagComment(id, reason, false).then(() => {
+    onFlagCommentConfirmation: (postId, commentId, reason) =>
+      stream.posts.flagComment(postId, commentId, reason, false).then(() => {
         setState((state) => ({
           ...state,
           flagComment: false,

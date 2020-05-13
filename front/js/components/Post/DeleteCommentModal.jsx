@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 
-export default function DeleteCommentModal({ post, show, onHide, onDelete }) {
+export default function DeleteCommentModal({
+  postId,
+  commentId,
+  show,
+  onHide,
+  onDelete,
+}) {
   return (
     <Modal className="modal-delete" show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
@@ -21,7 +27,7 @@ export default function DeleteCommentModal({ post, show, onHide, onDelete }) {
           <Button
             variant="danger"
             className=" mt-1"
-            onClick={() => onDelete(post)}
+            onClick={() => onDelete(postId, commentId)}
           >
             Supprimer
           </Button>
