@@ -19,6 +19,23 @@ const HideComment = May('comment:hide', ({ onMask }) => {
   );
 });
 
+// const FlagPost = ({ post, userFlag, onFlag, onFlagCancel }) => {
+//   if (userFlag) {
+//     return (
+//       <Dropdown.Item as="button" onClick={() => onFlagCancel(post)}>
+//         <Icon icon="flag" className="mr-2" />
+//         <span>Annuler signalement</span>
+//       </Dropdown.Item>
+//     );
+//   }
+//   return (
+//     <Dropdown.Item as="button" onClick={() => onFlag(post)}>
+//       <Icon icon="flag" className="mr-2" />
+//       <span>Signaler</span>
+//     </Dropdown.Item>
+//   );
+// };
+
 const LockComment = May('comment:hide', ({ onLock }) => {
   return (
     <a href="#" className="post-footer-btn mr-2" onClick={onLock}>
@@ -60,6 +77,8 @@ function Comment({
   editors,
   addEditor,
   toggleEditor,
+  onFlagComment,
+  onDeleteComment,
 }) {
   const isLogged = !!useAuth().user;
   const [reply, setReply] = useState('');
@@ -75,6 +94,8 @@ function Comment({
         toggleEditor={toggleEditor}
         editors={editors}
         onCommentVote={onCommentVote}
+        onDeleteComment={onDeleteComment}
+        onFlagComment={onFlagComment}
       />
     );
   });
@@ -111,10 +132,10 @@ function Comment({
           <div>
             <div className="comment-text">{comment.content}</div>
             <CommentInteraction
-              onComment={() => console.log('Wanna comment!')}
               onMask={() => console.log('Wanna mask!')}
-              onFlag={() => console.log('Wanna flag!')}
+              onFlag={() => onFlagComment(comment.id)}
               onResponse={() => addEditor(comment.id)}
+              onDelete={() => onDeleteComment(comment.id)}
             />
 
             {editors.hasOwnProperty(comment.id) && editors[comment.id].show && (
@@ -150,6 +171,7 @@ function CommentEditor({ onReply, onComment, type, toggleEditor }) {
   };
 
   const addReply = () => {
+    console.log(onReply);
     comment ? onReply(comment) : undefined;
     setComment('');
   };

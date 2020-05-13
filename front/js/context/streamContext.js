@@ -137,7 +137,7 @@ export function StreamProvider({ children }) {
       },
 
       deleteComment(id) {
-        const promise = api.posts.deleteCommente(id);
+        const promise = api.posts.deleteComment(id);
         // TODO : update state
         return promise;
       },
@@ -147,14 +147,15 @@ export function StreamProvider({ children }) {
       },
 
       comment(post, comment) {
-        return api.posts.comment(post.id, comment)
-          .then(response => this.of(post.id, true) || response);
-
+        return api.posts
+          .comment(post.id, comment)
+          .then((response) => this.of(post.id, true) || response);
       },
 
       reply(postId, commentId, reply) {
-        return api.posts.reply(commentId, reply)
-          .then(response => this.of(postId, true) || response);
+        return api.posts
+          .reply(commentId, reply)
+          .then((response) => this.of(postId, true) || response);
       },
 
       commentVote(id, vote) {
