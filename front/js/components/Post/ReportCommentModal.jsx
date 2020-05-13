@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 
-export default function ReportCommentModal({ post, show, onHide, onFlag }) {
+export default function ReportCommentModal({
+  postId,
+  commentId,
+  show,
+  onHide,
+  onFlag,
+}) {
   const [reason, setReason] = useState('');
 
   function handleChange(event) {
@@ -32,7 +38,7 @@ export default function ReportCommentModal({ post, show, onHide, onFlag }) {
             variant="primary"
             className=" mt-1"
             onClick={() => {
-              onFlag(post, reason);
+              onFlag(postId, commentId, reason);
               setReason('');
             }}
           >

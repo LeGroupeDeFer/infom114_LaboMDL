@@ -136,16 +136,30 @@ export function StreamProvider({ children }) {
         return promise;
       },
 
-      deleteComment(id) {
-        const promise = api.posts.deleteComment(id);
-        // TODO : update state
-        return promise;
+      deleteComment(postId, commentId) {
+        return api.posts
+          .deleteComment(commentId)
+          .then(() => this.of(postId, true));
       },
 
-      flagComment(id, reason, cancel) {
-        return this._updatePost(api.posts.flagComment(id, reason, cancel));
+      flagComment(postId, commentId, reason, cancel) {
+        return this._updatePost(
+          api.posts
+            .flagComment(commentId, reason, cancel)
+            .then(() => this.of(postId, true))
+        );
       },
 
+      lockComment(postId, commentId) {
+        return this._updatePost(api.posts.lockComment(commentId)).then(() =>
+          this.of(postId, true)
+        );
+      },
+      hideComment(postId, commentId) {
+        return this._updatePost(api.posts.hideComment(commentId)).then(() =>
+          this.of(postId, true)
+        );
+      },
       comment(post, comment) {
         return api.posts
           .comment(post.id, comment)
@@ -158,8 +172,10 @@ export function StreamProvider({ children }) {
           .then((response) => this.of(postId, true) || response);
       },
 
-      commentVote(id, vote) {
-        return this._updatePost(api.posts.commentVote(id, vote));
+      commentVote(postId, commentId, vote) {
+        return api.posts
+          .commentVote(commentId, vote)
+          .then(() => this.of(postId, true));
       },
 
       vote(post, vote) {

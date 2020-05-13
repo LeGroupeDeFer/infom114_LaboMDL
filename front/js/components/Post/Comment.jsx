@@ -10,10 +10,16 @@ import { VOTE } from '../../lib';
 import { May } from '../Auth';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 
-const HideComment = May('comment:hide', ({ onMask }) => {
+const HideComment = May('comment:hide', ({ onMask, hidden }) => {
+  if (hidden) {
+    return (
+      <a href="#" className="post-footer-btn mr-2" onClick={onMask}>
+        <span className="text-muted">Rendre visible</span>
+      </a>
+    );
+  }
   return (
     <a href="#" className="post-footer-btn mr-2" onClick={onMask}>
-      {/* <Icon icon="eye-slash" className="mr-2" /> */}
       <span className="text-muted">Masquer</span>
     </a>
   );
@@ -46,7 +52,7 @@ const LockComment = May('comment:hide', ({ onLock }) => {
 });
 
 const CommentInteraction = WhenLogged(
-  ({ onResponse, onMask, onFlag, onDelete, onLock }) => {
+  ({ onResponse, onFlag, onDelete, onLock, onHide, comment }) => {
     return (
       <Row className="pl-1 pt-1 pb-2">
         <a href="#" className="post-footer-btn mr-2" onClick={onResponse}>
@@ -61,8 +67,8 @@ const CommentInteraction = WhenLogged(
           {/* <Icon icon="trash" className="mr-2" /> */}
           <span className="text-muted">Supprimer</span>
         </a>
-        <LockComment onLock={onLock} />
-        <HideComment onMask={onMask} />
+        {/* <LockComment onLock={onLock} /> */}
+        <HideComment onMask={onHide} hidden={comment.hidden} />
       </Row>
     );
   }
@@ -79,6 +85,8 @@ function Comment({
   toggleEditor,
   onFlagComment,
   onDeleteComment,
+  onLockComment,
+  onHideComment,
 }) {
   const isLogged = !!useAuth().user;
   const [reply, setReply] = useState('');
@@ -96,6 +104,8 @@ function Comment({
         onCommentVote={onCommentVote}
         onDeleteComment={onDeleteComment}
         onFlagComment={onFlagComment}
+        onLockComment={onLockComment}
+        onHideComment={onHideComment}
       />
     );
   });
@@ -106,7 +116,7 @@ function Comment({
         <Col className="col-auto comment-vote comment-content">
           <VoteSection
             className="white-mask"
-            onVote={(vote) => onCommentVote(comment.id, vote)}
+            onVote={(vote) => onCommentVote(comment.postId, comment.id, vote)}
             score={comment.score || 0}
             isLogged={isLogged}
             vote={comment.userVote || VOTE.NONE}
@@ -132,10 +142,12 @@ function Comment({
           <div>
             <div className="comment-text">{comment.content}</div>
             <CommentInteraction
-              onMask={() => console.log('Wanna mask!')}
-              onFlag={() => onFlagComment(comment.id)}
+              onLock={() => onLockComment(comment.postId, comment.id)}
+              onFlag={() => onFlagComment(comment.postId, comment.id)}
               onResponse={() => addEditor(comment.id)}
-              onDelete={() => onDeleteComment(comment.id)}
+              onHide={() => onHideComment(comment.postId, comment.id)}
+              onDelete={() => onDeleteComment(comment.postId, comment.id)}
+              comment={comment}
             />
 
             {editors.hasOwnProperty(comment.id) && editors[comment.id].show && (
