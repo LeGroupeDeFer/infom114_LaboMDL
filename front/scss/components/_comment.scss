@@ -5,8 +5,15 @@
 }
 
 .comment {
-    // margin-left: 5px;
+    margin-left: -5px;
     margin-top: 5px;
+}
+
+
+@include media-breakpoint-down("md") {
+    .comment {
+        margin-left: -19px;
+    }
 }
 
 ul>li {
