@@ -81,9 +81,10 @@ function Comment({
 
   return (
     <div className="comment">
-      <Row>
-        <Col className="col-auto comment-vote">
+      <Row className="comment-row">
+        <Col className="col-auto comment-vote comment-content">
           <VoteSection
+            className="white-mask"
             onVote={(vote) => onCommentVote(comment.id, vote)}
             score={comment.score || 0}
             isLogged={isLogged}
