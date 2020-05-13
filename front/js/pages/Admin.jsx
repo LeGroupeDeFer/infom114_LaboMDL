@@ -293,7 +293,9 @@ const StatisticsPage = () => {
         value: usersData.total - usersData.active,
       },
     ];
-    let tag = tagsData;
+    //FIXME - let the user select what tag he wants to visualise
+    let faculties = ["vété", "info", "droit", "eco", "biologie", "chimie", "géologie", "géographie", "med", "philo", "sciences"];
+    let tag = tagsData.filter(t => faculties.includes(t.tag));
     let post = postsData.slice().sort((a,b) => {return a.id - b.id});
     return { connect, active, tag, post };
   };
