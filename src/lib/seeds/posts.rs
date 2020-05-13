@@ -141,3 +141,9 @@ fn init_tags(conn: &MysqlConnection) {
         .unwrap();
     }
 }
+
+pub fn seed_prod_posts(conn: &MysqlConnection) {
+    let author1 =
+
+    unimplemented!()
+}
