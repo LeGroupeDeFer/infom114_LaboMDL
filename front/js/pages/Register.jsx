@@ -16,19 +16,19 @@ const confirmPassword = ({ password, confirmPassword }) =>
 function Header() {
   return (
     <Flexbox justify="center" align="end" className="mb-3 form-header">
-      <h5 className="mb-1 mx-2">
+      <h6 className="mb-1 mx-2">
         <Link to="/" className="text-secondary">
           <Icon icon="arrow-left" className="mr-2" />
           ACCUEIL
         </Link>
-      </h5>
+      </h6>
       <h2 className="mb-0 mx-2">INSCRIPTION</h2>
-      <h5 className="mb-1 mx-2">
+      <h6 className="mb-1 mx-2">
         <Link to="/login" className="text-secondary">
           CONNEXION
           <Icon icon="arrow-right" className="ml-2" />
         </Link>
-      </h5>
+      </h6>
     </Flexbox>
   );
 }
@@ -373,6 +373,9 @@ const Register = Unauthenticated((props) => {
             />
           </Col>
         </Row>
+        <Row><Col className="text-center pt-4">
+          <small>Seuls les membres UNamur peuvent obtenir un compte UNanimity.</small>
+        </Col></Row>
       </AutoForm>
     </Container >
   );

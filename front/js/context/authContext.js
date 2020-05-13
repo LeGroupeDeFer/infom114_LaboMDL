@@ -20,11 +20,12 @@ export function AuthProvider({ children }) {
     token: null,
     error: null,
     pending: false,
+    timer: null,
 
     login(email, password) {
       if (state.user !== null)
-        throw new AuthError('User already connected');
-      setState(s => ({ ...s, pending: true }));
+        return;
+      setState(s => ({ ...s, pending: true, error: null }));
       const promise = api.auth.login(email, password);
       pushEffect([
         promise,
@@ -59,7 +60,7 @@ export function AuthProvider({ children }) {
   })
 
   useEffect(() => api.auth.session() && pushEffect([
-    setState(s => ({ ...s, pending: true })) || api.auth.refresh(),
+    setState(s => ({ ...s, pending: true, error: null })) || api.auth.refresh(),
     data => setState(state => ({
       ...state,
       error: null,
@@ -71,11 +72,17 @@ export function AuthProvider({ children }) {
   ]) || undefined, []);
 
   // Refresh loop
-  usePositiveEffect(() => {
+  useEffect(() => {
+    if (!state.token) {
+      if (state.timer)
+        clearTimeout(state.timer) || setState(s => ({ ...s, timer: null }));
+      return;
+    }
+
     const expiration = new Date(state.token.exp * 1000);
     const now = new Date();
 
-    setTimeout(() => pushEffect([
+   const timer = setTimeout(() => pushEffect([
       api.auth.refresh(),
       data => setState(s => ({
         ...s,
@@ -86,6 +93,7 @@ export function AuthProvider({ children }) {
       error => setState(s => ({ ...s, error, user: null, token: null }))
     ]), expiration - now);
 
+    setState(s => ({ ...s, timer }));
   }, [state.token]);
 
   useDebugValue(state.user ? 'Connected' : 'Anonymous');

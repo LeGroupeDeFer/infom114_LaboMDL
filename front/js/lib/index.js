@@ -314,6 +314,13 @@ function aggregate(o, key, props) {
   return clean(Object.assign({}, others, aggregation));
 }
 
+function emptyObject(obj) {
+  for (const key in obj)
+    if(obj.hasOwnProperty(key))
+      return false;
+  return true;
+}
+
 /* ------------------------------ Array utils ------------------------------ */
 
 const empty = xs => (xs instanceof Array) && xs.length === 0;
@@ -380,6 +387,7 @@ export {
   tee,
 
   aggregate,
+  emptyObject,
 
   empty,
   head,

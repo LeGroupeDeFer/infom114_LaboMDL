@@ -181,8 +181,8 @@ const Preview = ({
               >
                 <Icon icon="comment-alt" size="1x" className="mr-1" />
                 <span className="text-muted">
-                  {comments.length}
-                  {comments.length <= 1 ? 'commentaire' : 'commentaires'}
+                  {post.commentCount}
+                  {post.commentCount <= 1 ? 'commentaire' : 'commentaires'}
                 </span>
               </Link>
 

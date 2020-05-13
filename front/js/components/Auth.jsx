@@ -3,6 +3,7 @@ import { useAuth } from '../context';
 import { Container, Row, Col } from 'react-bootstrap';
 import { useHistory, Link } from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
+import {trace} from "../lib";
 
 export function Authenticated(Component) {
   return function(props) {
@@ -22,7 +23,7 @@ export function Unauthenticated(Component) {
     const { user } = useAuth();
     const history = useHistory();
 
-    useEffect(() => user ? history.replace('/login') : undefined, []);
+    useEffect(() => { if (!!user) history.replace('/') }, []);
     if (user)
       return <></>;
 

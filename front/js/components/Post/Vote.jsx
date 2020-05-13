@@ -40,10 +40,14 @@ function VoteOverlay({ isLogged, isLocked, children, setLockedCap }) {
   if (isLogged && isLocked)
     return <Temp setLockedCap={setLockedCap}>{children}</Temp>;
 
+  const msg = isLocked
+    ? 'Cette publication est vérouillée'
+    : 'Il faut être authentifié pour pouvoir voter';
+
   return (
     <OverlayTrigger
       placement="right"
-      overlay={<Tooltip>Il faut être authentifié pour pouvoir voter</Tooltip>}
+      overlay={<Tooltip>{msg}</Tooltip>}
     >
       {children}
     </OverlayTrigger>

@@ -132,16 +132,16 @@ export function WatchStatus({ events, isPreview }) {
   const icon = WATCH_EVENT[lastEvent.event].icon;
   if (isPreview)
     return (
-      <Container className="watch-event-preview">
-        <Row>
-          <Col xs={8} md={10} className="py-2 px-3">
-            <p className="watch-event-content">
+      <Container className="watch-event-preview expand-preview">
+        <Row className="expand-preview">
+          <Col xs={8} md={10} className="py-2 px-3 expand-preview">
+            <p className="watch-event-content expand-preview">
               <Icon icon={icon} className="mr-3" />
               {preview(lastEvent.comment, 80)}
             </p>
           </Col>
-          <Col xs={4} md={2} className="bg-secondary py-2 px-3 text-center">
-            <Moment date={lastEvent.time} relative capitalized />
+          <Col xs={4} md={2} className="bg-secondary py-2 px-3 text-center expand-preview">
+            <Moment date={lastEvent.time} relative capitalized className="expand-preview"/>
           </Col>
         </Row>
       </Container>

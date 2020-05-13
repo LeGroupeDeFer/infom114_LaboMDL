@@ -181,9 +181,9 @@ export function Post({
                 <span className="mr-1">{title}</span>
 
                 <span className="text-muted post-subtitle">
-                  <a href="#" className="post-author text-dark mx-1">
+                  <span className="post-author text-dark mx-1">
                     {author.firstname} {' ' + author.lastname}
-                  </a>
+                  </span>
                   <span>-</span>
                   <Moment date={createdAt} className="post-moment" />
                 </span>
@@ -247,18 +247,13 @@ export function Post({
             vote={post.userVote}
           />
 
-          <div className="px-3 pb-3 pt-2 w-100">
-            <div className="mb-1">
+          <div className="px-3 pb-3 pt-2 w-100 expand-preview">
+            <div className="mb-1 expand-preview">
               {tags.map((tag) => (
-                <a
-                  href="#"
-                  key={tag}
-                  className="mr-2 tag"
-                  // onClick={() => onTag(tag)}
-                >
+                <span key={tag} className="mr-2 tag">
                   <Icon icon="tag" className="mr-1" />
                   <span>{tag}</span>
-                </a>
+                </span>
               ))}
             </div>
 
@@ -271,16 +266,15 @@ export function Post({
               className="expand-preview"
             />
 
-            <Flexbox reverse className="post-footer mt-2">
+            <Flexbox reverse className="post-footer mt-2 expand-preview">
               <Link
                 to={`/detail/${id}`}
                 className="post-footer-btn mx-2 d-flex align-items-center"
-                href="#"
               >
                 <Icon icon="comment-alt" size="1x" className="mr-1" />
                 <span className="text-muted">
-                  {comments.length}
-                  {` commentaire${comments.length > 1 ? 's' : ''}`}
+                  {post.commentCount}
+                  {` commentaire${post.commentCount > 1 ? 's' : ''}`}
                 </span>
               </Link>
 
@@ -323,7 +317,7 @@ export function Post({
         </div>
       </Card.Body>
       {isPreview && (
-        <WatchStatus isPreview={isPreview} events={post.watchEvents} />
+        <WatchStatus isPreview={isPreview} events={post.watchEvents} className="expand-preview"/>
       )}
     </Card>
   );
