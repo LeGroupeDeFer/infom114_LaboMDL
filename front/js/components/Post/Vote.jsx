@@ -8,7 +8,7 @@ import clsx from 'clsx';
 import { VOTE } from 'unanimity/lib';
 import Flexbox from '../Flexbox';
 import { May } from '../Auth';
-import {useAuth} from "../../context";
+import { useAuth } from '../../context';
 
 const LockedT = ({ children }) => {
   return (
@@ -45,10 +45,7 @@ function VoteOverlay({ isLogged, isLocked, children, setLockedCap }) {
     : 'Il faut être authentifié pour pouvoir voter';
 
   return (
-    <OverlayTrigger
-      placement="right"
-      overlay={<Tooltip>{msg}</Tooltip>}
-    >
+    <OverlayTrigger placement="right" overlay={<Tooltip>{msg}</Tooltip>}>
       {children}
     </OverlayTrigger>
   );

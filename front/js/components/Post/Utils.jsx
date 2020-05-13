@@ -133,34 +133,51 @@ export function WatchStatus({ events, isPreview }) {
   if (isPreview)
     return (
       <Container className="watch-event-preview expand-preview">
-        <Row className="expand-preview">
-          <Col xs={8} md={10} className="py-2 px-3 expand-preview">
-            <p className="watch-event-content expand-preview">
-              <Icon icon={icon} className="mr-3" />
-              {preview(lastEvent.comment, 80)}
-            </p>
-          </Col>
-          <Col xs={4} md={2} className="bg-secondary py-2 px-3 text-center expand-preview">
-            <Moment date={lastEvent.time} relative capitalized className="expand-preview"/>
-          </Col>
-        </Row>
+        <OverlayTrigger placement="bottom" overlay={<Tooltip>{label}</Tooltip>}>
+          <Row className="expand-preview">
+            <Col xs={8} md={10} className="py-2 px-3 expand-preview">
+              <p className="watch-event-content expand-preview">
+                <Icon icon={icon} className="mr-3" />
+
+                {preview(lastEvent.comment, 80)}
+              </p>
+            </Col>
+            <Col
+              xs={4}
+              md={2}
+              className="bg-secondary py-2 px-3 text-center expand-preview"
+            >
+              <Moment
+                date={lastEvent.time}
+                relative
+                capitalized
+                className="expand-preview"
+              />
+            </Col>
+          </Row>
+        </OverlayTrigger>
       </Container>
     );
 
   return (
     <Container className="watch-event-preview mb-5">
       {localEvents.map((event) => (
-        <Row key={event.id}>
-          <Col xs={8} md={10} className="py-2 px-3">
-            <p className="watch-event-content">
-              <Icon icon={icon} className="mr-3" />
-              {event.comment}
-            </p>
-          </Col>
-          <Col xs={4} md={2} className="bg-secondary py-2 px-3 text-center">
-            <Moment date={event.time} relative capitalized />
-          </Col>
-        </Row>
+        <OverlayTrigger
+          placement="left"
+          overlay={<Tooltip>{WATCH_EVENT[event.event].doneLabel}</Tooltip>}
+        >
+          <Row key={event.id}>
+            <Col xs={8} md={10} className="py-2 px-3">
+              <p className="watch-event-content">
+                <Icon icon={icon} className="mr-3" />
+                {event.comment}
+              </p>
+            </Col>
+            <Col xs={4} md={2} className="bg-secondary py-2 px-3 text-center">
+              <Moment date={event.time} relative capitalized />
+            </Col>
+          </Row>
+        </OverlayTrigger>
       ))}
     </Container>
   );
