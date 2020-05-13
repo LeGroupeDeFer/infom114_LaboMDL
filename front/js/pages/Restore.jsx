@@ -1,16 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AutoForm from '../components/AutoForm';
 import { Form } from 'react-bootstrap';
-import { useAction } from '../hooks';
+import {usePositiveEffect} from '../hooks';
 import { Dialog, Unauthenticated } from '../components';
 import { api } from '../lib';
 import { isUnamurEmail } from '../lib/validators';
 
 
 function RestoreForm() {
-  const [onSubmit, error, success] = useAction(
-    ({ email }) => api.auth.restore(email)
-  );
+  const [{ error, success, request }, setState] = useState({
+    error: null, success: null, request: null
+  });
+
+  const onSubmit = ({ email }) => {
+    setState(s => ({ ...s, request: api.auth.restore(email) }));
+  };
+
+  usePositiveEffect(() => {
+    request
+      .then(() => setState(s => ({ ...s, success: true, error: false })))
+      .catch(() => setState(s => ({ ...s, success: false, error: true })))
+      .finally(() => setState(s => ({ ...s, request: null })));
+  }, [request])
 
   if (success)
     return (

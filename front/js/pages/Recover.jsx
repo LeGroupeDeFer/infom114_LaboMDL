@@ -1,34 +1,44 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { Row, Col, Form } from 'react-bootstrap';
 import { useParams, Link } from 'react-router-dom';
 
 import { Dialog, AutoForm, Unauthenticated } from '../components';
-import { useAction } from '../hooks';
+import {useAction, usePositiveEffect} from '../hooks';
 import api from '../lib/api';
 
 
 function RecoveryForm({ id, token }) {
 
-  const [handler, error, success] = useAction(
-    ({ password, confirm }) => {
-      if (password !== confirm)
-        return Promise.reject({
-          code: 0,
-          reason: 'Password and confirmation are differents'
-        });
-      return api.auth.recover(id, password, token);
-    }
-  );
+
+  const [{ request, error, success }, setState] = useState({
+    request: null, error: null, success: null
+  });
+
+  const onSubmit = ({ password, confirm }) => {
+    if (password !== confirm)
+      return Promise.reject({
+        code: 0,
+        reason: 'Les mots de passe diffèrent'
+      });
+    setState(s => ({ ...s, request: api.auth.recover(id, password, token) }));
+  };
+
+  usePositiveEffect(() => {
+    request
+      .then(() => setState(s => ({ ...s, success: true, error: false })))
+      .catch(() => setState(s => ({ ...s, success: false, error: true })))
+      .finally(() => setState(s => ({ ...s, request: null })));
+  }, [request])
 
   if (error)
     return (
       <>
         <h4 className="text-danger"><b>Failure</b></h4>
         <p><b>
-          The token you provided is either invalid or has expired. If you still
-          wish to recover your account, you may head to
-          <Link to="/restore" className="text-secondary mx-1">this page</Link>to
-          generate a new recovery link.
+          Le code fourni est invalide ou a expiré. Si vous desirez toujours récuperer votre compte,
+          vous pouvez visiter
+          <Link to="/restore" className="text-secondary mx-1">cette page</Link> pour
+          génerer une nouveau lien de récupération.
         </b></p>
       </>
     );
@@ -36,17 +46,17 @@ function RecoveryForm({ id, token }) {
   if (success)
     return (
       <>
-        <h4 className="text-success"><b>Success</b></h4>
+        <h4 className="text-success"><b>Succès!</b></h4>
         <p><b>
-          Your account password was changed!. Head to the
-          <Link to="/login" className="text-secondary mx-1">login page</Link>
-          to start participating!
+          Le mot de passe de votre compte a changé! Dirigez vous vers la
+          <Link to="/login" className="text-secondary mx-1">page d'authentification</Link>
+          pour commencer à participer!
         </b></p>
       </>
     );
 
   return (
-    <AutoForm onSubmit={handler}>
+    <AutoForm onSubmit={onSubmit}>
 
       <Row>
         <Col>
@@ -58,7 +68,7 @@ function RecoveryForm({ id, token }) {
               eraseOnFailure={true}
             />
             <Form.Label>
-              <small><p>NEW PASSWORD</p></small>
+              <small><p>NOUVEAU MOT DE PASSE</p></small>
             </Form.Label>
             <span className="underline" />
             <div className="highlight" />
@@ -76,7 +86,7 @@ function RecoveryForm({ id, token }) {
               eraseOnFailure={true}
             />
             <Form.Label>
-              <small><p>CONFIRM PASSWORD</p></small>
+              <small><p>CONFIRMER</p></small>
             </Form.Label>
             <span className="underline" />
             <div className="highlight" />
@@ -90,7 +100,7 @@ function RecoveryForm({ id, token }) {
             variant="secondary"
             className="d-block px-5 my-2 mx-auto"
           >
-            Submit
+            Soumettre
           </AutoForm.Submit>
         </Col>
       </Row>
