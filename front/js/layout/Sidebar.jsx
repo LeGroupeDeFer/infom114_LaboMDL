@@ -1,6 +1,6 @@
 import React from 'react';
 import ListGroup from 'react-bootstrap/ListGroup';
-import { NavLink } from 'react-router-dom';
+import {Link, NavLink} from 'react-router-dom';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import { useLocation } from 'react-router-dom';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -16,15 +16,15 @@ function Sidebar({ open, links }) {
   return (
     <nav className="sidebar p-2">
       {/* Logo */}
-      <NavLink to="/">
-        <div className="sidebar-logo">
+      <div className="sidebar-logo">
+        <Link to="/">
           <img
             src="https://www.freelogodesign.org/file/app/client/thumb/93b27fc8-6653-43ea-a4c4-3f22893f93dd_200x200.png?1585111496240"
             alt="logo"
             height="53"
           />
-        </div>
-      </NavLink>
+        </Link>
+      </div>
       {/* Menu */}
       <ListGroup variant="flush" className="sidebar-nav w-100 text-center">
         {links.map(({ name, path, icon, title }, i) => (
