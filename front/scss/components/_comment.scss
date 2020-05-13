@@ -6,11 +6,15 @@
 
 .comment {
     margin-left: 5px;
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
-.comment-text {
-    font-size: 1rem;
+ul>li {
+    margin: 0 0 5px 0;
+}
+
+.post-comments>.comment {
+    margin-top: 25px;
 }
 
 
@@ -20,15 +24,16 @@
     height: 100%;
     background: #e0e1e1;
     position: absolute;
-    margin-left: 11px;
+    margin-left: 19px;
+    z-index: 5;
 }
 
 .comment-content:hover:before {
     background: theme-color("secondary");
 }
 
-.comment-first-row:hover+.comment-content:before {
-    background: theme-color("secondary");
+.comment-row:hover>.comment-content:before {
+    background: theme-color("secondary") !important;
 }
 
 
@@ -47,8 +52,10 @@
 }
 
 
-#white-mask {
-    background-color: white;
+.white-mask {
+    background-color: white !important;
+    z-index: 10;
+    position: relative;
 }
 
 .comment-vote .vote-section {

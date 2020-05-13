@@ -27,6 +27,7 @@ import Comment from './Comment';
 import Poll from './Poll';
 import DeleteModal from './DeleteModal';
 import ReportModal from './ReportModal';
+import { empty } from 'unanimity/lib';
 import {
   WatchStatus,
   FlagPost,
@@ -70,20 +71,23 @@ export function PostContent({ isPreview, post, onComment, onPollVote }) {
           )}
         </>
       )}
-
-      <Button
-        onClick={() => setOpenCollapse(!openCollapse)}
-        aria-controls="status-info"
-        aria-expanded={openCollapse}
-        className="mb-2"
-      >
-        Informations de suivi
-      </Button>
-      <Collapse in={openCollapse}>
-        <div id="status-info">
-          <WatchStatus events={post.watchEvents} />
-        </div>
-      </Collapse>
+      {!empty(post.watchEvents) && (
+        <>
+          <Button
+            onClick={() => setOpenCollapse(!openCollapse)}
+            aria-controls="status-info"
+            aria-expanded={openCollapse}
+            className="mb-2"
+          >
+            Informations de suivi
+          </Button>
+          <Collapse in={openCollapse}>
+            <div id="status-info">
+              <WatchStatus events={post.watchEvents} />
+            </div>
+          </Collapse>
+        </>
+      )}
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 .comment-editor-guest {
   padding-top: 1rem;
+  padding-bottom: 0;
 }
 
 .comment-editor .btn {
@@ -22,7 +23,8 @@
   margin: 1.5em 0 1em 0;
   resize: none;
 
-  &:active, &:focus {
+  &:active,
+  &:focus {
     background-color: gray("200") !important;
   }
 }
