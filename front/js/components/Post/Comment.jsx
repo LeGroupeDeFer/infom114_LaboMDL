@@ -59,16 +59,15 @@ const CommentInteraction = WhenLogged(
           <GoReply size="1em" className="mr-1" />
           <span className="text-muted">Répondre</span>
         </a>
-        <a href="#" className="post-footer-btn mr-2" onClick={onFlag}>
-          {/* <Icon icon="flag" className="mr-2" /> */}
+        {/* <a href="#" className="post-footer-btn mr-2" onClick={onFlag}>
           <span className="text-muted">Signaler</span>
-        </a>
+        </a> */}
         <a href="#" className="post-footer-btn mr-2" onClick={onDelete}>
           {/* <Icon icon="trash" className="mr-2" /> */}
           <span className="text-muted">Supprimer</span>
         </a>
         {/* <LockComment onLock={onLock} /> */}
-        <HideComment onMask={onHide} hidden={comment.hidden} />
+        {/* <HideComment onMask={onHide} hidden={comment.hidden} /> */}
       </Row>
     );
   }
