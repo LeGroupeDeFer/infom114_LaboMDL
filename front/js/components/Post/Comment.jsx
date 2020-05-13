@@ -62,7 +62,6 @@ function Comment({
   toggleEditor,
 }) {
   const isLogged = !!useAuth().user;
-  console.log(useAuth().token);
   const [reply, setReply] = useState('');
 
   const nestedComments = (comment.replies || []).map((cmmt) => {
@@ -120,7 +119,7 @@ function Comment({
             {editors.hasOwnProperty(comment.id) && editors[comment.id].show && (
               <Comment.Editor
                 type="reply"
-                onReply={(reply) => onReply(comment.id, reply)}
+                onReply={(reply) => onReply(comment.postId, comment.id, reply)}
                 isVisible={false}
                 toggleEditor={() => toggleEditor(comment.id)}
               />
@@ -197,7 +196,7 @@ function CommentEditor({ onReply, onComment, type, toggleEditor }) {
           <Button
             variant="primary"
             className=" mt-1"
-            onClick={() => addReply()}
+            onClick={() => addReply() || toggleEditor()}
           >
             Répondre
           </Button>

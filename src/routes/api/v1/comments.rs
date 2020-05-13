@@ -145,9 +145,7 @@ fn create_reply_to_comment(
     let can_edit_locked = auth.has_capability(&*conn, "comment:edit_locked");
 
     let comment = comment_guard.comment();
-    let post = PostEntity::by_id(&*conn, &comment.post_id)
-        .unwrap()
-        .unwrap();
+    let post = PostEntity::by_id(&*conn, &comment.post_id)??;
 
     if comment.is_deleted() || post.is_deleted() {
         Err(EntityError::InvalidID)?

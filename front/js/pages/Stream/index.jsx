@@ -84,7 +84,7 @@ function StreamContent({ userId }) {
       }),
     onCommentVote: (id, vote) => stream.posts.commentVote(id, vote),
     onComment: (post, comment) => stream.posts.comment(post, comment),
-    onReply: (commentId, reply) => stream.posts.reply(commentId, reply),
+    onReply: (postId, commentId, reply) => stream.posts.reply(postId, commentId, reply),
     onFlag: (v) => setState((state) => ({ ...state, flagPost: v })),
     onFlagCancel: (post) => {
       stream.posts.flag(post, '', true).then(() =>

@@ -147,11 +147,14 @@ export function StreamProvider({ children }) {
       },
 
       comment(post, comment) {
-        return this._updatePost(api.posts.comment(post.id, comment));
+        return api.posts.comment(post.id, comment)
+          .then(response => this.of(post.id, true) || response);
+
       },
 
-      reply(commentId, reply) {
-        return this._updatePost(api.posts.reply(commentId, reply));
+      reply(postId, commentId, reply) {
+        return api.posts.reply(commentId, reply)
+          .then(response => this.of(postId, true) || response);
       },
 
       commentVote(id, vote) {
